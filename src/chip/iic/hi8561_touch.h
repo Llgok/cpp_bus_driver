@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 17:29:15
+ * @LastEditTime: 2025-06-16 17:53:00
  * @License: GPL 3.0
  */
 
@@ -17,21 +17,21 @@ namespace Cpp_Bus_Driver
     class Hi8561_Touch : public Iic_Guide
     {
     private:
-        static constexpr auto MEMORY_ADDRESS_ERAM = 0x20011000;
-        static constexpr auto MAX_DSRAM_NUM = 25;
+        static constexpr uint32_t MEMORY_ADDRESS_ERAM = 0x20011000;
+        static constexpr uint8_t MAX_DSRAM_NUM = 25;
 
-        static constexpr auto DSRAM_SECTION_INFO_START_ADDRESS = MEMORY_ADDRESS_ERAM + 4;
+        static constexpr uint32_t DSRAM_SECTION_INFO_START_ADDRESS = MEMORY_ADDRESS_ERAM + 4;
         // 乘8bytes 是因为一共有两个数据，uint32_t数据（uint32_t地址（4 bytes）和uint32_t长度（4 bytes））
-        static constexpr auto ESRAM_NUM_START_ADDRESS = DSRAM_SECTION_INFO_START_ADDRESS + MAX_DSRAM_NUM * 8;
-        static constexpr auto ESRAM_SECTION_INFO_START_ADDRESS = ESRAM_NUM_START_ADDRESS + 4;
-        static constexpr auto MEMORY_ERAM_SIZE = 4 * 1024;
+        static constexpr uint32_t ESRAM_NUM_START_ADDRESS = DSRAM_SECTION_INFO_START_ADDRESS + MAX_DSRAM_NUM * 8;
+        static constexpr uint32_t ESRAM_SECTION_INFO_START_ADDRESS = ESRAM_NUM_START_ADDRESS + 4;
+        static constexpr uint16_t MEMORY_ERAM_SIZE = 4 * 1024;
 
-        static constexpr auto MAX_TOUCH_FINGER_COUNT = 10;
+        static constexpr uint8_t MAX_TOUCH_FINGER_COUNT = 10;
 
-        static constexpr auto MAX_TOUCH_DATA_SIZE = 78;
+        static constexpr uint8_t MAX_TOUCH_DATA_SIZE = 78;
 
-        static constexpr auto TOUCH_POINT_ADDRESS_OFFSET = 3;
-        static constexpr auto SINGLE_TOUCH_POINT_DATA_SIZE = 5;
+        static constexpr uint8_t TOUCH_POINT_ADDRESS_OFFSET = 3;
+        static constexpr uint8_t SINGLE_TOUCH_POINT_DATA_SIZE = 5;
 
         // enum class Cmd
         // {

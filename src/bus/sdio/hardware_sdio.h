@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-06-16 17:25:51
+ * @LastEditTime: 2025-06-16 17:51:12
  * @License: GPL 3.0
  */
 #pragma once
@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
     class Hardware_Sdio : public Bus_Sdio_Guide
     {
     private:
-        static constexpr auto SDIO_BUS_INIT_TIMEOUT_COUNT = 30;
+        static constexpr uint8_t SDIO_BUS_INIT_TIMEOUT_COUNT = 30;
 
     public:
         enum class Sdio_Port

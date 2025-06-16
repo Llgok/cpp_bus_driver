@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 17:35:17
+ * @LastEditTime: 2025-06-16 17:53:50
  * @License: GPL 3.0
  */
 
@@ -15,16 +15,16 @@ namespace Cpp_Bus_Driver
     class Esp_At : public Sdio_Guide
     {
     private:
-        static constexpr auto ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE = 512;
-        static constexpr auto TX_BUFFER_OFFSET = 16; // 发送缓冲区偏移量
-        static constexpr auto TX_BUFFER_MASK = 0xFFF;
-        static constexpr auto RX_BUFFER_MASK = 0xFFFFF;
-        static constexpr auto RX_BUFFER_MAX = 0x100000;
-        static constexpr auto ESP_AT_TRANSMIT_TIMEOUT_COUNT = 100;
-        static constexpr auto ESP_AT_CONNECT_ERROR_COUNT = 5;
-        static constexpr auto ESP_AT_RECEIVE_TIMEOUT_COUNT = 3;
+        static constexpr uint16_t ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE = 512;
+        static constexpr uint8_t TX_BUFFER_OFFSET = 16; // 发送缓冲区偏移量
+        static constexpr uint16_t TX_BUFFER_MASK = 0xFFF;
+        static constexpr uint32_t RX_BUFFER_MASK = 0xFFFFF;
+        static constexpr uint32_t RX_BUFFER_MAX = 0x100000;
+        static constexpr uint8_t ESP_AT_TRANSMIT_TIMEOUT_COUNT = 100;
+        static constexpr uint8_t ESP_AT_CONNECT_ERROR_COUNT = 5;
+        static constexpr uint8_t ESP_AT_RECEIVE_TIMEOUT_COUNT = 3;
 
-        static constexpr auto ESP_AT_MAX_RECEIVE_SIZE = 2 * 1024;
+        static constexpr uint16_t ESP_AT_MAX_RECEIVE_SIZE = 2 * 1024;
 
         enum class Cmd
         {

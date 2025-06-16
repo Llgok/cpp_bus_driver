@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-06-16 17:26:32
+ * @LastEditTime: 2025-06-16 17:51:21
  * @License: GPL 3.0
  */
 #pragma once
@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
     class Hardware_Uart : public Bus_Uart_Guide
     {
     private:
-        static constexpr auto UART_RX_MAX_SIZE = 1024 * 2;
+        static constexpr uint16_t UART_RX_MAX_SIZE = 1024 * 2;
 
         int32_t _tx, _rx;
         uart_port_t _port;

@@ -17,7 +17,7 @@ namespace Cpp_Bus_Driver
     class Sgm38121 : public Iic_Guide
     {
     private:
-        static constexpr auto SGM38121_DEVICE_ID = 0x80;
+        static constexpr uint8_t SGM38121_DEVICE_ID = 0x80;
 
         enum class Cmd
         {

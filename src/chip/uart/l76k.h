@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 17:38:20
+ * @LastEditTime: 2025-06-16 17:56:47
  * @License: GPL 3.0
  */
 
@@ -15,9 +15,9 @@ namespace Cpp_Bus_Driver
     class L76k : public Uart_Guide
     {
     private:
-        static constexpr auto GET_INFORMATION_TIMEOUT_COUNT = 3; // 获取信息超时计数
+        static constexpr uint8_t GET_INFORMATION_TIMEOUT_COUNT = 3; // 获取信息超时计数
 
-        static constexpr auto L76K_UART_RX_MAX_SIZE = 1024 * 2; // 最大获取的数据量
+        static constexpr uint16_t L76K_UART_RX_MAX_SIZE = 1024 * 2; // 最大获取的数据量
 
         enum class Cmd
         {

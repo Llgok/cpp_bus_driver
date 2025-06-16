@@ -17,9 +17,9 @@ namespace Cpp_Bus_Driver
     class Cst2xxse : public Iic_Guide
     {
     private:
-        static constexpr auto CST2xxSE_DEVICE_ID = 0xAB;
-        static constexpr auto MAX_TOUCH_FINGER_COUNT = 6;
-        static constexpr auto SINGLE_TOUCH_POINT_DATA_SIZE = 5;
+        static constexpr uint8_t CST2xxSE_DEVICE_ID = 0xAB;
+        static constexpr uint8_t MAX_TOUCH_FINGER_COUNT = 6;
+        static constexpr uint8_t SINGLE_TOUCH_POINT_DATA_SIZE = 5;
 
         enum class Cmd
         {

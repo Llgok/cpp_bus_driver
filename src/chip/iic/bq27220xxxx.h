@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 17:27:20
+ * @LastEditTime: 2025-06-16 17:51:28
  * @License: GPL 3.0
  */
 
@@ -17,7 +17,7 @@ namespace Cpp_Bus_Driver
     class Bq27220xxxx : public Iic_Guide
     {
     private:
-        static constexpr auto BQ27220YZFR_DEVICE_ID = 0x0220;
+        static constexpr uint16_t BQ27220YZFR_DEVICE_ID = 0x0220;
 
         enum class Cmd
         {
