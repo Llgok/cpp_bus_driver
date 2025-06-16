@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:42:57
- * @LastEditTime: 2025-03-31 14:49:40
+ * @LastEditTime: 2025-06-16 17:34:42
  * @License: GPL 3.0
  */
 
@@ -19,9 +19,9 @@ namespace Cpp_Bus_Driver
     class Es8311 : public Iic_Guide, Iis_Guide
     {
     private:
-#define ES8311_DEVICE_ID 0x8311
-#define ES8311_INIT_SUCCESS_ID 0x80
-#define ES8311_CMD_TIMEOUT_COUNT 100
+        static constexpr auto ES8311_DEVICE_ID = 0x8311;
+        static constexpr auto ES8311_INIT_SUCCESS_ID = 0x80;
+        static constexpr auto ES8311_CMD_TIMEOUT_COUNT = 100;
 
         enum class Cmd
         {

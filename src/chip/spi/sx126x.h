@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-12 10:50:09
+ * @LastEditTime: 2025-06-16 17:37:51
  * @License: GPL 3.0
  */
 
@@ -15,9 +15,9 @@ namespace Cpp_Bus_Driver
     class Sx126x : public Spi_Guide
     {
     private:
-#define SX126X_BUSY_PIN_TIMEOUT_COUNT 10000
-#define SX126X_BUSY_FUNCTION_TIMEOUT_COUNT 100
-#define SX126X_MAX_TRANSMIT_BUFFER_SIZE 255
+        static constexpr auto SX126X_BUSY_PIN_TIMEOUT_COUNT = 10000;
+        static constexpr auto SX126X_BUSY_FUNCTION_TIMEOUT_COUNT = 100;
+        static constexpr auto SX126X_MAX_TRANSMIT_BUFFER_SIZE = 255;
 
     public:
         enum class Chip_Type

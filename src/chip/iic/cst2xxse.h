@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-04-23 15:34:26
+ * @LastEditTime: 2025-06-16 17:27:48
  * @License: GPL 3.0
  */
 
@@ -17,20 +17,15 @@ namespace Cpp_Bus_Driver
     class Cst2xxse : public Iic_Guide
     {
     private:
-#define CST2xxSE_DEVICE_ID 0xAB
-
-#define MAX_TOUCH_FINGER_COUNT 6
-
-#define SINGLE_TOUCH_POINT_DATA_SIZE 5
+        static constexpr auto CST2xxSE_DEVICE_ID = 0xAB;
+        static constexpr auto MAX_TOUCH_FINGER_COUNT = 6;
+        static constexpr auto SINGLE_TOUCH_POINT_DATA_SIZE = 5;
 
         enum class Cmd
         {
             RO_DEVICE_ID = 0x06, // 读取后返回0xAB
-
             RO_TOUCH_POINT_INFO_START = 0x00,
-
             RO_GET_FINGER_COUNT = 0x05,
-
         };
 
     private:

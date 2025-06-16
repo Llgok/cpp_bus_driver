@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-05-30 09:03:25
+ * @LastEditTime: 2025-06-16 17:35:17
  * @License: GPL 3.0
  */
 
@@ -15,16 +15,16 @@ namespace Cpp_Bus_Driver
     class Esp_At : public Sdio_Guide
     {
     private:
-#define ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE 512
-#define TX_BUFFER_OFFSET 16 // 发送缓冲区偏移量
-#define TX_BUFFER_MASK 0xFFF
-#define RX_BUFFER_MASK 0xFFFFF
-#define RX_BUFFER_MAX 0x100000
-#define ESP_AT_TRANSMIT_TIMEOUT_COUNT 100
-#define ESP_AT_CONNECT_ERROR_COUNT 5
-#define ESP_AT_RECEIVE_TIMEOUT_COUNT 3
+        static constexpr auto ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE = 512;
+        static constexpr auto TX_BUFFER_OFFSET = 16; // 发送缓冲区偏移量
+        static constexpr auto TX_BUFFER_MASK = 0xFFF;
+        static constexpr auto RX_BUFFER_MASK = 0xFFFFF;
+        static constexpr auto RX_BUFFER_MAX = 0x100000;
+        static constexpr auto ESP_AT_TRANSMIT_TIMEOUT_COUNT = 100;
+        static constexpr auto ESP_AT_CONNECT_ERROR_COUNT = 5;
+        static constexpr auto ESP_AT_RECEIVE_TIMEOUT_COUNT = 3;
 
-#define ESP_AT_MAX_RECEIVE_SIZE (2 * 1024)
+        static constexpr auto ESP_AT_MAX_RECEIVE_SIZE = 2 * 1024;
 
         enum class Cmd
         {

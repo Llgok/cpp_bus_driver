@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2025-05-28 15:12:12
+ * @LastEditTime: 2025-06-16 17:43:12
  * @License: GPL 3.0
  */
 #pragma once
@@ -31,8 +31,11 @@
 #include "sdmmc_cmd.h"
 
 #define MCU_FRAMEWORK_ESPIDF
+
 #elif defined ARDUINO
+
 #define MCU_FRAMEWORK_ARDUINO
+
 #else
 #error "development framework for mcu not selected"
 #endif

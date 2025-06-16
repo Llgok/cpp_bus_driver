@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-04-26 17:07:26
+ * @LastEditTime: 2025-06-16 17:29:15
  * @License: GPL 3.0
  */
 
@@ -17,21 +17,21 @@ namespace Cpp_Bus_Driver
     class Hi8561_Touch : public Iic_Guide
     {
     private:
-#define MEMORY_ADDRESS_ERAM 0x20011000
-#define MAX_DSRAM_NUM 25
+        static constexpr auto MEMORY_ADDRESS_ERAM = 0x20011000;
+        static constexpr auto MAX_DSRAM_NUM = 25;
 
-#define DSRAM_SECTION_INFO_START_ADDRESS (MEMORY_ADDRESS_ERAM + 4)
-// 乘8bytes 是因为一共有两个数据，uint32_t数据（uint32_t地址（4 bytes）和uint32_t长度（4 bytes））
-#define ESRAM_NUM_START_ADDRESS (DSRAM_SECTION_INFO_START_ADDRESS + MAX_DSRAM_NUM * 8)
-#define ESRAM_SECTION_INFO_START_ADDRESS (ESRAM_NUM_START_ADDRESS + 4)
-#define MEMORY_ERAM_SIZE (4 * 1024)
+        static constexpr auto DSRAM_SECTION_INFO_START_ADDRESS = MEMORY_ADDRESS_ERAM + 4;
+        // 乘8bytes 是因为一共有两个数据，uint32_t数据（uint32_t地址（4 bytes）和uint32_t长度（4 bytes））
+        static constexpr auto ESRAM_NUM_START_ADDRESS = DSRAM_SECTION_INFO_START_ADDRESS + MAX_DSRAM_NUM * 8;
+        static constexpr auto ESRAM_SECTION_INFO_START_ADDRESS = ESRAM_NUM_START_ADDRESS + 4;
+        static constexpr auto MEMORY_ERAM_SIZE = 4 * 1024;
 
-#define MAX_TOUCH_FINGER_COUNT 10
+        static constexpr auto MAX_TOUCH_FINGER_COUNT = 10;
 
-#define MAX_TOUCH_DATA_SIZE 78
+        static constexpr auto MAX_TOUCH_DATA_SIZE = 78;
 
-#define TOUCH_POINT_ADDRESS_OFFSET 3
-#define SINGLE_TOUCH_POINT_DATA_SIZE 5
+        static constexpr auto TOUCH_POINT_ADDRESS_OFFSET = 3;
+        static constexpr auto SINGLE_TOUCH_POINT_DATA_SIZE = 5;
 
         // enum class Cmd
         // {
@@ -47,9 +47,9 @@ namespace Cpp_Bus_Driver
     public:
         struct Touch_Info
         {
-            uint16_t x = -1; // X 坐标
-            uint16_t y = -1; // Y 坐标
-            uint8_t pressure_value = -1;  // 触摸压力值
+            uint16_t x = -1;             // X 坐标
+            uint16_t y = -1;             // Y 坐标
+            uint8_t pressure_value = -1; // 触摸压力值
         };
 
         struct Touch_Point
@@ -99,7 +99,7 @@ namespace Cpp_Bus_Driver
          * @brief 获取边缘检测
          * @return  [true]：屏幕边缘检测触发 [false]：屏幕边缘检测未触发
          * @Date 2025-03-28 09:56:59
-         */        
+         */
         bool get_edge_touch(void);
     };
 }
