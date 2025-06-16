@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:42:57
- * @LastEditTime: 2025-06-16 17:53:39
+ * @LastEditTime: 2025-06-16 18:03:06
  * @License: GPL 3.0
  */
 
@@ -79,7 +79,7 @@ namespace Cpp_Bus_Driver
             uint8_t dac_osr;        // dac过采样率
         };
 
-        static const Clock_Coeff _clock_coeff_list[];
+        static constexpr Clock_Coeff _clock_coeff_list[];
 
         int32_t _rst;
 

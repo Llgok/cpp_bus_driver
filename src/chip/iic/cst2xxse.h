@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 17:27:48
+ * @LastEditTime: 2025-06-16 18:02:07
  * @License: GPL 3.0
  */
 
@@ -29,7 +29,6 @@ namespace Cpp_Bus_Driver
         };
 
     private:
-        // static const uint8_t _init_list[];
 
         int32_t _rst;
 

@@ -82,7 +82,7 @@ namespace Cpp_Bus_Driver
             WO_DESIGN_CAPACITY = 0x929F,
         };
 
-        // static const uint8_t Init_List[];
+        // static constexpr uint8_t Init_List[];
 
         int32_t _rst;
 

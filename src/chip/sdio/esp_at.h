@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 17:53:50
+ * @LastEditTime: 2025-06-16 18:03:21
  * @License: GPL 3.0
  */
 
@@ -64,7 +64,7 @@ namespace Cpp_Bus_Driver
             uint32_t receive_total_length_index = 0;
         };
 
-        static const char *_time_month_list[];
+        static constexpr char *_time_month_list[];
 
     public:
         struct Real_Time

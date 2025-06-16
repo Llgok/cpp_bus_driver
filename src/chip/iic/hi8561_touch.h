@@ -39,7 +39,7 @@ namespace Cpp_Bus_Driver
         //     RO_DEVICE_ID = 0x3C,
         // };
 
-        // static const uint8_t Init_List[];
+        // static constexpr uint8_t Init_List[];
 
         int32_t _rst;
         uint32_t _touch_info_start_address;

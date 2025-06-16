@@ -2,14 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-06-12 10:49:35
+ * @LastEditTime: 2025-06-16 18:03:26
  * @License: GPL 3.0
  */
 #include "esp_at.h"
 
 namespace Cpp_Bus_Driver
 {
-    const char *Esp_At::_time_month_list[] =
+    constexpr char *Esp_At::_time_month_list[] =
         {
             "Jan",
             "Feb",

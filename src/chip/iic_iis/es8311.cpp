@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-06-12 10:49:26
+ * @LastEditTime: 2025-06-16 18:03:11
  * @License: GPL 3.0
  */
 #include "es8311.h"
@@ -10,7 +10,7 @@
 namespace Cpp_Bus_Driver
 {
     // 时钟分配系数列表
-    const Es8311::Clock_Coeff Es8311::_clock_coeff_list[] = {
+    constexpr Es8311::Clock_Coeff Es8311::_clock_coeff_list[] = {
 
         // 按照如下顺序查找系数并填充Clock_Coeff结构体
         // uint32_t mclk_multiple;     // mclk倍数

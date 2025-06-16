@@ -2,14 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-05-08 15:42:12
+ * @LastEditTime: 2025-06-16 18:01:42
  * @License: GPL 3.0
  */
 #include "Bq27220xxxx.h"
 
 namespace Cpp_Bus_Driver
 {
-    // const uint8_t Bq27220xxxx::Init_List[] =
+    // constexpr uint8_t Bq27220xxxx::Init_List[] =
     //     {
     //         static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8),
     //         static_cast<uint8_t>(Cmd::RW_CLKOUT_CONTROL),

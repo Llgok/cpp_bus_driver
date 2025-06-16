@@ -2,14 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-06-12 10:49:04
+ * @LastEditTime: 2025-06-16 18:02:35
  * @License: GPL 3.0
  */
 #include "Hi8561_Touch.h"
 
 namespace Cpp_Bus_Driver
 {
-    // const uint8_t Hi8561_Touch::Init_List[] =
+    // constexpr uint8_t Hi8561_Touch::Init_List[] =
     //     {
     //         static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8),
     //         static_cast<uint8_t>(Cmd::RW_CLKOUT_CONTROL),

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 17:56:22
+ * @LastEditTime: 2025-06-16 18:03:32
  * @License: GPL 3.0
  */
 
@@ -77,7 +77,7 @@ namespace Cpp_Bus_Driver
             RW_OCP_CONFIGURATION = 0x08E7,
         };
 
-        // static const uint16_t Init_List[];
+        // static constexpr uint16_t Init_List[];
 
         Chip_Type _chip_type;
 

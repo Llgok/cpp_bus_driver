@@ -2,14 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-06-12 10:50:01
+ * @LastEditTime: 2025-06-16 18:03:39
  * @License: GPL 3.0
  */
 #include "Sx126x.h"
 
 namespace Cpp_Bus_Driver
 {
-    // const uint16_t Sx126x::Init_List[] =
+    // constexpr uint16_t Sx126x::Init_List[] =
     //     {
     //         static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R16_D8),
     //         static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER),

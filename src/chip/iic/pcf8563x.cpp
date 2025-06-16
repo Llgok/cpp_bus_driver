@@ -2,14 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2025-06-12 10:49:10
+ * @LastEditTime: 2025-06-16 18:02:55
  * @License: GPL 3.0
  */
 #include "pcf8563x.h"
 
 namespace Cpp_Bus_Driver
 {
-    const uint8_t Pcf8563x::_init_list[] =
+    constexpr uint8_t Pcf8563x::_init_list[] =
         {
             static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8),
             static_cast<uint8_t>(Cmd::RW_CLKOUT_CONTROL),
