@@ -2,20 +2,13 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2025-06-16 18:02:55
+ * @LastEditTime: 2025-06-16 18:10:50
  * @License: GPL 3.0
  */
 #include "pcf8563x.h"
 
 namespace Cpp_Bus_Driver
 {
-    constexpr uint8_t Pcf8563x::_init_list[] =
-        {
-            static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8),
-            static_cast<uint8_t>(Cmd::RW_CLKOUT_CONTROL),
-            0B00000000,
-    };
-
     bool Pcf8563x::begin(int32_t freq_hz)
     {
         if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
