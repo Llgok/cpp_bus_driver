@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-04-09 10:35:01
+ * @LastEditTime: 2025-06-18 14:44:09
  * @License: GPL 3.0
  */
 #include "hardware_iic_1.h"
@@ -45,12 +45,12 @@ namespace Cpp_Bus_Driver
             assert = i2c_new_master_bus(&bus_config, &_iic_bus_handle);
             if (assert != ESP_OK)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_new_master_bus fail (error code: 0x%02X)\n", assert);
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_new_master_bus fail (error code: 0x%04X)\n", assert);
                 return false;
                 // assert = i2c_master_get_bus_handle(_port, &_iic_bus);
                 // if (assert != ESP_OK)
                 // {
-                //     assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_get_bus_handle fail (error code: 0x%02X)\n", assert);
+                //     assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_get_bus_handle fail (error code: 0x%04X)\n", assert);
                 //     return false;
                 // }
             }
@@ -79,7 +79,7 @@ namespace Cpp_Bus_Driver
             assert = i2c_master_bus_add_device(_iic_bus_handle, &device_config, &_iic_device_handle);
             if (assert != ESP_OK)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_bus_add_device fail (error code: 0x%02X)\n", assert);
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_bus_add_device fail (error code: 0x%04X)\n", assert);
                 return false;
             }
         }
@@ -95,7 +95,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = i2c_master_receive(_iic_device_handle, data, length, DEFAULT_CPP_BUS_DRIVER_IIC_WAIT_TIMEOUT_MS);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_receive fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_receive fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -106,7 +106,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = i2c_master_transmit(_iic_device_handle, data, length, DEFAULT_CPP_BUS_DRIVER_IIC_WAIT_TIMEOUT_MS);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_transmit fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_transmit fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -117,7 +117,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = i2c_master_transmit_receive(_iic_device_handle, write_data, write_length, read_data, read_length, DEFAULT_CPP_BUS_DRIVER_IIC_WAIT_TIMEOUT_MS);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_transmit_receive fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_transmit_receive fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -129,7 +129,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = i2c_master_probe(_iic_bus_handle, address, DEFAULT_CPP_BUS_DRIVER_IIC_WAIT_TIMEOUT_MS);
         if (assert != ESP_OK)
         {
-            // assert_log(Log_Level::INFO, __FILE__, __LINE__, "i2c_master_probe fail (error code: 0x%02X)\n", assert);
+            // assert_log(Log_Level::INFO, __FILE__, __LINE__, "i2c_master_probe fail (error code: 0x%04X)\n", assert);
             return false;
         }
 

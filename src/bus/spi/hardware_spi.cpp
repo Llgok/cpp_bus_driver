@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-05-28 17:00:15
+ * @LastEditTime: 2025-06-18 14:48:38
  * @License: GPL 3.0
  */
 #include "hardware_spi.h"
@@ -45,7 +45,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = spi_bus_initialize(_port, &bus_config, SPI_DMA_CH_AUTO);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_initialize fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_initialize fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -71,7 +71,7 @@ namespace Cpp_Bus_Driver
         assert = spi_bus_add_device(_port, &device_config, &_spi_device);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_add_device fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_add_device fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -98,7 +98,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -122,7 +122,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -146,7 +146,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
