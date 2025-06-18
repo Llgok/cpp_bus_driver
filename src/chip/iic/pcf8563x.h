@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 18:02:47
+ * @LastEditTime: 2025-06-16 18:09:38
  * @License: GPL 3.0
  */
 
@@ -52,7 +52,12 @@ namespace Cpp_Bus_Driver
         };
 
     private:
-        static constexpr uint8_t _init_list[];
+        static constexpr const uint8_t _init_list[] =
+            {
+                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8),
+                static_cast<uint8_t>(Cmd::RW_CLKOUT_CONTROL),
+                0B00000000,
+            };
 
         int32_t _rst;
 

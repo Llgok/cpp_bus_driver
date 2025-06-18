@@ -2,29 +2,13 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-06-16 18:03:26
+ * @LastEditTime: 2025-06-16 18:11:28
  * @License: GPL 3.0
  */
 #include "esp_at.h"
 
 namespace Cpp_Bus_Driver
 {
-    constexpr char *Esp_At::_time_month_list[] =
-        {
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-    };
-
     bool Esp_At::begin(int32_t freq_hz)
     {
         _connect.status = true;
