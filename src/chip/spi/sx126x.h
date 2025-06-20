@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 18:03:32
+ * @LastEditTime: 2025-06-20 17:49:05
  * @License: GPL 3.0
  */
 
@@ -714,7 +714,7 @@ namespace Cpp_Bus_Driver
          * @brief 开始LORA模式传输
          * @param chip_mode 使用 Chip_Mode:: 配置，芯片的模式
          * @param fallback_mode 从RX或TX模式退出返回的模式设定
-         * 当设置为 [0x000000] 时，禁用超时，设备将保持在RX模式下，直到接收发生，并且在完成后设备将返回到set_rx_tx_fallback_mode函数设置的模式
+         * 当设置为 [0x000000] 时，禁用超时，设备将保持在TX或RX模式下，直到TX或RX发生，并且在完成后设备将返回到set_rx_tx_fallback_mode函数设置的模式
          * 当设置为 [0xFFFFFF] 时，设备将一直处于所设置的模式，直到主机发送命令更改操作模式。
          * 该设备可以接收到多个数据包。每次收到一个数据包，就会完成一个数据包 指示给主机，设备将自动搜索一个新的数据包
          * @param time_out_us 超时时间 = 设置的超时时间 * 15.625μs，设置的超时时间最大值为 16777215 （0xFFFFFF）
@@ -1050,7 +1050,7 @@ namespace Cpp_Bus_Driver
          * @param chip_mode 使用 Chip_Mode:: 配置，芯片的模式
          * @param fallback_mode 从RX或TX模式退出返回的模式设定
          * @param time_out_us 超时时间 = 设置的超时时间 * 15.625μs，设置的超时时间最大值为 16777215 （0xFFFFFF）
-         * 当设置为 [0x000000] 时，禁用超时，设备将保持在RX模式下，直到接收发生，并且在完成后设备将返回到set_rx_tx_fallback_mode函数设置的模式
+         * 当设置为 [0x000000] 时，禁用超时，设备将保持在TX或RX模式下，直到TX或RX发生，并且在完成后设备将返回到set_rx_tx_fallback_mode函数设置的模式
          * 当设置为 [0xFFFFFF] 时，设备将一直处于所设置的模式，直到主机发送命令更改操作模式
          * 该设备可以接收到多个数据包。每次收到一个数据包，就会完成一个数据包 指示给主机，设备将自动搜索一个新的数据包
          * @param preamble_length 前导长度，表示无线电将发送的LoRa符号数量
