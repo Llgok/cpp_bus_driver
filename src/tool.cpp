@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2025-05-15 09:41:28
+ * @LastEditTime: 2025-06-18 14:49:15
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -215,7 +215,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = gpio_config(&config);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_config fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_config fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -227,7 +227,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = gpio_set_level(static_cast<gpio_num_t>(pin), value);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_config fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_config fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -288,28 +288,28 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = gpio_config(&config);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_config fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_config fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
         assert = gpio_install_isr_service(0);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_install_isr_service fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_install_isr_service fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
         assert = gpio_isr_handler_add(static_cast<gpio_num_t>(pin), interrupt, (void *)pin);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_isr_handler_add fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_isr_handler_add fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
         assert = gpio_intr_enable(static_cast<gpio_num_t>(pin));
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_intr_enable fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_intr_enable fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -321,28 +321,28 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = gpio_set_intr_type(static_cast<gpio_num_t>(pin), GPIO_INTR_DISABLE);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_set_intr_type fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_set_intr_type fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
         assert = gpio_isr_handler_remove(static_cast<gpio_num_t>(pin));
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_isr_handler_remove fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_isr_handler_remove fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
         assert = gpio_intr_disable(static_cast<gpio_num_t>(pin));
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_intr_disable fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_intr_disable fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
         assert = gpio_reset_pin(static_cast<gpio_num_t>(pin));
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_reset_pin fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_reset_pin fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -376,7 +376,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = ledc_timer_config(&buffer_ledc_timer_config);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_timer_config fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_timer_config fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -399,7 +399,7 @@ namespace Cpp_Bus_Driver
         assert = ledc_channel_config(&buffer_ledc_channel_config);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_channel_config fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_channel_config fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -424,14 +424,14 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = ledc_set_duty(_pwm.speed_mode, _pwm.channel, (static_cast<float>(duty) / 100.0) * (1 << static_cast<uint8_t>(_pwm.duty_resolution)));
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_set_duty fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_set_duty fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
         assert = ledc_update_duty(_pwm.speed_mode, _pwm.channel);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_update_duty fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_update_duty fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -445,7 +445,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = ledc_set_freq(_pwm.speed_mode, _pwm.timer_num, freq_hz);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_set_duty fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_set_duty fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -464,7 +464,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = ledc_fade_func_install(false);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_fade_func_install fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_fade_func_install fail (error code: 0x%04X)\n", assert);
             // return false;
         }
 
@@ -472,14 +472,14 @@ namespace Cpp_Bus_Driver
                                          (static_cast<float>(target_duty) / 100.0) * (1 << static_cast<uint8_t>(_pwm.duty_resolution)), time_ms);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_set_fade fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_set_fade fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
         assert = ledc_fade_start(_pwm.speed_mode, _pwm.channel, ledc_fade_mode_t::LEDC_FADE_WAIT_DONE);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_fade_start fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_fade_start fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -493,7 +493,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = ledc_stop(_pwm.speed_mode, _pwm.channel, idle_level);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_stop fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "ledc_stop fail (error code: 0x%04X)\n", assert);
             return false;
         }
 

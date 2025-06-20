@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-05-28 17:00:15
+ * @LastEditTime: 2025-06-18 14:52:58
  * @License: GPL 3.0
  */
 #include "hardware_spi.h"
@@ -16,12 +16,18 @@ namespace Cpp_Bus_Driver
             freq_hz = DEFAULT_CPP_BUS_DRIVER_SPI_FREQ_HZ;
         }
 
+        if (_flags == DEFAULT_CPP_BUS_DRIVER_VALUE)
+        {
+            _flags = static_cast<uint32_t>(NULL);
+        }
+
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _mosi: %d\n", _mosi);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _sclk: %d\n", _sclk);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _miso: %d\n", _miso);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config cs: %d\n", cs);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _port: %d\n", _port);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _mode: %d\n", _mode);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _flags: %d\n", _flags);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config freq_hz: %d hz\n", freq_hz);
 
         const spi_bus_config_t bus_config =
@@ -45,7 +51,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = spi_bus_initialize(_port, &bus_config, SPI_DMA_CH_AUTO);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_initialize fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_initialize fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -62,8 +68,7 @@ namespace Cpp_Bus_Driver
                 .clock_speed_hz = freq_hz,
                 .input_delay_ns = 0, // 无输入延迟
                 .spics_io_num = cs,
-                .flags = static_cast<uint32_t>(NULL),
-                // .flags = SPI_DEVICE_TXBIT_LSBFIRST, // 启用LSB优先发送
+                .flags = _flags, // 优先标志，可以填入SPI_DEVICE_BIT_LSBFIRST等信息
                 .queue_size = 1,
                 .pre_cb = NULL,  // 无传输前回调
                 .post_cb = NULL, // 无传输后回调
@@ -71,7 +76,7 @@ namespace Cpp_Bus_Driver
         assert = spi_bus_add_device(_port, &device_config, &_spi_device);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_add_device fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_add_device fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -98,7 +103,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -122,7 +127,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -146,7 +151,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: 0x%04X)\n", assert);
             return false;
         }
 

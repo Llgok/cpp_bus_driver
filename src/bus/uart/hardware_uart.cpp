@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:26:23
- * @LastEditTime: 2025-05-28 15:43:06
+ * @LastEditTime: 2025-06-18 14:48:47
  * @License: GPL 3.0
  */
 #include "hardware_uart.h"
@@ -41,21 +41,21 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = uart_driver_install(static_cast<uart_port_t>(_port), UART_RX_MAX_SIZE, 0, 0, NULL, 0);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_driver_install fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_driver_install fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
         assert = uart_param_config(static_cast<uart_port_t>(_port), &uart_config);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_param_config fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_param_config fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
         assert = uart_set_pin(static_cast<uart_port_t>(_port), _tx, _rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_set_pin fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_set_pin fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -95,7 +95,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = uart_get_buffered_data_len(static_cast<uart_port_t>(_port), &buffer);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_get_buffered_data_len fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_get_buffered_data_len fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -107,7 +107,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = uart_flush_input(static_cast<uart_port_t>(_port));
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_flush_input fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_flush_input fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -119,7 +119,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = uart_set_baudrate(static_cast<uart_port_t>(_port), baud_rate);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_set_baudrate fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_set_baudrate fail (error code: 0x%04X)\n", assert);
             return false;
         }
 
@@ -133,7 +133,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = uart_get_baudrate(static_cast<uart_port_t>(_port), &buffer);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_get_baudrate fail (error code: 0x%02X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_get_baudrate fail (error code: 0x%04X)\n", assert);
             return -1;
         }
 
