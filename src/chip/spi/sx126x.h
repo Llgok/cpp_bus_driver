@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-20 17:49:05
+ * @LastEditTime: 2025-06-20 18:10:25
  * @License: GPL 3.0
  */
 
@@ -555,16 +555,16 @@ namespace Cpp_Bus_Driver
         // LORA带宽
         enum class Lora_Bw
         {
-            BW_7810Hz = 0x00,
-            BW_15630Hz,
-            BW_31250Hz,
-            BW_62500Hz,
-            BW_125000Hz,
-            BW_250000Hz,
-            BW_500000Hz,
-            BW_10420Hz = 0x08,
-            BW_20830Hz,
-            BW_41670Hz,
+            BW_7810HZ = 0x00,
+            BW_15630HZ,
+            BW_31250HZ,
+            BW_62500HZ,
+            BW_125000HZ,
+            BW_250000HZ,
+            BW_500000HZ,
+            BW_10420HZ = 0x08,
+            BW_20830HZ,
+            BW_41670HZ,
         };
 
         // 纠错编码级别
@@ -829,27 +829,27 @@ namespace Cpp_Bus_Driver
         // GFSK带宽
         enum class Gfsk_Bw
         {
-            BW_467000Hz = 0x09,
-            BW_234300Hz,
-            BW_117300Hz,
-            BW_58600Hz,
-            BW_29300Hz,
-            BW_14600Hz,
-            BW_7300Hz,
-            BW_373600Hz = 0x11,
-            BW_187200Hz,
-            BW_93800Hz,
-            BW_46900Hz,
-            BW_23400Hz,
-            BW_11700Hz,
-            BW_5800Hz,
-            BW_312000Hz = 0x19,
-            BW_156200Hz,
-            BW_78200Hz,
-            BW_39000Hz,
-            BW_19500Hz,
-            BW_9700Hz,
-            BW_4800Hz,
+            BW_467000HZ = 0x09,
+            BW_234300HZ,
+            BW_117300HZ,
+            BW_58600HZ,
+            BW_29300HZ,
+            BW_14600HZ,
+            BW_7300HZ,
+            BW_373600HZ = 0x11,
+            BW_187200HZ,
+            BW_93800HZ,
+            BW_46900HZ,
+            BW_23400HZ,
+            BW_11700HZ,
+            BW_5800HZ,
+            BW_312000HZ = 0x19,
+            BW_156200HZ,
+            BW_78200HZ,
+            BW_39000HZ,
+            BW_19500HZ,
+            BW_9700HZ,
+            BW_4800HZ,
         };
 
         // 检测接收到的信号中的前导码
@@ -928,7 +928,7 @@ namespace Cpp_Bus_Driver
             struct
             {
                 uint32_t bit_rate = 100.0;
-                Gfsk_Bw band_width = Gfsk_Bw::BW_467000Hz;
+                Gfsk_Bw band_width = Gfsk_Bw::BW_467000HZ;
                 float freq_deviation = 10.0;
 
                 struct
@@ -959,7 +959,7 @@ namespace Cpp_Bus_Driver
             struct
             {
                 Sf spreading_factor = Sf::SF9;
-                Lora_Bw band_width = Lora_Bw::BW_125000Hz;
+                Lora_Bw band_width = Lora_Bw::BW_125000HZ;
                 Ldro low_data_rate_optimize = Ldro::LDRO_OFF;
                 Cr cr = Cr::CR_4_7;
                 uint16_t sync_word = 0x1424;
