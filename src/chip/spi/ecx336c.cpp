@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-06-20 13:46:07
+ * @LastEditTime: 2025-06-23 18:02:57
  * @License: GPL 3.0
  */
 #include "ecx336c.h"
@@ -38,12 +38,12 @@ namespace Cpp_Bus_Driver
         // auto buffer = get_device_id();
         // if ((buffer == 0x00) || (buffer == 0xFF))
         // {
-        //     assert_log(Log_Level::INFO, __FILE__, __LINE__, "get  ecx336c id fail (error id: 0x%02X)\n", buffer);
+        //     assert_log(Log_Level::INFO, __FILE__, __LINE__, "get  ecx336c id fail (error id: %#X)\n", buffer);
         //     return false;
         // }
         // else
         // {
-        //     assert_log(Log_Level::INFO, __FILE__, __LINE__, "get  ecx336c id: 0x%02X\n", buffer);
+        //     assert_log(Log_Level::INFO, __FILE__, __LINE__, "get  ecx336c id: %#X\n", buffer);
         // }
 
         return true;
