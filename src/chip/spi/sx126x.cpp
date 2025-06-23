@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-06-16 18:03:39
+ * @LastEditTime: 2025-06-20 18:11:47
  * @License: GPL 3.0
  */
 #include "Sx126x.h"
@@ -902,34 +902,34 @@ namespace Cpp_Bus_Driver
         float buffer_time = 0;
         switch (bw)
         {
-        case Lora_Bw::BW_7810Hz:
+        case Lora_Bw::BW_7810HZ:
             buffer_time = (static_cast<float>((static_cast<uint32_t>(1) << static_cast<uint8_t>(sf))) / 7810.0) * 1000.0;
             break;
-        case Lora_Bw::BW_15630Hz:
+        case Lora_Bw::BW_15630HZ:
             buffer_time = (static_cast<float>((static_cast<uint32_t>(1) << static_cast<uint8_t>(sf))) / 15630.0) * 1000.0;
             break;
-        case Lora_Bw::BW_31250Hz:
+        case Lora_Bw::BW_31250HZ:
             buffer_time = (static_cast<float>((static_cast<uint32_t>(1) << static_cast<uint8_t>(sf))) / 31250.0) * 1000.0;
             break;
-        case Lora_Bw::BW_62500Hz:
+        case Lora_Bw::BW_62500HZ:
             buffer_time = (static_cast<float>((static_cast<uint32_t>(1) << static_cast<uint8_t>(sf))) / 62500.0) * 1000.0;
             break;
-        case Lora_Bw::BW_125000Hz:
+        case Lora_Bw::BW_125000HZ:
             buffer_time = (static_cast<float>((static_cast<uint32_t>(1) << static_cast<uint8_t>(sf))) / 125000.0) * 1000.0;
             break;
-        case Lora_Bw::BW_250000Hz:
+        case Lora_Bw::BW_250000HZ:
             buffer_time = (static_cast<float>((static_cast<uint32_t>(1) << static_cast<uint8_t>(sf))) / 250000.0) * 1000.0;
             break;
-        case Lora_Bw::BW_500000Hz:
+        case Lora_Bw::BW_500000HZ:
             buffer_time = (static_cast<float>((static_cast<uint32_t>(1) << static_cast<uint8_t>(sf))) / 500000.0) * 1000.0;
             break;
-        case Lora_Bw::BW_10420Hz:
+        case Lora_Bw::BW_10420HZ:
             buffer_time = (static_cast<float>((static_cast<uint32_t>(1) << static_cast<uint8_t>(sf))) / 10420.0) * 1000.0;
             break;
-        case Lora_Bw::BW_20830Hz:
+        case Lora_Bw::BW_20830HZ:
             buffer_time = (static_cast<float>((static_cast<uint32_t>(1) << static_cast<uint8_t>(sf))) / 20830.0) * 1000.0;
             break;
-        case Lora_Bw::BW_41670Hz:
+        case Lora_Bw::BW_41670HZ:
             buffer_time = (static_cast<float>((static_cast<uint32_t>(1) << static_cast<uint8_t>(sf))) / 41670.0) * 1000.0;
             break;
 
@@ -1390,7 +1390,7 @@ namespace Cpp_Bus_Driver
 
         if (_param.packet_type == Packet_Type::LORA)
         {
-            if (_param.lora.band_width == Lora_Bw::BW_500000Hz)
+            if (_param.lora.band_width == Lora_Bw::BW_500000HZ)
             {
                 fix_bw_500khz_sensitivity(true);
             }
