@@ -32,12 +32,12 @@ namespace Cpp_Bus_Driver
         uint8_t buffer = get_device_id();
         if (buffer != static_cast<uint8_t>(CST2xxSE_DEVICE_ID))
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get cst2xxse id fail (error id: 0x%02X)\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get cst2xxse id fail (error id: %#X)\n", buffer);
             return false;
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get cst2xxse id: 0x%02X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get cst2xxse id: %#X\n", buffer);
         }
 
         return true;

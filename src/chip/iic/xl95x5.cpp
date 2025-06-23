@@ -24,12 +24,12 @@ namespace Cpp_Bus_Driver
         uint8_t buffer = get_device_id();
         if (buffer == static_cast<uint8_t>(DEFAULT_CPP_BUS_DRIVER_VALUE))
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get xl95x5 id fail (error id: 0x%02X)\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get xl95x5 id fail (error id: %#X)\n", buffer);
             return false;
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get xl95x5 id: 0x%02X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get xl95x5 id: %#X\n", buffer);
         }
 
         return true;

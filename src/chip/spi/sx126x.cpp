@@ -45,12 +45,12 @@ namespace Cpp_Bus_Driver
         auto buffer = get_device_id();
         if ((buffer == 0x00) || (buffer == 0xFF))
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sx126x id fail (error id: 0x%02X)\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sx126x id fail (error id: %#X)\n", buffer);
             return false;
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sx126x id: 0x%02X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sx126x id: %#X\n", buffer);
         }
 
         if (fix_tx_clamp(true) == false)
@@ -178,7 +178,7 @@ namespace Cpp_Bus_Driver
             break;
 
         default:
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown command (error code: 0x%02X)\n", buffer);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown command (error code: %#X)\n", buffer);
             return Cmd_Status::FALSE;
         }
 
@@ -209,7 +209,7 @@ namespace Cpp_Bus_Driver
             break;
 
         default:
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown command (error code: 0x%02X)\n", buffer);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown command (error code: %#X)\n", buffer);
             return Chip_Mode_Status::FALSE;
         }
 
@@ -284,7 +284,7 @@ namespace Cpp_Bus_Driver
 
         // if (assert_cmd_status(buffer[0]) == false)
         // {
-        //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", buffer[0]);
+        //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
         //     return false;
         // }
 
@@ -437,7 +437,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
             return Packet_Type::FALSE;
         }
 
@@ -451,7 +451,7 @@ namespace Cpp_Bus_Driver
             break;
 
         default:
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown packet type (error code: 0x%02X)\n", buffer[1]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown packet type (error code: %#X)\n", buffer[1]);
             return Packet_Type::FALSE;
         }
 
@@ -508,7 +508,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
             return -1;
         }
 
@@ -592,7 +592,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
             return -1;
         }
 
@@ -605,7 +605,7 @@ namespace Cpp_Bus_Driver
         buffer_cs = assert_cmd_status(buffer[2]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", buffer[2]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[2]);
             return -1;
         }
 
@@ -626,7 +626,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
             return false;
         }
 
@@ -718,7 +718,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
             return false;
         }
 
@@ -890,7 +890,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status buffer_cs = assert_cmd_status(get_status());
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", static_cast<uint8_t>(buffer_cs));
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", static_cast<uint8_t>(buffer_cs));
             return false;
         }
 
@@ -1079,7 +1079,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
             return -1;
         }
 
@@ -1100,7 +1100,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
             return false;
         }
 
@@ -1128,7 +1128,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
             return false;
         }
 
@@ -1219,7 +1219,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
             return false;
         }
 
@@ -1244,7 +1244,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
             return false;
         }
 
@@ -1333,12 +1333,12 @@ namespace Cpp_Bus_Driver
             {
                 if (i == 1)
                 {
-                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "offset data write fail (error code: 0x%02X)\n", assert[i]);
+                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "offset data write fail (error code: %#X)\n", assert[i]);
                     return false;
                 }
                 else
                 {
-                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "data[%d] write fail (error code: 0x%02X)\n", i - 2, assert[i]);
+                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "data[%d] write fail (error code: %#X)\n", i - 2, assert[i]);
                     return false;
                 }
             }
@@ -1592,7 +1592,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status buffer_cs = assert_cmd_status(get_status());
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", static_cast<uint8_t>(buffer_cs));
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", static_cast<uint8_t>(buffer_cs));
             return false;
         }
 
@@ -1758,7 +1758,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: 0x%02X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
             return -1;
         }
 

@@ -85,28 +85,28 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = sdmmc_host_init();
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_host_init fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_host_init fail (error code: %#X)\n", assert);
             return false;
         }
 
         assert = sdmmc_host_deinit();
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_host_deinit fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_host_deinit fail (error code: %#X)\n", assert);
             return false;
         }
 
         assert = sdmmc_host_init();
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_host_init fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_host_init fail (error code: %#X)\n", assert);
             return false;
         }
 
         assert = sdmmc_host_init_slot(static_cast<int>(_port), &sdmmc_slot_config);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_host_init_slot fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_host_init_slot fail (error code: %#X)\n", assert);
             // return false;
         }
 
@@ -133,7 +133,7 @@ namespace Cpp_Bus_Driver
             timeout_count++;
             if (timeout_count > SDIO_BUS_INIT_TIMEOUT_COUNT)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_card_init fail (error code: 0x%04X)\n", assert);
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_card_init fail (error code: %#X)\n", assert);
                 return false;
             }
             delay_ms(100);
@@ -142,7 +142,7 @@ namespace Cpp_Bus_Driver
         assert = sdmmc_io_enable_int(_sdio_handle.get());
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_enable_int fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_enable_int fail (error code: %#X)\n", assert);
             // return false;
         }
 
@@ -163,7 +163,7 @@ namespace Cpp_Bus_Driver
         }
         else if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_wait_int fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_wait_int fail (error code: %#X)\n", assert);
             return false;
         }
 
@@ -175,7 +175,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = sdmmc_io_read_bytes(_sdio_handle.get(), function, write_c32, data, byte);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_read_bytes fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_read_bytes fail (error code: %#X)\n", assert);
             return false;
         }
 
@@ -187,7 +187,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = sdmmc_io_read_byte(_sdio_handle.get(), function, write_c32, data);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_read_byte fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_read_byte fail (error code: %#X)\n", assert);
             return false;
         }
 
@@ -199,7 +199,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = sdmmc_io_read_blocks(_sdio_handle.get(), function, write_c32, data, byte);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_read_blocks fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_read_blocks fail (error code: %#X)\n", assert);
             return false;
         }
 
@@ -211,7 +211,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = sdmmc_io_write_bytes(_sdio_handle.get(), function, write_c32, data, byte);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_write_bytes fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_write_bytes fail (error code: %#X)\n", assert);
             return false;
         }
 
@@ -223,7 +223,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = sdmmc_io_write_byte(_sdio_handle.get(), function, write_c32, data, read_d8_verify);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_write_byte fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_write_byte fail (error code: %#X)\n", assert);
             return false;
         }
 
@@ -235,7 +235,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = sdmmc_io_write_blocks(_sdio_handle.get(), function, write_c32, data, byte);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_write_blocks fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_write_blocks fail (error code: %#X)\n", assert);
             return false;
         }
 

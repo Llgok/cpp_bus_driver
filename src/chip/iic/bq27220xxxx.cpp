@@ -31,12 +31,12 @@ namespace Cpp_Bus_Driver
         uint16_t buffer = get_device_id();
         if (buffer != static_cast<uint16_t>(BQ27220YZFR_DEVICE_ID))
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get bq27220xxxx id fail (error id: 0x%02X)\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get bq27220xxxx id fail (error id: %#X)\n", buffer);
             return false;
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get bq27220xxxx id: 0x%02X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get bq27220xxxx id: %#X\n", buffer);
         }
 
         // if (iic_init_list(Init_List, sizeof(Init_List)) == false)
@@ -350,7 +350,7 @@ namespace Cpp_Bus_Driver
 
         // for (uint8_t i = 0; i < 2; i++)
         // {
-        //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer[%d]: 0x%02X\n", i, buffer[i]);
+        //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer[%d]: %#X\n", i, buffer[i]);
         // }
 
         switch (mode)
@@ -429,7 +429,7 @@ namespace Cpp_Bus_Driver
 
         // for (uint8_t i = 0; i < 2; i++)
         // {
-        //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "battery_status[%d]: 0x%02X\n", i, buffer[i]);
+        //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "battery_status[%d]: %#X\n", i, buffer[i]);
         // }
 
         return true;
@@ -457,7 +457,7 @@ namespace Cpp_Bus_Driver
 
         // for (uint8_t i = 0; i < 2; i++)
         // {
-        //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "operation_status[%d]: 0x%02X\n", i, buffer[i]);
+        //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "operation_status[%d]: %#X\n", i, buffer[i]);
         // }
 
         return true;
@@ -616,11 +616,11 @@ namespace Cpp_Bus_Driver
         }
         delay_ms(10); // 必须有延时
 
-        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_old_chksum: 0x%02X\n", buffer_old_chksum);
-        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_data_len: 0x%02X\n", buffer_data_len);
-        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_old_dc_msb: 0x%02X\n", buffer_old_dc_msb);
-        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_old_dc_lsb: 0x%02X\n", buffer_old_dc_lsb);
-        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_new_chksum: 0x%02X\n", buffer_new_chksum);
+        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_old_chksum: %#X\n", buffer_old_chksum);
+        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_data_len: %#X\n", buffer_data_len);
+        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_old_dc_msb: %#X\n", buffer_old_dc_msb);
+        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_old_dc_lsb: %#X\n", buffer_old_dc_lsb);
+        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_new_chksum: %#X\n", buffer_new_chksum);
 
         if (exit_cfg_update() == false)
         {
@@ -866,7 +866,7 @@ namespace Cpp_Bus_Driver
 
         // for (uint8_t i = 0; i < 2; i++)
         // {
-        //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer[%d]: 0x%02X\n", i, buffer[i]);
+        //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer[%d]: %#X\n", i, buffer[i]);
         // }
 
         if (_bus->write(static_cast<uint8_t>(Cmd::RW_MAC_DATA_START), threshold) == false)

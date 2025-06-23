@@ -311,13 +311,13 @@ namespace Cpp_Bus_Driver
         //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
         //     return false;
         // }
-        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read SD_IO_CCCR_FN_ENABLE: 0x%02X\n", buffer);
+        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read SD_IO_CCCR_FN_ENABLE: %#X\n", buffer);
         // if (_bus->read(0, static_cast<uint32_t>(Cmd::SD_IO_CCCR_FN_READY), &buffer) == false)
         // {
         //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
         //     return false;
         // }
-        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read SD_IO_CCCR_FN_READY: 0x%02X\n", buffer);
+        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read SD_IO_CCCR_FN_READY: %#X\n", buffer);
 
         // // get interrupt status
         // if (_bus->read(0, static_cast<uint32_t>(Cmd::SD_IO_CCCR_INT_ENABLE), &buffer) == false)
@@ -325,40 +325,40 @@ namespace Cpp_Bus_Driver
         //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
         //     return false;
         // }
-        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read SD_IO_CCCR_INT_ENABLE: 0x%02X\n", buffer);
+        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read SD_IO_CCCR_INT_ENABLE: %#X\n", buffer);
 
         // if (_bus->read(0, static_cast<uint32_t>(Cmd::SD_IO_CCCR_BLKSIZEL), &buffer) == false)
         // {
         //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
         //     return false;
         // }
-        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read SD_IO_CCCR_BLKSIZEL: 0x%02X\n", buffer);
+        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read SD_IO_CCCR_BLKSIZEL: %#X\n", buffer);
         // if (_bus->read(0, static_cast<uint32_t>(Cmd::SD_IO_CCCR_BLKSIZEH), &buffer) == false)
         // {
         //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
         //     return false;
         // }
-        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read SD_IO_CCCR_BLKSIZEH: 0x%02X\n", buffer);
+        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read SD_IO_CCCR_BLKSIZEH: %#X\n", buffer);
 
         // if (_bus->read(0, static_cast<uint32_t>(0x110), &buffer) == false)
         // {
         //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
         //     return false;
         // }
-        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read 0x110: 0x%02X\n", buffer);
+        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read 0x110: %#X\n", buffer);
 
         // if (_bus->read(0, static_cast<uint32_t>(0x111), &buffer) == false)
         // {
         //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
         //     return false;
         // }
-        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read 0x111: 0x%02X\n", buffer);
+        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read 0x111: %#X\n", buffer);
         // if (_bus->read(0, static_cast<uint32_t>(0x210), &buffer) == false)
         // {
         //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
         //     return false;
         // }
-        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read 0x210: 0x%02X\n", buffer);
+        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read 0x210: %#X\n", buffer);
 
         return true;
     }

@@ -24,12 +24,12 @@ namespace Cpp_Bus_Driver
         uint8_t buffer = get_device_id();
         if (buffer != SGM38121_DEVICE_ID)
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sgm38121 id fail (error id: 0x%02X)\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sgm38121 id fail (error id: %#X)\n", buffer);
             return false;
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sgm38121 id: 0x%02X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sgm38121 id: %#X\n", buffer);
         }
 
         return true;

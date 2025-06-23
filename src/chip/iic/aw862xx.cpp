@@ -24,12 +24,12 @@ namespace Cpp_Bus_Driver
         uint8_t buffer = get_device_id();
         if (buffer == static_cast<uint8_t>(DEFAULT_CPP_BUS_DRIVER_VALUE))
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get aw862xx id fail (error id: 0x%02X)\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get aw862xx id fail (error id: %#X)\n", buffer);
             return false;
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get aw862xx id: 0x%02X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get aw862xx id: %#X\n", buffer);
         }
 
         return true;
@@ -179,7 +179,7 @@ namespace Cpp_Bus_Driver
             break;
 
         default:
-            // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown command (error code: 0x%02X)\n", buffer);
+            // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown command (error code: %#X)\n", buffer);
             return Global_Status::FALSE;
         }
 

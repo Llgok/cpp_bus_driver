@@ -36,12 +36,12 @@ namespace Cpp_Bus_Driver
         uint16_t buffer = get_device_id();
         if (buffer != ES8311_DEVICE_ID)
         {
-            Iic_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get es8311 id fail (error id: 0x%02X)\n", buffer);
+            Iic_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get es8311 id fail (error id: %#X)\n", buffer);
             return false;
         }
         else
         {
-            Iic_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get es8311 id: 0x%02X\n", buffer);
+            Iic_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get es8311 id: %#X\n", buffer);
         }
 
         return true;

@@ -63,35 +63,35 @@ namespace Cpp_Bus_Driver
             assert = i2s_new_channel(&chan_config, &_chan_tx_handle, &_chan_rx_handle);
             if (assert != ESP_OK)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: 0x%04X)\n", assert);
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
                 return false;
             }
 
             assert = i2s_channel_init_std_mode(_chan_tx_handle, &std_config);
             if (assert != ESP_OK)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: 0x%04X)\n", assert);
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: %#X)\n", assert);
                 return false;
             }
 
             assert = i2s_channel_init_std_mode(_chan_rx_handle, &std_config);
             if (assert != ESP_OK)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: 0x%04X)\n", assert);
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: %#X)\n", assert);
                 return false;
             }
 
             assert = i2s_channel_enable(_chan_tx_handle);
             if (assert != ESP_OK)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: 0x%04X)\n", assert);
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
                 return false;
             }
 
             assert = i2s_channel_enable(_chan_rx_handle);
             if (assert != ESP_OK)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: 0x%04X)\n", assert);
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
                 return false;
             }
         }
@@ -137,14 +137,14 @@ namespace Cpp_Bus_Driver
                 assert = i2s_new_channel(&chan_config, NULL, &_chan_rx_handle);
                 if (assert != ESP_OK)
                 {
-                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: 0x%04X)\n", assert);
+                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
                     return false;
                 }
 
                 assert = i2s_channel_init_std_mode(_chan_rx_handle, &std_config);
                 if (assert != ESP_OK)
                 {
-                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: 0x%04X)\n", assert);
+                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: %#X)\n", assert);
                     return false;
                 }
 
@@ -157,14 +157,14 @@ namespace Cpp_Bus_Driver
                 assert = i2s_new_channel(&chan_config, &_chan_tx_handle, NULL);
                 if (assert != ESP_OK)
                 {
-                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: 0x%04X)\n", assert);
+                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
                     return false;
                 }
 
                 assert = i2s_channel_init_std_mode(_chan_tx_handle, &std_config);
                 if (assert != ESP_OK)
                 {
-                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: 0x%04X)\n", assert);
+                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: %#X)\n", assert);
                     return false;
                 }
 
@@ -194,7 +194,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = i2s_channel_read(_chan_rx_handle, data, byte, &buffer, DEFAULT_CPP_BUS_DRIVER_IIS_WAIT_TIMEOUT_MS);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_read fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_read fail (error code: %#X)\n", assert);
             return false;
         }
 
@@ -213,7 +213,7 @@ namespace Cpp_Bus_Driver
         esp_err_t assert = i2s_channel_write(_chan_tx_handle, data, byte, &buffer, DEFAULT_CPP_BUS_DRIVER_IIS_WAIT_TIMEOUT_MS);
         if (assert != ESP_OK)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_write fail (error code: 0x%04X)\n", assert);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_write fail (error code: %#X)\n", assert);
             return false;
         }
 
