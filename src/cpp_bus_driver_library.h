@@ -19,6 +19,7 @@
 #include "./bus/iic/hardware_iic_1.h"
 #include "./bus/iic/hardware_iic_2.h"
 #include "./bus/spi/hardware_spi.h"
+#include "./bus/spi/hardware_qspi.h"
 #include "./bus/uart/hardware_uart.h"
 #include "./bus/iis/hardware_iis.h"
 #include "./bus/sdio/hardware_sdio.h"
