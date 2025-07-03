@@ -2,21 +2,13 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-06-20 18:11:47
+ * @LastEditTime: 2025-06-27 10:07:10
  * @License: GPL 3.0
  */
 #include "Sx126x.h"
 
 namespace Cpp_Bus_Driver
 {
-    // constexpr uint16_t Sx126x::Init_List[] =
-    //     {
-    //         static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R16_D8),
-    //         static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER),
-    //         static_cast<uint16_t>(Reg::RW_TX_CLAMP_CONFIG),
-    //         0B00000000,
-    // };
-
     bool Sx126x::begin(int32_t freq_hz)
     {
         if (_busy != DEFAULT_CPP_BUS_DRIVER_VALUE)

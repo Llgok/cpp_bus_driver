@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-06-27 09:23:36
+ * @LastEditTime: 2025-07-03 09:13:26
  * @License: GPL 3.0
  */
 #include "hardware_qspi.h"
@@ -13,24 +13,24 @@ namespace Cpp_Bus_Driver
     {
         if (freq_hz == DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
-            freq_hz = DEFAULT_CPP_BUS_DRIVER_SPI_FREQ_HZ;
+            freq_hz = DEFAULT_CPP_BUS_DRIVER_QSPI_FREQ_HZ;
         }
 
         if (_flags == DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
-            _flags = static_cast<uint32_t>(NULL);
+            _flags = SPI_DEVICE_HALFDUPLEX;
         }
 
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _data0: %d\n", _data0);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _data1: %d\n", _data1);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _data2: %d\n", _data2);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _data3: %d\n", _data3);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _sclk: %d\n", _sclk);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config cs: %d\n", cs);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _port: %d\n", _port);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _mode: %d\n", _mode);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _flags: %d\n", _flags);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config freq_hz: %d hz\n", freq_hz);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _data0: %d\n", _data0);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _data1: %d\n", _data1);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _data2: %d\n", _data2);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _data3: %d\n", _data3);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _sclk: %d\n", _sclk);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config cs: %d\n", cs);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _port: %d\n", _port);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _mode: %d\n", _mode);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _flags: %d\n", _flags);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config freq_hz: %d hz\n", freq_hz);
 
         const spi_bus_config_t bus_config =
             {
@@ -43,9 +43,9 @@ namespace Cpp_Bus_Driver
                 .data5_io_num = -1,
                 .data6_io_num = -1,
                 .data7_io_num = -1,
-                .data_io_default_level = 0,
-                .max_transfer_sz = 0,
-                .flags = SPICOMMON_BUSFLAG_MASTER,
+                .data_io_default_level = 1,
+                .max_transfer_sz = QSPI_MAX_TRANSFER_SIZE,
+                .flags = SPICOMMON_BUSFLAG_MASTER | SPICOMMON_BUSFLAG_QUAD,
                 .isr_cpu_id = ESP_INTR_CPU_AFFINITY_AUTO,
                 .intr_flags = static_cast<uint32_t>(NULL),
             };
@@ -59,8 +59,8 @@ namespace Cpp_Bus_Driver
 
         const spi_device_interface_config_t device_config =
             {
-                .command_bits = 0,
-                .address_bits = 0,
+                .command_bits = 8,
+                .address_bits = 24,
                 .dummy_bits = 0, // 无虚拟位
                 .mode = _mode,
                 .clock_source = SPI_CLK_SRC_DEFAULT, // 默认时钟源
@@ -82,19 +82,32 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
+        size_t buffer = 0;
+        assert = spi_bus_get_max_transaction_len(_port, &buffer);
+        if (assert != ESP_OK)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_get_max_transaction_len fail (error code: %#X)\n", assert);
+            _max_transfer_size = QSPI_MAX_TRANSFER_SIZE;
+        }
+        else
+        {
+            _max_transfer_size = buffer;
+        }
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _max_transfer_size: %d\n", _max_transfer_size);
+
         _freq_hz = freq_hz;
         _cs = cs;
 
         return true;
     }
 
-    bool Hardware_Qspi::write(const void *data, size_t byte, uint32_t flags)
+    bool Hardware_Qspi::write(const uint16_t cmd, const uint64_t addr, const void *data, size_t byte, uint32_t flags)
     {
         spi_transaction_t buffer =
             {
                 .flags = flags,
-                .cmd = 0,
-                .addr = 0,
+                .cmd = cmd,
+                .addr = addr,
                 .length = byte * 8,
                 .rxlength = 0,
                 .user = (void *)0,
@@ -102,11 +115,73 @@ namespace Cpp_Bus_Driver
                 .rx_buffer = NULL,
             };
 
-        esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
-        if (assert != ESP_OK)
+        if (byte > _max_transfer_size)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: %#X)\n", assert);
-            return false;
+            uint8_t *buffer_data_ptr = (uint8_t *)data;
+            size_t buffer_remain_size = byte;
+
+            buffer.length = _max_transfer_size * 8;
+            buffer.tx_buffer = buffer_data_ptr;
+
+            esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
+            if (assert != ESP_OK)
+            {
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: %#X)\n", assert);
+                return false;
+            }
+
+            buffer_data_ptr += _max_transfer_size;
+            buffer_remain_size -= _max_transfer_size;
+
+            buffer.flags = flags | SPI_TRANS_VARIABLE_CMD | SPI_TRANS_VARIABLE_ADDR | SPI_TRANS_VARIABLE_DUMMY;
+            buffer.cmd = 0;
+            buffer.addr = 0;
+            buffer.length = _max_transfer_size * 8;
+            buffer.tx_buffer = buffer_data_ptr;
+
+            while (1)
+            {
+                if ((buffer_remain_size / _max_transfer_size) != 0)
+                {
+                    buffer.tx_buffer = buffer_data_ptr;
+
+                    esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    buffer_data_ptr += _max_transfer_size;
+                    buffer_remain_size -= _max_transfer_size;
+                }
+                else
+                {
+                    if (buffer_remain_size > 0)
+                    {
+                        buffer.tx_buffer = buffer_data_ptr;
+                        buffer.length = buffer_remain_size * 8;
+
+                        esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
+                        if (assert != ESP_OK)
+                        {
+                            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: %#X)\n", assert);
+                            return false;
+                        }
+                    }
+
+                    break;
+                }
+            }
+        }
+        else
+        {
+            esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
+            if (assert != ESP_OK)
+            {
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: %#X)\n", assert);
+                return false;
+            }
         }
 
         return true;
@@ -124,30 +199,6 @@ namespace Cpp_Bus_Driver
                 .user = (void *)0,
                 .tx_buffer = NULL,
                 .rx_buffer = data,
-            };
-
-        esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
-        if (assert != ESP_OK)
-        {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: %#X)\n", assert);
-            return false;
-        }
-
-        return true;
-    }
-
-    bool Hardware_Qspi::write_read(const void *write_data, void *read_data, size_t data_byte, uint32_t flags)
-    {
-        spi_transaction_t buffer =
-            {
-                .flags = flags,
-                .cmd = 0,
-                .addr = 0,
-                .length = data_byte * 8,
-                .rxlength = 0,
-                .user = (void *)0,
-                .tx_buffer = write_data,
-                .rx_buffer = read_data,
             };
 
         esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);

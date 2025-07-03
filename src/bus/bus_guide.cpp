@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-03-29 09:29:42
+ * @LastEditTime: 2025-06-27 15:58:18
  * @License: GPL 3.0
  */
 #include "bus_guide.h"
@@ -348,6 +348,17 @@ namespace Cpp_Bus_Driver
         memcpy(&buffer[3], &write_data, 1);
 
         if (write(buffer, 4) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Bus_Qspi_Guide::write(const uint16_t cmd, const uint64_t addr, const uint8_t write_d8)
+    {
+        if (write(cmd, addr, &write_d8, 1) == false)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
             return false;

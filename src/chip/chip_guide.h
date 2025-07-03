@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-06-18 18:07:24
+ * @LastEditTime: 2025-06-27 16:13:41
  * @License: GPL 3.0
  */
 #pragma once
@@ -46,6 +46,24 @@ namespace Cpp_Bus_Driver
         virtual bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE);
 
         bool init_list(const uint8_t *list, size_t length);
+    };
+
+    class Qspi_Guide : public Tool
+    {
+    protected:
+        std::shared_ptr<Bus_Qspi_Guide> _bus;
+
+        int32_t _cs;
+
+    public:
+        Qspi_Guide(std::shared_ptr<Bus_Qspi_Guide> bus, int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE)
+            : _bus(bus), _cs(cs)
+        {
+        }
+
+        virtual bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE);
+
+        bool init_list(const uint16_t *list, size_t length);
     };
 
     class Uart_Guide : public Tool

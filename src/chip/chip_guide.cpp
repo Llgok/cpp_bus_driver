@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-06-19 10:59:59
+ * @LastEditTime: 2025-06-27 16:13:16
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -30,6 +30,7 @@ namespace Cpp_Bus_Driver
             case static_cast<uint8_t>(Init_List_Cmd::DELAY_MS):
                 index++;
                 delay_ms(list[index]);
+                index++;
                 break;
             case static_cast<uint8_t>(Init_List_Cmd::WRITE_DATA):
                 index++;
@@ -38,7 +39,7 @@ namespace Cpp_Bus_Driver
                     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "iic_init_list WRITE_DATA fail\n");
                     return false;
                 }
-                index = list[index] + 1;
+                index += list[index] + 1;
                 break;
             case static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8):
                 index++;
@@ -51,6 +52,8 @@ namespace Cpp_Bus_Driver
                 break;
 
             default:
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail(index = %d)\n", index);
+                return false;
                 break;
             }
         }
@@ -79,6 +82,7 @@ namespace Cpp_Bus_Driver
             case static_cast<uint8_t>(Init_List_Cmd::DELAY_MS):
                 index++;
                 delay_ms(list[index]);
+                index++;
                 break;
             case static_cast<uint8_t>(Init_List_Cmd::WRITE_DATA):
                 index++;
@@ -87,7 +91,7 @@ namespace Cpp_Bus_Driver
                     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "spi_init_list WRITE_DATA fail(index = %d)\n", index);
                     return false;
                 }
-                index = list[index] + 1;
+                index += list[index] + 1;
                 break;
             case static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8):
                 index++;
@@ -100,6 +104,60 @@ namespace Cpp_Bus_Driver
                 break;
 
             default:
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail(index = %d)\n", index);
+                return false;
+                break;
+            }
+        }
+
+        return true;
+    }
+
+    bool Qspi_Guide::begin(int32_t freq_hz)
+    {
+        if (_bus->begin(freq_hz, _cs) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "begin fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Qspi_Guide::init_list(const uint16_t *list, size_t length)
+    {
+        size_t index = 0;
+        while (index < length)
+        {
+            switch (list[index])
+            {
+            case static_cast<uint8_t>(Init_List_Cmd::DELAY_MS):
+                index++;
+                delay_ms(list[index]);
+                index++;
+                break;
+            case static_cast<uint8_t>(Init_List_Cmd::WRITE_C16_R64):
+                index++;
+                if (_bus->write(static_cast<uint16_t>(list[index]), static_cast<uint64_t>(list[index + 1])) == false)
+                {
+                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "qspi_init_list WRITE_C8_R24 fail(index = %d)\n", index);
+                    return false;
+                }
+                index += 2;
+                break;
+            case static_cast<uint8_t>(Init_List_Cmd::WRITE_C16_R64_D8):
+                index++;
+                if (_bus->write(static_cast<uint16_t>(list[index]), static_cast<uint64_t>(list[index + 1]), static_cast<uint8_t>(list[index + 2])) == false)
+                {
+                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "qspi_init_list WRITE_C8_R24_D8 fail(index = %d)\n", index);
+                    return false;
+                }
+                index += 3;
+                break;
+
+            default:
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail(index = %d)\n", index);
+                return false;
                 break;
             }
         }

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-06-27 09:24:35
+ * @LastEditTime: 2025-06-30 11:06:17
  * @License: GPL 3.0
  */
 
@@ -114,14 +114,13 @@ namespace Cpp_Bus_Driver
         }
 
         virtual bool begin(int32_t freq_hz, int32_t cs) = 0;
-        virtual bool write(const void *data, size_t byte, uint32_t flags) = 0;
-        virtual bool read(void *data, size_t byte, uint32_t flags) = 0;
-        virtual bool write_read(const void *write_data, void *read_data, size_t data_byte, uint32_t flags) = 0;
+        virtual bool write(const uint16_t cmd, const uint64_t addr, const void *data = NULL, size_t byte = 0, uint32_t flags = static_cast<uint32_t>(NULL)) = 0;
+        virtual bool read(void *data, size_t byte, uint32_t flags = static_cast<uint32_t>(NULL)) = 0;
 
         // bool read(const uint8_t write_c8, uint8_t *read_d8);
         // bool read(const uint8_t write_c8, uint8_t *read_data, size_t read_data_length);
-        // bool write(const uint8_t write_c8);
-        // bool write(const uint8_t write_c8, const uint8_t write_d8);
+        // bool write(const uint32_t write_c32);
+        bool write(const uint16_t cmd, const uint64_t addr, const uint8_t write_d8);
         // bool write(const uint8_t write_c8, const uint8_t *write_data, size_t write_data_length);
 
         // /**
