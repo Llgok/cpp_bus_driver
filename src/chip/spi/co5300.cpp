@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-03 09:10:33
+ * @LastEditTime: 2025-07-03 18:17:04
  * @License: GPL 3.0
  */
 #include "co5300.h"
@@ -37,37 +37,26 @@ namespace Cpp_Bus_Driver
 
         // 将buffer_6的内容全部改为0xFF，表示白色（通常RGB565或RGB888白色为全1）
         // void * buffer_6 = heap_caps_malloc(466 * 466 * 16, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-        auto buffer_6 = std::make_unique<uint8_t[]>(466 * 466 * 16);
-        memset(buffer_6.get(), 0xFF, 466 * 466 * 16);
+        // auto buffer_6 = std::make_unique<uint8_t[]>(466 * 466 * 16);
+        // memset(buffer_6.get(), 0xFF, 466 * 466 * 16);
+        // send_color_stream(0, 471, 0, 467, buffer_6.get());
 
         // while (1)
         // {
-        //     if (set_render_window(100, 400, 100, 400) == false)
-        //     {
-        //         assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_render_window fail\n");
-        //         return false;
-        //     }
-
-        //     _bus->write(0x32, 0x002C00, buffer_6.get(), 300 * 300 * 16, SPI_TRANS_MODE_QIO);
+        //     memset(buffer_6.get(), 0xFF, 466 * 466 * 16);
+        //     delay_ms(1000);
+        //     send_color_stream(0, 471, 0, 467, buffer_6.get());
+        //     delay_ms(1000);
+        //     memset(buffer_6.get(), 0xAA, 466 * 466 * 16);
+        //     send_color_stream(0, 471, 0, 467, buffer_6.get());
+        //     delay_ms(1000);
+        //     memset(buffer_6.get(), 0xBB, 466 * 466 * 16);
+        //     send_color_stream(0, 471, 0, 467, buffer_6.get());
+        //     delay_ms(1000);
+        //     memset(buffer_6.get(), 0xCC, 466 * 466 * 16);
+        //     send_color_stream(0, 471, 0, 467, buffer_6.get());
         //     delay_ms(1000);
         // }
-
-        while (1)
-        {
-            memset(buffer_6.get(), 0xFF, 466 * 466 * 16);
-            delay_ms(1000);
-            send_color_stream(0, 466, 0, 466, buffer_6.get());
-            delay_ms(1000);
-            memset(buffer_6.get(), 0xAA, 466 * 466 * 16);
-            send_color_stream(0, 466, 0, 466, buffer_6.get());
-            delay_ms(1000);
-            memset(buffer_6.get(), 0xBB, 466 * 466 * 16);
-            send_color_stream(0, 466, 0, 466, buffer_6.get());
-            delay_ms(1000);
-            memset(buffer_6.get(), 0xCC, 466 * 466 * 16);
-            send_color_stream(0, 466, 0, 466, buffer_6.get());
-            delay_ms(1000);
-        }
 
         return true;
     }
@@ -113,122 +102,46 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Co5300::send_color_stream(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, const uint8_t *data)
+    bool Co5300::send_color_stream(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t *data)
     {
-        uint16_t buffer_width = x_end - x_start;
-        uint16_t buffer_height = y_end - y_start;
-        // 需要绘制的总尺寸
-        size_t buffer_size = buffer_width * buffer_height * static_cast<uint8_t>(_color_format);
-
         // 有效性检查
-        if (buffer_width == 0 || buffer_height == 0 || data == nullptr)
+        if (w == 0 || h == 0 || data == nullptr)
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid parameters: width=%d, height=%d, data=%p\n",
-                       buffer_width, buffer_height, data);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid parameters: w=%d, h=%d, data=%p\n", w, h, data);
             return false;
         }
 
-        if (buffer_size > MAX_GRAM_SIZE_BYTES)
+        if (set_render_window(x, x + w, y, y + h) == false)
         {
-            uint8_t *buffer_data_ptr = (uint8_t *)data;
-            // 固定宽度，计算一次绘制的高度来确定刷新一次需要的数据量
-            uint16_t buffer_height_refresh = MAX_GRAM_SIZE_BYTES / (buffer_width * static_cast<uint8_t>(_color_format));
-            // 一次绘制高度所占的尺寸
-            size_t buffer_height_refresh_size = buffer_width * buffer_height_refresh * static_cast<uint8_t>(_color_format);
-            // 固定高度全部绘制完成后剩余需要绘制的高度
-            uint16_t buffer_height_refresh_remain = buffer_height % buffer_height_refresh;
-
-            uint16_t y_start_last = y_start;
-
-            if (_bus->write(static_cast<uint8_t>(Cmd::WO_WRITE_COLOR_STREAM_4LANES_CMD_1),
-                            static_cast<uint16_t>(Reg::WO_WRITE_COLOR_STREAM_1LANES_4LANES_ADDR_1)) == false)
-            {
-                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
-                return false;
-            }
-
-            while (1)
-            {
-                if ((buffer_size / buffer_height_refresh_size) != 0)
-                {
-                    if (set_render_window(x_start, x_end, y_start_last, y_start_last + buffer_height_refresh) == false)
-                    {
-                        assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_render_window fail\n");
-                        return false;
-                    }
-
-                    if (_bus->write(static_cast<uint8_t>(Cmd::WO_WRITE_COLOR_STREAM_4LANES_CMD_1),
-                                    static_cast<uint16_t>(Reg::WO_WRITE_COLOR_STREAM_1LANES_4LANES_ADDR_1),
-                                    buffer_data_ptr, buffer_height_refresh_size, SPI_TRANS_MODE_QIO) == false)
-                    {
-                        assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
-                        return false;
-                    }
-
-                    buffer_data_ptr += buffer_height_refresh_size;
-                    buffer_size -= buffer_height_refresh_size;
-                    y_start_last += buffer_height_refresh;
-                }
-                else
-                {
-                    // 只有剩余行数 >0 时才发送
-                    if (buffer_height_refresh_remain > 0)
-                    {
-                        if (set_render_window(x_start, x_end, y_start_last, y_start_last + buffer_height_refresh_remain) == false)
-                        {
-                            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_render_window fail\n");
-                            return false;
-                        }
-
-                        if (_bus->write(static_cast<uint8_t>(Cmd::WO_WRITE_COLOR_STREAM_4LANES_CMD_1),
-                                        static_cast<uint16_t>(Reg::WO_WRITE_COLOR_STREAM_1LANES_4LANES_ADDR_1),
-                                        buffer_data_ptr, buffer_size, SPI_TRANS_MODE_QIO) == false)
-                        {
-                            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
-                            return false;
-                        }
-                    }
-                    break;
-                }
-            }
-
-            // 一个一个像素点输出
-            //  uint8_t *buffer_data_ptr = (uint8_t *)data;
-            //  for (uint16_t y = y_start; y < y_end; ++y)
-            //  {
-            //      for (uint16_t x = x_start; x < x_end; ++x)
-            //      {
-            //          if (set_render_window(x, x + 1, y, y + 1) == false)
-            //          {
-            //              assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_render_window fail\n");
-            //              return false;
-            //          }
-            //          if (_bus->write(static_cast<uint8_t>(Cmd::WO_WRITE_COLOR_STREAM_4LANES_CMD_1),
-            //                          static_cast<uint16_t>(Reg::WO_WRITE_COLOR_STREAM_1LANES_4LANES_ADDR_1),
-            //                          buffer_data_ptr, static_cast<uint8_t>(_color_format), SPI_TRANS_MODE_QIO) == false)
-            //          {
-            //              assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
-            //              return false;
-            //          }
-            //          buffer_data_ptr += static_cast<uint8_t>(_color_format);
-            //      }
-            //  }
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_render_window fail\n");
+            return false;
         }
-        else
-        {
-            if (set_render_window(x_start, x_end, y_start, y_end) == false)
-            {
-                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_render_window fail\n");
-                return false;
-            }
 
-            if (_bus->write(static_cast<uint8_t>(Cmd::WO_WRITE_COLOR_STREAM_4LANES_CMD_1),
-                            static_cast<uint16_t>(Reg::WO_WRITE_COLOR_STREAM_1LANES_4LANES_ADDR_1),
-                            data, buffer_size, SPI_TRANS_MODE_QIO) == false)
-            {
-                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
-                return false;
-            }
+        if (_bus->write(static_cast<uint8_t>(Cmd::WO_WRITE_COLOR_STREAM_4LANES_CMD_1),
+                        static_cast<uint16_t>(Reg::WO_MEMORY_CONTINUOUS_WRITE),
+                        data, w * h * (static_cast<uint8_t>(_color_format) / 8), SPI_TRANS_MODE_QIO) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Co5300::draw_point(uint16_t x, uint16_t y, const uint8_t *color_data)
+    {
+        if (set_render_window(x, x + 1, y, y + 1) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_render_window fail\n");
+            return false;
+        }
+
+        if (_bus->write(static_cast<uint8_t>(Cmd::WO_WRITE_COLOR_STREAM_4LANES_CMD_1),
+                        static_cast<uint16_t>(Reg::WO_MEMORY_START_WRITE),
+                        color_data, 2 * 2 * static_cast<uint8_t>(_color_format) / 8, SPI_TRANS_MODE_QIO) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
         }
 
         return true;

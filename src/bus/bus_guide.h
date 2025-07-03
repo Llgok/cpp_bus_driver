@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-06-30 11:06:17
+ * @LastEditTime: 2025-07-03 17:18:29
  * @License: GPL 3.0
  */
 
@@ -114,8 +114,7 @@ namespace Cpp_Bus_Driver
         }
 
         virtual bool begin(int32_t freq_hz, int32_t cs) = 0;
-        virtual bool write(const uint16_t cmd, const uint64_t addr, const void *data = NULL, size_t byte = 0, uint32_t flags = static_cast<uint32_t>(NULL)) = 0;
-        virtual bool read(void *data, size_t byte, uint32_t flags = static_cast<uint32_t>(NULL)) = 0;
+        virtual bool write(const uint16_t cmd, const uint64_t addr, const uint8_t *data = NULL, size_t byte = 0, uint32_t flags = static_cast<uint32_t>(NULL)) = 0;
 
         // bool read(const uint8_t write_c8, uint8_t *read_d8);
         // bool read(const uint8_t write_c8, uint8_t *read_data, size_t read_data_length);

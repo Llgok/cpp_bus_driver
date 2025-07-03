@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-02 17:29:38
+ * @LastEditTime: 2025-07-03 18:14:55
  * @License: GPL 3.0
  */
 
@@ -44,8 +44,10 @@ namespace Cpp_Bus_Driver
         enum class Reg
         {
             // 用于写颜色流命令
-            WO_WRITE_COLOR_STREAM_1LANES_4LANES_ADDR_1 = 0x002C00,
-            WO_WRITE_COLOR_STREAM_1LANES_4LANES_ADDR_2 = 0x003C00,
+            // 从指定的像素位置开始写入图像数据，该位置由之前的 CASET (2Ah)（列地址设置）和 RASET (2Bh)（行地址设置）命令定义
+            WO_MEMORY_START_WRITE = 0x002C00,
+            // 从上一次写入结束的位置继续写入数据，无需重新指定地址
+            WO_MEMORY_CONTINUOUS_WRITE = 0x003C00,
 
             WO_COLUMN_ADDRESS_SET = 0x002A00,
             WO_PAGE_ADDRESS_SET = 0x002B00,
@@ -100,6 +102,18 @@ namespace Cpp_Bus_Driver
          */
         bool set_render_window(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end);
 
-        bool send_color_stream(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, const uint8_t *data);
+        /**
+         * @brief 发送颜色流
+         * @param x 绘制点x坐标
+         * @param y 绘制点y坐标
+         * @param w 绘制长度
+         * @param h 绘制高度
+         * @param *data 颜色数据
+         * @return
+         * @Date 2025-07-03 10:27:58
+         */
+        bool send_color_stream(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t *data);
+
+        bool draw_point(uint16_t x, uint16_t y, const uint8_t *color_data);
     };
-}
+};
