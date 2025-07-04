@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-06-27 16:13:16
+ * @LastEditTime: 2025-07-04 11:50:03
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -124,7 +124,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Qspi_Guide::init_list(const uint16_t *list, size_t length)
+    bool Qspi_Guide::init_list(const uint32_t *list, size_t length)
     {
         size_t index = 0;
         while (index < length)
@@ -136,24 +136,47 @@ namespace Cpp_Bus_Driver
                 delay_ms(list[index]);
                 index++;
                 break;
-            case static_cast<uint8_t>(Init_List_Cmd::WRITE_C16_R64):
+            case static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24):
+            {
                 index++;
-                if (_bus->write(static_cast<uint16_t>(list[index]), static_cast<uint64_t>(list[index + 1])) == false)
+                uint8_t buffer[] =
+                    {
+                        static_cast<uint8_t>(list[index]),
+                        static_cast<uint8_t>(list[index + 1] >> 16),
+                        static_cast<uint8_t>(list[index + 1] >> 8),
+                        static_cast<uint8_t>(list[index + 1]),
+                    };
+                if (_bus->write(buffer, 4) == false)
                 {
                     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "qspi_init_list WRITE_C8_R24 fail(index = %d)\n", index);
                     return false;
                 }
                 index += 2;
+                
                 break;
-            case static_cast<uint8_t>(Init_List_Cmd::WRITE_C16_R64_D8):
+            }
+
+            case static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8):
+            {
                 index++;
-                if (_bus->write(static_cast<uint16_t>(list[index]), static_cast<uint64_t>(list[index + 1]), static_cast<uint8_t>(list[index + 2])) == false)
+                uint8_t buffer[] =
+                    {
+                        static_cast<uint8_t>(list[index]),
+                        static_cast<uint8_t>(list[index + 1] >> 16),
+                        static_cast<uint8_t>(list[index + 1] >> 8),
+                        static_cast<uint8_t>(list[index + 1]),
+                        static_cast<uint8_t>(list[index + 2]),
+                    };
+
+                if (_bus->write(buffer, 5) == false)
                 {
                     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "qspi_init_list WRITE_C8_R24_D8 fail(index = %d)\n", index);
                     return false;
                 }
                 index += 3;
+
                 break;
+            }
 
             default:
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail(index = %d)\n", index);

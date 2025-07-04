@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-07-03 17:17:32
+ * @LastEditTime: 2025-07-04 13:39:39
  * @License: GPL 3.0
  */
 #include "hardware_qspi.h"
@@ -66,8 +66,8 @@ namespace Cpp_Bus_Driver
 
         const spi_device_interface_config_t device_config =
             {
-                .command_bits = 8,
-                .address_bits = 24,
+                .command_bits = 0,
+                .address_bits = 0,
                 .dummy_bits = 0, // 无虚拟位
                 .mode = _mode,
                 .clock_source = SPI_CLK_SRC_DEFAULT, // 默认时钟源
@@ -77,7 +77,7 @@ namespace Cpp_Bus_Driver
                 .clock_speed_hz = freq_hz,
                 .input_delay_ns = 0, // 无输入延迟
                 .spics_io_num = -1,
-                .flags = _flags, // 优先标志，可以填入SPI_DEVICE_BIT_LSBFIRST等信息
+                .flags = _flags, // 标志，可以填入SPI_DEVICE_BIT_LSBFIRST等信息
                 .queue_size = 1,
                 .pre_cb = NULL,  // 无传输前回调
                 .post_cb = NULL, // 无传输后回调
@@ -103,18 +103,17 @@ namespace Cpp_Bus_Driver
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _max_transfer_size: %d\n", _max_transfer_size);
 
         _freq_hz = freq_hz;
-        _cs = cs;
 
         return true;
     }
 
-    bool Hardware_Qspi::write(const uint16_t cmd, const uint64_t addr, const uint8_t *data, size_t byte, uint32_t flags)
+    bool Hardware_Qspi::write(const void *data, size_t byte, uint32_t flags, bool cs_keep_active)
     {
         spi_transaction_t buffer =
             {
                 .flags = flags,
-                .cmd = cmd,
-                .addr = addr,
+                .cmd = 0,
+                .addr = 0,
                 .length = byte * 8,
                 .rxlength = 0,
                 .user = (void *)0,
@@ -124,79 +123,60 @@ namespace Cpp_Bus_Driver
 
         if (byte > _max_transfer_size)
         {
-            const uint8_t *buffer_data_ptr = data;
-            size_t buffer_remain_size = byte;
+            const uint8_t *buffer_data_ptr = static_cast<const uint8_t *>(data);
+            size_t buffer_send_count = byte / _max_transfer_size;
+            size_t buffer_remaining_size = byte % _max_transfer_size;
 
             buffer.length = _max_transfer_size * 8;
-            buffer.tx_buffer = buffer_data_ptr;
 
             set_cs(0);
-
-            esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
-            if (assert != ESP_OK)
+            for (size_t i = 0; i < buffer_send_count; i++)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: %#X)\n", assert);
-                return false;
-            }
+                buffer.tx_buffer = buffer_data_ptr;
 
-            buffer_data_ptr += _max_transfer_size;
-            buffer_remain_size -= _max_transfer_size;
-
-            buffer.flags = flags | SPI_TRANS_VARIABLE_CMD | SPI_TRANS_VARIABLE_ADDR | SPI_TRANS_VARIABLE_DUMMY;
-            buffer.cmd = 0;
-            buffer.addr = 0;
-            buffer.length = _max_transfer_size * 8;
-            buffer.tx_buffer = buffer_data_ptr;
-
-            while (1)
-            {
-                if ((buffer_remain_size / _max_transfer_size) != 0)
+                esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
+                if (assert != ESP_OK)
                 {
-                    buffer.tx_buffer = buffer_data_ptr;
-
-                    esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
-                    if (assert != ESP_OK)
-                    {
-                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: %#X)\n", assert);
-                        return false;
-                    }
-
-                    buffer_data_ptr += _max_transfer_size;
-                    buffer_remain_size -= _max_transfer_size;
+                    set_cs(1);
+                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: %#X)\n", assert);
+                    return false;
                 }
-                else
+
+                buffer_data_ptr += _max_transfer_size;
+            }
+            if (buffer_remaining_size > 0)
+            {
+                buffer.tx_buffer = buffer_data_ptr;
+                buffer.length = buffer_remaining_size * 8;
+
+                esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
+                if (assert != ESP_OK)
                 {
-                    if (buffer_remain_size > 0)
-                    {
-                        buffer.tx_buffer = buffer_data_ptr;
-                        buffer.length = buffer_remain_size * 8;
-
-                        esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
-                        if (assert != ESP_OK)
-                        {
-                            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: %#X)\n", assert);
-                            return false;
-                        }
-                    }
-
-                    break;
+                    set_cs(1);
+                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: %#X)\n", assert);
+                    return false;
                 }
             }
 
-            set_cs(1);
+            if (cs_keep_active == false)
+            {
+                set_cs(1);
+            }
         }
         else
         {
             set_cs(0);
-
             esp_err_t assert = spi_device_polling_transmit(_spi_device, &buffer);
             if (assert != ESP_OK)
             {
+                set_cs(1);
                 assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_device_polling_transmit fail (error code: %#X)\n", assert);
                 return false;
             }
-
-            set_cs(1);
+            if (cs_keep_active == false)
+            {
+                set_cs(1);
+            }
         }
 
         return true;

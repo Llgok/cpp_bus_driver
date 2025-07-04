@@ -68,7 +68,7 @@ namespace Cpp_Bus_Driver
                 .clock_speed_hz = freq_hz,
                 .input_delay_ns = 0, // 无输入延迟
                 .spics_io_num = cs,
-                .flags = _flags, // 优先标志，可以填入SPI_DEVICE_BIT_LSBFIRST等信息
+                .flags = _flags, // 标志，可以填入SPI_DEVICE_BIT_LSBFIRST等信息
                 .queue_size = 1,
                 .pre_cb = NULL,  // 无传输前回调
                 .post_cb = NULL, // 无传输后回调

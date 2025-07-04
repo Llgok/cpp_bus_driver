@@ -356,15 +356,15 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Bus_Qspi_Guide::write(const uint16_t cmd, const uint64_t addr, const uint8_t write_d8)
-    {
-        if (write(cmd, addr, &write_d8, 1) == false)
-        {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
-            return false;
-        }
+    // bool Bus_Qspi_Guide::write(const uint16_t cmd, const uint64_t addr, const uint8_t write_d8)
+    // {
+    //     if (write(cmd, addr, &write_d8, 1) == false)
+    //     {
+    //         assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+    //         return false;
+    //     }
 
-        return true;
-    }
+    //     return true;
+    // }
 
 }

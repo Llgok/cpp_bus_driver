@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 17:58:03
- * @LastEditTime: 2025-07-02 10:30:57
+ * @LastEditTime: 2025-07-04 11:23:48
  * @License: GPL 3.0
  */
 
@@ -33,8 +33,8 @@ namespace Cpp_Bus_Driver
             DELAY_MS = 0,
             WRITE_DATA,
             WRITE_C8_D8,
-            WRITE_C16_R64,
-            WRITE_C16_R64_D8,
+            WRITE_C8_R24,
+            WRITE_C8_R24_D8,
         };
 
         enum class Endian

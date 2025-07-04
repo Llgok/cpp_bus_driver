@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-07-03 17:18:21
+ * @LastEditTime: 2025-07-04 12:04:28
  * @License: GPL 3.0
  */
 #pragma once
@@ -34,7 +34,9 @@ namespace Cpp_Bus_Driver
         }
 
         bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE, int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
-        bool write(const uint16_t cmd, const uint64_t addr, const uint8_t *data = NULL, size_t byte = 0, uint32_t flags = static_cast<uint32_t>(NULL)) override;
+        // bool write(const uint16_t cmd, const uint64_t addr, const uint8_t *data = NULL, size_t byte = 0, uint32_t flags = static_cast<uint32_t>(NULL)) override;
+        // bool write(const void *data, size_t byte, bool cs_keep_active) override;
+        bool write(const void *data, size_t byte, uint32_t flags = static_cast<uint32_t>(NULL), bool cs_keep_active = false) override;
 
         bool set_cs(bool value);
     };

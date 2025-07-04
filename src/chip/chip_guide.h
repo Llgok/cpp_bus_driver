@@ -63,7 +63,7 @@ namespace Cpp_Bus_Driver
 
         virtual bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE);
 
-        bool init_list(const uint16_t *list, size_t length);
+        bool init_list(const uint32_t *list, size_t length);
     };
 
     class Uart_Guide : public Tool
