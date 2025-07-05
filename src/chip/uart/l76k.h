@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 17:56:47
+ * @LastEditTime: 2025-07-05 12:01:44
  * @License: GPL 3.0
  */
 
@@ -251,7 +251,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-02-18 11:54:34
          */
-        bool parse_rmc_info(std::shared_ptr<uint8_t[]> data, uint32_t length, Rmc &rmc);
+        bool parse_rmc_info(std::shared_ptr<uint8_t[]> data, size_t length, Rmc &rmc);
 
         /**
          * @brief 解析gga信息
@@ -261,7 +261,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-02-18 11:54:34
          */
-        bool parse_gga_info(std::shared_ptr<uint8_t[]> data, uint32_t length, Gga &gga);
+        bool parse_gga_info(std::shared_ptr<uint8_t[]> data, size_t length, Gga &gga);
 
         /**
          * @brief 设置定位频率
