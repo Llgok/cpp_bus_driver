@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-06-24 16:02:47
+ * @LastEditTime: 2025-07-07 12:05:06
  * @License: GPL 3.0
  */
 #include "Hi8561_Touch.h"
@@ -135,12 +135,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        // 获取的手指个数不为finger_num
-        if (buffer_2[0] != finger_num)
-        {
-            return false;
-        }
-        tp.finger_count = buffer_2[0];
+        tp.finger_count = finger_num;
 
         Touch_Info buffer_ti;
         buffer_ti.x = (static_cast<uint16_t>(buffer_2[buffer_touch_point_size - SINGLE_TOUCH_POINT_DATA_SIZE]) << 8) |
@@ -177,7 +172,7 @@ namespace Cpp_Bus_Driver
                 0x03,
             };
 
-        const uint8_t buffer_touch_point_size = MAX_TOUCH_DATA_SIZE;
+        const uint8_t buffer_touch_point_size = TOUCH_POINT_ADDRESS_OFFSET + MAX_TOUCH_FINGER_COUNT * SINGLE_TOUCH_POINT_DATA_SIZE;
         uint8_t buffer_2[buffer_touch_point_size] = {0};
 
         if (_bus->write_read(buffer, 6, buffer_2, buffer_touch_point_size) == false)

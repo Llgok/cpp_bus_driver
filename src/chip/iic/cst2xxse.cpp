@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2025-06-12 10:49:00
+ * @LastEditTime: 2025-07-07 11:59:20
  * @License: GPL 3.0
  */
 #include "cst2xxse.h"
@@ -76,44 +76,35 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        uint8_t buffer_touch_point_size = finger_num * SINGLE_TOUCH_POINT_DATA_SIZE + 2;
-        uint8_t buffer[buffer_touch_point_size] = {0};
+        uint8_t buffer[SINGLE_TOUCH_POINT_DATA_SIZE] = {0};
 
-        if (_bus->read(static_cast<uint8_t>(Cmd::RO_TOUCH_POINT_INFO_START), buffer, buffer_touch_point_size) == false)
+        if (finger_num == 1)
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
-            return false;
-        }
-
-        // 获取的手指个数不为finger_num
-        if ((buffer[5] & 0B00001111) != finger_num)
-        {
-            return false;
-        }
-        tp.finger_count = buffer[5] & 0B00001111;
-
-        if (tp.finger_count == 1)
-        {
-            buffer_touch_point_size -= 2; // 去除两个无用信息
-        }
-
-        Touch_Info buffer_ti;
-        buffer_ti.x = (static_cast<uint16_t>(buffer[buffer_touch_point_size - SINGLE_TOUCH_POINT_DATA_SIZE + 1]) << 4) |
-                      ((buffer[buffer_touch_point_size - SINGLE_TOUCH_POINT_DATA_SIZE + 3] & 0B11110000) >> 4);
-        buffer_ti.y = (static_cast<uint16_t>(buffer[buffer_touch_point_size - SINGLE_TOUCH_POINT_DATA_SIZE + 2]) << 4) |
-                      (buffer[buffer_touch_point_size - SINGLE_TOUCH_POINT_DATA_SIZE + 3] & 0B00001111);
-        buffer_ti.pressure_value = buffer[buffer_touch_point_size - SINGLE_TOUCH_POINT_DATA_SIZE + 4];
-
-        tp.info.push_back(buffer_ti);
-
-        if ((buffer[5] & 0B10000000) > 0)
-        {
-            tp.home_touch_flag = true;
+            if (_bus->read(static_cast<uint8_t>(Cmd::RO_TOUCH_POINT_INFO_START) + ((finger_num - 1) * SINGLE_TOUCH_POINT_DATA_SIZE), buffer, SINGLE_TOUCH_POINT_DATA_SIZE) == false)
+            {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                return false;
+            }
         }
         else
         {
-            tp.home_touch_flag = false;
+            if (_bus->read(static_cast<uint8_t>(Cmd::RO_TOUCH_POINT_INFO_START) + ((finger_num - 1) * SINGLE_TOUCH_POINT_DATA_SIZE) + 2, buffer, SINGLE_TOUCH_POINT_DATA_SIZE) == false)
+            {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                return false;
+            }
         }
+
+        tp.finger_count = finger_num;
+
+        Touch_Info buffer_ti;
+        buffer_ti.x = (static_cast<uint16_t>(buffer[1]) << 4) | ((buffer[3] & 0B11110000) >> 4);
+        buffer_ti.y = (static_cast<uint16_t>(buffer[2]) << 4) | (buffer[3] & 0B00001111);
+        buffer_ti.pressure_value = buffer[4];
+
+        tp.info.push_back(buffer_ti);
+
+        tp.home_touch_flag = false;
 
         return true;
     }

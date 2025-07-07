@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 18:02:07
+ * @LastEditTime: 2025-07-07 11:50:08
  * @License: GPL 3.0
  */
 
@@ -29,7 +29,6 @@ namespace Cpp_Bus_Driver
         };
 
     private:
-
         int32_t _rst;
 
     public:
