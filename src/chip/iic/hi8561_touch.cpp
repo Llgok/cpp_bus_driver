@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-07 12:05:06
+ * @LastEditTime: 2025-07-07 13:54:51
  * @License: GPL 3.0
  */
 #include "Hi8561_Touch.h"
@@ -182,7 +182,7 @@ namespace Cpp_Bus_Driver
         }
 
         // 如果手指数为0或者大于最大触摸手指数
-        if ((buffer_2[0] == 0) || (buffer[0] > MAX_TOUCH_FINGER_COUNT))
+        if ((buffer_2[0] == 0) || (buffer_2[0] > MAX_TOUCH_FINGER_COUNT))
         {
             return false;
         }
