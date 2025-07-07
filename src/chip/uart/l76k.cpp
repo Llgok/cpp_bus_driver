@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-07-05 13:47:26
+ * @LastEditTime: 2025-07-07 15:47:03
  * @License: GPL 3.0
  */
 #include "l76k.h"
@@ -194,17 +194,12 @@ namespace Cpp_Bus_Driver
 
         size_t buffer_index = 0;
         const char *buffer_cmd = "$GNRMC";
-        bool buffer_exit_flag = false;
+        bool buffer_exit_flag = true;
         size_t buffer_used_size = 0;
 
         // 循环搜索数据里面所有的命令
         while (1)
         {
-            if (buffer_exit_flag == true)
-            {
-                break;
-            }
-
             if (search(data.get() + buffer_used_size, length - buffer_used_size, buffer_cmd, std::strlen(buffer_cmd), &buffer_index) == false)
             {
                 // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
@@ -218,7 +213,6 @@ namespace Cpp_Bus_Driver
                 buffer_used_size += std::strlen(buffer_cmd);
 
                 uint8_t buffer_field_count = 0; // 记录当前的字段号
-                buffer_exit_flag = true;
                 for (auto i = buffer_used_size; i < length; i++)
                 {
                     if ((data[i] == '\r') && (data[i + 1] == '\n')) // 停止符
@@ -411,6 +405,11 @@ namespace Cpp_Bus_Driver
 
                 assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "parse_rmc_info finish(field count: %d)\n", buffer_field_count);
             }
+
+            if (buffer_exit_flag == true)
+            {
+                break;
+            }
         }
 
         return true;
@@ -422,7 +421,7 @@ namespace Cpp_Bus_Driver
 
         size_t buffer_index = 0;
         const char *buffer_cmd = "$GNGGA";
-        bool buffer_exit_flag = false;
+        bool buffer_exit_flag = true;
         size_t buffer_used_size = 0;
 
         // 循环搜索数据里面所有的命令
@@ -470,7 +469,7 @@ namespace Cpp_Bus_Driver
                             {
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<UTC> length error((length = %d) != 10)\n", buffer_index_2);
                                 i += (buffer_index_2 - 1);
-                                buffer_exit_flag = true;
+                                buffer_exit_flag = false;
                                 break;
                             }
 
@@ -510,7 +509,7 @@ namespace Cpp_Bus_Driver
                             {
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<Lat> length error((length = %d) != 10)\n", buffer_index_2);
                                 i += (buffer_index_2 - 1);
-                                buffer_exit_flag = true;
+                                buffer_exit_flag = false;
                                 break;
                             }
 
@@ -556,7 +555,7 @@ namespace Cpp_Bus_Driver
                             {
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<Lon> length error((length = %d) != 11)\n", buffer_index_2);
                                 i += (buffer_index_2 - 1);
-                                buffer_exit_flag = true;
+                                buffer_exit_flag = false;
                                 break;
                             }
 
@@ -609,7 +608,7 @@ namespace Cpp_Bus_Driver
                             {
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<NumSatUsed> length error((length = %d) != 2)\n", buffer_index_2);
                                 i += (buffer_index_2 - 1);
-                                buffer_exit_flag = true;
+                                buffer_exit_flag = false;
                                 break;
                             }
 
@@ -648,6 +647,11 @@ namespace Cpp_Bus_Driver
                 }
 
                 assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "buffer_field_count: %d\n", buffer_field_count);
+            }
+
+            if (buffer_exit_flag == true)
+            {
+                break;
             }
         }
 
