@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-07 11:39:53
+ * @LastEditTime: 2025-07-08 14:15:40
  * @License: GPL 3.0
  */
 #include "ft3x68.h"
@@ -77,11 +77,19 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
+        uint16_t buffer_x = (static_cast<uint16_t>(buffer[0] & 0B00001111) << 8) | buffer[1];
+        uint16_t buffer_y = (static_cast<uint16_t>(buffer[2] & 0B00001111) << 8) | buffer[3];
+
+        if ((buffer_x == static_cast<uint16_t>(-1)) && (buffer_y == static_cast<uint16_t>(-1)))
+        {
+            return false;
+        }
+
         tp.finger_count = finger_num;
 
         Touch_Info buffer_ti;
-        buffer_ti.x = (static_cast<uint16_t>(buffer[0] & 0B00001111) << 8) | buffer[1];
-        buffer_ti.y = (static_cast<uint16_t>(buffer[2] & 0B00001111) << 8) | buffer[3];
+        buffer_ti.x = buffer_x;
+        buffer_ti.y = buffer_y;
 
         tp.info.push_back(buffer_ti);
 

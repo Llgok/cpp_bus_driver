@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-08 09:09:13
+ * @LastEditTime: 2025-07-08 14:03:57
  * @License: GPL 3.0
  */
 #include "Hi8561_Touch.h"
@@ -119,48 +119,37 @@ namespace Cpp_Bus_Driver
         uint8_t buffer[] =
             {
                 0xF3,
-                static_cast<uint8_t>(_touch_info_start_address >> 24),
-                static_cast<uint8_t>(_touch_info_start_address >> 16),
-                static_cast<uint8_t>(_touch_info_start_address >> 8),
-                static_cast<uint8_t>(_touch_info_start_address),
+                static_cast<uint8_t>((_touch_info_start_address + TOUCH_POINT_ADDRESS_OFFSET + (finger_num - 1) * SINGLE_TOUCH_POINT_DATA_SIZE) >> 24),
+                static_cast<uint8_t>((_touch_info_start_address + TOUCH_POINT_ADDRESS_OFFSET + (finger_num - 1) * SINGLE_TOUCH_POINT_DATA_SIZE) >> 16),
+                static_cast<uint8_t>((_touch_info_start_address + TOUCH_POINT_ADDRESS_OFFSET + (finger_num - 1) * SINGLE_TOUCH_POINT_DATA_SIZE) >> 8),
+                static_cast<uint8_t>((_touch_info_start_address + TOUCH_POINT_ADDRESS_OFFSET + (finger_num - 1) * SINGLE_TOUCH_POINT_DATA_SIZE)),
                 0x03,
             };
 
-        const uint8_t buffer_touch_point_size = TOUCH_POINT_ADDRESS_OFFSET + finger_num * SINGLE_TOUCH_POINT_DATA_SIZE;
-        uint8_t buffer_2[buffer_touch_point_size] = {0};
+        uint8_t buffer_2[SINGLE_TOUCH_POINT_DATA_SIZE] = {0};
 
-        if (_bus->write_read(buffer, 6, buffer_2, buffer_touch_point_size) == false)
+        if (_bus->write_read(buffer, 6, buffer_2, SINGLE_TOUCH_POINT_DATA_SIZE) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write_read fail\n");
             return false;
         }
 
-        // 如果手指数为0或者大于最大触摸手指数
-        if ((buffer_2[0] == 0) || (buffer_2[0] > MAX_TOUCH_FINGER_COUNT))
+        uint16_t buffer_x = (static_cast<uint16_t>(buffer_2[0]) << 8) | buffer_2[1];
+        uint16_t buffer_y = (static_cast<uint16_t>(buffer_2[2]) << 8) | buffer_2[3];
+
+        if ((buffer_x == static_cast<uint16_t>(-1)) && (buffer_y == static_cast<uint16_t>(-1)))
         {
             return false;
         }
-        tp.finger_count = buffer_2[0];
+
+        tp.finger_count = finger_num;
 
         Touch_Info buffer_ti;
-        buffer_ti.x = (static_cast<uint16_t>(buffer_2[buffer_touch_point_size - SINGLE_TOUCH_POINT_DATA_SIZE]) << 8) |
-                      buffer_2[buffer_touch_point_size - SINGLE_TOUCH_POINT_DATA_SIZE + 1];
-        buffer_ti.y = (static_cast<uint16_t>(buffer_2[buffer_touch_point_size - SINGLE_TOUCH_POINT_DATA_SIZE + 2]) << 8) |
-                      buffer_2[buffer_touch_point_size - SINGLE_TOUCH_POINT_DATA_SIZE + 3];
-        buffer_ti.pressure_value = buffer_2[buffer_touch_point_size - SINGLE_TOUCH_POINT_DATA_SIZE + 4];
+        buffer_ti.x = buffer_x;
+        buffer_ti.y = buffer_y;
+        buffer_ti.pressure_value = buffer_2[4];
 
         tp.info.push_back(buffer_ti);
-
-        if ((buffer_ti.x == static_cast<uint16_t>(-1)) &&
-            (buffer_ti.y == static_cast<uint16_t>(-1)) &&
-            (buffer_ti.pressure_value == 0))
-        {
-            tp.edge_touch_flag = true;
-        }
-        else
-        {
-            tp.edge_touch_flag = false;
-        }
 
         return true;
     }

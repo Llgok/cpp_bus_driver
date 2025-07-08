@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2025-07-07 11:59:20
+ * @LastEditTime: 2025-07-08 14:14:57
  * @License: GPL 3.0
  */
 #include "cst2xxse.h"
@@ -95,16 +95,22 @@ namespace Cpp_Bus_Driver
             }
         }
 
+        uint16_t buffer_x = (static_cast<uint16_t>(buffer[1]) << 4) | ((buffer[3] & 0B11110000) >> 4);
+        uint16_t buffer_y = (static_cast<uint16_t>(buffer[2]) << 4) | (buffer[3] & 0B00001111);
+
+        if ((buffer_x == static_cast<uint16_t>(-1)) && (buffer_y == static_cast<uint16_t>(-1)))
+        {
+            return false;
+        }
+
         tp.finger_count = finger_num;
 
         Touch_Info buffer_ti;
-        buffer_ti.x = (static_cast<uint16_t>(buffer[1]) << 4) | ((buffer[3] & 0B11110000) >> 4);
-        buffer_ti.y = (static_cast<uint16_t>(buffer[2]) << 4) | (buffer[3] & 0B00001111);
+        buffer_ti.x = buffer_x;
+        buffer_ti.y = buffer_y;
         buffer_ti.pressure_value = buffer[4];
 
         tp.info.push_back(buffer_ti);
-
-        tp.home_touch_flag = false;
 
         return true;
     }

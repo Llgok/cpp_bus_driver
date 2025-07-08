@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 17:53:00
+ * @LastEditTime: 2025-07-08 13:36:22
  * @License: GPL 3.0
  */
 
@@ -27,8 +27,6 @@ namespace Cpp_Bus_Driver
         static constexpr uint16_t MEMORY_ERAM_SIZE = 4 * 1024;
 
         static constexpr uint8_t MAX_TOUCH_FINGER_COUNT = 10;
-
-        static constexpr uint8_t MAX_TOUCH_DATA_SIZE = 78;
 
         static constexpr uint8_t TOUCH_POINT_ADDRESS_OFFSET = 3;
         static constexpr uint8_t SINGLE_TOUCH_POINT_DATA_SIZE = 5;
