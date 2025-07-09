@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date 2025-07-09 09:15:31
- * @LastEditTime: 2025-07-09 09:15:44
+ * @LastEditTime: 2025-07-09 15:59:47
  * @License: GPL 3.0
  */
 
@@ -29,7 +29,7 @@ namespace Cpp_Bus_Driver
         };
 
         // 触摸xy坐标缩放处理比例
-        float _touch_x_y_scale_factor;
+        float _x_scale_factor, _y_scale_factor;
 
         int32_t _rst;
 
@@ -50,8 +50,9 @@ namespace Cpp_Bus_Driver
             std::vector<struct Touch_Info> info;
         };
 
-        Gt9895(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, float touch_x_y_scale_factor = 1.0, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
-            : Iic_Guide(bus, address), _touch_x_y_scale_factor(touch_x_y_scale_factor), _rst(rst)
+        Gt9895(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, float x_scale_factor = 1.0, float y_scale_factor = 1.0,
+               int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
+            : Iic_Guide(bus, address), _x_scale_factor(x_scale_factor), _y_scale_factor(y_scale_factor), _rst(rst)
         {
         }
 
