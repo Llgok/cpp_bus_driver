@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date 2025-07-09 09:15:31
- * @LastEditTime: 2025-07-09 16:27:45
+ * @LastEditTime: 2025-07-09 16:45:08
  * @License: GPL 3.0
  */
 #include "gt9895.h"
@@ -93,9 +93,6 @@ namespace Cpp_Bus_Driver
 
                 Touch_Info buffer_ti;
                 buffer_ti.finger_id = 0;
-                buffer_ti.x = static_cast<uint16_t>(-1);
-                buffer_ti.y = static_cast<uint16_t>(-1);
-                buffer_ti.pressure_value = static_cast<uint8_t>(-1);
 
                 tp.info.push_back(buffer_ti);
 
@@ -160,9 +157,6 @@ namespace Cpp_Bus_Driver
 
                 Touch_Info buffer_ti;
                 buffer_ti.finger_id = 0;
-                buffer_ti.x = static_cast<uint16_t>(-1);
-                buffer_ti.y = static_cast<uint16_t>(-1);
-                buffer_ti.pressure_value = static_cast<uint8_t>(-1);
 
                 tp.info.push_back(buffer_ti);
 
