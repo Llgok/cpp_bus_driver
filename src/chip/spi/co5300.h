@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-04 13:09:08
+ * @LastEditTime: 2025-07-09 16:29:57
  * @License: GPL 3.0
  */
 
@@ -84,12 +84,12 @@ namespace Cpp_Bus_Driver
             };
 
         int32_t _rst;
-        int16_t _width, _height;
+        uint16_t _width, _height;
         int16_t _x_offset, _y_offset;
         Color_Format _color_format;
 
     public:
-        Co5300(std::shared_ptr<Bus_Qspi_Guide> bus, int16_t width, int16_t height, int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE,
+        Co5300(std::shared_ptr<Bus_Qspi_Guide> bus, uint16_t width, uint16_t height, int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE,
                int16_t x_offset = 0, int16_t y_offset = 0, Color_Format color_format = Color_Format::RGB565)
             : Qspi_Guide(bus, cs), _rst(rst), _width(width), _height(height), _x_offset(x_offset), _y_offset(y_offset), _color_format(color_format)
         {
