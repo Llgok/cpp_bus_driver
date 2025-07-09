@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:14:18
- * @LastEditTime: 2025-06-27 11:22:25
+ * @LastEditTime: 2025-07-08 14:53:43
  * @License: GPL 3.0
  */
 
@@ -33,11 +33,9 @@
 #include "./chip/iic/cst2xxse.h"
 #include "./chip/iic_iis/es8311.h"
 #include "./chip/iic/ft3x68.h"
+#include "./chip/iic/gt9895.h"
 #include "./chip/spi/sx126x.h"
 #include "./chip/spi/ecx336c.h"
 #include "./chip/spi/co5300.h"
 #include "./chip/uart/l76k.h"
 #include "./chip/sdio/esp_at.h"
-
-
-
