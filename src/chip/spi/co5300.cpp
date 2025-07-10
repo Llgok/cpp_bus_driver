@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-04 13:13:38
+ * @LastEditTime: 2025-07-10 15:22:24
  * @License: GPL 3.0
  */
 #include "co5300.h"
@@ -87,7 +87,7 @@ namespace Cpp_Bus_Driver
         // 有效性检查
         if (w == 0 || h == 0 || data == nullptr || x >= _width || y >= _height || (_width - x) < w || (_height - y) < h)
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid parameters: x=%d, y=%d, w=%d, h=%d, data=%p", x, y, w, h, data);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid parameters: x=%d, y=%d, w=%d, h=%d, data=%p\n", x, y, w, h, data);
             return false;
         }
 
