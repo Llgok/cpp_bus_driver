@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-07-04 13:39:39
+ * @LastEditTime: 2025-07-10 18:00:51
  * @License: GPL 3.0
  */
 #include "hardware_qspi.h"
@@ -72,8 +72,8 @@ namespace Cpp_Bus_Driver
                 .mode = _mode,
                 .clock_source = SPI_CLK_SRC_DEFAULT, // 默认时钟源
                 .duty_cycle_pos = 128,               // 50% 占空比
-                .cs_ena_pretrans = 1,                // 在数据传输开始之前，片选信号（CS）应该提前多少个SPI位周期被激活
-                .cs_ena_posttrans = 1,               // 在数据传输结束后，片选信号（CS）应该保持激活状态多少个SPI位周期
+                .cs_ena_pretrans = 0,                // 在数据传输开始之前，片选信号（CS）应该提前多少个SPI位周期被激活
+                .cs_ena_posttrans = 0,               // 在数据传输结束后，片选信号（CS）应该保持激活状态多少个SPI位周期
                 .clock_speed_hz = freq_hz,
                 .input_delay_ns = 0, // 无输入延迟
                 .spics_io_num = -1,

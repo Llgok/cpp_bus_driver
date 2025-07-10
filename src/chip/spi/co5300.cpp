@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-10 15:22:24
+ * @LastEditTime: 2025-07-10 17:13:01
  * @License: GPL 3.0
  */
 #include "co5300.h"
@@ -56,7 +56,9 @@ namespace Cpp_Bus_Driver
                 static_cast<uint8_t>(x_start),
                 static_cast<uint8_t>(x_end >> 8),
                 static_cast<uint8_t>(x_end),
-
+            };
+        uint8_t buffer_2[] =
+            {
                 static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER),
                 static_cast<uint8_t>(static_cast<uint32_t>(Reg::WO_PAGE_ADDRESS_SET) >> 16),
                 static_cast<uint8_t>(static_cast<uint32_t>(Reg::WO_PAGE_ADDRESS_SET) >> 8),
@@ -66,14 +68,26 @@ namespace Cpp_Bus_Driver
                 static_cast<uint8_t>(y_start),
                 static_cast<uint8_t>(y_end >> 8),
                 static_cast<uint8_t>(y_end),
-
+            };
+        uint8_t buffer_3[] =
+            {
                 static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER),
                 static_cast<uint8_t>(static_cast<uint32_t>(Reg::WO_MEMORY_WRITE_START) >> 16),
                 static_cast<uint8_t>(static_cast<uint32_t>(Reg::WO_MEMORY_WRITE_START) >> 8),
                 static_cast<uint8_t>(Reg::WO_MEMORY_WRITE_START),
             };
 
-        if (_bus->write(buffer, 20) == false)
+        if (_bus->write(buffer, 8) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+        if (_bus->write(buffer_2, 8) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+        if (_bus->write(buffer_3, 4) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
