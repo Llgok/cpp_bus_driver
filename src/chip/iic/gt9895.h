@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date 2025-07-09 09:15:31
- * @LastEditTime: 2025-07-09 15:59:47
+ * @LastEditTime: 2025-07-11 10:15:01
  * @License: GPL 3.0
  */
 
@@ -26,6 +26,8 @@ namespace Cpp_Bus_Driver
         {
             // 触摸信息开始地址
             RO_TOUCH_INFO_START_ADDRESS = 0x00010308,
+
+            WO_SLEEP_START_ADDRESS = 0x00010174,
         };
 
         // 触摸xy坐标缩放处理比例
@@ -88,5 +90,12 @@ namespace Cpp_Bus_Driver
          * @Date 2025-07-09 09:15:31
          */
         bool get_edge_touch(void);
+
+        /**
+         * @brief 设置睡眠
+         * @return
+         * @Date 2025-07-11 10:07:49
+         */
+        bool set_sleep();
     };
 }

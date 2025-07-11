@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date 2025-07-09 09:15:31
- * @LastEditTime: 2025-07-09 16:45:08
+ * @LastEditTime: 2025-07-11 10:18:53
  * @License: GPL 3.0
  */
 #include "gt9895.h"
@@ -67,10 +67,10 @@ namespace Cpp_Bus_Driver
 
         uint8_t buffer[] =
             {
-                static_cast<uint8_t>((static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS)) >> 24),
-                static_cast<uint8_t>((static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS)) >> 16),
-                static_cast<uint8_t>((static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS)) >> 8),
-                static_cast<uint8_t>((static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS))),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS) >> 24),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS) >> 16),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS) >> 8),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS)),
             };
 
         const uint8_t buffer_touch_point_size = TOUCH_POINT_ADDRESS_OFFSET + finger_num * SINGLE_TOUCH_POINT_DATA_SIZE;
@@ -131,10 +131,10 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer[] =
             {
-                static_cast<uint8_t>((static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS)) >> 24),
-                static_cast<uint8_t>((static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS)) >> 16),
-                static_cast<uint8_t>((static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS)) >> 8),
-                static_cast<uint8_t>((static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS))),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS) >> 24),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS) >> 16),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS) >> 8),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS)),
             };
 
         const uint8_t buffer_touch_point_size = TOUCH_POINT_ADDRESS_OFFSET + MAX_TOUCH_FINGER_COUNT * SINGLE_TOUCH_POINT_DATA_SIZE;
@@ -203,10 +203,10 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer[] =
             {
-                static_cast<uint8_t>((static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS)) >> 24),
-                static_cast<uint8_t>((static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS)) >> 16),
-                static_cast<uint8_t>((static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS)) >> 8),
-                static_cast<uint8_t>((static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS))),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS) >> 24),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS) >> 16),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS) >> 8),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::RO_TOUCH_INFO_START_ADDRESS)),
             };
 
         uint8_t buffer_2 = 0;
@@ -219,6 +219,26 @@ namespace Cpp_Bus_Driver
 
         if (buffer_2 != 0x84)
         {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Gt9895::set_sleep()
+    {
+        uint8_t buffer[] =
+            {
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::WO_SLEEP_START_ADDRESS) >> 24),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::WO_SLEEP_START_ADDRESS) >> 16),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::WO_SLEEP_START_ADDRESS) >> 8),
+                static_cast<uint8_t>(static_cast<uint32_t>(Cmd::WO_SLEEP_START_ADDRESS)),
+
+                0x00, 0x00, 0x04, 0x84, 0x88, 0x00};
+
+        if (_bus->write(buffer, 10) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
