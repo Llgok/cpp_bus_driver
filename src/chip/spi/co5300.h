@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-11 13:48:48
+ * @LastEditTime: 2025-07-11 13:51:19
  * @License: GPL 3.0
  */
 
@@ -70,15 +70,6 @@ namespace Cpp_Bus_Driver
             CONTINUOUS_WRITE_4LANES,
         };
 
-        // 色彩增强
-        enum class Color_Enhance
-        {
-            OFF = 0x00,
-            LOW = 0x04,
-            MEDIUM,
-            HIGH,
-        };
-
         static constexpr uint32_t _init_list[] =
             {
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x001100,
@@ -111,6 +102,15 @@ namespace Cpp_Bus_Driver
         Color_Format _color_format;
 
     public:
+        // 色彩增强
+        enum class Color_Enhance
+        {
+            OFF = 0x00,
+            LOW = 0x04,
+            MEDIUM,
+            HIGH,
+        };
+
         Co5300(std::shared_ptr<Bus_Qspi_Guide> bus, uint16_t width, uint16_t height, int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE,
                int16_t x_offset = 0, int16_t y_offset = 0, Color_Format color_format = Color_Format::RGB565)
             : Qspi_Guide(bus, cs), _rst(rst), _width(width), _height(height), _x_offset(x_offset), _y_offset(y_offset), _color_format(color_format)
