@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-11 09:42:49
+ * @LastEditTime: 2025-07-11 13:48:48
  * @License: GPL 3.0
  */
 
@@ -48,6 +48,14 @@ namespace Cpp_Bus_Driver
             WO_PAGE_ADDRESS_SET = 0x002B00,
             WO_MEMORY_WRITE_START = 0x002C00,
             WO_WRITE_DISPLAY_BRIGHTNESS = 0x005100,
+
+            WO_SLEEP_OUT = 0x001100,
+            WO_SLEEP_IN = 0x001000,
+            WO_DISPLAY_ON = 0x002900,
+            WO_DISPLAY_OFF = 0x002800,
+
+            WO_SET_COLOR_ENHANCE = 0x005800,
+
         };
 
         enum class Write_Stream_Mode
@@ -60,6 +68,15 @@ namespace Cpp_Bus_Driver
             CONTINUOUS_WRITE_1LANES,
             // 连续发射4线模式
             CONTINUOUS_WRITE_4LANES,
+        };
+
+        // 色彩增强
+        enum class Color_Enhance
+        {
+            OFF = 0x00,
+            LOW = 0x04,
+            MEDIUM,
+            HIGH,
         };
 
         static constexpr uint32_t _init_list[] =
@@ -80,9 +97,9 @@ namespace Cpp_Bus_Driver
 
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005100, 0x00, // brightness adjustment
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x00, // sunlight readability enhancement off
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x50, // sunlight readability enhancement low
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x60, // sunlight readability enhancement medium
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x70, // sunlight readability enhancement high
+                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x04, // sunlight readability enhancement low
+                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x05, // sunlight readability enhancement medium
+                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x06, // sunlight readability enhancement high
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x002900, // display on
                 static_cast<uint8_t>(Init_List_Cmd::DELAY_MS), 10,
                 // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005100, 0xFF, // brightness adjustment
@@ -140,5 +157,29 @@ namespace Cpp_Bus_Driver
          * @Date 2025-07-11 09:42:35
          */
         bool set_brightness(uint8_t value);
+
+        /**
+         * @brief 设置睡眠
+         * @param status [true]：进入睡眠 [false]：退出睡眠
+         * @return
+         * @Date 2025-07-11 11:52:48
+         */
+        bool set_sleep(bool status);
+
+        /**
+         * @brief 设置屏幕关闭
+         * @param status [true]：关闭屏幕 [false]：开启屏幕
+         * @return
+         * @Date 2025-07-11 11:52:48
+         */
+        bool set_screen_off(bool status);
+
+        /**
+         * @brief 设置颜色增强模式
+         * @param mode 使用Color_Enhance::配置
+         * @return
+         * @Date 2025-07-11 13:48:16
+         */
+        bool set_color_enhance(Color_Enhance mode);
     };
 };
