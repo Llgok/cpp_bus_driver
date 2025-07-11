@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-09 16:29:57
+ * @LastEditTime: 2025-07-11 09:42:49
  * @License: GPL 3.0
  */
 
@@ -47,13 +47,18 @@ namespace Cpp_Bus_Driver
             WO_COLUMN_ADDRESS_SET = 0x002A00,
             WO_PAGE_ADDRESS_SET = 0x002B00,
             WO_MEMORY_WRITE_START = 0x002C00,
+            WO_WRITE_DISPLAY_BRIGHTNESS = 0x005100,
         };
 
         enum class Write_Stream_Mode
         {
+            // 单线模式
             WRITE_1LANES,
+            // 4线模式
             WRITE_4LANES,
+            // 连续发射单线模式
             CONTINUOUS_WRITE_1LANES,
+            // 连续发射4线模式
             CONTINUOUS_WRITE_4LANES,
         };
 
@@ -80,7 +85,7 @@ namespace Cpp_Bus_Driver
                 // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x70, // sunlight readability enhancement high
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x002900, // display on
                 static_cast<uint8_t>(Init_List_Cmd::DELAY_MS), 10,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005100, 0xFF, // brightness adjustment
+                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005100, 0xFF, // brightness adjustment
             };
 
         int32_t _rst;
@@ -108,6 +113,12 @@ namespace Cpp_Bus_Driver
          */
         bool set_render_window(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end);
 
+        /**
+         * @brief 设置写入流的模式
+         * @param mode 使用Write_Stream_Mode::配置
+         * @return
+         * @Date 2025-07-11 09:04:02
+         */
         bool set_write_stream_mode(Write_Stream_Mode mode);
 
         /**
@@ -121,5 +132,13 @@ namespace Cpp_Bus_Driver
          * @Date 2025-07-03 10:27:58
          */
         bool send_color_stream(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t *data);
+
+        /**
+         * @brief 设置亮度
+         * @param value 值范围：0~255
+         * @return
+         * @Date 2025-07-11 09:42:35
+         */
+        bool set_brightness(uint8_t value);
     };
 };

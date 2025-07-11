@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-10 17:13:01
+ * @LastEditTime: 2025-07-11 09:38:24
  * @License: GPL 3.0
  */
 #include "co5300.h"
@@ -166,6 +166,26 @@ namespace Cpp_Bus_Driver
         }
 
         if (_bus->write(buffer, 4, static_cast<uint32_t>(NULL), true) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Co5300::set_brightness(uint8_t value)
+    {
+        uint8_t buffer[] =
+            {
+                static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER),
+                static_cast<uint8_t>(static_cast<uint32_t>(Reg::WO_WRITE_DISPLAY_BRIGHTNESS) >> 16),
+                static_cast<uint8_t>(static_cast<uint32_t>(Reg::WO_WRITE_DISPLAY_BRIGHTNESS) >> 8),
+                static_cast<uint8_t>(Reg::WO_COLUMN_ADDRESS_SET),
+
+                static_cast<uint8_t>(value)};
+
+        if (_bus->write(buffer, 5) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
