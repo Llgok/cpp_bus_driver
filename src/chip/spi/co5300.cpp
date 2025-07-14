@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-11 13:47:02
+ * @LastEditTime: 2025-07-14 09:42:29
  * @License: GPL 3.0
  */
 #include "co5300.h"
@@ -33,6 +33,15 @@ namespace Cpp_Bus_Driver
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "_init_list fail\n");
             return false;
+        }
+
+        if (_color_format != Color_Format::RGB565)
+        {
+            if (set_color_format(_color_format) == false)
+            {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_color_format fail\n");
+                return false;
+            }
         }
 
         return true;
@@ -121,10 +130,21 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        if (_bus->write(data, w * h * (static_cast<uint8_t>(_color_format) / 8), SPI_TRANS_MODE_QIO) == false)
+        if (_color_format == Color_Format::RGB666)
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write_stream fail\n");
-            return false;
+            if (_bus->write(data, w * h * 3, SPI_TRANS_MODE_QIO) == false)
+            {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write_stream fail\n");
+                return false;
+            }
+        }
+        else
+        {
+            if (_bus->write(data, w * h * (static_cast<uint8_t>(_color_format) / 8), SPI_TRANS_MODE_QIO) == false)
+            {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write_stream fail\n");
+                return false;
+            }
         }
 
         return true;
@@ -257,6 +277,43 @@ namespace Cpp_Bus_Driver
 
                 static_cast<uint8_t>(mode),
             };
+
+        if (_bus->write(buffer, 5) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Co5300::set_color_format(Color_Format format)
+    {
+        uint8_t buffer[] =
+            {
+                static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER),
+                static_cast<uint8_t>(static_cast<uint32_t>(Reg::WO_INTERFACE_PIXEL_FORMAT) >> 16),
+                static_cast<uint8_t>(static_cast<uint32_t>(Reg::WO_INTERFACE_PIXEL_FORMAT) >> 8),
+                static_cast<uint8_t>(Reg::WO_INTERFACE_PIXEL_FORMAT),
+
+                static_cast<uint8_t>(0x55),
+            };
+
+        switch (format)
+        {
+        case Color_Format::RGB565:
+            break;
+        case Color_Format::RGB666:
+            buffer[4] = 0x66;
+            break;
+        case Color_Format::RGB888:
+            buffer[4] = 0x77;
+            break;
+
+        default:
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown format\n");
+            return false;
+        }
 
         if (_bus->write(buffer, 5) == false)
         {

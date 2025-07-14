@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-11 13:51:19
+ * @LastEditTime: 2025-07-14 09:43:41
  * @License: GPL 3.0
  */
 
@@ -18,7 +18,7 @@ namespace Cpp_Bus_Driver
         enum class Color_Format
         {
             RGB565 = 16,
-            RGB666 = 24,
+            RGB666 = 18,
             RGB888 = 24,
         };
 
@@ -53,6 +53,8 @@ namespace Cpp_Bus_Driver
             WO_SLEEP_IN = 0x001000,
             WO_DISPLAY_ON = 0x002900,
             WO_DISPLAY_OFF = 0x002800,
+
+            WO_INTERFACE_PIXEL_FORMAT = 0x003A00,
 
             WO_SET_COLOR_ENHANCE = 0x005800,
 
@@ -181,5 +183,13 @@ namespace Cpp_Bus_Driver
          * @Date 2025-07-11 13:48:16
          */
         bool set_color_enhance(Color_Enhance mode);
+
+        /**
+         * @brief 设置颜色格式
+         * @param format 使用Color_Format::配置
+         * @return
+         * @Date 2025-07-14 09:25:25
+         */
+        bool set_color_format(Color_Format format);
     };
 };
