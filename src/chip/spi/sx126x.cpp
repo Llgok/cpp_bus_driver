@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-06-27 10:07:10
+ * @LastEditTime: 2025-07-14 16:47:15
  * @License: GPL 3.0
  */
 #include "Sx126x.h"
@@ -778,7 +778,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Sx126x::set_rf_frequency(float freq_mhz)
+    bool Sx126x::set_rf_frequency(double freq_mhz)
     {
         uint32_t buffer_freq = (freq_mhz * (static_cast<uint32_t>(1) << 25)) / 32.0;
 
@@ -800,7 +800,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Sx126x::set_frequency(float freq_mhz)
+    bool Sx126x::set_frequency(double freq_mhz)
     {
         if (freq_mhz < 150.0)
         {
@@ -845,7 +845,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Sx126x::config_lora_params(float freq_mhz, Lora_Bw bw, float current_limit, int8_t power, Sf sf, Cr cr, Lora_Crc_Type crc_type,
+    bool Sx126x::config_lora_params(double freq_mhz, Lora_Bw bw, float current_limit, int8_t power, Sf sf, Cr cr, Lora_Crc_Type crc_type,
                                     uint16_t preamble_length, uint16_t sync_word)
     {
         // 启用13MHz晶振模式
@@ -1415,7 +1415,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Sx126x::set_gfsk_modulation_params(float br, Pulse_Shape ps, Gfsk_Bw bw, float freq_deviation)
+    bool Sx126x::set_gfsk_modulation_params(double br, Pulse_Shape ps, Gfsk_Bw bw, double freq_deviation)
     {
         if (br < 0.6)
         {
@@ -1443,7 +1443,7 @@ namespace Cpp_Bus_Driver
         uint32_t buffer_br = (32.0 * 1000000.0 * 32.0) / (br * 1000.0);
 
         // 计算原始频率偏差值
-        uint32_t buffer_freq_deviation = ((freq_deviation * 1000.0) * static_cast<float>(static_cast<uint32_t>(1) << 25)) / (32.0 * 1000000.0);
+        uint32_t buffer_freq_deviation = ((freq_deviation * 1000.0) * static_cast<double>(static_cast<uint32_t>(1) << 25)) / (32.0 * 1000000.0);
 
         uint8_t buffer[] =
             {
@@ -1545,7 +1545,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Sx126x::config_gfsk_params(float freq_mhz, uint32_t br, Gfsk_Bw bw, float current_limit, int8_t power, float freq_deviation,
+    bool Sx126x::config_gfsk_params(double freq_mhz, double br, Gfsk_Bw bw, float current_limit, int8_t power, double freq_deviation,
                                     uint8_t *sync_word, uint8_t sync_word_length, Pulse_Shape ps, Sf sf, Gfsk_Crc_Type crc_type,
                                     uint16_t crc_initial, uint16_t crc_polynomial, uint16_t preamble_length)
     {

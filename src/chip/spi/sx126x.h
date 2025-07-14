@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-20 18:10:25
+ * @LastEditTime: 2025-07-14 16:47:09
  * @License: GPL 3.0
  */
 
@@ -672,7 +672,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-02-07 09:43:33
          */
-        bool set_rf_frequency(float freq_mhz);
+        bool set_rf_frequency(double freq_mhz);
 
         /**
          * @brief 设置传输频率
@@ -680,7 +680,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-02-07 09:44:36
          */
-        bool set_frequency(float freq_mhz);
+        bool set_frequency(double freq_mhz);
 
         /**
          * @brief 配置LORA模式的传输参数
@@ -696,7 +696,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-02-07 09:55:00
          */
-        bool config_lora_params(float freq_mhz, Lora_Bw bw, float current_limit, int8_t power, Sf sf = Sf::SF9, Cr cr = Cr::CR_4_7,
+        bool config_lora_params(double freq_mhz, Lora_Bw bw, float current_limit, int8_t power, Sf sf = Sf::SF9, Cr cr = Cr::CR_4_7,
                                 Lora_Crc_Type crc_type = Lora_Crc_Type::ON, uint16_t preamble_length = 8, uint16_t sync_word = 0x1424);
 
         /**
@@ -1019,7 +1019,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-02-19 09:17:55
          */
-        bool set_gfsk_modulation_params(float br, Pulse_Shape ps, Gfsk_Bw bw, float freq_deviation);
+        bool set_gfsk_modulation_params(double br, Pulse_Shape ps, Gfsk_Bw bw, double freq_deviation);
 
         /**
          * @brief 配置GFSK模式的传输参数
@@ -1040,7 +1040,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-02-19 09:17:55
          */
-        bool config_gfsk_params(float freq_mhz, uint32_t br, Gfsk_Bw bw, float current_limit, int8_t power, float freq_deviation = 10.0,
+        bool config_gfsk_params(double freq_mhz, double br, Gfsk_Bw bw, float current_limit, int8_t power, double freq_deviation = 10.0,
                                 uint8_t *sync_word = nullptr, uint8_t sync_word_length = 0, Pulse_Shape ps = Pulse_Shape::GAUSSIAN_BT_1,
                                 Sf sf = Sf::SF9, Gfsk_Crc_Type crc_type = Gfsk_Crc_Type::CRC_2_BYTE_INV, uint16_t crc_initial = 0x1D0F, uint16_t crc_polynomial = 0x1021,
                                 uint16_t preamble_length = 32);
