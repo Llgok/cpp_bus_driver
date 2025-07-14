@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:14:18
- * @LastEditTime: 2025-07-08 14:53:43
+ * @LastEditTime: 2025-07-14 09:16:26
  * @License: GPL 3.0
  */
 
@@ -37,5 +37,6 @@
 #include "./chip/spi/sx126x.h"
 #include "./chip/spi/ecx336c.h"
 #include "./chip/spi/co5300.h"
+#include "./chip/spi/sh8601.h"
 #include "./chip/uart/l76k.h"
 #include "./chip/sdio/esp_at.h"
