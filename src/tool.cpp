@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2025-06-18 14:49:15
+ * @LastEditTime: 2025-07-15 10:00:34
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -15,55 +15,58 @@ namespace Cpp_Bus_Driver
 
         switch (level)
         {
+#if defined CPP_BUS_LOG_LEVEL_DEBUG
         case Log_Level::DEBUG:
         {
-#if defined CPP_BUS_LOG_LEVEL_DEBUG
             va_list args;
             va_start(args, format);
             char buffer[256];
             snprintf(buffer, sizeof(buffer), "[cpp_bus_driver][log debug]->[%s][%u line]: %s", file_name, line_number, format);
             vprintf(buffer, args);
             va_end(args);
-#endif
+
             break;
         }
+#endif
+#if defined CPP_BUS_LOG_LEVEL_INFO
         case Log_Level::INFO:
         {
-#if defined CPP_BUS_LOG_LEVEL_INFO
             va_list args;
             va_start(args, format);
             char buffer[256];
             snprintf(buffer, sizeof(buffer), "[cpp_bus_driver][log info]->[%s][%u line]: %s", file_name, line_number, format);
             vprintf(buffer, args);
             va_end(args);
-#endif
+
             break;
         }
+#endif
+#if defined CPP_BUS_LOG_LEVEL_BUS
         case Log_Level::BUS:
         {
-#if defined CPP_BUS_LOG_LEVEL_BUS
             va_list args;
             va_start(args, format);
             char buffer[256];
             snprintf(buffer, sizeof(buffer), "[cpp_bus_driver][log bus]->[%s][%u line]: %s", file_name, line_number, format);
             vprintf(buffer, args);
             va_end(args);
-#endif
+
             break;
         }
+#endif
+#if defined CPP_BUS_LOG_LEVEL_CHIP
         case Log_Level::CHIP:
         {
-#if defined CPP_BUS_LOG_LEVEL_CHIP
             va_list args;
             va_start(args, format);
             char buffer[256];
             snprintf(buffer, sizeof(buffer), "[cpp_bus_driver][log chip]->[%s][%u line]: %s", file_name, line_number, format);
             vprintf(buffer, args);
             va_end(args);
-#endif
+
             break;
         }
-
+#endif
         default:
             break;
         }
