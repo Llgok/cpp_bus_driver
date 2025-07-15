@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-07-10 18:00:51
+ * @LastEditTime: 2025-07-15 12:09:41
  * @License: GPL 3.0
  */
 #include "hardware_qspi.h"
@@ -184,10 +184,13 @@ namespace Cpp_Bus_Driver
 
     bool Hardware_Qspi::set_cs(bool value)
     {
-        if (pin_write(_cs, value) == false)
+        if (_cs != DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "pin_write fail\n");
-            return false;
+            if (pin_write(_cs, value) == false)
+            {
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "pin_write fail\n");
+                return false;
+            }
         }
 
         return true;
