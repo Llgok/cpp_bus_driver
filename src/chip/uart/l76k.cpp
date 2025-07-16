@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-07-16 09:56:14
+ * @LastEditTime: 2025-07-16 16:00:04
  * @License: GPL 3.0
  */
 #include "l76k.h"
@@ -78,7 +78,7 @@ namespace Cpp_Bus_Driver
 
     bool L76k::get_device_id(size_t *search_index)
     {
-        std::shared_ptr<uint8_t[]> buffer;
+        std::unique_ptr<uint8_t[]> buffer;
         uint32_t buffer_lenght = 0;
 
         if (get_info_data(buffer, &buffer_lenght) == false)
@@ -136,7 +136,7 @@ namespace Cpp_Bus_Driver
         return _bus->clear_rx_buffer_data();
     }
 
-    bool L76k::get_info_data(std::shared_ptr<uint8_t[]> &data, uint32_t *length, uint32_t max_length, uint8_t timeout_count)
+    bool L76k::get_info_data(std::unique_ptr<uint8_t[]> &data, uint32_t *length, uint32_t max_length, uint8_t timeout_count)
     {
         uint8_t buffer_timeout_count = 0;
 
@@ -144,7 +144,7 @@ namespace Cpp_Bus_Driver
         {
             Uart_Guide::delay_ms(_update_freq);
 
-            int32_t buffer_lenght = get_rx_buffer_length();
+            uint32_t buffer_lenght = get_rx_buffer_length();
             if (buffer_lenght > max_length)
             {
                 buffer_lenght = max_length;
@@ -152,10 +152,14 @@ namespace Cpp_Bus_Driver
 
             if (buffer_lenght > 0)
             {
-                data = std::make_shared<uint8_t[]>(buffer_lenght);
+#if defined DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
+                data = std::make_unique<uint8_t[]>(buffer_lenght);
+#else
+                data = std::unique_ptr<uint8_t[]>(new uint8_t[buffer_lenght]);
+#endif
                 if (data == nullptr)
                 {
-                    Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "data std::make_shared fail\n");
+                    Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "data std::make_unique fail\n");
                     data = nullptr;
                     *length = 0;
                     return false;

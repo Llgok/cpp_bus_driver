@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-07-04 11:50:03
+ * @LastEditTime: 2025-07-16 12:10:53
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -152,7 +152,7 @@ namespace Cpp_Bus_Driver
                     return false;
                 }
                 index += 2;
-                
+
                 break;
             }
 
@@ -199,6 +199,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Iis_Guide::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
     {
         if (_bus->begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
@@ -209,6 +210,7 @@ namespace Cpp_Bus_Driver
 
         return true;
     }
+#endif
 
     bool Sdio_Guide::begin(int32_t freq_hz)
     {

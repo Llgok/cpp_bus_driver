@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2025-07-16 09:31:12
+ * @LastEditTime: 2025-07-16 16:04:18
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -166,6 +166,7 @@ namespace Cpp_Bus_Driver
 
     bool Tool::pin_mode(uint32_t pin, Pin_Mode mode, Pin_Status status)
     {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         gpio_config_t config;
         config.pin_bit_mask = BIT64(pin);
         switch (mode)
@@ -223,10 +224,15 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
+
+#else
+        return false;
+#endif
     }
 
     bool Tool::pin_write(uint32_t pin, bool value)
     {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         esp_err_t assert = gpio_set_level(static_cast<gpio_num_t>(pin), value);
         if (assert != ESP_OK)
         {
@@ -235,12 +241,40 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
+#else
+        return false;
+#endif
     }
 
     bool Tool::pin_read(uint32_t pin)
     {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         return gpio_get_level(static_cast<gpio_num_t>(pin));
+#else
+        return false;
+#endif
     }
+
+    void Tool::delay_ms(uint32_t value)
+    {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+        // 默认状态下vTaskDelay在小于10ms延时的时候不精确
+        vTaskDelay(pdMS_TO_TICKS(value));
+#elif defined ARDUINO
+        delay(value);
+#endif
+    }
+
+    void Tool::delay_us(uint32_t value)
+    {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+        usleep(value);
+#elif defined ARDUINO
+        delayMicroseconds(value);
+#endif
+    }
+
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
 
     bool Tool::create_gpio_interrupt(uint32_t pin, Interrupt_Mode mode, void (*interrupt)(void *))
     {
@@ -350,17 +384,6 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
-    }
-
-    void Tool::delay_ms(uint32_t value)
-    {
-        // 默认状态下vTaskDelay在小于10ms延时的时候不精确
-        vTaskDelay(pdMS_TO_TICKS(value));
-    }
-
-    void Tool::delay_us(uint32_t value)
-    {
-        usleep(value);
     }
 
     bool Tool::create_pwm(int32_t pin, ledc_channel_t channel, uint32_t freq_hz, uint32_t duty, ledc_mode_t speed_mode,
@@ -504,10 +527,11 @@ namespace Cpp_Bus_Driver
 
         return true;
     }
+#endif
 
-    bool Gnss::parse_rmc_info(std::shared_ptr<uint8_t[]> data, size_t length, Rmc &rmc)
+    bool Gnss::parse_rmc_info(const uint8_t *data, size_t length, Rmc &rmc)
     {
-        assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "parse_rmc_info(length: %d): \n---begin---\n%s\n---end---\n", length, data.get());
+        assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "parse_rmc_info(length: %d): \n---begin---\n%s\n---end---\n", length, data);
 
         size_t buffer_index = 0;
         const char *buffer_cmd = "$GNRMC";
@@ -517,7 +541,7 @@ namespace Cpp_Bus_Driver
         // 循环搜索数据里面所有的命令
         while (1)
         {
-            if (search(data.get() + buffer_used_size, length - buffer_used_size, buffer_cmd, std::strlen(buffer_cmd), &buffer_index) == false)
+            if (search(data + buffer_used_size, length - buffer_used_size, buffer_cmd, std::strlen(buffer_cmd), &buffer_index) == false)
             {
                 // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
                 buffer_exit_flag = true;
@@ -550,7 +574,7 @@ namespace Cpp_Bus_Driver
                             // 确保数据长度正确
                             size_t buffer_index_2 = 0;
                             const char *buffer_cmd_2 = ",";
-                            if (search(data.get() + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
+                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
                             {
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
                                 break;
@@ -593,7 +617,7 @@ namespace Cpp_Bus_Driver
                             // 确保数据长度正确
                             size_t buffer_index_2 = 0;
                             const char *buffer_cmd_2 = ",";
-                            if (search(data.get() + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
+                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
                             {
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
                                 break;
@@ -639,7 +663,7 @@ namespace Cpp_Bus_Driver
                             // 确保数据长度正确
                             size_t buffer_index_2 = 0;
                             const char *buffer_cmd_2 = ",";
-                            if (search(data.get() + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
+                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
                             {
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
                                 break;
@@ -689,7 +713,7 @@ namespace Cpp_Bus_Driver
                             // 确保数据长度正确
                             size_t buffer_index_2 = 0;
                             const char *buffer_cmd_2 = ",";
-                            if (search(data.get() + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
+                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
                             {
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
                                 break;
@@ -732,9 +756,9 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Gnss::parse_gga_info(std::shared_ptr<uint8_t[]> data, size_t length, Gga &gga)
+    bool Gnss::parse_gga_info(const uint8_t *data, size_t length, Gga &gga)
     {
-        assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "parse_gga_info(length: %d): \n---begin---\n%s\n---end---\n", length, data.get());
+        assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "parse_gga_info(length: %d): \n---begin---\n%s\n---end---\n", length, data);
 
         size_t buffer_index = 0;
         const char *buffer_cmd = "$GNGGA";
@@ -744,7 +768,7 @@ namespace Cpp_Bus_Driver
         // 循环搜索数据里面所有的命令
         while (1)
         {
-            if (search(data.get() + buffer_used_size, length - buffer_used_size, buffer_cmd, std::strlen(buffer_cmd), &buffer_index) == false)
+            if (search(data + buffer_used_size, length - buffer_used_size, buffer_cmd, std::strlen(buffer_cmd), &buffer_index) == false)
             {
                 // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
                 break;
@@ -777,7 +801,7 @@ namespace Cpp_Bus_Driver
                             // 确保数据长度正确
                             size_t buffer_index_2 = 0;
                             const char *buffer_cmd_2 = ",";
-                            if (search(data.get() + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
+                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
                             {
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
                                 break;
@@ -817,7 +841,7 @@ namespace Cpp_Bus_Driver
                             // 确保数据长度正确
                             size_t buffer_index_2 = 0;
                             const char *buffer_cmd_2 = ",";
-                            if (search(data.get() + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
+                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
                             {
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
                                 break;
@@ -863,7 +887,7 @@ namespace Cpp_Bus_Driver
                             // 确保数据长度正确
                             size_t buffer_index_2 = 0;
                             const char *buffer_cmd_2 = ",";
-                            if (search(data.get() + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
+                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
                             {
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
                                 break;
@@ -916,7 +940,7 @@ namespace Cpp_Bus_Driver
                             // 确保数据长度正确
                             size_t buffer_index_2 = 0;
                             const char *buffer_cmd_2 = ",";
-                            if (search(data.get() + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
+                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
                             {
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
                                 break;
@@ -940,7 +964,7 @@ namespace Cpp_Bus_Driver
                         {
                             size_t buffer_index_3 = 0;
 
-                            if (search(data.get() + i, length - i, ",", 1, &buffer_index_3) == false) // 搜索下一个
+                            if (search(data + i, length - i, ",", 1, &buffer_index_3) == false) // 搜索下一个
                             {
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
                                 break;
@@ -948,7 +972,7 @@ namespace Cpp_Bus_Driver
 
                             char buffer_1[buffer_index_3 + 1] = {0};
 
-                            memcpy(buffer_1, data.get() + i, buffer_index_3);
+                            memcpy(buffer_1, data + i, buffer_index_3);
 
                             buffer_1[buffer_index_3] = '\0';
 
@@ -974,5 +998,4 @@ namespace Cpp_Bus_Driver
 
         return true;
     }
-
 }

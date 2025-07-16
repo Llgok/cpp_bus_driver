@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-14 16:47:15
+ * @LastEditTime: 2025-07-16 15:38:12
  * @License: GPL 3.0
  */
 #include "Sx126x.h"
@@ -1759,7 +1759,7 @@ namespace Cpp_Bus_Driver
 
     bool Sx126x::assert_gfsk_packet_status(uint32_t assert_status, Gfsk_Packet_Status &status)
     {
-        if (assert_status == -1)
+        if (assert_status == static_cast<uint32_t>(-1))
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read error\n");
             return false;
@@ -1781,7 +1781,7 @@ namespace Cpp_Bus_Driver
 
     bool Sx126x::assert_gfsk_packet_metrics(uint32_t assert_metrics, Packet_Metrics &metrics)
     {
-        if (assert_metrics == -1)
+        if (assert_metrics == static_cast<uint32_t>(-1))
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
@@ -1891,7 +1891,11 @@ namespace Cpp_Bus_Driver
 
     bool Sx126x::clear_buffer(void)
     {
-        std::shared_ptr<uint8_t[]> buffer = std::make_shared<uint8_t[]>(SX126X_MAX_TRANSMIT_BUFFER_SIZE);
+#if defined DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
+        std::unique_ptr<uint8_t[]> buffer = std::make_unique<uint8_t[]>(SX126X_MAX_TRANSMIT_BUFFER_SIZE);
+#else
+        std::unique_ptr<uint8_t[]> buffer(new uint8_t[SX126X_MAX_TRANSMIT_BUFFER_SIZE]);
+#endif
 
         memset(buffer.get(), 0, SX126X_MAX_TRANSMIT_BUFFER_SIZE);
 

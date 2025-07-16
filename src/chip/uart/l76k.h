@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-16 10:27:32
+ * @LastEditTime: 2025-07-16 15:57:49
  * @License: GPL 3.0
  */
 
@@ -124,7 +124,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-03-24 10:03:31
          */
-        bool get_info_data(std::shared_ptr<uint8_t[]> &data, uint32_t *length, uint32_t max_length = L76K_UART_RX_MAX_SIZE, uint8_t timeout_count = GET_INFORMATION_TIMEOUT_COUNT);
+        bool get_info_data(std::unique_ptr<uint8_t[]> &data, uint32_t *length, uint32_t max_length = L76K_UART_RX_MAX_SIZE, uint8_t timeout_count = GET_INFORMATION_TIMEOUT_COUNT);
 
         /**
          * @brief 设置定位频率

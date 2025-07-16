@@ -2,13 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-07-15 12:09:41
+ * @LastEditTime: 2025-07-16 11:15:36
  * @License: GPL 3.0
  */
 #include "hardware_qspi.h"
 
 namespace Cpp_Bus_Driver
 {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Hardware_Qspi::begin(int32_t freq_hz, int32_t cs)
     {
         if (freq_hz == DEFAULT_CPP_BUS_DRIVER_VALUE)
@@ -195,5 +196,6 @@ namespace Cpp_Bus_Driver
 
         return true;
     }
+#endif
 
 }

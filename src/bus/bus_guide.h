@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-07-04 12:05:06
+ * @LastEditTime: 2025-07-16 11:28:28
  * @License: GPL 3.0
  */
 
@@ -25,12 +25,14 @@ namespace Cpp_Bus_Driver
         virtual bool write_read(const uint8_t *write_data, size_t write_length, uint8_t *read_data, size_t read_length) = 0;
         virtual bool probe(const uint16_t address) = 0;
 
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         virtual i2c_cmd_handle_t cmd_link_create(void);
         virtual bool start_transmit(i2c_cmd_handle_t cmd_handle, i2c_rw_t rw, bool ack_en = true);
         virtual bool write(i2c_cmd_handle_t cmd_handle, uint8_t data, bool ack_en = true);
         virtual bool write(i2c_cmd_handle_t cmd_handle, const uint8_t *data, size_t data_len, bool ack_en = true);
         virtual bool read(i2c_cmd_handle_t cmd_handle, uint8_t *data, size_t data_len, i2c_ack_type_t ack = I2C_MASTER_LAST_NACK);
         virtual bool stop_transmit(i2c_cmd_handle_t cmd_handle);
+#endif
 
         bool read(const uint8_t write_c8, uint8_t *read_data, size_t read_data_length = 1);
         bool write(const uint8_t write_c8, const uint8_t write_d8);
@@ -47,8 +49,9 @@ namespace Cpp_Bus_Driver
         Bus_Iis_Guide()
         {
         }
-
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         virtual bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) = 0;
+#endif
         virtual size_t read(void *data, size_t byte) = 0;
         virtual size_t write(const void *data, size_t byte) = 0;
         // virtual bool write_read(const uint8_t *write_data, size_t write_length, uint8_t *read_data, size_t read_length) = 0;

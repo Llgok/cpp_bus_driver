@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-04-09 09:36:55
+ * @LastEditTime: 2025-07-16 16:15:57
  * @License: GPL 3.0
  */
 #pragma once
@@ -15,14 +15,25 @@ namespace Cpp_Bus_Driver
     {
     public:
         int32_t _sda, _scl;
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         i2c_port_t _port;
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        uint8_t _port;
+#endif
         int16_t _address = DEFAULT_CPP_BUS_DRIVER_VALUE;
         int32_t _freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE;
 
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         Hardware_Iic_2(int32_t sda, int32_t scl, i2c_port_t port = I2C_NUM_0)
             : _sda(sda), _scl(scl), _port(port)
         {
         }
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        Hardware_Iic_2(int32_t sda, int32_t scl, uint8_t port = 0)
+            : _sda(sda), _scl(scl), _port(port)
+        {
+        }
+#endif
 
         bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE, int16_t address = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
         bool read(uint8_t *data, size_t length) override;
@@ -31,11 +42,13 @@ namespace Cpp_Bus_Driver
 
         bool probe(const uint16_t address) override;
 
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         i2c_cmd_handle_t cmd_link_create(void) override;
         bool start_transmit(i2c_cmd_handle_t cmd_handle, i2c_rw_t rw, bool ack_en = true) override;
         bool read(i2c_cmd_handle_t cmd_handle, uint8_t *data, size_t data_len, i2c_ack_type_t ack = I2C_MASTER_LAST_NACK) override;
         bool write(i2c_cmd_handle_t cmd_handle, uint8_t data, bool ack_en) override;
         bool write(i2c_cmd_handle_t cmd_handle, const uint8_t *data, size_t data_len, bool ack_en = true) override;
         bool stop_transmit(i2c_cmd_handle_t cmd_handle) override;
+#endif
     };
 }

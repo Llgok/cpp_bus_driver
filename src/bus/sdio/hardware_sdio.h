@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-06-16 17:51:12
+ * @LastEditTime: 2025-07-16 11:15:03
  * @License: GPL 3.0
  */
 #pragma once
@@ -11,6 +11,7 @@
 
 namespace Cpp_Bus_Driver
 {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     class Hardware_Sdio : public Bus_Sdio_Guide
     {
     private:
@@ -114,4 +115,5 @@ namespace Cpp_Bus_Driver
          */
         bool write_block(uint32_t function, uint32_t write_c32, const void *data, size_t byte) override;
     };
+#endif
 }

@@ -2,13 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:26:23
- * @LastEditTime: 2025-06-18 14:48:47
+ * @LastEditTime: 2025-07-16 11:33:57
  * @License: GPL 3.0
  */
 #include "hardware_uart.h"
 
 namespace Cpp_Bus_Driver
 {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Hardware_Uart::begin(int32_t baud_rate)
     {
         if (baud_rate == DEFAULT_CPP_BUS_DRIVER_VALUE)
@@ -139,4 +140,5 @@ namespace Cpp_Bus_Driver
 
         return buffer;
     }
+#endif
 }

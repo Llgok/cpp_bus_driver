@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-06-16 18:12:04
+ * @LastEditTime: 2025-07-16 13:43:02
  * @License: GPL 3.0
  */
 #include "es8311.h"
@@ -47,6 +47,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Es8311::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
     {
         if (Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
@@ -56,6 +57,7 @@ namespace Cpp_Bus_Driver
         }
         return true;
     }
+#endif
 
     uint16_t Es8311::get_device_id(void)
     {

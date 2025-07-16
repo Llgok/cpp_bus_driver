@@ -2,13 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-06-18 14:47:44
+ * @LastEditTime: 2025-07-16 11:14:44
  * @License: GPL 3.0
  */
 #include "hardware_iis.h"
 
 namespace Cpp_Bus_Driver
 {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Hardware_Iis::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
     {
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _port: %d\n", _port);
@@ -219,4 +220,5 @@ namespace Cpp_Bus_Driver
 
         return buffer;
     }
+#endif
 }

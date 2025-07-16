@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 17:58:03
- * @LastEditTime: 2025-07-16 10:22:06
+ * @LastEditTime: 2025-07-16 11:41:02
  * @License: GPL 3.0
  */
 
@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
     class Tool
     {
-
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     private:
         struct Pwm
         {
@@ -26,6 +26,7 @@ namespace Cpp_Bus_Driver
             ledc_timer_t timer_num = ledc_timer_t::LEDC_TIMER_0;
             ledc_sleep_mode_t sleep_mode = ledc_sleep_mode_t::LEDC_SLEEP_MODE_NO_ALIVE_NO_PD;
         };
+#endif
 
     protected:
         enum class Init_List_Cmd
@@ -79,7 +80,9 @@ namespace Cpp_Bus_Driver
             PULLDOWN,
         };
 
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         Pwm _pwm;
+#endif
 
         Tool()
         {
@@ -104,11 +107,12 @@ namespace Cpp_Bus_Driver
         bool pin_write(uint32_t pin, bool value);
         bool pin_read(uint32_t pin);
 
-        bool create_gpio_interrupt(uint32_t pin, Interrupt_Mode mode, void (*interrupt)(void *));
-        bool delete_gpio_interrupt(uint32_t pin);
-
         void delay_ms(uint32_t value);
         void delay_us(uint32_t value);
+
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+        bool create_gpio_interrupt(uint32_t pin, Interrupt_Mode mode, void (*interrupt)(void *));
+        bool delete_gpio_interrupt(uint32_t pin);
 
         bool create_pwm(int32_t pin, ledc_channel_t channel, uint32_t freq_hz, uint32_t duty = 0, ledc_mode_t speed_mode = ledc_mode_t::LEDC_LOW_SPEED_MODE,
                         ledc_timer_bit_t duty_resolution = ledc_timer_bit_t::LEDC_TIMER_10_BIT, ledc_timer_t timer_num = ledc_timer_t::LEDC_TIMER_0,
@@ -133,6 +137,8 @@ namespace Cpp_Bus_Driver
         bool start_pwm_gradient_time(uint8_t target_duty, int32_t time_ms);
 
         bool stop_pwm(uint32_t idle_level = 0);
+
+#endif
     };
 
     class Gnss : public Tool
@@ -267,7 +273,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-02-18 11:54:34
          */
-        bool parse_rmc_info(std::shared_ptr<uint8_t[]> data, size_t length, Rmc &rmc);
+        bool parse_rmc_info(const uint8_t *data, size_t length, Rmc &rmc);
 
         /**
          * @brief 解析gga信息
@@ -277,7 +283,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-02-18 11:54:34
          */
-        bool parse_gga_info(std::shared_ptr<uint8_t[]> data, size_t length, Gga &gga);
+        bool parse_gga_info(const uint8_t *data, size_t length, Gga &gga);
     };
 
 }

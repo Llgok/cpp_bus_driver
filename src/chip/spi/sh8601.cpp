@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-14 09:39:30
+ * @LastEditTime: 2025-07-16 13:41:34
  * @License: GPL 3.0
  */
 #include "sh8601.h"
@@ -132,19 +132,23 @@ namespace Cpp_Bus_Driver
 
         if (_color_format == Color_Format::RGB666)
         {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
             if (_bus->write(data, w * h * 3, SPI_TRANS_MODE_QIO) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write_stream fail\n");
                 return false;
             }
+#endif
         }
         else
         {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
             if (_bus->write(data, w * h * (static_cast<uint8_t>(_color_format) / 8), SPI_TRANS_MODE_QIO) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write_stream fail\n");
                 return false;
             }
+#endif
         }
 
         return true;

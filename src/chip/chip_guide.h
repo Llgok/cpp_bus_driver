@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-06-27 16:13:41
+ * @LastEditTime: 2025-07-16 11:29:30
  * @License: GPL 3.0
  */
 #pragma once
@@ -90,8 +90,9 @@ namespace Cpp_Bus_Driver
             : _bus(bus)
         {
         }
-
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         virtual bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width);
+#endif
     };
 
     class Sdio_Guide : public Tool

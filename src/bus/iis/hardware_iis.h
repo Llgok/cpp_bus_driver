@@ -12,6 +12,7 @@
 
 namespace Cpp_Bus_Driver
 {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     class Hardware_Iis : public Bus_Iis_Guide
     {
     private:
@@ -57,4 +58,5 @@ namespace Cpp_Bus_Driver
 
         // bool end() override;
     };
+#endif
 }

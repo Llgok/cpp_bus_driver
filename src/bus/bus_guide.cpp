@@ -2,13 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-06-27 15:58:18
+ * @LastEditTime: 2025-07-16 11:27:24
  * @License: GPL 3.0
  */
 #include "bus_guide.h"
 
 namespace Cpp_Bus_Driver
 {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     i2c_cmd_handle_t Bus_Iic_Guide::cmd_link_create(void)
     {
         assert_log(Log_Level::BUS, __FILE__, __LINE__, "cmd_link_create fail\n");
@@ -44,6 +45,8 @@ namespace Cpp_Bus_Driver
         assert_log(Log_Level::BUS, __FILE__, __LINE__, "stop_transmit fail\n");
         return false;
     }
+
+#endif
 
     bool Bus_Iic_Guide::read(const uint8_t write_c8, uint8_t *read_data, size_t read_data_length)
     {

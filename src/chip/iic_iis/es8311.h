@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:42:57
- * @LastEditTime: 2025-06-16 18:12:17
+ * @LastEditTime: 2025-07-16 13:42:46
  * @License: GPL 3.0
  */
 
@@ -325,7 +325,9 @@ namespace Cpp_Bus_Driver
         }
 
         bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) override;
+#endif
 
         uint16_t get_device_id(void);
 

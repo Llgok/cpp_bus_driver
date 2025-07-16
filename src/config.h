@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2025-06-30 15:39:27
+ * @LastEditTime: 2025-07-16 16:06:35
  * @License: GPL 3.0
  */
 #pragma once
@@ -30,14 +30,29 @@
 #include "driver/sdmmc_host.h"
 #include "sdmmc_cmd.h"
 
-#define MCU_FRAMEWORK_ESPIDF
+#define DEVELOPMENT_FRAMEWORK_ESPIDF
+#define DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
 
 #elif defined ARDUINO
+#include <stdarg.h>
+#include "Arduino.h"
 
-#define MCU_FRAMEWORK_ARDUINO
+#if defined NRF52840_XXAA
+
+#undef RISING
+#undef FALLING
+#undef CHANGE
+#undef INPUT
+#undef OUTPUT
+#undef LOW
+#undef HIGH
+
+#define DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+
+#endif
 
 #else
-#error "development framework for mcu not selected"
+#error "development framework not selected"
 #endif
 
 #include "tool.h"
@@ -62,4 +77,6 @@
 
 #define DEFAULT_CPP_BUS_DRIVER_IIS_WAIT_TIMEOUT_MS 1000
 
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
 #define DEFAULT_CPP_BUS_DRIVER_SDIO_FREQ_HZ SDMMC_FREQ_DEFAULT
+#endif

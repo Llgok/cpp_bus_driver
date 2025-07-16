@@ -11,6 +11,7 @@
 
 namespace Cpp_Bus_Driver
 {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     class Hardware_Spi : public Bus_Spi_Guide
     {
     private:
@@ -33,4 +34,5 @@ namespace Cpp_Bus_Driver
         bool read(void *data, size_t byte) override;
         bool write_read(const void *write_data, void *read_data, size_t data_byte) override;
     };
+#endif
 }

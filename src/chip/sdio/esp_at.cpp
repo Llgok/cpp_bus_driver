@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-06-16 18:11:28
+ * @LastEditTime: 2025-07-16 15:30:10
  * @License: GPL 3.0
  */
 #include "esp_at.h"
@@ -534,7 +534,7 @@ namespace Cpp_Bus_Driver
 
     bool Esp_At::assert_rx_new_packet_flag(uint32_t flag)
     {
-        if (flag == -1)
+        if (flag == static_cast<uint32_t>(-1))
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "flag error\n");
             return false;
@@ -726,7 +726,11 @@ namespace Cpp_Bus_Driver
 
         *byte = buffer_lenght;
 
+#if defined DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
         data = std::make_unique<uint8_t[]>(buffer_lenght);
+#else
+        data = std::unique_ptr<uint8_t[]>(new uint8_t[buffer_lenght]);
+#endif
 
         size_t buffer_block_length = (buffer_lenght / ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE) * ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE;
         if (buffer_block_length != 0)

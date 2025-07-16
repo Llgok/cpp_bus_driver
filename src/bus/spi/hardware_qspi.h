@@ -11,6 +11,7 @@
 
 namespace Cpp_Bus_Driver
 {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     class Hardware_Qspi : public Bus_Qspi_Guide
     {
     private:
@@ -40,4 +41,5 @@ namespace Cpp_Bus_Driver
 
         bool set_cs(bool value);
     };
+#endif
 }

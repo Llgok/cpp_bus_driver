@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-04-09 10:29:01
+ * @LastEditTime: 2025-07-16 11:06:52
  * @License: GPL 3.0
  */
 #pragma once
@@ -11,6 +11,7 @@
 
 namespace Cpp_Bus_Driver
 {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     class Hardware_Iic_1 : public Bus_Iic_Guide
     {
     public:
@@ -34,4 +35,5 @@ namespace Cpp_Bus_Driver
 
         bool probe(const uint16_t address) override;
     };
+#endif
 }

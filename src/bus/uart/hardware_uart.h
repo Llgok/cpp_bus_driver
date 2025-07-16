@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-06-16 17:51:21
+ * @LastEditTime: 2025-07-16 11:16:03
  * @License: GPL 3.0
  */
 #pragma once
@@ -11,6 +11,7 @@
 
 namespace Cpp_Bus_Driver
 {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     class Hardware_Uart : public Bus_Uart_Guide
     {
     private:
@@ -35,4 +36,5 @@ namespace Cpp_Bus_Driver
         bool set_baud_rate(uint32_t baud_rate) override;
         uint32_t get_baud_rate(void) override;
     };
+#endif
 }
