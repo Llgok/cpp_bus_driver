@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2025-07-16 16:04:18
+ * @LastEditTime: 2025-07-16 18:04:31
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -579,34 +579,64 @@ namespace Cpp_Bus_Driver
                                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
                                 break;
                             }
-                            if (buffer_index_2 != 10)
+
+                            switch (buffer_index_2)
                             {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<UTC> length error((length = %d) != 10)\n", buffer_index_2);
+                            case 9: // 可能为9位（hhmmss.ss）
+                            {
+                                char buffer_hour[] = {data[i], data[i + 1], '\0'};
+                                char buffer_minute[] = {data[i + 2], data[i + 3], '\0'};
+                                // data[i + 6]为小数点
+                                char buffer_second[] =
+                                    {
+                                        data[i + 4],
+                                        data[i + 5],
+                                        data[i + 6],
+                                        data[i + 7],
+                                        data[i + 8],
+                                        '\0',
+                                    };
+
+                                rmc.utc.hour = std::stoi(buffer_hour);
+                                rmc.utc.minute = std::stoi(buffer_minute);
+                                rmc.utc.second = std::stof(buffer_second, nullptr);
+                                rmc.utc.update_flag = true;
+
+                                i += (9 - 1);
+                                break;
+                            }
+                            case 10: // 可能为10位（hhmmss.sss）
+                            {
+
+                                char buffer_hour[] = {data[i], data[i + 1], '\0'};
+                                char buffer_minute[] = {data[i + 2], data[i + 3], '\0'};
+                                // data[i + 6]为小数点
+                                char buffer_second[] =
+                                    {
+                                        data[i + 4],
+                                        data[i + 5],
+                                        data[i + 6],
+                                        data[i + 7],
+                                        data[i + 8],
+                                        data[i + 9],
+                                        '\0',
+                                    };
+
+                                rmc.utc.hour = std::stoi(buffer_hour);
+                                rmc.utc.minute = std::stoi(buffer_minute);
+                                rmc.utc.second = std::stof(buffer_second, nullptr);
+                                rmc.utc.update_flag = true;
+
+                                i += (10 - 1);
+                                break;
+                            }
+                            default:
+                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<UTC> length error((length = %d) != 9 or 10)\n", buffer_index_2);
                                 i += (buffer_index_2 - 1);
                                 buffer_exit_flag = false;
                                 break;
                             }
 
-                            char buffer_hour[] = {data[i], data[i + 1], '\0'};
-                            char buffer_minute[] = {data[i + 2], data[i + 3], '\0'};
-                            // data[i + 6]为小数点
-                            char buffer_second[] =
-                                {
-                                    data[i + 4],
-                                    data[i + 5],
-                                    data[i + 6],
-                                    data[i + 7],
-                                    data[i + 8],
-                                    data[i + 9],
-                                    '\0',
-                                };
-
-                            rmc.utc.hour = std::stoi(buffer_hour);
-                            rmc.utc.minute = std::stoi(buffer_minute);
-                            rmc.utc.second = std::stof(buffer_second, nullptr);
-                            rmc.utc.update_flag = true;
-
-                            i += (10 - 1);
                             break;
                         }
                         case 2: //<Status>
