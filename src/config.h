@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2025-07-16 16:06:35
+ * @LastEditTime: 2025-07-16 16:33:02
  * @License: GPL 3.0
  */
 #pragma once
@@ -39,13 +39,15 @@
 
 #if defined NRF52840_XXAA
 
+#undef LOW
+#undef HIGH
+
+#undef INPUT
+#undef OUTPUT
+
 #undef RISING
 #undef FALLING
 #undef CHANGE
-#undef INPUT
-#undef OUTPUT
-#undef LOW
-#undef HIGH
 
 #define DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 

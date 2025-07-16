@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:14:18
- * @LastEditTime: 2025-07-14 09:16:26
+ * @LastEditTime: 2025-07-16 16:32:43
  * @License: GPL 3.0
  */
 
@@ -40,3 +40,17 @@
 #include "./chip/spi/sh8601.h"
 #include "./chip/uart/l76k.h"
 #include "./chip/sdio/esp_at.h"
+
+#if defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+
+#define LOW (0x0)
+#define HIGH (0x1)
+
+#define INPUT (0x0)
+#define OUTPUT (0x1)
+
+#define CHANGE 2
+#define FALLING 3
+#define RISING 4
+
+#endif
