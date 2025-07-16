@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-05 12:01:44
+ * @LastEditTime: 2025-07-16 10:27:32
  * @License: GPL 3.0
  */
 
@@ -12,7 +12,7 @@
 
 namespace Cpp_Bus_Driver
 {
-    class L76k : public Uart_Guide
+    class L76k : public Uart_Guide, public Gnss
     {
     private:
         static constexpr uint8_t GET_INFORMATION_TIMEOUT_COUNT = 3; // 获取信息超时计数
@@ -65,123 +65,6 @@ namespace Cpp_Bus_Driver
             GPS_GLONASS,
             BEIDOU_GLONASS,
             GPS_BEIDOU_GLONASS,
-        };
-
-        struct Rmc
-        {
-            struct
-            {
-                uint8_t hour = -1;   // 小时
-                uint8_t minute = -1; // 分钟
-                float second = -1;   // 秒
-
-                bool update_flag = false;
-            } utc;
-
-            // 定位系统状态。
-            // A = 数据有效
-            // V = 无效
-            // D = 差分
-            std::string location_status;
-
-            struct
-            {
-                struct
-                {
-                    uint8_t degrees = -1;        // 度
-                    double minutes = -1;         // 分
-                    double degrees_minutes = -1; // 带小数的度分转度
-
-                    // 纬度方向
-                    // N = 北
-                    // S = 南
-                    std::string direction;
-
-                    bool update_flag = false;           // 度分更新标志
-                    bool direction_update_flag = false; // 方向更新标志
-                } lat;
-
-                struct
-                {
-                    uint8_t degrees = -1;
-                    double minutes = -1;
-                    double degrees_minutes = -1;
-
-                    // 经度方向
-                    // E = 东
-                    // W = 西
-                    std::string direction;
-
-                    bool update_flag = false;
-                    bool direction_update_flag = false;
-                } lon;
-
-            } location;
-
-            struct
-            {
-                uint8_t day = -1;   // 日
-                uint8_t month = -1; // 月
-                uint8_t year = -1;  // 年
-
-                bool update_flag = false;
-            } data;
-        };
-
-        struct Gga
-        {
-            struct
-            {
-                uint8_t hour = -1;   // 小时
-                uint8_t minute = -1; // 分钟
-                float second = -1;   // 秒
-
-                bool update_flag = false;
-            } utc;
-
-            struct
-            {
-                struct
-                {
-                    uint8_t degrees = -1;       // 度
-                    float minutes = -1;         // 分
-                    float degrees_minutes = -1; // 带小数的度分转度
-
-                    // 纬度方向
-                    // N = 北
-                    // S = 南
-                    std::string direction;
-
-                    bool update_flag = false;           // 度分更新标志
-                    bool direction_update_flag = false; // 方向更新标志
-                } lat;
-
-                struct
-                {
-                    uint8_t degrees = -1;
-                    float minutes = -1;
-                    float degrees_minutes = -1;
-
-                    // 经度方向
-                    // E = 东
-                    // W = 西
-                    std::string direction;
-
-                    bool update_flag = false;
-                    bool direction_update_flag = false;
-                } lon;
-
-            } location;
-
-            // GPS 定位模式/状态指示
-            // 0 = 定位不可用或无效
-            // 1 = GPS SPS 模式，定位有效
-            // 2 = 差分 GPS、SPS 模式或 SBAS定位有效
-            // 6 = 估算（航位推算）模式
-            uint8_t gps_mode_status = -1;
-            uint8_t online_satellite_count = -1; // 在线的卫星数量
-
-            float hdop = -1;
         };
 
         uint16_t _update_freq = 1000; // 默认更新频率为 1000ms（1Hz）
@@ -242,26 +125,6 @@ namespace Cpp_Bus_Driver
          * @Date 2025-03-24 10:03:31
          */
         bool get_info_data(std::shared_ptr<uint8_t[]> &data, uint32_t *length, uint32_t max_length = L76K_UART_RX_MAX_SIZE, uint8_t timeout_count = GET_INFORMATION_TIMEOUT_COUNT);
-
-        /**
-         * @brief 解析rmc信息
-         * @param data 要解析的数据
-         * @param length 要解析的数据长度
-         * @param &rmc 返回的解析结构体
-         * @return
-         * @Date 2025-02-18 11:54:34
-         */
-        bool parse_rmc_info(std::shared_ptr<uint8_t[]> data, size_t length, Rmc &rmc);
-
-        /**
-         * @brief 解析gga信息
-         * @param data 要解析的数据
-         * @param length 要解析的数据长度
-         * @param &gga 返回的解析结构体
-         * @return
-         * @Date 2025-02-18 11:54:34
-         */
-        bool parse_gga_info(std::shared_ptr<uint8_t[]> data, size_t length, Gga &gga);
 
         /**
          * @brief 设置定位频率
