@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-17 12:01:26
+ * @LastEditTime: 2025-07-17 14:18:43
  * @License: GPL 3.0
  */
 
@@ -57,6 +57,16 @@ namespace Cpp_Bus_Driver
         int32_t _rst;
 
     public:
+        struct Irq_Status // 中断状态
+        {
+            bool vin_fault_flag = false;
+            bool thermal_shutdown_flag = false;
+            bool battery_over_voltage_fault_flag = false;
+            bool safety_timer_expiration_fault_flag = false;
+            bool ntc_exceeding_hot_flag = false;
+            bool ntc_exceeding_cold_flag = false;
+        };
+
         Sgm41562xx(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
             : Iic_Guide(bus, address), _rst(rst)
         {
@@ -65,5 +75,21 @@ namespace Cpp_Bus_Driver
         bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
 
         uint8_t get_device_id(void);
+
+        /**
+         * @brief 获取中断标志
+         * @return
+         * @Date 2025-07-17 13:49:36
+         */
+        uint8_t get_irq_flag(void);
+
+        /**
+         * @brief 中断解析，详细请参考SGM41562手册表格 Table 13. REG09 Register Details
+         * @param irq_flag 解析状态语句，由get_irq_flag()函数获取
+         * @param &status 使用Irq_Status结构体配置，相应位自动置位
+         * @return
+         * @Date 2025-07-17 13:59:38
+         */
+        bool parse_irq_status(uint8_t irq_flag, Irq_Status &status);
     };
 }
