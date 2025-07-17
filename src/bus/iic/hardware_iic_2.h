@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-07-16 16:15:57
+ * @LastEditTime: 2025-07-17 09:34:52
  * @License: GPL 3.0
  */
 #pragma once
@@ -18,7 +18,7 @@ namespace Cpp_Bus_Driver
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         i2c_port_t _port;
 #elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-        uint8_t _port;
+        TwoWire *_iic_handle;
 #endif
         int16_t _address = DEFAULT_CPP_BUS_DRIVER_VALUE;
         int32_t _freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE;
@@ -29,8 +29,8 @@ namespace Cpp_Bus_Driver
         {
         }
 #elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-        Hardware_Iic_2(int32_t sda, int32_t scl, uint8_t port = 0)
-            : _sda(sda), _scl(scl), _port(port)
+        Hardware_Iic_2(int32_t sda, int32_t scl, TwoWire *iic_handle = &Wire)
+            : _sda(sda), _scl(scl), _iic_handle(iic_handle)
         {
         }
 #endif

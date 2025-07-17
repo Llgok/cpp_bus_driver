@@ -152,11 +152,7 @@ namespace Cpp_Bus_Driver
 
             if (buffer_lenght > 0)
             {
-#if defined DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
                 data = std::make_unique<uint8_t[]>(buffer_lenght);
-#else
-                data = std::unique_ptr<uint8_t[]>(new uint8_t[buffer_lenght]);
-#endif
                 if (data == nullptr)
                 {
                     Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "data std::make_unique fail\n");

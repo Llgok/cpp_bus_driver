@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 17:33:08
+ * @LastEditTime: 2025-07-17 10:30:12
  * @License: GPL 3.0
  */
 
@@ -60,7 +60,23 @@ namespace Cpp_Bus_Driver
         bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
 
         uint8_t get_device_id(void);
+
+        /**
+         * @brief 设置输出电压
+         * @param channel 使用Channel::配置
+         * @param voltage DVDD_1和DVDD_2取值528~1504，AVDD_1和AVDD_2取值1504~3424
+         * @return 
+         * @Date 2025-07-17 10:27:58
+         */        
         bool set_output_voltage(Channel channel, uint16_t voltage);
+
+        /**
+         * @brief 设置通道状态
+         * @param channel 使用Channel::配置
+         * @param status 使用Status::配置
+         * @return 
+         * @Date 2025-07-17 10:29:45
+         */        
         bool set_channel_status(Channel channel, Status status);
     };
 }

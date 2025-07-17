@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 17:51:28
+ * @LastEditTime: 2025-07-17 10:34:25
  * @License: GPL 3.0
  */
 
@@ -25,7 +25,7 @@ namespace Cpp_Bus_Driver
             // WO_WRITE_REGISTER = 0xAA,
             // WO_READ_REGISTER,
             // RAM寄存器地址命令
-            WR_RAM_REGISTER = 0x3E,
+            RW_RAM_REGISTER = 0x3E,
 
             RW_CONTROL_STATUS_START = 0x00,
 

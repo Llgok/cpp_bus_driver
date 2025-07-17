@@ -726,11 +726,7 @@ namespace Cpp_Bus_Driver
 
         *byte = buffer_lenght;
 
-#if defined DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
         data = std::make_unique<uint8_t[]>(buffer_lenght);
-#else
-        data = std::unique_ptr<uint8_t[]>(new uint8_t[buffer_lenght]);
-#endif
 
         size_t buffer_block_length = (buffer_lenght / ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE) * ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE;
         if (buffer_block_length != 0)

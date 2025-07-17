@@ -1891,11 +1891,7 @@ namespace Cpp_Bus_Driver
 
     bool Sx126x::clear_buffer(void)
     {
-#if defined DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
         std::unique_ptr<uint8_t[]> buffer = std::make_unique<uint8_t[]>(SX126X_MAX_TRANSMIT_BUFFER_SIZE);
-#else
-        std::unique_ptr<uint8_t[]> buffer(new uint8_t[SX126X_MAX_TRANSMIT_BUFFER_SIZE]);
-#endif
 
         memset(buffer.get(), 0, SX126X_MAX_TRANSMIT_BUFFER_SIZE);
 

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-07-16 11:14:11
+ * @LastEditTime: 2025-07-17 11:51:35
  * @License: GPL 3.0
  */
 #include "hardware_iic_2.h"
@@ -17,7 +17,9 @@ namespace Cpp_Bus_Driver
         }
 
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config address: %#X\n", address);
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config _port: %d\n", _port);
+#endif
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config _sda: %d\n", _sda);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config _scl: %d\n", _scl);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config freq_hz: %d hz\n", freq_hz);
@@ -56,6 +58,13 @@ namespace Cpp_Bus_Driver
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_driver_install fail (error code: %#X)\n", assert);
             // return false;
         }
+
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+
+        _iic_handle->setPins(static_cast<uint8_t>(_sda), static_cast<uint8_t>(_scl));
+        _iic_handle->setClock(freq_hz);
+        _iic_handle->begin();
+
 #endif
 
         _freq_hz = freq_hz;
@@ -73,9 +82,21 @@ namespace Cpp_Bus_Driver
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_read_from_device fail (error code: %#X)\n", assert);
             return false;
         }
-#endif
 
         return true;
+
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        if (_iic_handle->requestFrom(_address, length) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "requestFrom fail\n");
+            return false;
+        }
+        *data = _iic_handle->read();
+
+        return true;
+#else
+        return false;
+#endif
     }
     bool Hardware_Iic_2::write(const uint8_t *data, size_t length)
     {
@@ -86,9 +107,46 @@ namespace Cpp_Bus_Driver
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_write_to_device fail (error code: %#X)\n", assert);
             return false;
         }
-#endif
 
         return true;
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        _iic_handle->beginTransmission(_address);
+
+        size_t assert = _iic_handle->write(data, length);
+        if (assert == 0)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+        else if (assert != length)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "buffer is full\n");
+        }
+
+        assert = _iic_handle->endTransmission();
+        switch (assert)
+        {
+        case 1:
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "data too long\n");
+            return false;
+        case 2:
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "nack on transmit of address\n");
+            return false;
+        case 3:
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "nack on transmit of data\n");
+            return false;
+        case 4:
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "other error\n");
+            return false;
+        default:
+            break;
+        }
+
+        return true;
+
+#else
+        return false;
+#endif
     }
     bool Hardware_Iic_2::write_read(const uint8_t *write_data, size_t write_length, uint8_t *read_data, size_t read_length)
     {
@@ -99,9 +157,54 @@ namespace Cpp_Bus_Driver
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_transmit_receive fail (error code: %#X)\n", assert);
             return false;
         }
-#endif
 
         return true;
+
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        _iic_handle->beginTransmission(_address);
+
+        size_t assert = _iic_handle->write(write_data, write_length);
+        if (assert == 0)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+        else if (assert != write_length)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "buffer is full\n");
+        }
+
+        assert = _iic_handle->endTransmission();
+        switch (assert)
+        {
+        case 1:
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "data too long\n");
+            return false;
+        case 2:
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "nack on transmit of address\n");
+            return false;
+        case 3:
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "nack on transmit of data\n");
+            return false;
+        case 4:
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "other error\n");
+            return false;
+        default:
+            break;
+        }
+
+        if (_iic_handle->requestFrom(_address, read_length) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "requestFrom fail\n");
+            return false;
+        }
+        *read_data = _iic_handle->read();
+
+        return true;
+
+#else
+        return false;
+#endif
     }
 
     bool Hardware_Iic_2::probe(const uint16_t address)
@@ -114,9 +217,36 @@ namespace Cpp_Bus_Driver
             // assert_log(Log_Level::INFO, __FILE__, __LINE__, "i2c_master_read_from_device fail (error code: %#X)\n", assert);
             return false;
         }
-#endif
 
         return true;
+
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+
+        _iic_handle->beginTransmission(address);
+        uint8_t assert = _iic_handle->endTransmission();
+        switch (assert)
+        {
+        case 1:
+            // assert_log(Log_Level::BUS, __FILE__, __LINE__, "data too long\n");
+            return false;
+        case 2:
+            // assert_log(Log_Level::BUS, __FILE__, __LINE__, "nack on transmit of address\n");
+            return false;
+        case 3:
+            // assert_log(Log_Level::BUS, __FILE__, __LINE__, "nack on transmit of data\n");
+            return false;
+        case 4:
+            // assert_log(Log_Level::BUS, __FILE__, __LINE__, "other error\n");
+            return false;
+        default:
+            break;
+        }
+
+        return true;
+
+#else
+        return false;
+#endif
     }
 
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2025-07-16 16:33:02
+ * @LastEditTime: 2025-07-17 11:43:32
  * @License: GPL 3.0
  */
 #pragma once
@@ -18,6 +18,8 @@
 #include <string>
 
 #if defined CONFIG_IDF_INIT_VERSION
+#define DEVELOPMENT_FRAMEWORK_ESPIDF
+
 #include "driver/i2c_master.h"
 #include "driver/i2c.h"
 #include "driver/gpio.h"
@@ -30,14 +32,16 @@
 #include "driver/sdmmc_host.h"
 #include "sdmmc_cmd.h"
 
-#define DEVELOPMENT_FRAMEWORK_ESPIDF
-#define DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
-
 #elif defined ARDUINO
 #include <stdarg.h>
 #include "Arduino.h"
+#include "Wire.h"
 
 #if defined NRF52840_XXAA
+
+#define DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#define DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
+#define CUSTOM_TEMPLATE_MAKE_UNIQUE
 
 #undef LOW
 #undef HIGH
@@ -48,8 +52,6 @@
 #undef RISING
 #undef FALLING
 #undef CHANGE
-
-#define DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 
 #endif
 
@@ -81,4 +83,46 @@
 
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
 #define DEFAULT_CPP_BUS_DRIVER_SDIO_FREQ_HZ SDMMC_FREQ_DEFAULT
+#endif
+
+#if defined CUSTOM_TEMPLATE_MAKE_UNIQUE
+namespace std
+{
+#if defined DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
+    // C++ 11
+    //  通用模板（非数组类型）
+    template <typename T, typename... Args, typename = typename std::enable_if<!std::is_array<T>::value>::type>
+    std::unique_ptr<T> make_unique(Args &&...args)
+    {
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+
+    // 特化模板（动态数组类型）
+    template <typename T, typename = typename std::enable_if<std::is_array<T>::value>::type>
+    std::unique_ptr<T> make_unique(size_t size)
+    {
+        using U = typename std::remove_extent<T>::type; // 获取数组元素类型
+        return std::unique_ptr<T>(new U[size]());       // Value initialization
+    }
+#elif defined DEVELOPMENT_FRAMEWORK_CPP14_SUPPORT
+    // C++ 14
+    // 通用模板（非数组类型）
+    template <typename T, typename... Args, typename = std::enable_if_t<!std::is_array<T>::value>>
+    std::unique_ptr<T> make_unique(Args &&...args)
+    {
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+
+    // 特化模板（动态数组类型）
+    template <typename T, typename = std::enable_if_t<std::is_array<T>::value>>
+    std::unique_ptr<T> make_unique(size_t size)
+    {
+        using U = typename std::remove_extent<T>::type; // 获取数组元素类型
+        return std::unique_ptr<T>(new U[size]());       // Value initialization
+    }
+
+#else
+#error "development framework not selected"
+#endif
+}
 #endif

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-06-16 18:01:42
+ * @LastEditTime: 2025-07-17 10:34:16
  * @License: GPL 3.0
  */
 #include "Bq27220xxxx.h"
@@ -47,7 +47,7 @@ namespace Cpp_Bus_Driver
 
         return true;
     }
-    
+
     bool Bq27220xxxx::enter_cgf_update(void)
     {
         // 发送 ENTER_CGF_UPDATE 子命令 (0x0090)
@@ -333,7 +333,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        if (_bus->write(static_cast<uint8_t>(Cmd::WR_RAM_REGISTER), static_cast<uint16_t>(Configuration_Reg::RW_OPERATION_CONFIG_A), Endian::LITTLE) == false)
+        if (_bus->write(static_cast<uint8_t>(Cmd::RW_RAM_REGISTER), static_cast<uint16_t>(Configuration_Reg::RW_OPERATION_CONFIG_A), Endian::LITTLE) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
@@ -546,7 +546,7 @@ namespace Cpp_Bus_Driver
         }
 
         // 将 0x929F 写入 0x3E 以访问 Design Capacity
-        if (_bus->write(static_cast<uint8_t>(Cmd::WR_RAM_REGISTER), static_cast<uint16_t>(Gas_Gauging_Reg::WO_DESIGN_CAPACITY), Endian::LITTLE) == false)
+        if (_bus->write(static_cast<uint8_t>(Cmd::RW_RAM_REGISTER), static_cast<uint16_t>(Gas_Gauging_Reg::WO_DESIGN_CAPACITY), Endian::LITTLE) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
@@ -849,7 +849,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        if (_bus->write(static_cast<uint8_t>(Cmd::WR_RAM_REGISTER), static_cast<uint16_t>(Configuration_Reg::RW_SLEEP_CURRENT), Endian::LITTLE) == false)
+        if (_bus->write(static_cast<uint8_t>(Cmd::RW_RAM_REGISTER), static_cast<uint16_t>(Configuration_Reg::RW_SLEEP_CURRENT), Endian::LITTLE) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
