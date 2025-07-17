@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-16 15:38:12
+ * @LastEditTime: 2025-07-17 14:06:33
  * @License: GPL 3.0
  */
 #include "Sx126x.h"
@@ -217,16 +217,16 @@ namespace Cpp_Bus_Driver
         }
 
         status.all_flag.tx_done = irq_flag & 0B0000000000000001;
-        status.all_flag.rx_done = (irq_flag & 0B0000000000000010) > 1;
-        status.all_flag.preamble_detected = (irq_flag & 0B0000000000000100) > 2;
-        status.gfsk_flag.sync_word_valid = (irq_flag & 0B0000000000001000) > 3;
-        status.lora_reg_flag.header_valid = (irq_flag & 0B0000000000010000) > 4;
-        status.lora_reg_flag.header_error = (irq_flag & 0B0000000000100000) > 5;
-        status.all_flag.crc_error = (irq_flag & 0B0000000001000000) > 6;
-        status.lora_reg_flag.cad_done = (irq_flag & 0B0000000010000000) > 7;
-        status.lora_reg_flag.cad_detected = (irq_flag & 0B0000000100000000) > 8;
-        status.all_flag.tx_rx_timeout = (irq_flag & 0B0000001000000000) > 9;
-        status.lrfhss_flag.pa_ramped_up_hop = (irq_flag & 0B0100000000000000) > 14;
+        status.all_flag.rx_done = (irq_flag & 0B0000000000000010) >> 1;
+        status.all_flag.preamble_detected = (irq_flag & 0B0000000000000100) >> 2;
+        status.gfsk_flag.sync_word_valid = (irq_flag & 0B0000000000001000) >> 3;
+        status.lora_reg_flag.header_valid = (irq_flag & 0B0000000000010000) >> 4;
+        status.lora_reg_flag.header_error = (irq_flag & 0B0000000000100000) >> 5;
+        status.all_flag.crc_error = (irq_flag & 0B0000000001000000) >> 6;
+        status.lora_reg_flag.cad_done = (irq_flag & 0B0000000010000000) >> 7;
+        status.lora_reg_flag.cad_detected = (irq_flag & 0B0000000100000000) >> 8;
+        status.all_flag.tx_rx_timeout = (irq_flag & 0B0000001000000000) >> 9;
+        status.lrfhss_flag.pa_ramped_up_hop = (irq_flag & 0B0100000000000000) >> 14;
 
         return true;
     }
