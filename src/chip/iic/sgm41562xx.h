@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-17 14:18:43
+ * @LastEditTime: 2025-07-17 15:12:25
  * @License: GPL 3.0
  */
 
@@ -57,14 +57,31 @@ namespace Cpp_Bus_Driver
         int32_t _rst;
 
     public:
+        enum class Charge_Status
+        {
+            NOT_CHARGING = 0,
+            PRECHARGE,
+            CHARGE,
+            CHARGE_DONE,
+        };
+
         struct Irq_Status // 中断状态
         {
-            bool vin_fault_flag = false;
-            bool thermal_shutdown_flag = false;
-            bool battery_over_voltage_fault_flag = false;
-            bool safety_timer_expiration_fault_flag = false;
-            bool ntc_exceeding_hot_flag = false;
-            bool ntc_exceeding_cold_flag = false;
+            bool Input_power_fault_flag = false;             // 输入电源故障标志
+            bool thermal_shutdown_flag = false;              // 过热关断标志
+            bool battery_over_voltage_fault_flag = false;    // 电池过压故障标志
+            bool safety_timer_expiration_fault_flag = false; // 安全定时器到期故障标志
+            bool ntc_exceeding_hot_flag = false;             // ntc过热标志
+            bool ntc_exceeding_cold_flag = false;            // ntc过冷标志
+        };
+
+        struct Chip_Status // 芯片状态
+        {
+            bool watchdog_expiration_flag = false;                     // 看门狗超时标志
+            Charge_Status charge_status = Charge_Status::NOT_CHARGING; // 充电状态标志
+            bool device_in_power_path_management_mode_flag = false;    // 设备在电源路径管理模式标志
+            bool input_power_status_flag = false;                      // 输入电源状态标志（[1] = 电源是好的 [0] = 电源是不好的）
+            bool thermal_regulation_status_flag = false;               // 热调节状态
         };
 
         Sgm41562xx(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
@@ -91,5 +108,29 @@ namespace Cpp_Bus_Driver
          * @Date 2025-07-17 13:59:38
          */
         bool parse_irq_status(uint8_t irq_flag, Irq_Status &status);
+
+        /**
+         * @brief 设置充电使能
+         * @param enable [true]：打开充电 [false]：关闭充电
+         * @return
+         * @Date 2025-07-17 14:49:29
+         */
+        bool set_charge_enable(bool enable);
+
+        /**
+         * @brief 获取芯片状态
+         * @return
+         * @Date 2025-07-17 15:05:29
+         */
+        uint8_t get_chip_status(void);
+
+        /**
+         * @brief 芯片状态解析，详细请参考SGM41562手册表格 Table 12. REG08 Register Details
+         * @param chip_flag 解析状态语句，由get_chip_status()函数获取
+         * @param &status 使用Chip_Status结构体配置，相应位自动置位
+         * @return
+         * @Date 2025-07-17 15:03:59
+         */
+        bool parse_chip_status(uint8_t chip_flag, Chip_Status &status);
     };
 }
