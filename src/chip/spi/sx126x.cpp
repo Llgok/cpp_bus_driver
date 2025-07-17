@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-17 14:12:46
+ * @LastEditTime: 2025-07-17 15:07:44
  * @License: GPL 3.0
  */
 #include "Sx126x.h"
@@ -148,7 +148,7 @@ namespace Cpp_Bus_Driver
     {
         if ((parse_status == 0x00) || (parse_status == static_cast<uint8_t>(-1)))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read error\n");
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse error\n");
             return Cmd_Status::FALSE;
         }
 
@@ -181,7 +181,7 @@ namespace Cpp_Bus_Driver
     {
         if ((parse_status == 0x00) || (parse_status == static_cast<uint8_t>(-1)))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read error\n");
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse error\n");
             return Chip_Mode_Status::FALSE;
         }
 
@@ -212,7 +212,7 @@ namespace Cpp_Bus_Driver
     {
         if (irq_flag == static_cast<uint16_t>(-1))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read error\n");
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse error\n");
             return false;
         }
 
@@ -1761,7 +1761,7 @@ namespace Cpp_Bus_Driver
     {
         if (parse_status == static_cast<uint32_t>(-1))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read error\n");
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse error\n");
             return false;
         }
 
