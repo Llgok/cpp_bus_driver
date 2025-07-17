@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-17 14:06:33
+ * @LastEditTime: 2025-07-17 14:12:46
  * @License: GPL 3.0
  */
 #include "Sx126x.h"
@@ -210,7 +210,7 @@ namespace Cpp_Bus_Driver
 
     bool Sx126x::assert_irq_status(uint16_t irq_flag, Irq_Status &status)
     {
-        if (irq_flag == static_cast<uint8_t>(-1))
+        if (irq_flag == static_cast<uint16_t>(-1))
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read error\n");
             return false;
