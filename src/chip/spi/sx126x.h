@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-14 16:47:09
+ * @LastEditTime: 2025-07-17 14:24:32
  * @License: GPL 3.0
  */
 
@@ -350,29 +350,29 @@ namespace Cpp_Bus_Driver
         uint8_t get_status(void);
 
         /**
-         * @brief 命令断言，详细请参考SX126x手册表格 13-76: Status Bytes Definition
-         * @param assert_status 断言状态语句，由get_status()函数获取
+         * @brief 命令解析，详细请参考SX126x手册表格 13-76: Status Bytes Definition
+         * @param parse_status 解析状态语句，由get_status()函数获取
          * @return Cmd_Status 由Cmd_Status::配置，命令状态
          * @Date 2025-02-12 14:41:21
          */
-        Cmd_Status assert_cmd_status(uint8_t assert_status);
+        Cmd_Status parse_cmd_status(uint8_t parse_status);
 
         /**
-         * @brief 芯片模式断言，详细请参考SX126x手册表格 13-76: Status Bytes Definition
-         * @param assert_status 断言状态语句，由get_status()函数获取
+         * @brief 芯片模式解析，详细请参考SX126x手册表格 13-76: Status Bytes Definition
+         * @param parse_status 解析状态语句，由get_status()函数获取
          * @return Chip_Mode_Status 由Chip_Mode_Status::配置，芯片模式状态
          * @Date 2025-02-13 13:52:33
          */
-        Chip_Mode_Status assert_chip_mode_status(uint8_t assert_status);
+        Chip_Mode_Status parse_chip_mode_status(uint8_t parse_status);
 
         /**
-         * @brief 中断断言，详细请参考SX126x手册表格 13-29: IRQ Registers
-         * @param irq_flag 断言状态语句，由get_irq_flag()函数获取
+         * @brief 中断解析，详细请参考SX126x手册表格 13-29: IRQ Registers
+         * @param irq_flag 解析状态语句，由get_irq_flag()函数获取
          * @param &status 使用Irq_Status结构体配置，相应位自动置位
          * @return
          * @Date 2025-02-13 13:33:15
          */
-        bool assert_irq_status(uint16_t irq_flag, Irq_Status &status);
+        bool parse_irq_status(uint16_t irq_flag, Irq_Status &status);
 
         /**
          * @brief 配置功耗模式，应用程序如果对时间要求严格需要切换到 STDBY_XOSC 模式，使用 STDBY_XOSC 前，
@@ -1068,22 +1068,22 @@ namespace Cpp_Bus_Driver
         uint32_t get_gfsk_packet_status(void);
 
         /**
-         * @brief GFSK模式数据接收断言
-         * @param assert_status 需要断言的状态数据，使用get_gfsk_packet_status()函数的返回值配置 （[RxStatus(8bit)]数据）
+         * @brief GFSK模式数据接收解析
+         * @param parse_status 需要解析的状态数据，使用get_gfsk_packet_status()函数的返回值配置 （[RxStatus(8bit)]数据）
          * @param status 由Gfsk_Packet_Status结构体配置，包状态
          * @return
          * @Date 2025-02-21 15:17:05
          */
-        bool assert_gfsk_packet_status(uint32_t assert_status, Gfsk_Packet_Status &status);
+        bool parse_gfsk_packet_status(uint32_t parse_status, Gfsk_Packet_Status &status);
 
         /**
-         * @brief 断言GFSK模式的包的指标信息
-         * @param assert_metrics 需要断言的指标数据，使用get_gfsk_packet_status()函数的返回值配置（[RssiSync(8bit)|RssiAvg(8bit)]数据）
+         * @brief 解析GFSK模式的包的指标信息
+         * @param parse_metrics 需要解析的指标数据，使用get_gfsk_packet_status()函数的返回值配置（[RssiSync(8bit)|RssiAvg(8bit)]数据）
          * @param &metrics 使用 Packet_Metrics的结构体配置，读出包的相关指标信息
          * @return
          * @Date 2025-02-21 15:17:53
          */
-        bool assert_gfsk_packet_metrics(uint32_t assert_metrics, Packet_Metrics &metrics);
+        bool parse_gfsk_packet_metrics(uint32_t parse_metrics, Packet_Metrics &metrics);
 
         /**
          * @brief 设置GFSK模式的同步字，需要同时设置两个寄存器

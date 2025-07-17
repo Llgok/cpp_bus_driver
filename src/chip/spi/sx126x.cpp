@@ -144,15 +144,15 @@ namespace Cpp_Bus_Driver
         return buffer;
     }
 
-    Sx126x::Cmd_Status Sx126x::assert_cmd_status(uint8_t assert_status)
+    Sx126x::Cmd_Status Sx126x::parse_cmd_status(uint8_t parse_status)
     {
-        if ((assert_status == 0x00) || (assert_status == static_cast<uint8_t>(-1)))
+        if ((parse_status == 0x00) || (parse_status == static_cast<uint8_t>(-1)))
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read error\n");
             return Cmd_Status::FALSE;
         }
 
-        const uint8_t buffer = (assert_status & 0B00001110) >> 1;
+        const uint8_t buffer = (parse_status & 0B00001110) >> 1;
 
         switch (buffer)
         {
@@ -177,15 +177,15 @@ namespace Cpp_Bus_Driver
         return static_cast<Cmd_Status>(buffer);
     }
 
-    Sx126x::Chip_Mode_Status Sx126x::assert_chip_mode_status(uint8_t assert_status)
+    Sx126x::Chip_Mode_Status Sx126x::parse_chip_mode_status(uint8_t parse_status)
     {
-        if ((assert_status == 0x00) || (assert_status == static_cast<uint8_t>(-1)))
+        if ((parse_status == 0x00) || (parse_status == static_cast<uint8_t>(-1)))
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read error\n");
             return Chip_Mode_Status::FALSE;
         }
 
-        const uint8_t buffer = (assert_status & 0B01110000) >> 4;
+        const uint8_t buffer = (parse_status & 0B01110000) >> 4;
 
         switch (buffer)
         {
@@ -208,7 +208,7 @@ namespace Cpp_Bus_Driver
         return static_cast<Chip_Mode_Status>(buffer);
     }
 
-    bool Sx126x::assert_irq_status(uint16_t irq_flag, Irq_Status &status)
+    bool Sx126x::parse_irq_status(uint16_t irq_flag, Irq_Status &status)
     {
         if (irq_flag == static_cast<uint16_t>(-1))
         {
@@ -274,9 +274,9 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        // if (assert_cmd_status(buffer[0]) == false)
+        // if (parse_cmd_status(buffer[0]) == false)
         // {
-        //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
+        //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", buffer[0]);
         //     return false;
         // }
 
@@ -426,10 +426,10 @@ namespace Cpp_Bus_Driver
             return Packet_Type::FALSE;
         }
 
-        Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
+        Cmd_Status buffer_cs = parse_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", buffer[0]);
             return Packet_Type::FALSE;
         }
 
@@ -497,10 +497,10 @@ namespace Cpp_Bus_Driver
             return -1;
         }
 
-        Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
+        Cmd_Status buffer_cs = parse_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", buffer[0]);
             return -1;
         }
 
@@ -581,10 +581,10 @@ namespace Cpp_Bus_Driver
             return -1;
         }
 
-        Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
+        Cmd_Status buffer_cs = parse_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", buffer[0]);
             return -1;
         }
 
@@ -594,10 +594,10 @@ namespace Cpp_Bus_Driver
             return -1;
         }
 
-        buffer_cs = assert_cmd_status(buffer[2]);
+        buffer_cs = parse_cmd_status(buffer[2]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[2]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", buffer[2]);
             return -1;
         }
 
@@ -615,10 +615,10 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
+        Cmd_Status buffer_cs = parse_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", buffer[0]);
             return false;
         }
 
@@ -707,10 +707,10 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
+        Cmd_Status buffer_cs = parse_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", buffer[0]);
             return false;
         }
 
@@ -879,10 +879,10 @@ namespace Cpp_Bus_Driver
         check_busy();
 
         // 检查 calibrate 命令结果
-        Cmd_Status buffer_cs = assert_cmd_status(get_status());
+        Cmd_Status buffer_cs = parse_cmd_status(get_status());
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", static_cast<uint8_t>(buffer_cs));
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", static_cast<uint8_t>(buffer_cs));
             return false;
         }
 
@@ -1068,10 +1068,10 @@ namespace Cpp_Bus_Driver
             return -1;
         }
 
-        Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
+        Cmd_Status buffer_cs = parse_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", buffer[0]);
             return -1;
         }
 
@@ -1089,10 +1089,10 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
+        Cmd_Status buffer_cs = parse_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", buffer[0]);
             return false;
         }
 
@@ -1117,10 +1117,10 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
+        Cmd_Status buffer_cs = parse_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", buffer[0]);
             return false;
         }
 
@@ -1208,10 +1208,10 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
+        Cmd_Status buffer_cs = parse_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", buffer[0]);
             return false;
         }
 
@@ -1233,10 +1233,10 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
+        Cmd_Status buffer_cs = parse_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", buffer[0]);
             return false;
         }
 
@@ -1320,7 +1320,7 @@ namespace Cpp_Bus_Driver
 
         for (uint16_t i = 1; i < (2 + length); i++)
         {
-            Cmd_Status buffer_cs = assert_cmd_status(assert[i]);
+            Cmd_Status buffer_cs = parse_cmd_status(assert[i]);
             if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
             {
                 if (i == 1)
@@ -1581,10 +1581,10 @@ namespace Cpp_Bus_Driver
         check_busy();
 
         // 检查 calibrate 命令结果
-        Cmd_Status buffer_cs = assert_cmd_status(get_status());
+        Cmd_Status buffer_cs = parse_cmd_status(get_status());
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", static_cast<uint8_t>(buffer_cs));
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", static_cast<uint8_t>(buffer_cs));
             return false;
         }
 
@@ -1747,41 +1747,41 @@ namespace Cpp_Bus_Driver
             return -1;
         }
 
-        Cmd_Status buffer_cs = assert_cmd_status(buffer[0]);
+        Cmd_Status buffer_cs = parse_cmd_status(buffer[0]);
         if ((buffer_cs != Cmd_Status::RFU) && (buffer_cs != Cmd_Status::CMD_TX_DONE) && (buffer_cs != Cmd_Status::DATA_IS_AVAILABLE_TO_HOST))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "assert_cmd_status fail (error code: %#X)\n", buffer[0]);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse_cmd_status fail (error code: %#X)\n", buffer[0]);
             return -1;
         }
 
         return (static_cast<uint32_t>(buffer[1]) << 16) | (static_cast<uint32_t>(buffer[2]) << 8) | static_cast<uint32_t>(buffer[3]);
     }
 
-    bool Sx126x::assert_gfsk_packet_status(uint32_t assert_status, Gfsk_Packet_Status &status)
+    bool Sx126x::parse_gfsk_packet_status(uint32_t parse_status, Gfsk_Packet_Status &status)
     {
-        if (assert_status == static_cast<uint32_t>(-1))
+        if (parse_status == static_cast<uint32_t>(-1))
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read error\n");
             return false;
         }
 
-        assert_status >>= 16;
+        parse_status >>= 16;
 
-        status.packet_send_done_flag = assert_status & 0B00000001;
-        status.packet_receive_done_flag = (assert_status & 0B00000010) >> 1;
-        status.abort_error_flag = (assert_status & 0B00000100) >> 2;
-        status.length_error_flag = (assert_status & 0B00001000) >> 3;
-        status.crc_error_flag = (assert_status & 0B00010000) >> 4;
-        status.address_error_flag = (assert_status & 0B00100000) >> 5;
-        status.sync_word_flag = (assert_status & 0B01000000) >> 6;
-        status.preamble_error_flag = (assert_status & 0B10000000) >> 7;
+        status.packet_send_done_flag = parse_status & 0B00000001;
+        status.packet_receive_done_flag = (parse_status & 0B00000010) >> 1;
+        status.abort_error_flag = (parse_status & 0B00000100) >> 2;
+        status.length_error_flag = (parse_status & 0B00001000) >> 3;
+        status.crc_error_flag = (parse_status & 0B00010000) >> 4;
+        status.address_error_flag = (parse_status & 0B00100000) >> 5;
+        status.sync_word_flag = (parse_status & 0B01000000) >> 6;
+        status.preamble_error_flag = (parse_status & 0B10000000) >> 7;
 
         return true;
     }
 
-    bool Sx126x::assert_gfsk_packet_metrics(uint32_t assert_metrics, Packet_Metrics &metrics)
+    bool Sx126x::parse_gfsk_packet_metrics(uint32_t parse_metrics, Packet_Metrics &metrics)
     {
-        if (assert_metrics == static_cast<uint32_t>(-1))
+        if (parse_metrics == static_cast<uint32_t>(-1))
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
@@ -1789,8 +1789,8 @@ namespace Cpp_Bus_Driver
 
         const uint8_t buffer[2] =
             {
-                static_cast<uint8_t>((assert_metrics & 0B00000000000000001111111111111111) >> 8),
-                static_cast<uint8_t>(assert_metrics),
+                static_cast<uint8_t>((parse_metrics & 0B00000000000000001111111111111111) >> 8),
+                static_cast<uint8_t>(parse_metrics),
             };
 
         metrics.gfsk.rssi_sync = -1.0 * static_cast<float>(buffer[0]) / 2.0;
