@@ -45,6 +45,17 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
+    bool Sgm41562xx::end(void)
+    {
+        if (Iic_Guide::end() == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "end fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
     uint8_t Sgm41562xx::get_device_id(void)
     {
         uint8_t buffer = 0;

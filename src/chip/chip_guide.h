@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-07-16 11:29:30
+ * @LastEditTime: 2025-07-18 11:12:47
  * @License: GPL 3.0
  */
 #pragma once
@@ -26,6 +26,7 @@ namespace Cpp_Bus_Driver
         }
 
         virtual bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE);
+        virtual bool end(void);
 
         bool init_list(const uint8_t *list, size_t length);
     };

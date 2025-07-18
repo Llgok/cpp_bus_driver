@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-07-16 12:10:53
+ * @LastEditTime: 2025-07-18 11:13:24
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -14,6 +14,17 @@ namespace Cpp_Bus_Driver
         if (_bus->begin(freq_hz, _address) == false)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "begin fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Iic_Guide::end(void)
+    {
+        if (_bus->end() == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "end fail\n");
             return false;
         }
 

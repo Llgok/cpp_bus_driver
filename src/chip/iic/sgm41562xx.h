@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-17 15:12:25
+ * @LastEditTime: 2025-07-18 11:11:15
  * @License: GPL 3.0
  */
 
@@ -90,6 +90,7 @@ namespace Cpp_Bus_Driver
         }
 
         bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+        bool end() override;
 
         uint8_t get_device_id(void);
 
