@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-07-17 11:51:35
+ * @LastEditTime: 2025-07-18 11:09:49
  * @License: GPL 3.0
  */
 #include "hardware_iic_2.h"
@@ -71,6 +71,18 @@ namespace Cpp_Bus_Driver
         _address = address;
 
         return true;
+    }
+
+    bool Hardware_Iic_2::end(void)
+    {
+#if defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+
+        _iic_handle->end();
+
+        return true;
+#else
+        return false;
+#endif
     }
 
     bool Hardware_Iic_2::read(uint8_t *data, size_t length)

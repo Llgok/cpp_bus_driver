@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-07-17 09:34:52
+ * @LastEditTime: 2025-07-18 11:05:59
  * @License: GPL 3.0
  */
 #pragma once
@@ -36,6 +36,7 @@ namespace Cpp_Bus_Driver
 #endif
 
         bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE, int16_t address = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+        bool end(void) override;
         bool read(uint8_t *data, size_t length) override;
         bool write(const uint8_t *data, size_t length) override;
         bool write_read(const uint8_t *write_data, size_t write_length, uint8_t *read_data, size_t read_length) override;
