@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-18 11:11:15
+ * @LastEditTime: 2025-07-19 13:37:51
  * @License: GPL 3.0
  */
 
@@ -40,7 +40,9 @@ namespace Cpp_Bus_Driver
             {
                 // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_CHARGE_CURRENT_CONTROL), 0B11001111, // 重置寄存器
                 // static_cast<uint8_t>(Init_List_Cmd::DELAY_MS), 120,
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), 0B01011111, // 关闭NTC 屏蔽INT
+                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), 0B01000000, // 关闭NTC 屏蔽INT
+
+                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), 0B11011111, // 屏蔽INT
                 // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_IIC_ADDRESS_MISCELLANEOUS_CONFIGURATION), 0B01100001, // 充电电流权重限制
 
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_CHARGE_TERMINATION_TIMER_CONTROL), 0B00011010, // 关闭看门狗功能
