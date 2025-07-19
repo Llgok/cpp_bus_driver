@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-19 13:37:51
+ * @LastEditTime: 2025-07-19 13:39:22
  * @License: GPL 3.0
  */
 
@@ -40,7 +40,7 @@ namespace Cpp_Bus_Driver
             {
                 // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_CHARGE_CURRENT_CONTROL), 0B11001111, // 重置寄存器
                 // static_cast<uint8_t>(Init_List_Cmd::DELAY_MS), 120,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), 0B01000000, // 关闭NTC 屏蔽INT
+                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), 0B01000000, // 关闭NTC
 
                 // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), 0B11011111, // 屏蔽INT
                 // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_IIC_ADDRESS_MISCELLANEOUS_CONFIGURATION), 0B01100001, // 充电电流权重限制
