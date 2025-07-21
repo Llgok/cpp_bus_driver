@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-07-17 15:11:07
+ * @LastEditTime: 2025-07-19 16:19:08
  * @License: GPL 3.0
  */
 #include "sgm41562xx.h"
@@ -122,7 +122,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        return buffer;
+        return true;
     }
 
     uint8_t Sgm41562xx::get_chip_status(void)
@@ -150,6 +150,33 @@ namespace Cpp_Bus_Driver
         status.device_in_power_path_management_mode_flag = (chip_flag & 0B00000100) >> 2;
         status.input_power_status_flag = (chip_flag & 0B00000010) >> 1;
         status.thermal_regulation_status_flag = chip_flag & 0B00000001;
+
+        return true;
+    }
+
+    bool Sgm41562xx::set_ship_mode_enable(bool enable)
+    {
+        uint8_t buffer = 0;
+        if (_bus->read(static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), &buffer) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            return false;
+        }
+
+        if (enable == true)
+        {
+            buffer |= 0B00100000;
+        }
+        else
+        {
+            buffer &= 0B11011111;
+        }
+
+        if (_bus->write(static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), buffer) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
 
         return true;
     }
