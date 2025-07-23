@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-07-16 11:14:44
+ * @LastEditTime: 2025-07-23 11:28:43
  * @License: GPL 3.0
  */
 #include "hardware_iis.h"
@@ -28,38 +28,9 @@ namespace Cpp_Bus_Driver
 
         if (_data_mode == Data_Mode::INPUT_OUTPUT)
         {
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config data_mode: input_output\n");
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _data_in: %d\n", _data_in);
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _data_out: %d\n", _data_out);
-
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config data_mode: input_output\n");
-
-            const i2s_std_config_t std_config =
-                {
-                    .clk_cfg =
-                        {
-                            .sample_rate_hz = sample_rate_hz,
-                            .clk_src = I2S_CLK_SRC_DEFAULT,
-#if SOC_I2S_HW_VERSION_2
-                            .ext_clk_freq_hz = 0,
-#endif
-                            .mclk_multiple = mclk_multiple,
-                        },
-                    .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
-                    .gpio_cfg =
-                        {
-                            .mclk = static_cast<gpio_num_t>(_mclk),
-                            .bclk = static_cast<gpio_num_t>(_bclk),
-                            .ws = static_cast<gpio_num_t>(_ws_lrck),
-                            .dout = static_cast<gpio_num_t>(_data_out),
-                            .din = static_cast<gpio_num_t>(_data_in),
-                            .invert_flags =
-                                {
-                                    .mclk_inv = 0,
-                                    .bclk_inv = 0,
-                                    .ws_inv = 0,
-                                },
-                        },
-                };
 
             assert = i2s_new_channel(&chan_config, &_chan_tx_handle, &_chan_rx_handle);
             if (assert != ESP_OK)
@@ -68,18 +39,121 @@ namespace Cpp_Bus_Driver
                 return false;
             }
 
-            assert = i2s_channel_init_std_mode(_chan_tx_handle, &std_config);
-            if (assert != ESP_OK)
+            switch (_iis_mode)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: %#X)\n", assert);
-                return false;
-            }
+            case Iis_Mode::STD:
+            {
+                assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config iis_mode: std\n");
 
-            assert = i2s_channel_init_std_mode(_chan_rx_handle, &std_config);
-            if (assert != ESP_OK)
+                const i2s_std_config_t config =
+                    {
+                        .clk_cfg =
+                            {
+                                .sample_rate_hz = sample_rate_hz,
+                                .clk_src = I2S_CLK_SRC_DEFAULT,
+#if SOC_I2S_HW_VERSION_2
+                                .ext_clk_freq_hz = 0,
+#endif
+                                .mclk_multiple = mclk_multiple,
+                            },
+                        .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
+                        .gpio_cfg =
+                            {
+                                .mclk = static_cast<gpio_num_t>(_mclk),
+                                .bclk = static_cast<gpio_num_t>(_bclk),
+                                .ws = static_cast<gpio_num_t>(_ws_lrck),
+                                .dout = static_cast<gpio_num_t>(_data_out),
+                                .din = static_cast<gpio_num_t>(_data_in),
+                                .invert_flags =
+                                    {
+                                        .mclk_inv = 0,
+                                        .bclk_inv = 0,
+                                        .ws_inv = 0,
+                                    },
+                            },
+                    };
+
+                assert = i2s_channel_init_std_mode(_chan_tx_handle, &config);
+                if (assert != ESP_OK)
+                {
+                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: %#X)\n", assert);
+                    return false;
+                }
+
+                assert = i2s_channel_init_std_mode(_chan_rx_handle, &config);
+                if (assert != ESP_OK)
+                {
+                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: %#X)\n", assert);
+                    return false;
+                }
+
+                break;
+            }
+            case Iis_Mode::PDM:
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: %#X)\n", assert);
-                return false;
+                assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config iis_mode: pdm\n");
+
+                i2s_pdm_rx_config_t rx_config = {
+                    .clk_cfg =
+                        {
+                            .sample_rate_hz = sample_rate_hz,
+                            .clk_src = I2S_CLK_SRC_DEFAULT,
+                            .mclk_multiple = mclk_multiple,
+                            .dn_sample_mode = I2S_PDM_DSR_8S,
+                            .bclk_div = 8,
+                        },
+                    .slot_cfg = I2S_PDM_RX_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
+                    .gpio_cfg =
+                        {
+                            .clk = static_cast<gpio_num_t>(_ws_lrck),
+                            .din = static_cast<gpio_num_t>(_data_in),
+                            .invert_flags =
+                                {
+                                    .clk_inv = false,
+                                },
+                        },
+                };
+
+                i2s_pdm_tx_config_t tx_config = {
+                    .clk_cfg =
+                        {
+                            .sample_rate_hz = sample_rate_hz,
+                            .clk_src = I2S_CLK_SRC_DEFAULT,
+                            .mclk_multiple = mclk_multiple,
+                            .up_sample_fp = 960,
+                            .up_sample_fs = 480,
+                            .bclk_div = 8,
+                        },
+                    .slot_cfg = I2S_PDM_TX_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
+                    .gpio_cfg =
+                        {
+                            .clk = static_cast<gpio_num_t>(_ws_lrck),
+                            .dout = static_cast<gpio_num_t>(_data_out),
+                            .invert_flags =
+                                {
+                                    .clk_inv = false,
+                                },
+                        },
+                };
+
+                assert = i2s_channel_init_pdm_rx_mode(_chan_rx_handle, &rx_config);
+                if (assert != ESP_OK)
+                {
+                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_pdm_rx_mode fail (error code: %#X)\n", assert);
+                    return false;
+                }
+
+                assert = i2s_channel_init_pdm_tx_mode(_chan_tx_handle, &tx_config);
+                if (assert != ESP_OK)
+                {
+                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_pdm_tx_mode fail (error code: %#X)\n", assert);
+                    return false;
+                }
+
+                break;
+            }
+            default:
+                break;
             }
 
             assert = i2s_channel_enable(_chan_tx_handle);
@@ -98,77 +172,209 @@ namespace Cpp_Bus_Driver
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _data: %d\n", _data);
-
-            i2s_std_config_t std_config =
-                {
-                    .clk_cfg =
-                        {
-                            .sample_rate_hz = sample_rate_hz,
-                            .clk_src = I2S_CLK_SRC_DEFAULT,
-#if SOC_I2S_HW_VERSION_2
-                            .ext_clk_freq_hz = 0,
-#endif
-                            .mclk_multiple = mclk_multiple,
-                        },
-                    .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
-                    .gpio_cfg =
-                        {
-                            .mclk = static_cast<gpio_num_t>(_mclk),
-                            .bclk = static_cast<gpio_num_t>(_bclk),
-                            .ws = static_cast<gpio_num_t>(_ws_lrck),
-                            .dout = I2S_GPIO_UNUSED,
-                            .din = I2S_GPIO_UNUSED,
-                            .invert_flags =
-                                {
-                                    .mclk_inv = 0,
-                                    .bclk_inv = 0,
-                                    .ws_inv = 0,
-                                },
-                        },
-                };
-
-            switch (_data_mode)
+            switch (_iis_mode)
             {
-            case Data_Mode::INPUT:
-                assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config data_mode: input\n");
+            case Iis_Mode::STD:
+            {
+                assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config iis_mode: std\n");
+                i2s_std_config_t config =
+                    {
+                        .clk_cfg =
+                            {
+                                .sample_rate_hz = sample_rate_hz,
+                                .clk_src = I2S_CLK_SRC_DEFAULT,
+#if SOC_I2S_HW_VERSION_2
+                                .ext_clk_freq_hz = 0,
+#endif
+                                .mclk_multiple = mclk_multiple,
+                            },
+                        .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
+                        .gpio_cfg =
+                            {
+                                .mclk = static_cast<gpio_num_t>(_mclk),
+                                .bclk = static_cast<gpio_num_t>(_bclk),
+                                .ws = static_cast<gpio_num_t>(_ws_lrck),
+                                .dout = I2S_GPIO_UNUSED,
+                                .din = I2S_GPIO_UNUSED,
+                                .invert_flags =
+                                    {
+                                        .mclk_inv = 0,
+                                        .bclk_inv = 0,
+                                        .ws_inv = 0,
+                                    },
+                            },
+                    };
 
-                std_config.gpio_cfg.din = static_cast<gpio_num_t>(_data);
-
-                assert = i2s_new_channel(&chan_config, NULL, &_chan_rx_handle);
-                if (assert != ESP_OK)
+                switch (_data_mode)
                 {
-                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
-                    return false;
-                }
+                case Data_Mode::INPUT:
+                    assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config data_mode: input\n");
 
-                assert = i2s_channel_init_std_mode(_chan_rx_handle, &std_config);
-                if (assert != ESP_OK)
-                {
-                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: %#X)\n", assert);
-                    return false;
+                    config.gpio_cfg.din = static_cast<gpio_num_t>(_data_in);
+
+                    assert = i2s_new_channel(&chan_config, NULL, &_chan_rx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    assert = i2s_channel_init_std_mode(_chan_rx_handle, &config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    assert = i2s_channel_enable(_chan_rx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    break;
+                case Data_Mode::OUTPUT:
+                    assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config data_mode: output\n");
+
+                    config.gpio_cfg.dout = static_cast<gpio_num_t>(_data_out);
+
+                    assert = i2s_new_channel(&chan_config, &_chan_tx_handle, NULL);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    assert = i2s_channel_init_std_mode(_chan_tx_handle, &config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    assert = i2s_channel_enable(_chan_tx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    break;
+
+                default:
+                    break;
                 }
 
                 break;
-            case Data_Mode::OUTPUT:
-                assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config data_mode: output\n");
+            }
+            case Iis_Mode::PDM:
+                assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config iis_mode: pdm\n");
 
-                std_config.gpio_cfg.dout = static_cast<gpio_num_t>(_data);
-
-                assert = i2s_new_channel(&chan_config, &_chan_tx_handle, NULL);
-                if (assert != ESP_OK)
+                switch (_data_mode)
                 {
-                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
-                    return false;
-                }
-
-                assert = i2s_channel_init_std_mode(_chan_tx_handle, &std_config);
-                if (assert != ESP_OK)
+                case Data_Mode::INPUT:
                 {
-                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_std_mode fail (error code: %#X)\n", assert);
-                    return false;
-                }
+                    assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config data_mode: input\n");
+                    assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _data_in: %d\n", _data_in);
 
+                    i2s_pdm_rx_config_t rx_config = {
+                        .clk_cfg =
+                            {
+                                .sample_rate_hz = sample_rate_hz,
+                                .clk_src = I2S_CLK_SRC_DEFAULT,
+                                .mclk_multiple = mclk_multiple,
+                                .dn_sample_mode = I2S_PDM_DSR_8S,
+                                .bclk_div = 8,
+                            },
+                        .slot_cfg = I2S_PDM_RX_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
+                        .gpio_cfg =
+                            {
+                                .clk = static_cast<gpio_num_t>(_ws_lrck),
+                                .din = static_cast<gpio_num_t>(_data_in),
+                                .invert_flags =
+                                    {
+                                        .clk_inv = false,
+                                    },
+                            },
+                    };
+
+                    assert = i2s_new_channel(&chan_config, NULL, &_chan_rx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    assert = i2s_channel_init_pdm_rx_mode(_chan_rx_handle, &rx_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_pdm_rx_mode fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    assert = i2s_channel_enable(_chan_rx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    break;
+                }
+                case Data_Mode::OUTPUT:
+                {
+                    assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config data_mode: output\n");
+                    assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _data_out: %d\n", _data_out);
+
+                    i2s_pdm_tx_config_t tx_config = {
+                        .clk_cfg =
+                            {
+                                .sample_rate_hz = sample_rate_hz,
+                                .clk_src = I2S_CLK_SRC_DEFAULT,
+                                .mclk_multiple = mclk_multiple,
+                                .up_sample_fp = 960,
+                                .up_sample_fs = 480,
+                                .bclk_div = 8,
+                            },
+                        .slot_cfg = I2S_PDM_TX_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
+                        .gpio_cfg =
+                            {
+                                .clk = static_cast<gpio_num_t>(_ws_lrck),
+                                .dout = static_cast<gpio_num_t>(_data_out),
+                                .invert_flags =
+                                    {
+                                        .clk_inv = false,
+                                    },
+                            },
+                    };
+
+                    assert = i2s_new_channel(&chan_config, &_chan_tx_handle, NULL);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    assert = i2s_channel_init_pdm_tx_mode(_chan_tx_handle, &tx_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_init_pdm_tx_mode fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    assert = i2s_channel_enable(_chan_tx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    break;
+                }
+                default:
+                    break;
+                }
                 break;
 
             default:

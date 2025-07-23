@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2025-07-17 11:43:32
+ * @LastEditTime: 2025-07-23 10:37:23
  * @License: GPL 3.0
  */
 #pragma once
@@ -28,6 +28,7 @@
 #include "driver/spi_master.h"
 #include "driver/uart.h"
 #include "driver/i2s_std.h"
+#include "driver/i2s_pdm.h"
 #include "driver/ledc.h"
 #include "driver/sdmmc_host.h"
 #include "sdmmc_cmd.h"

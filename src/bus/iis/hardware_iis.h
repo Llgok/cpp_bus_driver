@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-03-12 18:04:26
+ * @LastEditTime: 2025-07-23 10:26:19
  * @License: GPL 3.0
  */
 
@@ -16,7 +16,6 @@ namespace Cpp_Bus_Driver
     class Hardware_Iis : public Bus_Iis_Guide
     {
     private:
-        int32_t _data;
         int32_t _data_in, _data_out;
         int32_t _ws_lrck, _bclk, _mclk;
         i2s_port_t _port;
@@ -31,23 +30,26 @@ namespace Cpp_Bus_Driver
     public:
         enum class Data_Mode
         {
-            INPUT = 0, // 输入模式
-            OUTPUT,    // 输出模式
+            INPUT,  // 输入模式
+            OUTPUT, // 输出模式
 
             INPUT_OUTPUT, // 输入输出共有
         };
 
-        Data_Mode _data_mode = Data_Mode::INPUT_OUTPUT;
-
-        // 配置输入或者输出设备
-        Hardware_Iis(Data_Mode mode, int32_t data, int32_t ws_lrck, int32_t bclk, int32_t mclk, i2s_port_t port = I2S_NUM_0)
-            : _data(data), _ws_lrck(ws_lrck), _bclk(bclk), _mclk(mclk), _port(port)
+        enum class Iis_Mode
         {
-        }
+            STD, // 标准模式
+            PDM, // pdm模式
+        };
+
+        Data_Mode _data_mode;
+        Iis_Mode _iis_mode;
 
         // 配置输入和输出设备
-        Hardware_Iis(int32_t data_in, int32_t data_out, int32_t ws_lrck, int32_t bclk, int32_t mclk, i2s_port_t port = I2S_NUM_0)
-            : _data_in(data_in), _data_out(data_out), _ws_lrck(ws_lrck), _bclk(bclk), _mclk(mclk), _port(port)
+        Hardware_Iis(int32_t data_in, int32_t data_out, int32_t ws_lrck, int32_t bclk, int32_t mclk, i2s_port_t port = I2S_NUM_0,
+                     Data_Mode data_mode = Data_Mode::INPUT_OUTPUT, Iis_Mode iis_mode = Iis_Mode::STD)
+            : _data_in(data_in), _data_out(data_out), _ws_lrck(ws_lrck), _bclk(bclk), _mclk(mclk), _port(port),
+              _data_mode(data_mode), _iis_mode(iis_mode)
         {
         }
 
