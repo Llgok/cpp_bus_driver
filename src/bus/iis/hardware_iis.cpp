@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-07-23 11:28:43
+ * @LastEditTime: 2025-07-23 11:41:30
  * @License: GPL 3.0
  */
 #include "hardware_iis.h"
@@ -129,6 +129,9 @@ namespace Cpp_Bus_Driver
                         {
                             .clk = static_cast<gpio_num_t>(_ws_lrck),
                             .dout = static_cast<gpio_num_t>(_data_out),
+#if SOC_I2S_PDM_MAX_TX_LINES > 1
+                            .dout2 = GPIO_NUM_NC,
+#endif
                             .invert_flags =
                                 {
                                     .clk_inv = false,
@@ -342,6 +345,9 @@ namespace Cpp_Bus_Driver
                             {
                                 .clk = static_cast<gpio_num_t>(_ws_lrck),
                                 .dout = static_cast<gpio_num_t>(_data_out),
+#if SOC_I2S_PDM_MAX_TX_LINES > 1
+                                .dout2 = GPIO_NUM_NC,
+#endif
                                 .invert_flags =
                                     {
                                         .clk_inv = false,
