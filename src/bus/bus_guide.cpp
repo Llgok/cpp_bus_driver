@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-07-16 11:27:24
+ * @LastEditTime: 2025-07-23 09:52:12
  * @License: GPL 3.0
  */
 #include "bus_guide.h"
@@ -47,6 +47,12 @@ namespace Cpp_Bus_Driver
     }
 
 #endif
+
+    bool Bus_Iic_Guide::end(void)
+    {
+        assert_log(Log_Level::BUS, __FILE__, __LINE__, "end fail\n");
+        return false;
+    }
 
     bool Bus_Iic_Guide::read(const uint8_t write_c8, uint8_t *read_data, size_t read_data_length)
     {
