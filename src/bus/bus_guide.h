@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-07-23 09:50:56
+ * @LastEditTime: 2025-07-24 10:57:54
  * @License: GPL 3.0
  */
 
@@ -37,6 +37,7 @@ namespace Cpp_Bus_Driver
 #endif
 
         bool read(const uint8_t write_c8, uint8_t *read_data, size_t read_data_length = 1);
+        bool read(const uint16_t write_c16, uint8_t *read_data, size_t read_data_length = 1);
         bool write(const uint8_t write_c8, const uint8_t write_d8);
         bool write(const uint8_t write_c8, const uint16_t write_d16, Endian endian = Endian::BIG);
         // bool write(const uint16_t write_c16, Endian endian = Endian::BIG);

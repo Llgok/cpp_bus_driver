@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-07-23 09:52:12
+ * @LastEditTime: 2025-07-24 10:59:16
  * @License: GPL 3.0
  */
 #include "bus_guide.h"
@@ -57,6 +57,18 @@ namespace Cpp_Bus_Driver
     bool Bus_Iic_Guide::read(const uint8_t write_c8, uint8_t *read_data, size_t read_data_length)
     {
         if (write_read(&write_c8, 1, read_data, read_data_length) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "read fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Bus_Iic_Guide::read(const uint16_t write_c16, uint8_t *read_data, size_t read_data_length)
+    {
+        const uint8_t buffer[] = {write_c16 >> 8, write_c16};
+        if (write_read(buffer, 2, read_data, read_data_length) == false)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "read fail\n");
             return false;
