@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-07-24 14:17:17
+ * @LastEditTime: 2025-07-24 14:32:14
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -84,25 +84,24 @@ namespace Cpp_Bus_Driver
                 delay_ms(list[index]);
                 index++;
                 break;
-            case static_cast<uint8_t>(Init_List_Cmd::WRITE_DATA):
+            case static_cast<uint8_t>(Init_List_Cmd::WRITE_C16_D8):
+            {
                 index++;
-                // if (_bus->write(&list[index + 1], list[index]) == false)
-                // {
-                //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "iic_init_list WRITE_DATA fail\n");
-                //     return false;
-                // }
-                index += list[index] + 1;
-                break;
-            case static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8):
-                index++;
-                // if (_bus->write(&list[index], 2) == false)
-                // {
-                //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "iic_init_list WRITE_C8_D8 fail\n");
-                //     return false;
-                // }
-                index += 2;
-                break;
+                const uint8_t buffer[] =
+                    {
+                        static_cast<uint8_t>(list[index] >> 8),
+                        static_cast<uint8_t>(list[index]),
+                        static_cast<uint8_t>(list[index + 1]),
+                    };
 
+                if (_bus->write(buffer, 3) == false)
+                {
+                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "iic_init_list WRITE_C16_D8 fail\n");
+                    return false;
+                }
+                index += list[index] + 3;
+                break;
+            }
             default:
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail(index = %d)\n", index);
                 return false;
