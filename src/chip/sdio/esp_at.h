@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-16 18:10:23
+ * @LastEditTime: 2025-07-24 14:46:40
  * @License: GPL 3.0
  */
 
@@ -15,16 +15,15 @@ namespace Cpp_Bus_Driver
     class Esp_At : public Sdio_Guide
     {
     private:
-        static constexpr uint16_t ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE = 512;
+        static constexpr uint16_t MAX_TRANSMIT_BLOCK_BUFFER_SIZE = 512;
         static constexpr uint8_t TX_BUFFER_OFFSET = 16; // 发送缓冲区偏移量
         static constexpr uint16_t TX_BUFFER_MASK = 0xFFF;
         static constexpr uint32_t RX_BUFFER_MASK = 0xFFFFF;
         static constexpr uint32_t RX_BUFFER_MAX = 0x100000;
-        static constexpr uint8_t ESP_AT_TRANSMIT_TIMEOUT_COUNT = 100;
-        static constexpr uint8_t ESP_AT_CONNECT_ERROR_COUNT = 5;
-        static constexpr uint8_t ESP_AT_RECEIVE_TIMEOUT_COUNT = 3;
-
-        static constexpr uint16_t ESP_AT_MAX_RECEIVE_SIZE = 2 * 1024;
+        static constexpr uint8_t TRANSMIT_TIMEOUT_COUNT = 100;
+        static constexpr uint8_t CONNECT_ERROR_COUNT = 5;
+        
+        static constexpr uint16_t MAX_RECEIVE_SIZE = 2 * 1024;
 
         enum class Cmd
         {
@@ -217,7 +216,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-03-21 17:51:33
          */
-        bool receive_packet(std::vector<uint8_t> &data, uint32_t max_receive_size = ESP_AT_MAX_RECEIVE_SIZE);
+        bool receive_packet(std::vector<uint8_t> &data, uint32_t max_receive_size = MAX_RECEIVE_SIZE);
 
         /**
          * @brief 接收包
@@ -227,7 +226,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-03-25 14:38:15
          */
-        bool receive_packet(uint8_t *data, size_t *byte, uint32_t max_receive_size = ESP_AT_MAX_RECEIVE_SIZE);
+        bool receive_packet(uint8_t *data, size_t *byte, uint32_t max_receive_size = MAX_RECEIVE_SIZE);
 
         /**
          * @brief 接收包
@@ -237,7 +236,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-03-25 14:38:15
          */
-        bool receive_packet(std::unique_ptr<uint8_t[]> &data, size_t *byte, uint32_t max_receive_size = ESP_AT_MAX_RECEIVE_SIZE);
+        bool receive_packet(std::unique_ptr<uint8_t[]> &data, size_t *byte, uint32_t max_receive_size = MAX_RECEIVE_SIZE);
 
         /**
          * @brief 获取发送block数据缓冲区的长度

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-16 15:30:10
+ * @LastEditTime: 2025-07-24 14:45:17
  * @License: GPL 3.0
  */
 #include "esp_at.h"
@@ -393,7 +393,7 @@ namespace Cpp_Bus_Driver
             }
 
             buffer_timeout_count++;
-            if (buffer_timeout_count > ESP_AT_TRANSMIT_TIMEOUT_COUNT)
+            if (buffer_timeout_count > TRANSMIT_TIMEOUT_COUNT)
             {
                 _connect.status = false;
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "esp_at connect timeout\n");
@@ -444,7 +444,7 @@ namespace Cpp_Bus_Driver
             }
 
             buffer_timeout_count++;
-            if (buffer_timeout_count > ESP_AT_TRANSMIT_TIMEOUT_COUNT)
+            if (buffer_timeout_count > TRANSMIT_TIMEOUT_COUNT)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_device_id timeout\n");
                 return false;
@@ -484,11 +484,11 @@ namespace Cpp_Bus_Driver
         {
             _connect.error_count = 0;
         }
-        else if (_connect.error_count > ESP_AT_CONNECT_ERROR_COUNT)
+        else if (_connect.error_count > CONNECT_ERROR_COUNT)
         {
-            _connect.error_count = ESP_AT_CONNECT_ERROR_COUNT + 1;
+            _connect.error_count = CONNECT_ERROR_COUNT + 1;
             _connect.status = false;
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "_connect.error_count > ESP_AT_CONNECT_ERROR_COUNT\n");
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "_connect.error_count > CONNECT_ERROR_COUNT\n");
         }
     }
 
@@ -598,7 +598,7 @@ namespace Cpp_Bus_Driver
 
         data.resize(buffer_lenght);
 
-        size_t buffer_block_length = (buffer_lenght / ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE) * ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE;
+        size_t buffer_block_length = (buffer_lenght / MAX_TRANSMIT_BLOCK_BUFFER_SIZE) * MAX_TRANSMIT_BLOCK_BUFFER_SIZE;
         if (buffer_block_length != 0)
         {
             // 多字节对齐读取
@@ -661,7 +661,7 @@ namespace Cpp_Bus_Driver
 
         *byte = buffer_lenght;
 
-        size_t buffer_block_length = (buffer_lenght / ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE) * ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE;
+        size_t buffer_block_length = (buffer_lenght / MAX_TRANSMIT_BLOCK_BUFFER_SIZE) * MAX_TRANSMIT_BLOCK_BUFFER_SIZE;
         if (buffer_block_length != 0)
         {
             // 多字节对齐读取
@@ -728,7 +728,7 @@ namespace Cpp_Bus_Driver
 
         data = std::make_unique<uint8_t[]>(buffer_lenght);
 
-        size_t buffer_block_length = (buffer_lenght / ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE) * ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE;
+        size_t buffer_block_length = (buffer_lenght / MAX_TRANSMIT_BLOCK_BUFFER_SIZE) * MAX_TRANSMIT_BLOCK_BUFFER_SIZE;
         if (buffer_block_length != 0)
         {
             // 多字节对齐读取
@@ -800,7 +800,7 @@ namespace Cpp_Bus_Driver
 
         while (1)
         {
-            if (get_tx_block_buffer_length() * ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE >= byte)
+            if (get_tx_block_buffer_length() * MAX_TRANSMIT_BLOCK_BUFFER_SIZE >= byte)
             {
                 break;
             }
@@ -815,7 +815,7 @@ namespace Cpp_Bus_Driver
             delay_ms(10);
         }
 
-        size_t buffer_block_length = (byte / ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE) * ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE;
+        size_t buffer_block_length = (byte / MAX_TRANSMIT_BLOCK_BUFFER_SIZE) * MAX_TRANSMIT_BLOCK_BUFFER_SIZE;
         if (buffer_block_length != 0)
         {
             // 多字节对齐发送
@@ -862,7 +862,7 @@ namespace Cpp_Bus_Driver
 
         while (1)
         {
-            if (get_tx_block_buffer_length() * ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE >= buffer_length)
+            if (get_tx_block_buffer_length() * MAX_TRANSMIT_BLOCK_BUFFER_SIZE >= buffer_length)
             {
                 break;
             }
@@ -877,7 +877,7 @@ namespace Cpp_Bus_Driver
             delay_ms(10);
         }
 
-        size_t buffer_block_length = (buffer_length / ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE) * ESP_AT_MAX_TRANSMIT_BLOCK_BUFFER_SIZE;
+        size_t buffer_block_length = (buffer_length / MAX_TRANSMIT_BLOCK_BUFFER_SIZE) * MAX_TRANSMIT_BLOCK_BUFFER_SIZE;
         if (buffer_block_length != 0)
         {
             // 多字节对齐发送

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-06-12 10:49:15
+ * @LastEditTime: 2025-07-24 14:43:21
  * @License: GPL 3.0
  */
 #include "sgm38121.h"
@@ -22,7 +22,7 @@ namespace Cpp_Bus_Driver
         }
 
         uint8_t buffer = get_device_id();
-        if (buffer != SGM38121_DEVICE_ID)
+        if (buffer != DEVICE_ID)
         {
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sgm38121 id fail (error id: %#X)\n", buffer);
             return false;

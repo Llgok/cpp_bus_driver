@@ -17,7 +17,7 @@ namespace Cpp_Bus_Driver
     class Gz030pcc02 : public Iic_Guide
     {
     private:
-        static constexpr uint8_t GZ030PCC02_DEVICE_ID = 0x03; // 默认值
+        static constexpr uint8_t DEVICE_ID = 0x03; // 默认值
 
         enum class Cmd
         {

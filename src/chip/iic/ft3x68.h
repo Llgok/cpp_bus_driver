@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-24 15:47:48
+ * @LastEditTime: 2025-07-24 14:41:44
  * @License: GPL 3.0
  */
 
@@ -18,8 +18,7 @@ namespace Cpp_Bus_Driver
     class Ft3x68 : public Iic_Guide
     {
     private:
-        static constexpr uint8_t FT3168_DEVICE_ID = 0x03;
-
+        static constexpr uint8_t DEVICE_ID = 0x03;
         static constexpr uint8_t MAX_TOUCH_FINGER_COUNT = 2;
         static constexpr uint8_t SINGLE_TOUCH_POINT_DATA_SIZE = 6;
 

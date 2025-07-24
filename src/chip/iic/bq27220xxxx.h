@@ -17,7 +17,7 @@ namespace Cpp_Bus_Driver
     class Bq27220xxxx : public Iic_Guide
     {
     private:
-        static constexpr uint16_t BQ27220YZFR_DEVICE_ID = 0x0220;
+        static constexpr uint16_t DEVICE_ID = 0x0220;
 
         enum class Cmd
         {

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-16 15:57:49
+ * @LastEditTime: 2025-07-24 14:51:19
  * @License: GPL 3.0
  */
 
@@ -17,7 +17,7 @@ namespace Cpp_Bus_Driver
     private:
         static constexpr uint8_t GET_INFORMATION_TIMEOUT_COUNT = 3; // 获取信息超时计数
 
-        static constexpr uint16_t L76K_UART_RX_MAX_SIZE = 1024 * 2; // 最大获取的数据量
+        static constexpr uint16_t MAX_RECEIVE_SIZE = 1024 * 2; // 最大接收尺寸
 
         enum class Cmd
         {
@@ -124,7 +124,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-03-24 10:03:31
          */
-        bool get_info_data(std::unique_ptr<uint8_t[]> &data, uint32_t *length, uint32_t max_length = L76K_UART_RX_MAX_SIZE, uint8_t timeout_count = GET_INFORMATION_TIMEOUT_COUNT);
+        bool get_info_data(std::unique_ptr<uint8_t[]> &data, uint32_t *length, uint32_t max_length = MAX_RECEIVE_SIZE, uint8_t timeout_count = GET_INFORMATION_TIMEOUT_COUNT);
 
         /**
          * @brief 设置定位频率

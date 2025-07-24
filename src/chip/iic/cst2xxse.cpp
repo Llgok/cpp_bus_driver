@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2025-07-24 14:07:14
+ * @LastEditTime: 2025-07-24 14:42:36
  * @License: GPL 3.0
  */
 #include "cst2xxse.h"
@@ -30,7 +30,7 @@ namespace Cpp_Bus_Driver
         }
 
         uint8_t buffer = get_device_id();
-        if (buffer != static_cast<uint8_t>(CST2xxSE_DEVICE_ID))
+        if (buffer != DEVICE_ID)
         {
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "get cst2xxse id fail (error id: %#X)\n", buffer);
             return false;

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-17 14:24:32
+ * @LastEditTime: 2025-07-24 14:48:59
  * @License: GPL 3.0
  */
 
@@ -15,9 +15,9 @@ namespace Cpp_Bus_Driver
     class Sx126x : public Spi_Guide
     {
     private:
-        static constexpr uint16_t SX126X_BUSY_PIN_TIMEOUT_COUNT = 10000;
-        static constexpr uint8_t SX126X_BUSY_FUNCTION_TIMEOUT_COUNT = 100;
-        static constexpr uint8_t SX126X_MAX_TRANSMIT_BUFFER_SIZE = 255;
+        static constexpr uint16_t BUSY_PIN_TIMEOUT_COUNT = 10000;
+        static constexpr uint8_t BUSY_FUNCTION_TIMEOUT_COUNT = 100;
+        static constexpr uint8_t MAX_TRANSMIT_BUFFER_SIZE = 255;
 
     public:
         enum class Chip_Type
@@ -940,7 +940,7 @@ namespace Cpp_Bus_Driver
                 Preamble_Detector preamble_detector = Preamble_Detector::LENGTH_8BIT;
                 Addr_Comp address_comparison = Addr_Comp::FILTERING_DISABLE;
                 Gfsk_Header_Type header_type = Gfsk_Header_Type::VARIABLE_PACKET;
-                uint8_t payload_length = SX126X_MAX_TRANSMIT_BUFFER_SIZE;
+                uint8_t payload_length = MAX_TRANSMIT_BUFFER_SIZE;
                 Pulse_Shape pulse_shape = Pulse_Shape::GAUSSIAN_BT_1;
                 Sf spreading_factor = Sf::SF9;
 
@@ -965,7 +965,7 @@ namespace Cpp_Bus_Driver
                 uint16_t sync_word = 0x1424;
                 uint16_t preamble_length = 8;
                 Lora_Header_Type header_type = Lora_Header_Type::VARIABLE_LENGTH_PACKET;
-                uint8_t payload_length = SX126X_MAX_TRANSMIT_BUFFER_SIZE;
+                uint8_t payload_length = MAX_TRANSMIT_BUFFER_SIZE;
                 Lora_Crc_Type crc_type = Lora_Crc_Type::ON;
                 Invert_Iq invert_iq = Invert_Iq::STANDARD_IQ_SETUP;
             } lora;

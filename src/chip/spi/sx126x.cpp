@@ -101,7 +101,7 @@ namespace Cpp_Bus_Driver
                     break;
                 }
                 timeout_count++;
-                if (timeout_count > SX126X_BUSY_PIN_TIMEOUT_COUNT)
+                if (timeout_count > BUSY_PIN_TIMEOUT_COUNT)
                 {
                     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "_busy timeout\n");
                     return false;
@@ -119,7 +119,7 @@ namespace Cpp_Bus_Driver
                     break;
                 }
                 timeout_count++;
-                if (timeout_count > SX126X_BUSY_FUNCTION_TIMEOUT_COUNT)
+                if (timeout_count > BUSY_FUNCTION_TIMEOUT_COUNT)
                 {
                     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "_busy_wait_callback timeout\n");
                     return false;
@@ -959,7 +959,7 @@ namespace Cpp_Bus_Driver
         }
 
         // 设置包的参数
-        if (set_lora_packet_params(preamble_length, Lora_Header_Type::VARIABLE_LENGTH_PACKET, SX126X_MAX_TRANSMIT_BUFFER_SIZE, crc_type, Invert_Iq::STANDARD_IQ_SETUP) == false)
+        if (set_lora_packet_params(preamble_length, Lora_Header_Type::VARIABLE_LENGTH_PACKET, MAX_TRANSMIT_BUFFER_SIZE, crc_type, Invert_Iq::STANDARD_IQ_SETUP) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_lora_packet_params fail\n");
             return false;
@@ -1632,7 +1632,7 @@ namespace Cpp_Bus_Driver
 
         // 设置包的参数
         if (set_gfsk_packet_params(preamble_length, _param.gfsk.preamble_detector, sync_word_length * 8, Addr_Comp::FILTERING_DISABLE,
-                                   Gfsk_Header_Type::VARIABLE_PACKET, SX126X_MAX_TRANSMIT_BUFFER_SIZE, crc_type, Whitening::NO_ENCODING) == false)
+                                   Gfsk_Header_Type::VARIABLE_PACKET, MAX_TRANSMIT_BUFFER_SIZE, crc_type, Whitening::NO_ENCODING) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_gfsk_packet_params fail\n");
             return false;
@@ -1891,11 +1891,11 @@ namespace Cpp_Bus_Driver
 
     bool Sx126x::clear_buffer(void)
     {
-        std::unique_ptr<uint8_t[]> buffer = std::make_unique<uint8_t[]>(SX126X_MAX_TRANSMIT_BUFFER_SIZE);
+        std::unique_ptr<uint8_t[]> buffer = std::make_unique<uint8_t[]>(MAX_TRANSMIT_BUFFER_SIZE);
 
-        memset(buffer.get(), 0, SX126X_MAX_TRANSMIT_BUFFER_SIZE);
+        memset(buffer.get(), 0, MAX_TRANSMIT_BUFFER_SIZE);
 
-        if (write_buffer(buffer.get(), SX126X_MAX_TRANSMIT_BUFFER_SIZE, 0) == false)
+        if (write_buffer(buffer.get(), MAX_TRANSMIT_BUFFER_SIZE, 0) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write_buffer fail\n");
             return false;
