@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-07-18 11:12:47
+ * @LastEditTime: 2025-07-24 14:02:21
  * @License: GPL 3.0
  */
 #pragma once
@@ -29,6 +29,7 @@ namespace Cpp_Bus_Driver
         virtual bool end(void);
 
         bool init_list(const uint8_t *list, size_t length);
+        bool init_list(const uint16_t *list, size_t length);
     };
 
     class Spi_Guide : public Tool

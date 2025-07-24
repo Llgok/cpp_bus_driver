@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-16 13:43:02
+ * @LastEditTime: 2025-07-24 14:01:05
  * @License: GPL 3.0
  */
 #include "es8311.h"
@@ -65,7 +65,7 @@ namespace Cpp_Bus_Driver
 
         for (uint8_t i = 0; i < 2; i++)
         {
-            if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RO_DEVICE_ID_START) + i, &buffer[i]) == false)
+            if (Iic_Guide::_bus->read(static_cast<uint8_t>(static_cast<uint8_t>(Cmd::RO_DEVICE_ID_START) + i), &buffer[i]) == false)
             {
                 Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return -1;

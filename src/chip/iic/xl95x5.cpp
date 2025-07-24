@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-05-15 10:00:47
+ * @LastEditTime: 2025-07-24 14:07:49
  * @License: GPL 3.0
  */
 #include "xl95x5.h"
@@ -246,7 +246,7 @@ namespace Cpp_Bus_Driver
 
         for (uint8_t i = 0; i < 2; i++)
         {
-            if (_bus->read(static_cast<uint8_t>(Cmd::RO_INPUT_PORT_0) + i, &buffer) == false)
+            if (_bus->read(static_cast<uint8_t>(static_cast<uint8_t>(Cmd::RO_INPUT_PORT_0) + i), &buffer) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return false;

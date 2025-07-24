@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-24 10:56:21
+ * @LastEditTime: 2025-07-24 13:47:21
  * @License: GPL 3.0
  */
 
@@ -24,6 +24,10 @@ namespace Cpp_Bus_Driver
             RO_DEVICE_ID = 0x0001,
 
         };
+
+        static constexpr const uint16_t _init_list[] =
+            {
+                static_cast<uint8_t>(Init_List_Cmd::WRITE_C16_D8), 0x6C00, 0x00};
 
         int32_t _rst;
 

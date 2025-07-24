@@ -252,7 +252,7 @@ namespace Cpp_Bus_Driver
 
         for (uint8_t i = 0; i < 7; i++)
         {
-            if (_bus->read(static_cast<uint8_t>(Cmd::RW_VL_SECONDS) + i, &buffer[i]) == false)
+            if (_bus->read(static_cast<uint8_t>(static_cast<uint8_t>(Cmd::RW_VL_SECONDS) + i), &buffer[i]) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return false;

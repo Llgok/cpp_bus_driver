@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-08 14:15:40
+ * @LastEditTime: 2025-07-24 14:13:06
  * @License: GPL 3.0
  */
 #include "ft3x68.h"
@@ -71,7 +71,8 @@ namespace Cpp_Bus_Driver
         uint8_t buffer[SINGLE_TOUCH_POINT_DATA_SIZE] = {0};
 
         // 地址自动偏移
-        if (_bus->read(static_cast<uint8_t>(Cmd::RO_P1_XH) + ((finger_num - 1) * SINGLE_TOUCH_POINT_DATA_SIZE), buffer, SINGLE_TOUCH_POINT_DATA_SIZE) == false)
+        if (_bus->read(static_cast<uint8_t>(static_cast<uint8_t>(Cmd::RO_P1_XH) + ((finger_num - 1) * SINGLE_TOUCH_POINT_DATA_SIZE)),
+         buffer, SINGLE_TOUCH_POINT_DATA_SIZE) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;

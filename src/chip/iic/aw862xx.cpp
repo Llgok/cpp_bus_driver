@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-26 11:13:26
- * @LastEditTime: 2025-06-12 10:48:50
+ * @LastEditTime: 2025-07-24 14:03:41
  * @License: GPL 3.0
  */
 #include "aw862xx.h"
@@ -532,7 +532,7 @@ namespace Cpp_Bus_Driver
 
         for (uint8_t i = 0; i < 2; i++)
         {
-            if (_bus->read(static_cast<uint8_t>(Cmd::RO_CONTRD14) + i, &buffer[i]) == false)
+            if (_bus->read(static_cast<uint8_t>(static_cast<uint8_t>(Cmd::RO_CONTRD14) + i), &buffer[i]) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return -1;

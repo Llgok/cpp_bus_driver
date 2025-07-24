@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-07-24 10:57:07
+ * @LastEditTime: 2025-07-24 13:46:14
  * @License: GPL 3.0
  */
 #include "gz030pcc02.h"
@@ -30,6 +30,12 @@ namespace Cpp_Bus_Driver
         else
         {
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "get gz030pcc02 id: %#X\n", buffer);
+        }
+
+        if (init_list(_init_list, sizeof(_init_list)/sizeof(uint16_t)) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "_init_list fail\n");
+            return false;
         }
 
         return true;

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2025-07-08 14:14:57
+ * @LastEditTime: 2025-07-24 14:07:14
  * @License: GPL 3.0
  */
 #include "cst2xxse.h"
@@ -80,7 +80,8 @@ namespace Cpp_Bus_Driver
 
         if (finger_num == 1)
         {
-            if (_bus->read(static_cast<uint8_t>(Cmd::RO_TOUCH_POINT_INFO_START) + ((finger_num - 1) * SINGLE_TOUCH_POINT_DATA_SIZE), buffer, SINGLE_TOUCH_POINT_DATA_SIZE) == false)
+            if (_bus->read(static_cast<uint8_t>(static_cast<uint8_t>(Cmd::RO_TOUCH_POINT_INFO_START) + ((finger_num - 1) * SINGLE_TOUCH_POINT_DATA_SIZE)),
+                           buffer, SINGLE_TOUCH_POINT_DATA_SIZE) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return false;
@@ -88,7 +89,8 @@ namespace Cpp_Bus_Driver
         }
         else
         {
-            if (_bus->read(static_cast<uint8_t>(Cmd::RO_TOUCH_POINT_INFO_START) + ((finger_num - 1) * SINGLE_TOUCH_POINT_DATA_SIZE) + 2, buffer, SINGLE_TOUCH_POINT_DATA_SIZE) == false)
+            if (_bus->read(static_cast<uint8_t>(static_cast<uint8_t>(Cmd::RO_TOUCH_POINT_INFO_START) + ((finger_num - 1) * SINGLE_TOUCH_POINT_DATA_SIZE) + 2),
+                           buffer, SINGLE_TOUCH_POINT_DATA_SIZE) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return false;
