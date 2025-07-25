@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-07-16 11:15:16
+ * @LastEditTime: 2025-07-25 15:11:37
  * @License: GPL 3.0
  */
 #include "hardware_sdio.h"
@@ -140,12 +140,12 @@ namespace Cpp_Bus_Driver
             delay_ms(100);
         }
 
-        assert = sdmmc_io_enable_int(_sdio_handle.get());
-        if (assert != ESP_OK)
-        {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_enable_int fail (error code: %#X)\n", assert);
-            // return false;
-        }
+        // assert = sdmmc_io_enable_int(_sdio_handle.get());
+        // if (assert != ESP_OK)
+        // {
+        //     assert_log(Log_Level::BUS, __FILE__, __LINE__, "sdmmc_io_enable_int fail (error code: %#X)\n", assert);
+        //     // return false;
+        // }
 
         // sdmmc_card_print_info(stdout, _sdio_handle.get());
 
