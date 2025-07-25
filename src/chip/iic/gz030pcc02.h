@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-24 14:35:58
+ * @LastEditTime: 2025-07-24 15:27:14
  * @License: GPL 3.0
  */
 
@@ -19,6 +19,8 @@ namespace Cpp_Bus_Driver
     private:
         static constexpr uint8_t DEVICE_ID = 0x03; // 默认值
 
+        static constexpr uint8_t MIPI_LANE_NUM = 2; // MIPI 总线的 lane 数量
+
         enum class Cmd
         {
             RO_DEVICE_ID = 0x0001,
@@ -30,7 +32,13 @@ namespace Cpp_Bus_Driver
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6C00, 0x00,
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6900, 0x08,
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6901, 0x00,
+#if MIPI_LANE_NUM == 4
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6800, 0x03,
+#elif MIPI_LANE_NUM == 2
+                static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6800, 0x01,
+                static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x5F00, 0x22,
+                static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x9F00, 0x06,
+#endif
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6801, 0x00,
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6802, 0x00,
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6803, 0x00,
