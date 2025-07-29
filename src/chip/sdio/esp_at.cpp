@@ -697,9 +697,9 @@ namespace Cpp_Bus_Driver
 
     bool Esp_At::receive_packet(std::unique_ptr<uint8_t[]> &data, size_t *byte, uint32_t max_receive_size)
     {
-        if (data == nullptr)
+        if (byte == nullptr)
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "data is nullptr\n");
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "byte is nullptr\n");
             return false;
         }
 
