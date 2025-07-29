@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-24 14:45:17
+ * @LastEditTime: 2025-07-29 15:04:48
  * @License: GPL 3.0
  */
 #include "esp_at.h"
@@ -573,7 +573,7 @@ namespace Cpp_Bus_Driver
         return buffer;
     }
 
-    bool Esp_At::receive_packet(std::vector<uint8_t> &data, uint32_t max_receive_size)
+    bool Esp_At::receive_packet(std::vector<uint8_t> &data)
     {
         if (_connect.status == false)
         {
@@ -588,13 +588,6 @@ namespace Cpp_Bus_Driver
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_rx_data_length fail(get_rx_data_length = 0)\n");
             return false;
         }
-        else if (buffer_lenght > max_receive_size)
-        {
-            _connect.status = false;
-
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_rx_data_length fail((get_rx_data_length = %u) > max_receive_size)\n", buffer_lenght);
-            return false;
-        }
 
         data.resize(buffer_lenght);
 
@@ -605,7 +598,7 @@ namespace Cpp_Bus_Driver
             if (_bus->read_block(1, static_cast<uint32_t>(Cmd::SLAVE_CMD53_END_ADDR) - buffer_lenght, data.data(), buffer_block_length) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read_block fail\n");
-                assert_connect_count(1);
+                _connect.status = false;
                 return false;
             }
             buffer_lenght -= buffer_block_length;
@@ -630,7 +623,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Esp_At::receive_packet(uint8_t *data, size_t *byte, uint32_t max_receive_size)
+    bool Esp_At::receive_packet(uint8_t *data, size_t *byte)
     {
         if (data == nullptr)
         {
@@ -651,13 +644,6 @@ namespace Cpp_Bus_Driver
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_rx_data_length fail\n");
             return false;
         }
-        else if (buffer_lenght > max_receive_size)
-        {
-            _connect.status = false;
-
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_rx_data_length fail((get_rx_data_length = %u) > max_receive_size)\n", buffer_lenght);
-            return false;
-        }
 
         *byte = buffer_lenght;
 
@@ -669,7 +655,7 @@ namespace Cpp_Bus_Driver
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read_block fail\n");
                 *byte = 0;
-                assert_connect_count(1);
+                _connect.status = false;
                 return false;
             }
             buffer_lenght -= buffer_block_length;
@@ -695,7 +681,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Esp_At::receive_packet(std::unique_ptr<uint8_t[]> &data, size_t *byte, uint32_t max_receive_size)
+    bool Esp_At::receive_packet(std::unique_ptr<uint8_t[]> &data, size_t *byte)
     {
         if (byte == nullptr)
         {
@@ -716,13 +702,6 @@ namespace Cpp_Bus_Driver
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_rx_data_length fail\n");
             return false;
         }
-        else if (buffer_lenght > max_receive_size)
-        {
-            _connect.status = false;
-
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_rx_data_length fail((get_rx_data_length = %u) > max_receive_size)\n", buffer_lenght);
-            return false;
-        }
 
         *byte = buffer_lenght;
 
@@ -736,7 +715,7 @@ namespace Cpp_Bus_Driver
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read_block fail\n");
                 *byte = 0;
-                assert_connect_count(1);
+                _connect.status = false;
                 return false;
             }
             buffer_lenght -= buffer_block_length;

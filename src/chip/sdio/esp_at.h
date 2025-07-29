@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-24 14:46:40
+ * @LastEditTime: 2025-07-29 14:58:12
  * @License: GPL 3.0
  */
 
@@ -22,8 +22,6 @@ namespace Cpp_Bus_Driver
         static constexpr uint32_t RX_BUFFER_MAX = 0x100000;
         static constexpr uint8_t TRANSMIT_TIMEOUT_COUNT = 100;
         static constexpr uint8_t CONNECT_ERROR_COUNT = 5;
-        
-        static constexpr uint16_t MAX_RECEIVE_SIZE = 2 * 1024;
 
         enum class Cmd
         {
@@ -210,33 +208,30 @@ namespace Cpp_Bus_Driver
         uint32_t get_rx_data_length(void);
 
         /**
-         * @brief 接收包
+         * @brief 接收包（只能进行小容量数据读取）
          * @param *data 包的数据容器
-         * @param max_receive_size 最大接收尺寸
          * @return
          * @Date 2025-03-21 17:51:33
          */
-        bool receive_packet(std::vector<uint8_t> &data, uint32_t max_receive_size = MAX_RECEIVE_SIZE);
+        bool receive_packet(std::vector<uint8_t> &data);
 
         /**
-         * @brief 接收包
+         * @brief 接收包（配合heap_caps_malloc使用可以进行大容量数据读取）
          * @param *data 获取的数据指针
          * @param *byte 获取的数据长度
-         * @param max_receive_size 最大接收尺寸
          * @return
          * @Date 2025-03-25 14:38:15
          */
-        bool receive_packet(uint8_t *data, size_t *byte, uint32_t max_receive_size = MAX_RECEIVE_SIZE);
+        bool receive_packet(uint8_t *data, size_t *byte);
 
         /**
-         * @brief 接收包
+         * @brief 接收包（只能进行小容量数据读取）
          * @param &data 获取的数据指针
          * @param *byte 获取的数据长度
-         * @param max_receive_size 最大接收尺寸
          * @return
          * @Date 2025-03-25 14:38:15
          */
-        bool receive_packet(std::unique_ptr<uint8_t[]> &data, size_t *byte, uint32_t max_receive_size = MAX_RECEIVE_SIZE);
+        bool receive_packet(std::unique_ptr<uint8_t[]> &data, size_t *byte);
 
         /**
          * @brief 获取发送block数据缓冲区的长度
