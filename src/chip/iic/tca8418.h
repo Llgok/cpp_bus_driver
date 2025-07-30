@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-30 14:19:30
+ * @LastEditTime: 2025-07-30 15:37:34
  * @License: GPL 3.0
  */
 
@@ -23,22 +23,24 @@ namespace Cpp_Bus_Driver
         {
             RO_DEVICE_ID = 0x2F,
 
-            WO_GPIO_INT_EN1 = 0x1A, // gpio interrupt enable 1
-            WO_GPIO_INT_EN2,        // gpio interrupt enable 2
-            WO_GPIO_INT_EN3,        // gpio interrupt enable 3
-            WO_KP_GPIO1,            // keypad/gpio select 1
-            WO_KP_GPIO2,            // keypad/gpio select 2
-            WO_KP_GPIO3,            // keypad/gpio select 3
+            RW_KEY_LOCK_AND_EVENT_COUNTER = 0x03,
 
-            WO_GPI_EM1 = 0x20, // gpi event mode 1
-            WO_GPI_EM2,        // gpi event mode 2
-            WO_GPI_EM3,        // gpi event mode 3
-            WO_GPIO_DIR1,      // gpio data direction 1
-            WO_GPIO_DIR2,      // gpio data direction 2
-            WO_GPIO_DIR3,      // gpio data direction 3
-            WO_GPIO_INT_LVL1,  // gpio edge/level detect 1
-            WO_GPIO_INT_LVL2,  // gpio edge/level detect 2
-            WO_GPIO_INT_LVL3,  // gpio edge/level detect 3
+            WO_GPIO_INT_EN1 = 0x1A, // GPIO中断使能1
+            WO_GPIO_INT_EN2,        // GPIO中断使能2
+            WO_GPIO_INT_EN3,        // GPIO中断使能3
+            WO_KP_GPIO1,            // 按键/GPIO选择1
+            WO_KP_GPIO2,            // 按键/GPIO选择2
+            WO_KP_GPIO3,            // 按键/GPIO选择3
+
+            WO_GPI_EM1 = 0x20, // GPI事件模式1
+            WO_GPI_EM2,        // GPI事件模式2
+            WO_GPI_EM3,        // GPI事件模式3
+            WO_GPIO_DIR1,      // GPIO数据方向1
+            WO_GPIO_DIR2,      // GPIO数据方向2
+            WO_GPIO_DIR3,      // GPIO数据方向3
+            WO_GPIO_INT_LVL1,  // GPIO边沿/电平检测1
+            WO_GPIO_INT_LVL2,  // GPIO边沿/电平检测2
+            WO_GPIO_INT_LVL3   // GPIO边沿/电平检测3
 
         };
 
@@ -68,6 +70,21 @@ namespace Cpp_Bus_Driver
         int32_t _rst;
 
     public:
+        struct Touch_Info
+        {
+            uint16_t x = -1;                // x 坐标
+            uint16_t y = -1;                // y 坐标
+            bool press_status_flag = false; // 按压状态标志
+        };
+
+        struct Touch_Point
+        {
+            uint8_t finger_count = -1;    // 触摸手指总数
+            bool edge_touch_flag = false; // 边缘触摸标志
+
+            std::vector<struct Touch_Info> info;
+        };
+
         Tca8418(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, uint16_t width, uint16_t height, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
             : Iic_Guide(bus, address), _width(width), _height(height), _rst(rst)
         {
@@ -78,7 +95,7 @@ namespace Cpp_Bus_Driver
         uint8_t get_device_id(void);
 
         /**
-         * @brief 设置按键扫描的开窗大小
+         * @brief 设置扫描的开窗大小
          * @param x 开窗点x坐标，值范围（0~9）
          * @param y 开窗点y坐标，值范围（0~7）
          * @param w 开窗长度，值范围（0~9）
@@ -86,6 +103,17 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-07-30 13:42:08
          */
-        bool set_key_scan_window(uint8_t x, uint8_t y, uint8_t w, uint8_t h);
+        bool set_scan_window(uint8_t x, uint8_t y, uint8_t w, uint8_t h);
+
+        /**
+         * @brief 获取事件计数
+         * @return
+         * @Date 2025-07-30 15:23:03
+         */
+        uint8_t get_event_count(void);
+
+        bool get_multiple_touch_point(Touch_Point &tp);
+
+        bool get_event_fifo();
     };
 }
