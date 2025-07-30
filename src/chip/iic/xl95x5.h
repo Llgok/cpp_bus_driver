@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-05-15 17:32:28
+ * @LastEditTime: 2025-07-30 11:26:03
  * @License: GPL 3.0
  */
 
@@ -44,6 +44,7 @@ namespace Cpp_Bus_Driver
             IO5,
             IO6,
             IO7,
+            
             IO10 = 10,
             IO11,
             IO12,

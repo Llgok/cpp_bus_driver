@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-24 14:43:26
+ * @LastEditTime: 2025-07-30 11:39:03
  * @License: GPL 3.0
  */
 
@@ -29,8 +29,10 @@ namespace Cpp_Bus_Driver
             RW_AVDD1_OUTPUT_VOLTAGE_LEVEL,
             RW_AVDD2_OUTPUT_VOLTAGE_LEVEL,
             RW_FUNCTION,
+
             RW_POWER_SEQUENCE_SETTING_1 = 0X0A,
             RW_POWER_SEQUENCE_SETTING_2,
+
             RW_ENABLE_CONTROL = 0X0E,
             RW_SEQUENCE_CONTROL,
         };
@@ -40,7 +42,7 @@ namespace Cpp_Bus_Driver
     public:
         enum class Channel
         {
-            DVDD_1 = 0,
+            DVDD_1,
             DVDD_2,
             AVDD_1,
             AVDD_2,
@@ -48,8 +50,8 @@ namespace Cpp_Bus_Driver
 
         enum class Status
         {
-            ON = 0,
-            OFF,
+            OFF = 0,
+            ON,
         };
 
         Sgm38121(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
@@ -65,18 +67,18 @@ namespace Cpp_Bus_Driver
          * @brief 设置输出电压
          * @param channel 使用Channel::配置
          * @param voltage DVDD_1和DVDD_2取值528~1504，AVDD_1和AVDD_2取值1504~3424
-         * @return 
+         * @return
          * @Date 2025-07-17 10:27:58
-         */        
+         */
         bool set_output_voltage(Channel channel, uint16_t voltage);
 
         /**
          * @brief 设置通道状态
          * @param channel 使用Channel::配置
          * @param status 使用Status::配置
-         * @return 
+         * @return
          * @Date 2025-07-17 10:29:45
-         */        
+         */
         bool set_channel_status(Channel channel, Status status);
     };
 }

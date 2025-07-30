@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-07-24 14:43:21
+ * @LastEditTime: 2025-07-30 11:36:55
  * @License: GPL 3.0
  */
 #include "sgm38121.h"
@@ -137,60 +137,16 @@ namespace Cpp_Bus_Driver
         switch (channel)
         {
         case Channel::DVDD_1:
-            switch (status)
-            {
-            case Status::ON:
-                buffer |= 0B00000001;
-                break;
-            case Status::OFF:
-                buffer &= 0B11111110;
-                break;
-
-            default:
-                break;
-            }
+            buffer = (buffer & 0B11111110) | static_cast<uint8_t>(status);
             break;
         case Channel::DVDD_2:
-            switch (status)
-            {
-            case Status::ON:
-                buffer |= 0B00000010;
-                break;
-            case Status::OFF:
-                buffer &= 0B11111101;
-                break;
-
-            default:
-                break;
-            }
+            buffer = (buffer & 0B11111101) | (static_cast<uint8_t>(status) << 1);
             break;
         case Channel::AVDD_1:
-            switch (status)
-            {
-            case Status::ON:
-                buffer |= 0B00000100;
-                break;
-            case Status::OFF:
-                buffer &= 0B11111011;
-                break;
-
-            default:
-                break;
-            }
+            buffer = (buffer & 0B11111011) | (static_cast<uint8_t>(status) << 2);
             break;
         case Channel::AVDD_2:
-            switch (status)
-            {
-            case Status::ON:
-                buffer |= 0B00001000;
-                break;
-            case Status::OFF:
-                buffer &= 0B11110111;
-                break;
-
-            default:
-                break;
-            }
+            buffer = (buffer & 0B11110111) | (static_cast<uint8_t>(status) << 3);
             break;
 
         default:

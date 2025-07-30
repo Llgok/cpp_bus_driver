@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-03-19 09:43:44
+ * @LastEditTime: 2025-07-30 11:30:13
  * @License: GPL 3.0
  */
 
@@ -27,6 +27,7 @@ namespace Cpp_Bus_Driver
             RC_SYSINT,
             RW_SYSINTM,
             RO_SYSSST2,
+
             RW_PLAYCFG2 = 0x07,
             RW_PLAYCFG3,
             RW_PLAYCFG4,
@@ -43,6 +44,7 @@ namespace Cpp_Bus_Driver
             RW_WAVCFG11,
             RW_WAVCFG12,
             RW_WAVCFG13,
+
             RW_CONTCFG1 = 0x18,
             RW_CONTCFG2,
             RW_CONTCFG3,
@@ -54,10 +56,12 @@ namespace Cpp_Bus_Driver
             RW_CONTCFG9,
             RW_CONTCFG10,
             RW_CONTCFG11,
+
             RO_CONTRD14 = 0x25,
             RO_CONTRD15,
             RO_CONTRD16,
             RO_CONTRD17,
+
             RW_RTPCFG1 = 0x2D,
             RW_RTPCFG2,
             RW_RTPCFG3,
@@ -65,9 +69,11 @@ namespace Cpp_Bus_Driver
             RW_RTPCFG5,
             RW_RTPDATA,
             RW_TRGCFG1,
+
             RW_TRGCFG4 = 0x36,
             RW_TRGCFG7 = 0x39,
             RW_TRGCFG8,
+
             RW_GLBCFG2 = 0x3C,
             RW_GLBCFG4 = 0x3E,
             RO_GLBRD5,
@@ -76,14 +82,17 @@ namespace Cpp_Bus_Driver
             RW_RAMADATA,
             RW_SYSCTRL1,
             RW_SYSCTRL2,
+
             RW_SYSCTRL7 = 0x49,
             RW_PWMCFG1 = 0x4C,
             RW_PWMCFG2,
             RW_PWMCFG3,
             RW_PWMCFG4,
+
             RW_DETCFG1 = 0x51,
             RW_DETCFG2,
             RW_DET_RL,
+
             RW_DET_VBAT = 0x55,
             RW_DET_LO = 0x57,
             RW_TRIMCFG3 = 0x5A,
@@ -134,7 +143,7 @@ namespace Cpp_Bus_Driver
 
         enum class Force_Mode
         {
-            ACTIVE = 0, // 激活模式
+            ACTIVE, // 激活模式
             STANDBY,    // 待机模式
         };
 

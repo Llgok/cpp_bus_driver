@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-24 14:48:59
+ * @LastEditTime: 2025-07-30 11:52:20
  * @License: GPL 3.0
  */
 
@@ -22,7 +22,7 @@ namespace Cpp_Bus_Driver
     public:
         enum class Chip_Type
         {
-            SX1262 = 0x00,
+            SX1262 = 0,
             SX1261,
         };
 
@@ -40,24 +40,29 @@ namespace Cpp_Bus_Driver
             RO_GET_IRQ_STATUS,
             RO_GET_RX_BUFFER_STATUS,
             RO_GET_PACKET_STATUS,
+
             RO_READ_BUFFER = 0x1E,
             WO_SET_STANDBY = 0x80,
             WO_SET_RX = 0x82,
             WO_SET_TX,
             WO_SET_SLEEP,
+
             WO_SET_RF_FREQUENCY = 0x86,
             WO_SET_CAD_PARAMS = 0x88,
             WO_CALIBRATE,
             WO_SET_PACKET_TYPE,
             WO_SET_MODULATION_PARAMS,
             WO_SET_PACKET_PARAMS,
+
             WO_SET_TX_PARAMS = 0x8E,
             WO_SET_BUFFER_BASE_ADDRESS,
+
             WO_SET_RX_TX_FALLBACK_MODE = 0x93,
             WO_SET_PA_CONFIG = 0x95,
             WO_SET_REGULATOR_MODE,
             WO_SET_DIO3_AS_TCXO_CTRL,
             WO_CALIBRATE_IMAGE,
+
             WO_SET_DIO2_AS_RF_SWITCH_CTRL = 0x9D,
             RO_GET_STATUS = 0xC0,
             WO_SET_TX_CONTINUOUS_WAVE = 0xD1,
@@ -94,7 +99,7 @@ namespace Cpp_Bus_Driver
         };
         enum class Dio3_Tcxo_Voltage
         {
-            OUTPUT_1600_MV = 0x00,
+            OUTPUT_1600_MV = 0,
             OUTPUT_1700_MV,
             OUTPUT_1800_MV,
             OUTPUT_2200_MV,
@@ -108,8 +113,8 @@ namespace Cpp_Bus_Driver
         {
             FALSE = -1,
 
-            GFSK = 0x00,
-            LORA = 0x01,
+            GFSK = 0,
+            LORA,
             LR_FHSS = 0x03,
         };
 
@@ -124,7 +129,7 @@ namespace Cpp_Bus_Driver
         // 设置在多少个符号（symbol）的时间内执行信道活动检测
         enum class Cad_Symbol_Num
         {
-            ON_1_SYMB = 0x00,
+            ON_1_SYMB = 0,
             ON_2_SYMB,
             ON_4_SYMB,
             ON_8_SYMB,
@@ -135,7 +140,7 @@ namespace Cpp_Bus_Driver
         {
             // 芯片在 LoRa 模式下执行信道活动检测（CAD）操作，一旦操作完成，无论信道上是否有活动，
             // 芯片都会返回到 STDBY_RC （待机模式，使用内部 RC 振荡器）模式
-            ONLY = 0x00,
+            ONLY = 0,
 
             // 芯片执行信道活动检测（CAD）操作，如果检测到活动，芯片将保持在接收（RX）模式，
             // 直到检测到数据包或计时器达到由 cadTimeout * 15.625μs 定义的超时时间。
@@ -144,19 +149,19 @@ namespace Cpp_Bus_Driver
 
         enum class Regulator_Mode
         {
-            LDO = 0x00,   // 仅使用LDO用于所有模式
+            LDO = 0,      // 仅使用LDO用于所有模式
             LDO_AND_DCDC, // 在STBY_XOSC、FS、RX和TX模式中使用DC-DC+LDO
         };
 
         enum class Dio2_Mode
         {
-            IRQ = 0x00, // DIO2被用作IRQ
-            RF_SWITCH,  // 控制一个射频开关，这种情况：在睡眠模式、待机接收模式、待机外部振荡器模式、频率合成模式和接收模式下，DIO2 = 0；在发射模式下，DIO2 = 1
+            IRQ = 0,   // DIO2被用作IRQ
+            RF_SWITCH, // 控制一个射频开关，这种情况：在睡眠模式、待机接收模式、待机外部振荡器模式、频率合成模式和接收模式下，DIO2 = 0；在发射模式下，DIO2 = 1
         };
 
         enum class Ramp_Time
         {
-            RAMP_10_US = 0x00,
+            RAMP_10_US = 0,
             RAMP_20_US,
             RAMP_40_US,
             RAMP_80_US,
@@ -555,13 +560,14 @@ namespace Cpp_Bus_Driver
         // LORA带宽
         enum class Lora_Bw
         {
-            BW_7810HZ = 0x00,
+            BW_7810HZ = 0,
             BW_15630HZ,
             BW_31250HZ,
             BW_62500HZ,
             BW_125000HZ,
             BW_250000HZ,
             BW_500000HZ,
+
             BW_10420HZ = 0x08,
             BW_20830HZ,
             BW_41670HZ,
@@ -579,26 +585,26 @@ namespace Cpp_Bus_Driver
         // 低数据速率优化
         enum class Ldro
         {
-            LDRO_OFF = 0x00,
+            LDRO_OFF = 0,
             LDRO_ON,
         };
 
         enum class Lora_Header_Type
         {
-            VARIABLE_LENGTH_PACKET = 0x00, // 显式标头
-            FIXED_LENGTH_PACKET,           // 隐式标头
+            VARIABLE_LENGTH_PACKET = 0, // 显式标头
+            FIXED_LENGTH_PACKET,        // 隐式标头
         };
 
         enum class Lora_Crc_Type
         {
-            OFF = 0x00, // 关闭
-            ON,         // 打开
+            OFF = 0, // 关闭
+            ON,      // 打开
         };
 
         enum class Invert_Iq
         {
-            STANDARD_IQ_SETUP = 0x00, // 使用标准的IQ极性
-            INVERTED_IQ_SETUP,        // 使用反转的IQ极性
+            STANDARD_IQ_SETUP = 0, // 使用标准的IQ极性
+            INVERTED_IQ_SETUP,     // 使用反转的IQ极性
         };
         /**
          * @brief 设置LORA的同步字，每个LoRa数据包的开始部分都包含一个同步字，接收机通过匹配这个同步字来确认数据包的有效性，
@@ -628,7 +634,7 @@ namespace Cpp_Bus_Driver
         /**
          * @brief 设置数据包处理块的参数
          * @param preamble_length 前导长度是一个16位的值，表示无线电将发送的LoRa符号数量
-         * @param header_type 使用 Lora_Header_Type:: 配置，当字节 header_type 的值为 0x00 时，有效载荷长度、编码率和头CRC将被添加到LoRa头部，并传输给接收器
+         * @param header_type 使用 Lora_Header_Type:: 配置，当字节 header_type 的值为 0 时，有效载荷长度、编码率和头CRC将被添加到LoRa头部，并传输给接收器
          * @param payload_length 数据包的有效载荷（即实际传输的数据）的长度，这个参数通常用于指示数据包中有效数据的字节数，
          * 在进行数据传输时，发送端会设置这个长度，而接收端则根据这个长度来解析接收到的数据包
          * @param crc_type 使用 Lora_Crc_Type:: 配置
@@ -819,8 +825,8 @@ namespace Cpp_Bus_Driver
         // GFSK 的高斯滤波器的滚降因子
         enum class Pulse_Shape
         {
-            NO_FILTER = 0x00,
-            GAUSSIAN_BT_0_3 = 0X08,
+            NO_FILTER = 0,
+            GAUSSIAN_BT_0_3 = 0x08,
             GAUSSIAN_BT_0_5,
             GAUSSIAN_BT_0_7,
             GAUSSIAN_BT_1,
@@ -836,6 +842,7 @@ namespace Cpp_Bus_Driver
             BW_29300HZ,
             BW_14600HZ,
             BW_7300HZ,
+
             BW_373600HZ = 0x11,
             BW_187200HZ,
             BW_93800HZ,
@@ -843,6 +850,7 @@ namespace Cpp_Bus_Driver
             BW_23400HZ,
             BW_11700HZ,
             BW_5800HZ,
+
             BW_312000HZ = 0x19,
             BW_156200HZ,
             BW_78200HZ,
@@ -855,8 +863,8 @@ namespace Cpp_Bus_Driver
         // 检测接收到的信号中的前导码
         enum class Preamble_Detector
         {
-            LENGTH_OFF = 0x00,
-            LENGTH_8BIT = 0X04,
+            LENGTH_OFF = 0,
+            LENGTH_8BIT = 0x04,
             LENGTH_16BIT,
             LENGTH_24BIT,
             LENGTH_32BIT,
@@ -865,29 +873,30 @@ namespace Cpp_Bus_Driver
         // 比较接收到的数据包地址与设备预设的地址（节点地址和广播地址）的机制
         enum class Addr_Comp
         {
-            FILTERING_DISABLE = 0X00,
+            FILTERING_DISABLE = 0,
             FILTERING_ACTIVATED_NODE,
             FILTERING_ACTIVATED_NODE_BROADCAST,
         };
 
         enum class Gfsk_Header_Type
         {
-            KNOWN_PACKET = 0x00, // 数据包的长度在双方都是已知的，有效载荷的大小没有被添加到数据包中
-            VARIABLE_PACKET,     // 数据包是可变长度的，有效载荷的第一个字节将是数据包的大小
+            KNOWN_PACKET = 0, // 数据包的长度在双方都是已知的，有效载荷的大小没有被添加到数据包中
+            VARIABLE_PACKET,  // 数据包是可变长度的，有效载荷的第一个字节将是数据包的大小
         };
 
         enum class Gfsk_Crc_Type
         {
-            CRC_1_BYTE = 0x00,     // CRC在1字节计算
-            CRC_OFF,               // 关闭 CRC
-            CRC_2_BYTE,            // CRC在2字节计算
+            CRC_1_BYTE = 0, // CRC在1字节计算
+            CRC_OFF,        // 关闭 CRC
+            CRC_2_BYTE,     // CRC在2字节计算
+
             CRC_1_BYTE_INV = 0x04, // CRC在1字节上计算并反转
             CRC_2_BYTE_INV = 0x06, // CRC在2字节上计算并反转
         };
 
         enum class Whitening
         {
-            NO_ENCODING = 0X00,
+            NO_ENCODING = 0,
             ENABLE,
         };
 
@@ -921,7 +930,7 @@ namespace Cpp_Bus_Driver
         {
             Packet_Type packet_type = Packet_Type::GFSK;
             Regulator_Mode regulator_mode = Regulator_Mode::LDO_AND_DCDC;
-            float freq_mhz = 868.1;
+            float freq_mhz = 868.0;
             float current_limit = 140;
             int8_t power = 10;
 
@@ -995,7 +1004,7 @@ namespace Cpp_Bus_Driver
         /**
          * @brief 设置数据包处理块的参数
          * @param preamble_length 前导长度是一个16位的值，表示无线电将发送的GFSK符号数量
-         * @param preamble_detector_length 使用 Preamble_Detector:: 配置,前导码检测器充当数据包控制器的门控器，当前导码检测器长度不为 0x00 时，
+         * @param preamble_detector_length 使用 Preamble_Detector:: 配置,前导码检测器充当数据包控制器的门控器，当前导码检测器长度不为 0 时，
          * 数据包控制器仅在无线电成功接收到一定数量的前导码位后才会激活
          * @param sync_word_bit_length 同步字长度，1个字节等于8位，写入的时候要乘以8
          * @param addr_comp 使用 Addr_Comp:: 配置，用于比较接收到的数据包地址与设备预设的地址（节点地址和广播地址）的机制

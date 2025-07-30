@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-24 14:51:19
+ * @LastEditTime: 2025-07-30 11:54:14
  * @License: GPL 3.0
  */
 
@@ -40,7 +40,7 @@ namespace Cpp_Bus_Driver
 
         enum class Baud_Rate // 波特率
         {
-            BR_4800_BPS = 0,
+            BR_4800_BPS,
             BR_9600_BPS,
             BR_19200_BPS,
             BR_38400_BPS,
@@ -50,7 +50,7 @@ namespace Cpp_Bus_Driver
 
         enum class Restart_Mode // 重启模式
         {
-            HOT_START = 0,
+            HOT_START,
             WARM_START,
             COLD_START,
             COLD_START_FACTORY_RESET,
@@ -58,8 +58,8 @@ namespace Cpp_Bus_Driver
 
         enum class Gnss_Constellation // GNSS 星系
         {
-            GPS = 1, // 美国全球定位系统
-            BEIDOU,  // 中国的全球卫星导航系统
+            GPS,    // 美国全球定位系统
+            BEIDOU, // 中国的全球卫星导航系统
             GPS_BEIDOU,
             GLONASS, // 俄罗斯的全球卫星导航系统
             GPS_GLONASS,

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-27 10:50:16
+ * @LastEditTime: 2025-07-30 11:31:59
  * @License: GPL 3.0
  */
 
@@ -42,7 +42,7 @@ namespace Cpp_Bus_Driver
     public:
         enum class Week
         {
-            SUNDAY = 0X00,
+            SUNDAY = 0x00,
             MONDAY,
             TUESDAY,
             WEDNESDAY,
@@ -61,7 +61,7 @@ namespace Cpp_Bus_Driver
     public:
         enum class Out_Freq
         {
-            CLOCK_OFF = 0,
+            CLOCK_OFF,
             CLOCK_1HZ,
             CLOCK_32HZ,
             CLOCK_1024HZ,

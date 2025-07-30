@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-29 14:58:12
+ * @LastEditTime: 2025-07-30 11:43:36
  * @License: GPL 3.0
  */
 
@@ -28,13 +28,12 @@ namespace Cpp_Bus_Driver
             SD_IO_CCCR_FN_ENABLE = 0x00000002,
             SD_IO_CCCR_FN_READY,
             SD_IO_CCCR_INT_ENABLE,
-            SD_IO_CCCR_BUS_WIDTH = 0x00000007,
 
+            SD_IO_CCCR_BUS_WIDTH = 0x00000007,
             SD_IO_CCCR_BLKSIZEL = 0x00000010,
             SD_IO_CCCR_BLKSIZEH,
 
             SLCHOST_BASE = 0x3FF55000,
-
             SLAVE_CMD53_END_ADDR = 0x1F800,
 
             PACKET_LENGTH = (SLCHOST_BASE + 0x60) & 0x3FF,
@@ -42,10 +41,8 @@ namespace Cpp_Bus_Driver
             INTERRUPT_RAW = (SLCHOST_BASE + 0x50) & 0x3FF, // 原始中断位
             INTERRUPT_ST = (SLCHOST_BASE + 0x58) & 0x3FF,  // 掩码中断位
             TOKEN_RDATA = (SLCHOST_BASE + 0x44) & 0x3FF,
-
             CONF = (SLCHOST_BASE + 0x8C) & 0x3FF,
             CONF_OFFSET = 0,
-
         };
 
         int32_t _rst = DEFAULT_CPP_BUS_DRIVER_VALUE;
@@ -101,7 +98,7 @@ namespace Cpp_Bus_Driver
 
         enum class Wifi_Mode
         {
-            OFF = 0,
+            OFF,
             STATION,
             SOFTAP,
             STATION_SOFTAP
@@ -109,7 +106,7 @@ namespace Cpp_Bus_Driver
 
         enum class Sleep_Mode
         {
-            DISABLE_SLEEP = 0,
+            DISABLE_SLEEP,
             MODEM_SLEEP,
             LIGHT_SLEEP,
             MODEM_SLEEP_LISTEN_INTERVAL,

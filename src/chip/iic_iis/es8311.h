@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:42:57
- * @LastEditTime: 2025-07-24 14:44:02
+ * @LastEditTime: 2025-07-30 11:26:07
  * @License: GPL 3.0
  */
 
@@ -45,17 +45,13 @@ namespace Cpp_Bus_Driver
             RW_OUTPUT_TO_HP_DRIVE_CONTROL,
 
             RW_ADC_DMIC_PGA_GAIN = 0x14,
-
             RW_ADC_GAIN_SCALE_UP = 0x16,
             RW_ADC_VOLUME,
             RW_ADC_ALC,
 
             RW_ADC_EQUALIZER_BYPASS = 0x1C,
-
             RW_DAC_VOLUME = 0x32,
-
             RW_DAC_RAMPRATE_EQBYPASS = 0x37,
-
             RW_ADC_DAC_CONTROL = 0x44,
 
         };

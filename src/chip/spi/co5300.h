@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-14 09:43:41
+ * @LastEditTime: 2025-07-30 11:23:33
  * @License: GPL 3.0
  */
 
@@ -27,12 +27,12 @@ namespace Cpp_Bus_Driver
         {
             // 用于读写寄存器命令
             WO_WRITE_REGISTER = 0x02,
-            WO_READ_REGISTER = 0x03,
+            WO_READ_REGISTER,
 
             // 用于写颜色流命令
             WO_WRITE_COLOR_STREAM_1LANES_CMD = 0x02,
-            WO_WRITE_COLOR_STREAM_4LANES_CMD_1 = 0x32,
             WO_WRITE_COLOR_STREAM_4LANES_CMD_2 = 0x12,
+            WO_WRITE_COLOR_STREAM_4LANES_CMD_1 = 0x32,
 
         };
 
