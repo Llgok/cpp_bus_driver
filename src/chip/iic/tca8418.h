@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-30 11:18:15
+ * @LastEditTime: 2025-07-30 14:19:30
  * @License: GPL 3.0
  */
 
@@ -26,6 +26,9 @@ namespace Cpp_Bus_Driver
             WO_GPIO_INT_EN1 = 0x1A, // gpio interrupt enable 1
             WO_GPIO_INT_EN2,        // gpio interrupt enable 2
             WO_GPIO_INT_EN3,        // gpio interrupt enable 3
+            WO_KP_GPIO1,            // keypad/gpio select 1
+            WO_KP_GPIO2,            // keypad/gpio select 2
+            WO_KP_GPIO3,            // keypad/gpio select 3
 
             WO_GPI_EM1 = 0x20, // gpi event mode 1
             WO_GPI_EM2,        // gpi event mode 2
@@ -41,10 +44,10 @@ namespace Cpp_Bus_Driver
 
         static constexpr const uint8_t _init_list[] =
             {
-                //  set default all gio pins to input
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR1), 0x00,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR2), 0x00,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR3), 0x00,
+                //  set default all gpio pins to input
+                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR1), 0x00,
+                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR2), 0x00,
+                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR3), 0x00,
 
                 //  add all pins to key events
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPI_EM1), 0xFF,
@@ -52,25 +55,37 @@ namespace Cpp_Bus_Driver
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPI_EM3), 0xFF,
 
                 //  set all pins to falling interrupts
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_LVL1), 0x00,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_LVL2), 0x00,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_LVL3), 0x00,
+                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_LVL1), 0x00,
+                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_LVL2), 0x00,
+                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_LVL3), 0x00,
 
                 //  add all pins to interrupts
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_EN1), 0xFF,
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_EN2), 0xFF,
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_EN3), 0xFF};
 
+        uint8_t _width, _height;
         int32_t _rst;
 
     public:
-        Tca8418(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
-            : Iic_Guide(bus, address), _rst(rst)
+        Tca8418(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, uint16_t width, uint16_t height, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
+            : Iic_Guide(bus, address), _width(width), _height(height), _rst(rst)
         {
         }
 
         bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
 
         uint8_t get_device_id(void);
+
+        /**
+         * @brief 设置按键扫描的开窗大小
+         * @param x 开窗点x坐标，值范围（0~9）
+         * @param y 开窗点y坐标，值范围（0~7）
+         * @param w 开窗长度，值范围（0~9）
+         * @param h 开窗高度，值范围（0~7）
+         * @return
+         * @Date 2025-07-30 13:42:08
+         */
+        bool set_key_scan_window(uint8_t x, uint8_t y, uint8_t w, uint8_t h);
     };
 }
