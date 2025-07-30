@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-16 13:42:14
+ * @LastEditTime: 2025-07-30 14:09:22
  * @License: GPL 3.0
  */
 #include "co5300.h"
@@ -108,9 +108,39 @@ namespace Cpp_Bus_Driver
     bool Co5300::send_color_stream(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t *data)
     {
         // 有效性检查
-        if (w == 0 || h == 0 || data == nullptr || x >= _width || y >= _height || (_width - x) < w || (_height - y) < h)
+        if (data == nullptr)
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid parameters: x=%d, y=%d, w=%d, h=%d, data=%p\n", x, y, w, h, data);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid data (error data = nullptr)");
+            return false;
+        }
+        else if (w == 0)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid width (error w = %d)", w);
+            return false;
+        }
+        else if (h == 0)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid height (error h = %d)", h);
+            return false;
+        }
+        else if (x >= _width)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid x (error (x = %d) >= (_width = %d))", x, _width);
+            return false;
+        }
+        else if (y >= _height)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid y (error (y = %d) >= (_height = %d))", y, _height);
+            return false;
+        }
+        else if (w > (_width - x))
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid width (error (w = %d) > ((_width - x) = %d))", w, _width - x);
+            return false;
+        }
+        else if (h > (_height - y))
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid height (error (h = %d) > ((_height - y) = %d))", h, _height - y);
             return false;
         }
 
