@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-24 14:43:39
+ * @LastEditTime: 2025-07-30 16:40:54
  * @License: GPL 3.0
  */
 
@@ -107,7 +107,7 @@ namespace Cpp_Bus_Driver
         uint8_t get_irq_flag(void);
 
         /**
-         * @brief 中断解析，详细请参考SGM41562手册表格 Table 13. REG09 Register Details
+         * @brief 中断解析，详细请参考SGM41562手册 Table 13. REG09 Register Details
          * @param irq_flag 解析状态语句，由get_irq_flag()函数获取
          * @param &status 使用Irq_Status结构体配置，相应位自动置位
          * @return

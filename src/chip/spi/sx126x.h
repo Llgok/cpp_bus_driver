@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-30 11:52:20
+ * @LastEditTime: 2025-07-30 16:41:22
  * @License: GPL 3.0
  */
 
@@ -355,7 +355,7 @@ namespace Cpp_Bus_Driver
         uint8_t get_status(void);
 
         /**
-         * @brief 命令解析，详细请参考SX126x手册表格 13-76: Status Bytes Definition
+         * @brief 命令解析，详细请参考SX126x手册 13-76: Status Bytes Definition
          * @param parse_status 解析状态语句，由get_status()函数获取
          * @return Cmd_Status 由Cmd_Status::配置，命令状态
          * @Date 2025-02-12 14:41:21
@@ -363,7 +363,7 @@ namespace Cpp_Bus_Driver
         Cmd_Status parse_cmd_status(uint8_t parse_status);
 
         /**
-         * @brief 芯片模式解析，详细请参考SX126x手册表格 13-76: Status Bytes Definition
+         * @brief 芯片模式解析，详细请参考SX126x手册 13-76: Status Bytes Definition
          * @param parse_status 解析状态语句，由get_status()函数获取
          * @return Chip_Mode_Status 由Chip_Mode_Status::配置，芯片模式状态
          * @Date 2025-02-13 13:52:33
@@ -371,7 +371,7 @@ namespace Cpp_Bus_Driver
         Chip_Mode_Status parse_chip_mode_status(uint8_t parse_status);
 
         /**
-         * @brief 中断解析，详细请参考SX126x手册表格 13-29: IRQ Registers
+         * @brief 中断解析，详细请参考SX126x手册 13-29: IRQ Registers
          * @param irq_flag 解析状态语句，由get_irq_flag()函数获取
          * @param &status 使用Irq_Status结构体配置，相应位自动置位
          * @return
