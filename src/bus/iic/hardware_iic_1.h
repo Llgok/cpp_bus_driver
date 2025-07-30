@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-07-16 11:06:52
+ * @LastEditTime: 2025-07-30 10:56:21
  * @License: GPL 3.0
  */
 #pragma once
@@ -34,6 +34,10 @@ namespace Cpp_Bus_Driver
         bool write_read(const uint8_t *write_data, size_t write_length, uint8_t *read_data, size_t read_length) override;
 
         bool probe(const uint16_t address) override;
+
+        bool set_bus_handle(i2c_master_bus_handle_t bus_handle);
+
+        i2c_master_bus_handle_t get_bus_handle(void);
     };
 #endif
 }

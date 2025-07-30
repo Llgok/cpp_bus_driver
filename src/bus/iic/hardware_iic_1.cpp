@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-07-16 11:07:11
+ * @LastEditTime: 2025-07-30 10:56:55
  * @License: GPL 3.0
  */
 #include "hardware_iic_1.h"
@@ -135,6 +135,24 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
+    }
+
+    bool Hardware_Iic_1::set_bus_handle(i2c_master_bus_handle_t bus_handle)
+    {
+        if (bus_handle == nullptr)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "bus_handle fail (bus_handle == nullptr)\n");
+            return false;
+        }
+
+        _iic_bus_handle = bus_handle;
+
+        return true;
+    }
+
+    i2c_master_bus_handle_t Hardware_Iic_1::get_bus_handle(void)
+    {
+        return _iic_bus_handle;
     }
 #endif
 }
