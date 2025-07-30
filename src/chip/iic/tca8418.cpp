@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-30 14:33:02
+ * @LastEditTime: 2025-07-30 15:26:36
  * @License: GPL 3.0
  */
 #include "tca8418.h"
@@ -38,9 +38,9 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        if (set_key_scan_window(0, 0, _width, _height) == false)
+        if (set_scan_window(0, 0, _width, _height) == false)
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_key_scan_window fail\n");
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_scan_window fail\n");
             return false;
         }
 
@@ -60,7 +60,7 @@ namespace Cpp_Bus_Driver
         return buffer;
     }
 
-    bool Tca8418::set_key_scan_window(uint8_t x, uint8_t y, uint8_t w, uint8_t h)
+    bool Tca8418::set_scan_window(uint8_t x, uint8_t y, uint8_t w, uint8_t h)
     {
         // 有效性检查
         if (w == 0)
@@ -134,5 +134,18 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
+    }
+
+    uint8_t Tca8418::get_event_count(void)
+    {
+        uint8_t buffer = 0;
+
+        if (_bus->read(static_cast<uint8_t>(Cmd::RW_KEY_LOCK_AND_EVENT_COUNTER), &buffer) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            return -1;
+        }
+
+        return buffer & 0x0F;
     }
 }
