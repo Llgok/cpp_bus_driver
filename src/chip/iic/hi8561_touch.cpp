@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-08 14:03:57
+ * @LastEditTime: 2025-07-30 16:10:16
  * @License: GPL 3.0
  */
 #include "Hi8561_Touch.h"
@@ -182,9 +182,9 @@ namespace Cpp_Bus_Driver
         }
         tp.finger_count = buffer_2[0];
 
-        for (uint8_t i = 1; i <= tp.finger_count; i++)
+        for (uint8_t i = 0; i < tp.finger_count; i++)
         {
-            const uint8_t buffer_touch_point_offset = TOUCH_POINT_ADDRESS_OFFSET + i * SINGLE_TOUCH_POINT_DATA_SIZE - SINGLE_TOUCH_POINT_DATA_SIZE;
+            const uint8_t buffer_touch_point_offset = TOUCH_POINT_ADDRESS_OFFSET + i * SINGLE_TOUCH_POINT_DATA_SIZE;
 
             Touch_Info buffer_ti;
             buffer_ti.x = (static_cast<uint16_t>(buffer_2[buffer_touch_point_offset]) << 8) | buffer_2[buffer_touch_point_offset + 1];

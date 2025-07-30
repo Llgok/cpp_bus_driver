@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2025-07-24 14:42:36
+ * @LastEditTime: 2025-07-30 16:12:02
  * @License: GPL 3.0
  */
 #include "cst2xxse.h"
@@ -135,16 +135,16 @@ namespace Cpp_Bus_Driver
         }
         tp.finger_count = buffer[5] & 0B00001111;
 
-        for (uint8_t i = 1; i <= tp.finger_count; i++)
+        for (uint8_t i = 0; i < tp.finger_count; i++)
         {
             uint8_t buffer_touch_point_offset;
             if (i == 1)
             {
-                buffer_touch_point_offset = i * SINGLE_TOUCH_POINT_DATA_SIZE - SINGLE_TOUCH_POINT_DATA_SIZE;
+                buffer_touch_point_offset = i * SINGLE_TOUCH_POINT_DATA_SIZE;
             }
             else
             {
-                buffer_touch_point_offset = i * SINGLE_TOUCH_POINT_DATA_SIZE - SINGLE_TOUCH_POINT_DATA_SIZE + 2;
+                buffer_touch_point_offset = i * SINGLE_TOUCH_POINT_DATA_SIZE + 2;
             }
 
             Touch_Info buffer_ti;
