@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-30 15:26:36
+ * @LastEditTime: 2025-07-30 16:57:38
  * @License: GPL 3.0
  */
 #include "tca8418.h"
@@ -136,7 +136,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    uint8_t Tca8418::get_event_count(void)
+    uint8_t Tca8418::get_finger_count(void)
     {
         uint8_t buffer = 0;
 
@@ -148,4 +148,78 @@ namespace Cpp_Bus_Driver
 
         return buffer & 0x0F;
     }
+
+    bool Tca8418::get_multiple_touch_point(Touch_Point &tp)
+    {
+        uint8_t buffer_finger_count = get_finger_count();
+        if ((buffer_finger_count == static_cast<uint8_t>(-1)) || (buffer_finger_count == 0))
+        {
+            return false;
+        }
+
+        uint8_t buffer[buffer_finger_count] = {0};
+
+        // 地址自动偏移
+        if (_bus->read(static_cast<uint8_t>(Cmd::RO_KEY_EVENT), buffer, buffer_finger_count) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            return false;
+        }
+
+        tp.finger_count = buffer_finger_count;
+
+        for (uint8_t i = 0; i < tp.finger_count; i++)
+        {
+            Touch_Info buffer_ti;
+            buffer_ti.press_status_flag = buffer[i] >> 7;
+            buffer_ti.x = (buffer[i] & 0B01111111) % 10;
+            buffer_ti.y = (buffer[i] & 0B01111111) / 10;
+
+            tp.info.push_back(buffer_ti);
+        }
+
+        return true;
+    }
+
+    uint8_t Tca8418::get_irq_flag(void)
+    {
+        uint8_t buffer = 0;
+
+        if (_bus->read(static_cast<uint8_t>(Cmd::RW_INTERRUPT_STATUS), &buffer) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            return -1;
+        }
+
+        return buffer & 0B00011111;
+    }
+
+    bool Tca8418::parse_irq_status(uint8_t irq_flag, Irq_Status &status)
+    {
+        if (irq_flag == static_cast<uint8_t>(-1))
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse error\n");
+            return false;
+        }
+
+        status.ctrl_alt_del_key_sequence_flag = (irq_flag & 0B00010000) >> 4;
+        status.fifo_overflow_flag = (irq_flag & 0B00001000) >> 3;
+        status.keypad_lock_flag = (irq_flag & 0B00000100) >> 2;
+        status.gpio_interrupt_flag = (irq_flag & 0B00000010) >> 1;
+        status.key_events_flag = irq_flag & 0B00000001;
+
+        return true;
+    }
+
+    bool Tca8418::clear_irq_flag(Irq_Flag flag)
+    {
+        if (_bus->write(static_cast<uint8_t>(Cmd::RW_INTERRUPT_STATUS), static_cast<uint8_t>(flag)) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
 }
