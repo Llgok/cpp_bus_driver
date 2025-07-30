@@ -19,7 +19,7 @@ namespace Cpp_Bus_Driver
 
         if (_bus->probe(_address) == false)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "probe fail(error address: %#X)\n", _address);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "probe fail (error address: %#X)\n", _address);
             return false;
         }
 
@@ -69,7 +69,7 @@ namespace Cpp_Bus_Driver
                 break;
 
             default:
-                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail(index = %d)\n", index);
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail (index = %d)\n", index);
                 return false;
                 break;
             }
@@ -109,7 +109,7 @@ namespace Cpp_Bus_Driver
                 break;
             }
             default:
-                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail(index = %d)\n", index);
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail (index = %d)\n", index);
                 return false;
                 break;
             }
@@ -145,7 +145,7 @@ namespace Cpp_Bus_Driver
                 index++;
                 if (_bus->write(&list[index + 1], list[index]) == false)
                 {
-                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "spi_init_list WRITE_DATA fail(index = %d)\n", index);
+                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "spi_init_list WRITE_DATA fail (index = %d)\n", index);
                     return false;
                 }
                 index += list[index] + 1;
@@ -154,14 +154,14 @@ namespace Cpp_Bus_Driver
                 index++;
                 if (_bus->write(&list[index], 2) == false)
                 {
-                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "spi_init_list WRITE_C8_D8 fail(index = %d)\n", index);
+                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "spi_init_list WRITE_C8_D8 fail (index = %d)\n", index);
                     return false;
                 }
                 index += 2;
                 break;
 
             default:
-                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail(index = %d)\n", index);
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail (index = %d)\n", index);
                 return false;
                 break;
             }
@@ -205,7 +205,7 @@ namespace Cpp_Bus_Driver
                     };
                 if (_bus->write(buffer, 4) == false)
                 {
-                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "qspi_init_list WRITE_C8_R24 fail(index = %d)\n", index);
+                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "qspi_init_list WRITE_C8_R24 fail (index = %d)\n", index);
                     return false;
                 }
                 index += 2;
@@ -227,7 +227,7 @@ namespace Cpp_Bus_Driver
 
                 if (_bus->write(buffer, 5) == false)
                 {
-                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "qspi_init_list WRITE_C8_R24_D8 fail(index = %d)\n", index);
+                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "qspi_init_list WRITE_C8_R24_D8 fail (index = %d)\n", index);
                     return false;
                 }
                 index += 3;
@@ -236,7 +236,7 @@ namespace Cpp_Bus_Driver
             }
 
             default:
-                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail(index = %d)\n", index);
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail (index = %d)\n", index);
                 return false;
                 break;
             }

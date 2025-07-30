@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:26:23
- * @LastEditTime: 2025-07-16 11:33:57
+ * @LastEditTime: 2025-07-30 11:02:42
  * @License: GPL 3.0
  */
 #include "hardware_uart.h"
@@ -70,7 +70,7 @@ namespace Cpp_Bus_Driver
         int32_t buffer_size = uart_read_bytes(static_cast<uart_port_t>(_port), data, length, pdMS_TO_TICKS(DEFAULT_CPP_BUS_DRIVER_UART_WAIT_TIMEOUT_MS));
         if (buffer_size == (-1))
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_read_bytes fail(uart_read_bytes == (-1))\n");
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_read_bytes fail (uart_read_bytes == (-1))\n");
             return false;
         }
 
@@ -82,7 +82,7 @@ namespace Cpp_Bus_Driver
         int32_t buffer_size = uart_write_bytes(static_cast<uart_port_t>(_port), data, length);
         if (buffer_size == (-1))
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_write_bytes fail(uart_write_bytes == (-1))\n");
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_write_bytes fail (uart_write_bytes == (-1))\n");
             return false;
         }
 

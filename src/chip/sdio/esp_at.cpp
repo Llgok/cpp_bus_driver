@@ -585,7 +585,7 @@ namespace Cpp_Bus_Driver
 
         if (buffer_lenght == 0)
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_rx_data_length fail(get_rx_data_length = 0)\n");
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_rx_data_length fail (get_rx_data_length = 0)\n");
             return false;
         }
 
@@ -1240,7 +1240,7 @@ namespace Cpp_Bus_Driver
         size_t buffer_Index_used = 0;
         if (buffer_data.size() == 0)
         {
-            // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail(buffer_data.size() == 0)\n");
+            // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail (buffer_data.size() == 0)\n");
             return false;
         }
         if (search(buffer_data.data(), buffer_data.size(), buffer_cmd, std::strlen(buffer_cmd), &buffer_index) == true)
