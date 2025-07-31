@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-31 10:34:45
+ * @LastEditTime: 2025-07-31 10:47:04
  * @License: GPL 3.0
  */
 #include "tca8418.h"
@@ -90,7 +90,7 @@ namespace Cpp_Bus_Driver
 
         // 配置行选择寄存器
         uint8_t buffer_row_mask = 0;
-        for (uint8_t i = y; i < h; i++)
+        for (uint8_t i = y; i < (h + y); i++)
         {
             buffer_row_mask |= (1 << i); // 设置对应的行位为1，键盘扫描
         }
@@ -101,10 +101,12 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
+        assert_log(Log_Level::CHIP, __FILE__, __LINE__, "111111111: %d\n", buffer_row_mask);
+
         // 配置列选择寄存器
         uint8_t buffer_col_mask_low = 0;
         uint8_t buffer_col_mask_high = 0;
-        for (uint8_t i = x; i < w; i++)
+        for (uint8_t i = x; i < (w + x); i++)
         {
             if (i < 8)
             {
@@ -126,6 +128,9 @@ namespace Cpp_Bus_Driver
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
+
+        assert_log(Log_Level::CHIP, __FILE__, __LINE__, "2222222222: %d\n", buffer_col_mask_low);
+        assert_log(Log_Level::CHIP, __FILE__, __LINE__, "3333333333333: %d\n", buffer_col_mask_high);
 
         return true;
     }
