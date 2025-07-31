@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-07-24 10:57:54
+ * @LastEditTime: 2025-07-31 17:59:35
  * @License: GPL 3.0
  */
 
@@ -12,7 +12,7 @@
 
 namespace Cpp_Bus_Driver
 {
-    class Bus_Iic_Guide : protected Tool
+    class Bus_Iic_Guide : public Tool
     {
     public:
         Bus_Iic_Guide()
@@ -46,7 +46,7 @@ namespace Cpp_Bus_Driver
         bool scan_7bit_address(std::vector<uint8_t> *address);
     };
 
-    class Bus_Iis_Guide : protected Tool
+    class Bus_Iis_Guide : public Tool
     {
     public:
         Bus_Iis_Guide()
@@ -63,7 +63,7 @@ namespace Cpp_Bus_Driver
         // bool write(const uint8_t write_c8, const uint8_t write_d8);
     };
 
-    class Bus_Spi_Guide : protected Tool
+    class Bus_Spi_Guide : public Tool
     {
     public:
         Bus_Spi_Guide()
@@ -112,7 +112,7 @@ namespace Cpp_Bus_Driver
         bool write(const uint8_t write_c8, const uint16_t write_c16, const uint8_t write_data);
     };
 
-    class Bus_Qspi_Guide : protected Tool
+    class Bus_Qspi_Guide : public Tool
     {
     public:
         Bus_Qspi_Guide()
@@ -160,7 +160,7 @@ namespace Cpp_Bus_Driver
         // bool write(const uint8_t write_c8, const uint16_t write_c16, const uint8_t write_data);
     };
 
-    class Bus_Uart_Guide : protected Tool
+    class Bus_Uart_Guide : public Tool
     {
     public:
         Bus_Uart_Guide()
@@ -178,7 +178,7 @@ namespace Cpp_Bus_Driver
         virtual uint32_t get_baud_rate(void) = 0;
     };
 
-    class Bus_Sdio_Guide : protected Tool
+    class Bus_Sdio_Guide : public Tool
     {
     public:
         Bus_Sdio_Guide()
