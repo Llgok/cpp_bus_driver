@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-30 16:57:38
+ * @LastEditTime: 2025-07-31 10:18:18
  * @License: GPL 3.0
  */
 #include "tca8418.h"
@@ -38,12 +38,6 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        if (set_scan_window(0, 0, _width, _height) == false)
-        {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_scan_window fail\n");
-            return false;
-        }
-
         return true;
     }
 
@@ -60,7 +54,7 @@ namespace Cpp_Bus_Driver
         return buffer;
     }
 
-    bool Tca8418::set_scan_window(uint8_t x, uint8_t y, uint8_t w, uint8_t h)
+    bool Tca8418::set_keypad_scan_window(uint8_t x, uint8_t y, uint8_t w, uint8_t h)
     {
         // 有效性检查
         if (w == 0)
@@ -73,24 +67,24 @@ namespace Cpp_Bus_Driver
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid height (error h = %d)", h);
             return false;
         }
-        else if (x >= _width)
+        else if (x >= MAX_WIDTH_SIZE)
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid x (error (x = %d) >= (_width = %d))", x, _width);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid x (error (x = %d) >= (MAX_WIDTH_SIZE = %d))", x, MAX_WIDTH_SIZE);
             return false;
         }
-        else if (y >= _height)
+        else if (y >= MAX_HEIGHT_SIZE)
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid y (error (y = %d) >= (_height = %d))", y, _height);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid y (error (y = %d) >= (MAX_HEIGHT_SIZE = %d))", y, MAX_HEIGHT_SIZE);
             return false;
         }
-        else if (w > (_width - x))
+        else if (w > (MAX_WIDTH_SIZE - x))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid width (error (w = %d) > ((_width - x) = %d))", w, _width - x);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid width (error (w = %d) > ((MAX_WIDTH_SIZE - x) = %d))", w, MAX_WIDTH_SIZE - x);
             return false;
         }
-        else if (h > (_height - y))
+        else if (h > (MAX_HEIGHT_SIZE - y))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid height (error (h = %d) > ((_height - y) = %d))", h, _height - y);
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid height (error (h = %d) > ((MAX_HEIGHT_SIZE - y) = %d))", h, MAX_HEIGHT_SIZE - y);
             return false;
         }
 
@@ -171,7 +165,7 @@ namespace Cpp_Bus_Driver
         for (uint8_t i = 0; i < tp.finger_count; i++)
         {
             Touch_Info buffer_ti;
-            buffer_ti.press_status_flag = buffer[i] >> 7;
+            buffer_ti.press_flag = buffer[i] >> 7;
             buffer_ti.x = (buffer[i] & 0B01111111) % 10;
             buffer_ti.y = (buffer[i] & 0B01111111) / 10;
 
@@ -214,6 +208,38 @@ namespace Cpp_Bus_Driver
     bool Tca8418::clear_irq_flag(Irq_Flag flag)
     {
         if (_bus->write(static_cast<uint8_t>(Cmd::RW_INTERRUPT_STATUS), static_cast<uint8_t>(flag)) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    uint32_t Tca8418::get_clear_gpio_irq_flag(void)
+    {
+        uint8_t buffer[3] = {0};
+        if (_bus->read(static_cast<uint8_t>(Cmd::RO_GPIO_INTERRUPT_STATUS_START), buffer, 3) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            return false;
+        }
+
+        return (static_cast<uint32_t>(buffer[0]) << 16) | (static_cast<uint32_t>(buffer[1]) << 8) | static_cast<uint32_t>(buffer[2]);
+    }
+
+    bool Tca8418::set_irq_pin_mode(Irq_Flag mode)
+    {
+        uint8_t buffer = 0;
+        if (_bus->read(static_cast<uint8_t>(Cmd::RW_CONFIGURATION), &buffer) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            return false;
+        }
+
+        buffer= (buffer & 0B11111000) | static_cast<uint8_t>(mode);
+
+        if (_bus->write(static_cast<uint8_t>(Cmd::RW_CONFIGURATION), static_cast<uint8_t>(flag)) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-30 16:56:39
+ * @LastEditTime: 2025-07-31 10:21:31
  * @License: GPL 3.0
  */
 
@@ -18,21 +18,26 @@ namespace Cpp_Bus_Driver
     {
     private:
         static constexpr uint8_t DEVICE_ID = 0xC4;
+        static constexpr uint8_t MAX_WIDTH_SIZE = 10;
+        static constexpr uint8_t MAX_HEIGHT_SIZE = 8;
 
         enum class Cmd
         {
             RO_DEVICE_ID = 0x2F,
 
-            RW_INTERRUPT_STATUS = 0x02,
+            RW_CONFIGURATION = 0x01,
+            RW_INTERRUPT_STATUS,
             RW_KEY_LOCK_AND_EVENT_COUNTER,
             RO_KEY_EVENT,
+
+            RO_GPIO_INTERRUPT_STATUS_START = 0x11,
 
             WO_GPIO_INT_EN1 = 0x1A, // GPIO中断使能1
             WO_GPIO_INT_EN2,        // GPIO中断使能2
             WO_GPIO_INT_EN3,        // GPIO中断使能3
-            WO_KP_GPIO1,            // 按键/GPIO选择1
-            WO_KP_GPIO2,            // 按键/GPIO选择2
-            WO_KP_GPIO3,            // 按键/GPIO选择3
+            WO_KP_GPIO1,            // 按键或GPIO模式选择1
+            WO_KP_GPIO2,            // 按键或GPIO模式选择2
+            WO_KP_GPIO3,            // 按键或GPIO模式选择3
 
             WO_GPI_EM1 = 0x20, // GPI事件模式1
             WO_GPI_EM2,        // GPI事件模式2
@@ -46,47 +51,59 @@ namespace Cpp_Bus_Driver
 
         };
 
-        enum class Irq_Flag // 需要清除的中断请求参数，设置1代表清除
-        {
-            ALL = 0B00011111, // 全部中断
-            CTRL_ALT_DEL_KEY_SEQUENCE_FLAG = 0B00010000,
-            FIFO_OVERFLOW_FLAG = 0B00001000,
-            KEYPAD_LOCK_FLAG = 0B00000100,
-            GPIO_INTERRUPT_FLAG = 0B00000010,
-            KEY_EVENTS_FLAG = 0B00000001,
-        };
-
         static constexpr const uint8_t _init_list[] =
             {
-                //  set default all gpio pins to input
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR1), 0x00,
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR2), 0x00,
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR3), 0x00,
+                // 开启寄存器读写自动递增
+                // 开启fifo溢出自动栈队列循环
+                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_CONFIGURATION), 0B10100000,
 
-                //  add all pins to key events
+                // 设置默认全部引脚为输入
+                //  static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR1), 0x00,
+                //  static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR2), 0x00,
+                //  static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR3), 0x00,
+
+                // 添加全部引脚到按键事件
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPI_EM1), 0xFF,
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPI_EM2), 0xFF,
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPI_EM3), 0xFF,
 
-                //  set all pins to falling interrupts
+                //  设置全部引脚中断为下降沿中断
                 // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_LVL1), 0x00,
                 // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_LVL2), 0x00,
                 // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_LVL3), 0x00,
 
-                //  add all pins to interrupts
+                // 添加全部引脚到中断
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_EN1), 0xFF,
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_EN2), 0xFF,
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_INT_EN3), 0xFF};
 
-        uint8_t _width, _height;
         int32_t _rst;
 
     public:
+        enum class Irq_Flag // 需要清除的中断请求参数，设置1代表清除
+        {
+            ALL = 0B00011111, // 全部中断
+            CTRL_ALT_DEL_KEY_SEQUENCE = 0B00010000,
+            FIFO_OVERFLOW = 0B00001000,
+            KEYPAD_LOCK = 0B00000100,
+            GPIO_INTERRUPT = 0B00000010,
+            KEY_EVENTS = 0B00000001,
+        };
+
+        enum class Irq_Mask // 中断掩码，设置中断开关
+        {
+            ALL = 0B00001111, // 全部中断
+            FIFO_OVERFLOW = 0B00001000,
+            KEYPAD_LOCK = 0B00000100,
+            GPIO_INTERRUPT = 0B00000010,
+            KEY_EVENTS = 0B00000001,
+        };
+
         struct Touch_Info
         {
-            uint8_t x = -1;                 // x 坐标
-            uint8_t y = -1;                 // y 坐标
-            bool press_status_flag = false; // 按压状态标志
+            uint8_t x = -1;          // x 坐标
+            uint8_t y = -1;          // y 坐标
+            bool press_flag = false; // 按压标志
         };
 
         struct Touch_Point
@@ -105,8 +122,8 @@ namespace Cpp_Bus_Driver
             bool key_events_flag = false;                // 按键事件标志
         };
 
-        Tca8418(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, uint16_t width, uint16_t height, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
-            : Iic_Guide(bus, address), _width(width), _height(height), _rst(rst)
+        Tca8418(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
+            : Iic_Guide(bus, address), _rst(rst)
         {
         }
 
@@ -115,7 +132,7 @@ namespace Cpp_Bus_Driver
         uint8_t get_device_id(void);
 
         /**
-         * @brief 设置扫描的开窗大小
+         * @brief 设置键盘扫描模式开窗大小
          * @param x 开窗点x坐标，值范围（0~9）
          * @param y 开窗点y坐标，值范围（0~7）
          * @param w 开窗长度，值范围（0~9）
@@ -123,7 +140,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-07-30 13:42:08
          */
-        bool set_scan_window(uint8_t x, uint8_t y, uint8_t w, uint8_t h);
+        bool set_keypad_scan_window(uint8_t x, uint8_t y, uint8_t w, uint8_t h);
 
         /**
          * @brief 获取触摸总数
@@ -163,5 +180,20 @@ namespace Cpp_Bus_Driver
          * @Date 2025-07-30 16:55:59
          */
         bool clear_irq_flag(Irq_Flag flag);
+
+        /**
+         * @brief 获取gpio中断同时清除gpio中断标志
+         * @return
+         * @Date 2025-07-31 09:05:05
+         */
+        uint32_t get_clear_gpio_irq_flag(void);
+
+        /**
+         * @brief 设置中断引脚模式
+         * @param mode 由Irq_Flag::配置，选择需要开启的中断引脚位
+         * @return
+         * @Date 2025-07-31 10:16:03
+         */
+        bool set_irq_pin_mode(Irq_Mask mode);
     };
 }
