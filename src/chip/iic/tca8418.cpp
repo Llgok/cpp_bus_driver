@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-31 10:18:18
+ * @LastEditTime: 2025-07-31 10:34:45
  * @License: GPL 3.0
  */
 #include "tca8418.h"
@@ -228,7 +228,7 @@ namespace Cpp_Bus_Driver
         return (static_cast<uint32_t>(buffer[0]) << 16) | (static_cast<uint32_t>(buffer[1]) << 8) | static_cast<uint32_t>(buffer[2]);
     }
 
-    bool Tca8418::set_irq_pin_mode(Irq_Flag mode)
+    bool Tca8418::set_irq_pin_mode(Irq_Mask mode)
     {
         uint8_t buffer = 0;
         if (_bus->read(static_cast<uint8_t>(Cmd::RW_CONFIGURATION), &buffer) == false)
@@ -237,9 +237,9 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        buffer= (buffer & 0B11111000) | static_cast<uint8_t>(mode);
+        buffer = (buffer & 0B11110000) | static_cast<uint8_t>(mode);
 
-        if (_bus->write(static_cast<uint8_t>(Cmd::RW_CONFIGURATION), static_cast<uint8_t>(flag)) == false)
+        if (_bus->write(static_cast<uint8_t>(Cmd::RW_CONFIGURATION), buffer) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-31 10:21:31
+ * @LastEditTime: 2025-07-31 10:34:24
  * @License: GPL 3.0
  */
 
@@ -190,7 +190,7 @@ namespace Cpp_Bus_Driver
 
         /**
          * @brief 设置中断引脚模式
-         * @param mode 由Irq_Flag::配置，选择需要开启的中断引脚位
+         * @param mode 由Irq_Mask::配置，选择需要开启的中断引脚位
          * @return
          * @Date 2025-07-31 10:16:03
          */
