@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-30 16:41:22
+ * @LastEditTime: 2025-07-31 10:22:59
  * @License: GPL 3.0
  */
 
@@ -204,7 +204,7 @@ namespace Cpp_Bus_Driver
          * 14  | LrFhssHop        | Asserted at each hop, in Long Range FHSS, after the PA has ramped-up again | LR-FHSS
          * 15  | -                | RFU                                      | -
          */
-        enum class Irq_Flag // 需要清除的中断请求参数，设置1代表清除
+        enum class Irq_Mask_Flag // 中断掩码和标志，掩码和标志完全相同，设置1开启中断或者清除标志
         {
             DISABLE = 0,                  // 取消中断
             ALL = 0B0100001111111111,     // 全部中断
@@ -447,11 +447,11 @@ namespace Cpp_Bus_Driver
          * @brief 用于清除IRQ寄存器中的一个IRQ标志,此函数通过将ClearIrqParam中与待清除的IRQ标志位位置相对应的位设置为1，来清除IRQ寄存器中的IRQ标志,
          * 例如，如果ClearIrqParam的第0位被设置为1，那么IRQ寄存器中第0位的IRQ标志将被清除,如果一个DIO（数字输入/输出）被映射到单一的IRQ源，
          * 当IRQ寄存器中对应的位被清除时，该DIO也会被清除,如果DIO被设置为0且与多个IRQ源相关联，那么只有当IRQ寄存器中所有映射到该DIO的位都被清除时，DIO才会被设置为0
-         * @param flag 使用Irq_Flag::配置，需要清除的标志，设置1为清除标志
+         * @param flag 使用Irq_Mask_Flag::配置，需要清除的标志，设置1为清除标志
          * @return
          * @Date 2025-01-18 09:27:58
          */
-        bool clear_irq_flag(Irq_Flag flag);
+        bool clear_irq_flag(Irq_Mask_Flag flag);
 
         /**
          * @brief 设置中断请求（IRQ）标志（中断标志参考SX126x手册表格 13-29: IRQ Registers）
@@ -1115,13 +1115,13 @@ namespace Cpp_Bus_Driver
 
         /**
          * @brief 设置中断引脚的模式
-         * @param dio1_mode 使用 Irq_Flag:: 配置，DIO1需要配置的芯片中断模式
-         * @param dio2_mode 使用 Irq_Flag:: 配置，DIO2需要配置的芯片中断模式
-         * @param dio3_mode 使用 Irq_Flag:: 配置，DIO3需要配置的芯片中断模式
+         * @param dio1_mode 使用 Irq_Mask_Flag:: 配置，DIO1需要配置的芯片中断模式
+         * @param dio2_mode 使用 Irq_Mask_Flag:: 配置，DIO2需要配置的芯片中断模式
+         * @param dio3_mode 使用 Irq_Mask_Flag:: 配置，DIO3需要配置的芯片中断模式
          * @return
          * @Date 2025-03-15 11:48:59
          */
-        bool set_irq_pin_mode(Irq_Flag dio1_mode, Irq_Flag dio2_mode = Irq_Flag::DISABLE, Irq_Flag dio3_mode = Irq_Flag::DISABLE);
+        bool set_irq_pin_mode(Irq_Mask_Flag dio1_mode, Irq_Mask_Flag dio2_mode = Irq_Mask_Flag::DISABLE, Irq_Mask_Flag dio3_mode = Irq_Mask_Flag::DISABLE);
 
         /**
          * @brief 清空buffer缓冲区所有数据

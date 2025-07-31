@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-17 15:07:44
+ * @LastEditTime: 2025-07-31 10:26:00
  * @License: GPL 3.0
  */
 #include "Sx126x.h"
@@ -362,7 +362,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Sx126x::clear_irq_flag(Irq_Flag flag)
+    bool Sx126x::clear_irq_flag(Irq_Mask_Flag flag)
     {
         uint8_t buffer[] =
             {
@@ -1872,7 +1872,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Sx126x::set_irq_pin_mode(Irq_Flag dio1_mode, Irq_Flag dio2_mode, Irq_Flag dio3_mode)
+    bool Sx126x::set_irq_pin_mode(Irq_Mask_Flag dio1_mode, Irq_Mask_Flag dio2_mode, Irq_Mask_Flag dio3_mode)
     {
         // 设置接收中断标志
         // 默认设置 irq_mask：RX_DONE, TIMEOUT, CRC_ERR 和 HEADER_ERR
