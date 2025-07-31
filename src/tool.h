@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 17:58:03
- * @LastEditTime: 2025-07-24 13:42:34
+ * @LastEditTime: 2025-07-31 18:11:55
  * @License: GPL 3.0
  */
 
@@ -112,7 +112,7 @@ namespace Cpp_Bus_Driver
         void delay_us(uint32_t value);
 
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-        bool create_gpio_interrupt(uint32_t pin, Interrupt_Mode mode, void (*interrupt)(void *));
+        bool create_gpio_interrupt(uint32_t pin, Interrupt_Mode mode, void (*interrupt)(void *arg));
         bool delete_gpio_interrupt(uint32_t pin);
 
         bool create_pwm(int32_t pin, ledc_channel_t channel, uint32_t freq_hz, uint32_t duty = 0, ledc_mode_t speed_mode = ledc_mode_t::LEDC_LOW_SPEED_MODE,
