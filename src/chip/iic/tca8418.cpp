@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-31 11:50:32
+ * @LastEditTime: 2025-07-31 13:37:28
  * @License: GPL 3.0
  */
 #include "tca8418.h"
@@ -171,8 +171,6 @@ namespace Cpp_Bus_Driver
             {
                 buffer_ti.event_type = Event_Type::GPIO;
             }
-            buffer_ti.x = ((buffer[i] & 0B01111111) - 1) % 10;
-            buffer_ti.y = ((buffer[i] & 0B01111111) - 1) / 10;
 
             tp.info.push_back(buffer_ti);
         }
@@ -249,6 +247,20 @@ namespace Cpp_Bus_Driver
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
+
+        return true;
+    }
+
+    bool Tca8418::parse_touch_num(uint8_t num, Touch_Position &position)
+    {
+        if (num == static_cast<uint8_t>(-1))
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse error\n");
+            return false;
+        }
+
+        position.x = (num - 1) % 10;
+        position.y = (num - 1) / 10;
 
         return true;
     }

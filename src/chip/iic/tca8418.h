@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-31 11:50:23
+ * @LastEditTime: 2025-07-31 13:38:36
  * @License: GPL 3.0
  */
 
@@ -107,8 +107,6 @@ namespace Cpp_Bus_Driver
 
         struct Touch_Info
         {
-            uint8_t x = -1;   // x 坐标
-            uint8_t y = -1;   // y 坐标
             uint8_t num = -1; // 序号
             Event_Type event_type = Event_Type::KEYPAD;
             bool press_flag = false; // 按压标志
@@ -128,6 +126,12 @@ namespace Cpp_Bus_Driver
             bool keypad_lock_flag = false;               // 键盘锁定中断标志
             bool gpio_interrupt_flag = false;            // gpio中断标志
             bool key_events_flag = false;                // 按键事件标志
+        };
+
+        struct Touch_Position
+        {
+            uint8_t x = -1; // x 坐标
+            uint8_t y = -1; // y 坐标
         };
 
         Tca8418(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
@@ -203,5 +207,14 @@ namespace Cpp_Bus_Driver
          * @Date 2025-07-31 10:16:03
          */
         bool set_irq_pin_mode(Irq_Mask mode);
+
+        /**
+         * @brief 用于解码触摸号数为x、y坐标
+         * @param num 结构体Touch_Info中的num值，解码前需要先获取该值
+         * @param &position 使用Touch_Position::配置，解码后的坐标信息
+         * @return
+         * @Date 2025-07-31 13:39:08
+         */
+        bool parse_touch_num(uint8_t num, Touch_Position &position);
     };
 }
