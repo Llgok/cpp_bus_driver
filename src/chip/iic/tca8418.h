@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-31 10:34:24
+ * @LastEditTime: 2025-07-31 11:50:23
  * @License: GPL 3.0
  */
 
@@ -62,7 +62,7 @@ namespace Cpp_Bus_Driver
                 //  static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR2), 0x00,
                 //  static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPIO_DIR3), 0x00,
 
-                // 添加全部引脚到按键事件
+                // 添加全部gpio事件到fifo
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPI_EM1), 0xFF,
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPI_EM2), 0xFF,
                 static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_GPI_EM3), 0xFF,
@@ -99,10 +99,18 @@ namespace Cpp_Bus_Driver
             KEY_EVENTS = 0B00000001,
         };
 
+        enum class Event_Type // 事件类型
+        {
+            KEYPAD, // 0~80为触发键盘事件
+            GPIO,   // 97~114为触发GPIO事件
+        };
+
         struct Touch_Info
         {
-            uint8_t x = -1;          // x 坐标
-            uint8_t y = -1;          // y 坐标
+            uint8_t x = -1;   // x 坐标
+            uint8_t y = -1;   // y 坐标
+            uint8_t num = -1; // 序号
+            Event_Type event_type = Event_Type::KEYPAD;
             bool press_flag = false; // 按压标志
         };
 

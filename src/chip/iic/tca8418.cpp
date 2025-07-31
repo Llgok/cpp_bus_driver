@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-31 10:47:04
+ * @LastEditTime: 2025-07-31 11:50:32
  * @License: GPL 3.0
  */
 #include "tca8418.h"
@@ -101,8 +101,6 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        assert_log(Log_Level::CHIP, __FILE__, __LINE__, "111111111: %d\n", buffer_row_mask);
-
         // 配置列选择寄存器
         uint8_t buffer_col_mask_low = 0;
         uint8_t buffer_col_mask_high = 0;
@@ -128,9 +126,6 @@ namespace Cpp_Bus_Driver
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
-
-        assert_log(Log_Level::CHIP, __FILE__, __LINE__, "2222222222: %d\n", buffer_col_mask_low);
-        assert_log(Log_Level::CHIP, __FILE__, __LINE__, "3333333333333: %d\n", buffer_col_mask_high);
 
         return true;
     }
@@ -171,8 +166,13 @@ namespace Cpp_Bus_Driver
         {
             Touch_Info buffer_ti;
             buffer_ti.press_flag = buffer[i] >> 7;
-            buffer_ti.x = (buffer[i] & 0B01111111) % 10;
-            buffer_ti.y = (buffer[i] & 0B01111111) / 10;
+            buffer_ti.num = buffer[i] & 0B01111111;
+            if (buffer_ti.num > 96)
+            {
+                buffer_ti.event_type = Event_Type::GPIO;
+            }
+            buffer_ti.x = ((buffer[i] & 0B01111111) - 1) % 10;
+            buffer_ti.y = ((buffer[i] & 0B01111111) - 1) / 10;
 
             tp.info.push_back(buffer_ti);
         }
