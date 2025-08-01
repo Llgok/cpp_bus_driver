@@ -25,5 +25,5 @@ idf_component_register(
         INCLUDE_DIRS 
         ${src_dirs} 
         REQUIRES
-        "driver"
+        "driver" "esp_timer"
     )
