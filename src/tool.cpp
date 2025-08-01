@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2025-07-16 18:04:31
+ * @LastEditTime: 2025-08-01 09:03:14
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -275,6 +275,16 @@ namespace Cpp_Bus_Driver
     }
 
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+
+    int64_t Tool::get_system_time_us(void)
+    {
+        return esp_timer_get_time();
+    }
+
+    int64_t Tool::get_system_time_ms(void)
+    {
+        return esp_timer_get_time() / 1000;
+    }
 
     bool Tool::create_gpio_interrupt(uint32_t pin, Interrupt_Mode mode, void (*interrupt)(void *))
     {

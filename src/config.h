@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2025-07-23 10:37:23
+ * @LastEditTime: 2025-08-01 09:03:03
  * @License: GPL 3.0
  */
 #pragma once
@@ -32,6 +32,7 @@
 #include "driver/ledc.h"
 #include "driver/sdmmc_host.h"
 #include "sdmmc_cmd.h"
+#include "esp_timer.h"
 
 #elif defined ARDUINO
 #include <stdarg.h>

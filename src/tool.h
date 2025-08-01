@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 17:58:03
- * @LastEditTime: 2025-07-31 18:11:55
+ * @LastEditTime: 2025-08-01 09:04:30
  * @License: GPL 3.0
  */
 
@@ -112,6 +112,9 @@ namespace Cpp_Bus_Driver
         void delay_us(uint32_t value);
 
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+        int64_t get_system_time_us(void);
+        int64_t get_system_time_ms(void);
+
         bool create_gpio_interrupt(uint32_t pin, Interrupt_Mode mode, void (*interrupt)(void *arg));
         bool delete_gpio_interrupt(uint32_t pin);
 
