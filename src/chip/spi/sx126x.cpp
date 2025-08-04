@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-31 10:26:00
+ * @LastEditTime: 2025-08-04 15:05:11
  * @License: GPL 3.0
  */
 #include "Sx126x.h"
@@ -35,14 +35,14 @@ namespace Cpp_Bus_Driver
         }
 
         auto buffer = get_device_id();
-        if ((buffer == 0x00) || (buffer == 0xFF))
+        if (buffer != DEVICE_ID)
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sx126x id fail (error id: %#X)\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sx126x id fail (error id: %s)\n", buffer.c_str());
             return false;
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sx126x id: %#X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sx126x id: %s\n", buffer.c_str());
         }
 
         if (fix_tx_clamp(true) == false)
@@ -83,9 +83,18 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    uint8_t Sx126x::get_device_id(void)
+    std::string Sx126x::get_device_id(void)
     {
-        return get_status();
+        uint8_t buffer[7] = {0};
+
+        check_busy();
+        if (_bus->read(static_cast<uint8_t>(Cmd::WO_READ_REGISTER), static_cast<uint16_t>(Reg::RO_DEVICE_ID), buffer, 7) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            return "fail";
+        }
+
+        return std::string(reinterpret_cast<char *>(buffer + 1), 6);
     }
 
     bool Sx126x::check_busy(void)

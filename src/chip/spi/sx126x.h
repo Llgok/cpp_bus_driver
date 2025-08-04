@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-31 10:22:59
+ * @LastEditTime: 2025-08-04 15:05:32
  * @License: GPL 3.0
  */
 
@@ -15,6 +15,9 @@ namespace Cpp_Bus_Driver
     class Sx126x : public Spi_Guide
     {
     private:
+        // SX1262的ID为SX1261
+        static constexpr const char *DEVICE_ID = "SX1261";
+
         static constexpr uint16_t BUSY_PIN_TIMEOUT_COUNT = 10000;
         static constexpr uint8_t BUSY_FUNCTION_TIMEOUT_COUNT = 100;
         static constexpr uint8_t MAX_TRANSMIT_BUFFER_SIZE = 255;
@@ -73,6 +76,8 @@ namespace Cpp_Bus_Driver
         // 采用大端先发的规则发送（0x0001 先发0x00后发0x01）
         enum class Reg
         {
+            RO_DEVICE_ID = 0x0320,
+
             RW_CRC_VALUE_PROGRAMMING_START = 0x06BC,
             RW_SYNC_WORD_PROGRAMMING_START = 0x06C0,
             RW_IQ_POLARITY_SETUP = 0x0736,
@@ -338,7 +343,7 @@ namespace Cpp_Bus_Driver
 
         bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
 
-        uint8_t get_device_id(void);
+        std::string get_device_id(void);
 
         /**
          * @brief 检查设备忙
