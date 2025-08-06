@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-08-04 15:05:32
+ * @LastEditTime: 2025-08-06 15:37:51
  * @License: GPL 3.0
  */
 
@@ -596,8 +596,8 @@ namespace Cpp_Bus_Driver
 
         enum class Lora_Header_Type
         {
-            VARIABLE_LENGTH_PACKET = 0, // 显式标头
-            FIXED_LENGTH_PACKET,        // 隐式标头
+            VARIABLE_LENGTH_PACKET = 0, // 可变长度
+            FIXED_LENGTH_PACKET,        // 固定长度
         };
 
         enum class Lora_Crc_Type
