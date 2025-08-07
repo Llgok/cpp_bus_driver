@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-07-30 10:56:55
+ * @LastEditTime: 2025-08-07 11:11:28
  * @License: GPL 3.0
  */
 #include "hardware_iic_1.h"
@@ -10,7 +10,7 @@
 namespace Cpp_Bus_Driver
 {
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-    bool Hardware_Iic_1::begin(int32_t freq_hz, int16_t address)
+    bool Hardware_Iic_1::begin(uint32_t freq_hz, uint16_t address)
     {
         if (freq_hz == DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
@@ -68,8 +68,8 @@ namespace Cpp_Bus_Driver
             const i2c_device_config_t device_config =
                 {
                     .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-                    .device_address = static_cast<uint16_t>(address),
-                    .scl_speed_hz = static_cast<uint32_t>(freq_hz),
+                    .device_address = address,
+                    .scl_speed_hz = freq_hz,
                     .scl_wait_us = 0,
                     .flags =
                         {

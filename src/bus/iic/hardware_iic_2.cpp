@@ -2,14 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-07-18 11:09:49
+ * @LastEditTime: 2025-08-07 11:12:28
  * @License: GPL 3.0
  */
 #include "hardware_iic_2.h"
 
 namespace Cpp_Bus_Driver
 {
-    bool Hardware_Iic_2::begin(int32_t freq_hz, int16_t address)
+    bool Hardware_Iic_2::begin(uint32_t freq_hz, uint16_t address)
     {
         if (freq_hz == DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
@@ -40,7 +40,7 @@ namespace Cpp_Bus_Driver
                 .scl_pullup_en = GPIO_PULLUP_ENABLE,
                 .master =
                     {
-                        .clk_speed = static_cast<uint32_t>(freq_hz),
+                        .clk_speed = freq_hz,
                     },
                 .clk_flags = 0,
             };
