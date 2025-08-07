@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-08-04 15:05:11
+ * @LastEditTime: 2025-08-07 18:18:43
  * @License: GPL 3.0
  */
 #include "Sx126x.h"
@@ -1133,7 +1133,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        memcpy(data, &buffer[1], length);
+        std::memcpy(data, &buffer[1], length);
 
         return true;
     }
@@ -1318,7 +1318,7 @@ namespace Cpp_Bus_Driver
 
         uint8_t assert[2 + length] = {0};
 
-        memcpy(&buffer[2], data, length);
+        std::memcpy(&buffer[2], data, length);
 
         check_busy();
         if (_bus->write_read(buffer, assert, 2 + length) == false)

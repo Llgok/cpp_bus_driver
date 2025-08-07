@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-07-24 13:59:52
+ * @LastEditTime: 2025-08-07 18:18:00
  * @License: GPL 3.0
  */
 #include "bus_guide.h"
@@ -153,7 +153,7 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer[1 + write_data_length] = {write_c8};
 
-        memcpy(&buffer[1], write_data, write_data_length);
+        std::memcpy(&buffer[1], write_data, write_data_length);
 
         if (write(buffer, 1 + write_data_length) == false)
         {
@@ -213,7 +213,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        memcpy(read_data, &buffer_read[1], read_data_length);
+        std::memcpy(read_data, &buffer_read[1], read_data_length);
 
         return true;
     }
@@ -246,7 +246,7 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer[1 + write_data_length] = {write_c8};
 
-        memcpy(&buffer[1], write_data, write_data_length);
+        std::memcpy(&buffer[1], write_data, write_data_length);
 
         if (write(buffer, 1 + write_data_length) == false)
         {
@@ -274,7 +274,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        memcpy(read_data, &buffer_read[3], read_data_length);
+        std::memcpy(read_data, &buffer_read[3], read_data_length);
 
         return true;
     }
@@ -295,7 +295,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        memcpy(read_data, &buffer_read[2], read_data_length);
+        std::memcpy(read_data, &buffer_read[2], read_data_length);
 
         return true;
     }
@@ -317,7 +317,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        memcpy(read_data, &buffer_read[3], 1);
+        std::memcpy(read_data, &buffer_read[3], 1);
 
         return true;
     }
@@ -331,7 +331,7 @@ namespace Cpp_Bus_Driver
                 static_cast<uint8_t>(write_c16),
             };
 
-        memcpy(&buffer[3], write_data, write_data_length);
+        std::memcpy(&buffer[3], write_data, write_data_length);
 
         if (write(buffer, 3 + write_data_length) == false)
         {
@@ -350,7 +350,7 @@ namespace Cpp_Bus_Driver
                 write_c8_2,
             };
 
-        memcpy(&buffer[2], write_data, write_data_length);
+        std::memcpy(&buffer[2], write_data, write_data_length);
 
         if (write(buffer, 2 + write_data_length) == false)
         {
@@ -370,7 +370,7 @@ namespace Cpp_Bus_Driver
                 static_cast<uint8_t>(write_c16),
             };
 
-        memcpy(&buffer[3], &write_data, 1);
+        std::memcpy(&buffer[3], &write_data, 1);
 
         if (write(buffer, 4) == false)
         {

@@ -1012,7 +1012,7 @@ namespace Cpp_Bus_Driver
 
                             char buffer_1[buffer_index_3 + 1] = {0};
 
-                            memcpy(buffer_1, data + i, buffer_index_3);
+                            std::memcpy(buffer_1, data + i, buffer_index_3);
 
                             buffer_1[buffer_index_3] = '\0';
 
