@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2025-08-01 09:03:14
+ * @LastEditTime: 2025-08-08 11:12:46
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -286,7 +286,7 @@ namespace Cpp_Bus_Driver
         return esp_timer_get_time() / 1000;
     }
 
-    bool Tool::create_gpio_interrupt(uint32_t pin, Interrupt_Mode mode, void (*interrupt)(void *))
+    bool Tool::create_gpio_interrupt(uint32_t pin, Interrupt_Mode mode, void (*interrupt)(void *), void *args)
     {
         gpio_config_t config;
         config.pin_bit_mask = BIT64(pin);
@@ -346,7 +346,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        assert = gpio_isr_handler_add(static_cast<gpio_num_t>(pin), interrupt, (void *)pin);
+        assert = gpio_isr_handler_add(static_cast<gpio_num_t>(pin), interrupt, args);
         if (assert != ESP_OK)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_isr_handler_add fail (error code: %#X)\n", assert);
