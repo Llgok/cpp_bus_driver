@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-07-24 14:02:21
+ * @LastEditTime: 2025-08-08 09:46:45
  * @License: GPL 3.0
  */
 #pragma once
@@ -53,6 +53,22 @@ namespace Cpp_Bus_Driver
     class Qspi_Guide : public Tool
     {
     protected:
+        enum class Spi_Trans
+        {
+            MODE_DIO = 1 << 0,
+            MODE_QIO = 1 << 1,
+            USE_RXDATA = 1 << 2,
+            USE_TXDATA = 1 << 3,
+            MODE_DIOQIO_ADDR = 1 << 4,
+            MULTILINE_ADDR = 1 << 4,
+            VARIABLE_CMD = 1 << 5,
+            VARIABLE_ADDR = 1 << 6,
+            VARIABLE_DUMMY = 1 << 7,
+            CS_KEEP_ACTIVE = 1 << 8,
+            MULTILINE_CMD = 1 << 9,
+            MODE_OCT = 1 << 10,
+        };
+
         std::shared_ptr<Bus_Qspi_Guide> _bus;
 
         int32_t _cs;

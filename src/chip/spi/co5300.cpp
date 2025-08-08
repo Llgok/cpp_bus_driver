@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-30 14:09:22
+ * @LastEditTime: 2025-08-08 09:32:29
  * @License: GPL 3.0
  */
 #include "co5300.h"
@@ -162,23 +162,19 @@ namespace Cpp_Bus_Driver
 
         if (_color_format == Color_Format::RGB666)
         {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-            if (_bus->write(data, w * h * 3, SPI_TRANS_MODE_QIO) == false)
+            if (_bus->write(data, w * h * 3, static_cast<uint32_t>(Spi_Trans::MODE_QIO)) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write_stream fail\n");
                 return false;
             }
-#endif
         }
         else
         {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-            if (_bus->write(data, w * h * (static_cast<uint8_t>(_color_format) / 8), SPI_TRANS_MODE_QIO) == false)
+            if (_bus->write(data, w * h * (static_cast<uint8_t>(_color_format) / 8), static_cast<uint32_t>(Spi_Trans::MODE_QIO)) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write_stream fail\n");
                 return false;
             }
-#endif
         }
 
         return true;
