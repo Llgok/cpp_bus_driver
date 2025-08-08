@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 17:58:03
- * @LastEditTime: 2025-08-08 11:13:04
+ * @LastEditTime: 2025-08-08 14:34:17
  * @License: GPL 3.0
  */
 
@@ -31,7 +31,7 @@ namespace Cpp_Bus_Driver
     protected:
         enum class Init_List_Cmd
         {
-            DELAY_MS = 0,
+            DELAY_MS,
             WRITE_DATA,
             WRITE_C8_D8,
             WRITE_C8_R24,
@@ -57,7 +57,7 @@ namespace Cpp_Bus_Driver
 
         enum class Interrupt_Mode
         {
-            RISING = 0,
+            RISING,
             FALLING,
             CHANGE,
             ONLOW,
@@ -66,7 +66,7 @@ namespace Cpp_Bus_Driver
 
         enum class Pin_Mode
         {
-            DISABLE = 0,
+            DISABLE,
             INPUT,           // input only
             OUTPUT,          // output only mode
             OUTPUT_OD,       // output only with open-drain mode
