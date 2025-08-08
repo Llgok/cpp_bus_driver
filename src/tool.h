@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 17:58:03
- * @LastEditTime: 2025-08-08 14:34:17
+ * @LastEditTime: 2025-08-08 14:39:42
  * @License: GPL 3.0
  */
 
@@ -57,6 +57,7 @@ namespace Cpp_Bus_Driver
 
         enum class Interrupt_Mode
         {
+            DISABLE,
             RISING,
             FALLING,
             CHANGE,

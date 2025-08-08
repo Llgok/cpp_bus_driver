@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2025-08-08 11:12:46
+ * @LastEditTime: 2025-08-08 14:40:03
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -293,6 +293,11 @@ namespace Cpp_Bus_Driver
         config.mode = GPIO_MODE_INPUT;
         switch (mode)
         {
+        case Interrupt_Mode::DISABLE:
+            config.pull_up_en = GPIO_PULLUP_DISABLE;
+            config.pull_down_en = GPIO_PULLDOWN_DISABLE;
+            config.intr_type = GPIO_INTR_DISABLE;
+            break;
         case Interrupt_Mode::RISING:
             config.pull_up_en = GPIO_PULLUP_DISABLE;
             config.pull_down_en = GPIO_PULLDOWN_ENABLE;
