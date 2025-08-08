@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-08-08 09:46:45
+ * @LastEditTime: 2025-08-08 10:06:49
  * @License: GPL 3.0
  */
 #pragma once
@@ -53,21 +53,39 @@ namespace Cpp_Bus_Driver
     class Qspi_Guide : public Tool
     {
     protected:
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         enum class Spi_Trans
         {
-            MODE_DIO = 1 << 0,
-            MODE_QIO = 1 << 1,
-            USE_RXDATA = 1 << 2,
-            USE_TXDATA = 1 << 3,
-            MODE_DIOQIO_ADDR = 1 << 4,
-            MULTILINE_ADDR = 1 << 4,
-            VARIABLE_CMD = 1 << 5,
-            VARIABLE_ADDR = 1 << 6,
-            VARIABLE_DUMMY = 1 << 7,
-            CS_KEEP_ACTIVE = 1 << 8,
-            MULTILINE_CMD = 1 << 9,
-            MODE_OCT = 1 << 10,
+            MODE_DIO = SPI_TRANS_MODE_DIO,
+            MODE_QIO = SPI_TRANS_MODE_QIO,
+            USE_RXDATA = SPI_TRANS_USE_RXDATA,
+            USE_TXDATA = SPI_TRANS_USE_TXDATA,
+            MODE_DIOQIO_ADDR = SPI_TRANS_MODE_DIOQIO_ADDR,
+            MULTILINE_ADDR = SPI_TRANS_MULTILINE_ADDR,
+            VARIABLE_CMD = SPI_TRANS_VARIABLE_CMD,
+            VARIABLE_ADDR = SPI_TRANS_VARIABLE_ADDR,
+            VARIABLE_DUMMY = SPI_TRANS_VARIABLE_DUMMY,
+            CS_KEEP_ACTIVE = SPI_TRANS_CS_KEEP_ACTIVE,
+            MULTILINE_CMD = SPI_TRANS_MULTILINE_CMD,
+            MODE_OCT = SPI_TRANS_MODE_OCT,
         };
+#else
+        enum class Spi_Trans
+        {
+            MODE_DIO,
+            MODE_QIO,
+            USE_RXDATA,
+            USE_TXDATA,
+            MODE_DIOQIO_ADDR,
+            MULTILINE_ADDR,
+            VARIABLE_CMD,
+            VARIABLE_ADDR,
+            VARIABLE_DUMMY,
+            CS_KEEP_ACTIVE,
+            MULTILINE_CMD,
+            MODE_OCT,
+        };
+#endif
 
         std::shared_ptr<Bus_Qspi_Guide> _bus;
 
