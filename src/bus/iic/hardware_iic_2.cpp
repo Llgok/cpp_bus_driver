@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-08-07 11:12:28
+ * @LastEditTime: 2025-08-09 11:58:17
  * @License: GPL 3.0
  */
 #include "hardware_iic_2.h"
@@ -24,7 +24,7 @@ namespace Cpp_Bus_Driver
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config _scl: %d\n", _scl);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config freq_hz: %d hz\n", freq_hz);
 
-        if (address == DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (address == static_cast<uint16_t>(DEFAULT_CPP_BUS_DRIVER_VALUE))
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "address is null\n");
             // return false;
