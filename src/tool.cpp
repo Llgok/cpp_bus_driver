@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2025-08-08 14:40:03
+ * @LastEditTime: 2025-08-09 14:40:16
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -20,9 +20,9 @@ namespace Cpp_Bus_Driver
         {
             va_list args;
             va_start(args, format);
-            char buffer[256];
-            snprintf(buffer, sizeof(buffer), "[cpp_bus_driver][log debug]->[%s][%u line]: %s", file_name, line_number, format);
-            vprintf(buffer, args);
+            auto buffer = std::make_unique<char[]>(MAX_LOG_BUFFER_SIZE);
+            snprintf(buffer.get(), MAX_LOG_BUFFER_SIZE, "[cpp_bus_driver][log debug]->[%s][%u line]: %s", file_name, line_number, format);
+            vprintf(buffer.get(), args);
             va_end(args);
 
             break;
@@ -33,9 +33,9 @@ namespace Cpp_Bus_Driver
         {
             va_list args;
             va_start(args, format);
-            char buffer[256];
-            snprintf(buffer, sizeof(buffer), "[cpp_bus_driver][log info]->[%s][%u line]: %s", file_name, line_number, format);
-            vprintf(buffer, args);
+            auto buffer = std::make_unique<char[]>(MAX_LOG_BUFFER_SIZE);
+            snprintf(buffer.get(), MAX_LOG_BUFFER_SIZE, "[cpp_bus_driver][log info]->[%s][%u line]: %s", file_name, line_number, format);
+            vprintf(buffer.get(), args);
             va_end(args);
 
             break;
@@ -46,9 +46,9 @@ namespace Cpp_Bus_Driver
         {
             va_list args;
             va_start(args, format);
-            char buffer[256];
-            snprintf(buffer, sizeof(buffer), "[cpp_bus_driver][log bus]->[%s][%u line]: %s", file_name, line_number, format);
-            vprintf(buffer, args);
+            auto buffer = std::make_unique<char[]>(MAX_LOG_BUFFER_SIZE);
+            snprintf(buffer.get(), MAX_LOG_BUFFER_SIZE, "[cpp_bus_driver][log bus]->[%s][%u line]: %s", file_name, line_number, format);
+            vprintf(buffer.get(), args);
             va_end(args);
 
             break;
@@ -59,9 +59,9 @@ namespace Cpp_Bus_Driver
         {
             va_list args;
             va_start(args, format);
-            char buffer[256];
-            snprintf(buffer, sizeof(buffer), "[cpp_bus_driver][log chip]->[%s][%u line]: %s", file_name, line_number, format);
-            vprintf(buffer, args);
+            auto buffer = std::make_unique<char[]>(MAX_LOG_BUFFER_SIZE);
+            snprintf(buffer.get(), MAX_LOG_BUFFER_SIZE, "[cpp_bus_driver][log chip]->[%s][%u line]: %s", file_name, line_number, format);
+            vprintf(buffer.get(), args);
             va_end(args);
 
             break;

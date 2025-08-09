@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 17:58:03
- * @LastEditTime: 2025-08-08 14:39:42
+ * @LastEditTime: 2025-08-09 14:45:45
  * @License: GPL 3.0
  */
 
@@ -27,6 +27,9 @@ namespace Cpp_Bus_Driver
             ledc_sleep_mode_t sleep_mode = ledc_sleep_mode_t::LEDC_SLEEP_MODE_NO_ALIVE_NO_PD;
         };
 #endif
+
+    private:
+        static constexpr uint16_t MAX_LOG_BUFFER_SIZE = 1024;
 
     protected:
         enum class Init_List_Cmd
