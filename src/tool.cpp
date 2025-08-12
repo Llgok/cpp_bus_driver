@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2025-08-09 14:40:16
+ * @LastEditTime: 2025-08-12 14:59:43
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -259,7 +259,8 @@ namespace Cpp_Bus_Driver
     {
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         // 默认状态下vTaskDelay在小于10ms延时的时候不精确
-        vTaskDelay(pdMS_TO_TICKS(value));
+        // vTaskDelay(pdMS_TO_TICKS(value));
+        usleep(value * 1000);
 #elif defined ARDUINO
         delay(value);
 #endif
