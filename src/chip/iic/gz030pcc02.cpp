@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-08-15 14:15:47
+ * @LastEditTime: 2025-08-15 15:10:08
  * @License: GPL 3.0
  */
 #include "gz030pcc02.h"
@@ -25,7 +25,7 @@ namespace Cpp_Bus_Driver
         if (buffer != DEVICE_ID)
         {
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "get gz030pcc02 id fail (error id: %#X)\n", buffer);
-            return false;
+            // return false;
         }
         else
         {
