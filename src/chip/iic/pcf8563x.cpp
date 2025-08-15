@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2025-06-16 18:10:50
+ * @LastEditTime: 2025-08-15 11:12:08
  * @License: GPL 3.0
  */
 #include "pcf8563x.h"
@@ -29,7 +29,7 @@ namespace Cpp_Bus_Driver
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get pcf8563x id: %#X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get pcf8563x id success (id: %#X)\n", buffer);
         }
 
         if (init_list(_init_list, sizeof(_init_list)) == false)

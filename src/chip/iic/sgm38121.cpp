@@ -29,7 +29,7 @@ namespace Cpp_Bus_Driver
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sgm38121 id: %#X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sgm38121 id success (id: %#X)\n", buffer);
         }
 
         return true;

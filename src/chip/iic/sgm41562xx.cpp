@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-07-19 16:19:08
+ * @LastEditTime: 2025-08-15 11:12:21
  * @License: GPL 3.0
  */
 #include "sgm41562xx.h"
@@ -33,7 +33,7 @@ namespace Cpp_Bus_Driver
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sgm41562xx id: %#X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sgm41562xx id success (id: %#X)\n", buffer);
         }
 
         if (init_list(_init_list, sizeof(_init_list)) == false)

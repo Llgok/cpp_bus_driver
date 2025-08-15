@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-24 14:07:49
+ * @LastEditTime: 2025-08-15 11:12:31
  * @License: GPL 3.0
  */
 #include "xl95x5.h"
@@ -29,7 +29,7 @@ namespace Cpp_Bus_Driver
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get xl95x5 id: %#X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get xl95x5 id success (id: %#X)\n", buffer);
         }
 
         return true;

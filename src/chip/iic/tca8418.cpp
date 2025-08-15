@@ -29,7 +29,7 @@ namespace Cpp_Bus_Driver
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get tca8418 id: %#X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get tca8418 id success (id: %#X)\n", buffer);
         }
 
         if (init_list(_init_list, sizeof(_init_list)) == false)

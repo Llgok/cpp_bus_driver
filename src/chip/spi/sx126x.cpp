@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-08-07 18:18:43
+ * @LastEditTime: 2025-08-15 11:13:24
  * @License: GPL 3.0
  */
 #include "Sx126x.h"
@@ -42,7 +42,7 @@ namespace Cpp_Bus_Driver
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sx126x id: %s\n", buffer.c_str());
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sx126x id success (id: %s)\n", buffer.c_str());
         }
 
         if (fix_tx_clamp(true) == false)

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-24 14:46:56
+ * @LastEditTime: 2025-08-15 11:12:40
  * @License: GPL 3.0
  */
 #include "es8311.h"
@@ -41,7 +41,7 @@ namespace Cpp_Bus_Driver
         }
         else
         {
-            Iic_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get es8311 id: %#X\n", buffer);
+            Iic_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get es8311 id success (id: %#X)\n", buffer);
         }
 
         return true;

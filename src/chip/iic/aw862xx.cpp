@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-26 11:13:26
- * @LastEditTime: 2025-07-24 14:03:41
+ * @LastEditTime: 2025-08-15 11:09:38
  * @License: GPL 3.0
  */
 #include "aw862xx.h"
@@ -29,7 +29,7 @@ namespace Cpp_Bus_Driver
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get aw862xx id: %#X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get aw862xx id success (id: %#X)\n", buffer);
         }
 
         return true;
