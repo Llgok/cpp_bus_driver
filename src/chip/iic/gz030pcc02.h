@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-24 15:27:14
+ * @LastEditTime: 2025-08-15 14:12:58
  * @License: GPL 3.0
  */
 
@@ -19,12 +19,13 @@ namespace Cpp_Bus_Driver
     private:
         static constexpr uint8_t DEVICE_ID = 0x03; // 默认值
 
-        static constexpr uint8_t MIPI_LANE_NUM = 2; // MIPI 总线的 lane 数量
-
         enum class Cmd
         {
             RO_DEVICE_ID = 0x0001,
 
+            RW_INTERNAL_TEST_MODE_INPUT_DATA_FORMAT = 0x0001,
+
+            RO_TEMPERATURE_READING = 0x3001,
         };
 
         static constexpr const uint16_t _init_list[] =
@@ -32,13 +33,14 @@ namespace Cpp_Bus_Driver
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6C00, 0x00,
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6900, 0x08,
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6901, 0x00,
-#if MIPI_LANE_NUM == 4
-                static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6800, 0x03,
-#elif MIPI_LANE_NUM == 2
+                // MIPI 总线的 lane 数量设置为 4 lane
+                // static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6800, 0x03,
+
+                // MIPI 总线的 lane 数量设置为 2 lane
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6800, 0x01,
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x5F00, 0x22,
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x9F00, 0x06,
-#endif
+
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6801, 0x00,
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6802, 0x00,
                 static_cast<uint16_t>(Init_List_Cmd::WRITE_C16_D8), 0x6803, 0x00,
@@ -117,6 +119,24 @@ namespace Cpp_Bus_Driver
         int32_t _rst;
 
     public:
+        enum class Data_Format
+        {
+            RGB888 = 0B00000011,
+            INTERNAL_TEST_MODE = 0B00000101, // 内部测试图模式
+        };
+
+        enum class Internal_Test_Mode
+        {
+            REGISTER_CONTROL_RGB = 0B00000000,
+            PURE_WHITE_FIELD = 0B00100000,
+            PURE_RED_FIELD = 0B01000000,
+            PURE_GREEN_FIELD = 0B01100000,
+            PURE_BLUE_FIELD = 0B10000000,
+            GRAYSCALE_IMAGE = 0B10100000,
+            COLOR_BAR = 0B11000000,
+            CHECKERBOARD = 0B11100000,
+        };
+
         Gz030pcc02(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
             : Iic_Guide(bus, address), _rst(rst)
         {
@@ -125,5 +145,28 @@ namespace Cpp_Bus_Driver
         bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
 
         uint8_t get_device_id(void);
+
+        /**
+         * @brief 获取温度
+         * @return 以°C为单位
+         * @Date 2025-08-15 11:41:42
+         */
+        float get_temperature_celsius(void);
+
+        /**
+         * @brief 设置数据模式
+         * @param format 使用Data_Format::配置
+         * @return
+         * @Date 2025-08-15 13:50:37
+         */
+        bool set_data_format(Data_Format format);
+
+        /**
+         * @brief 内部测试模式
+         * @param mode 使用Internal_Test_Mode::配置
+         * @return
+         * @Date 2025-08-15 14:05:28
+         */
+        bool set_internal_test_mode(Internal_Test_Mode mode);
     };
 }
