@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-07-24 15:09:29
+ * @LastEditTime: 2025-08-15 11:30:01
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -105,7 +105,7 @@ namespace Cpp_Bus_Driver
                     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "iic_init_list WRITE_C16_D8 fail\n");
                     return false;
                 }
-                index += list[index] + 3;
+                index += 2;
                 break;
             }
             default:
