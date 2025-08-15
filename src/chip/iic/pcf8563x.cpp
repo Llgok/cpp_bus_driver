@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2025-08-15 11:12:08
+ * @LastEditTime: 2025-08-15 14:14:14
  * @License: GPL 3.0
  */
 #include "pcf8563x.h"
@@ -472,7 +472,7 @@ namespace Cpp_Bus_Driver
 
         for (uint8_t i = 0; i < 7; i++)
         {
-            if (_bus->write(static_cast<uint8_t>(Cmd::RW_VL_SECONDS) + i, buffer[i]) == false)
+            if (_bus->write(static_cast<uint8_t>(static_cast<uint8_t>(Cmd::RW_VL_SECONDS) + i), buffer[i]) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
                 return false;
@@ -579,7 +579,7 @@ namespace Cpp_Bus_Driver
         // 关闭报警
         for (uint8_t i = 0; i < 4; i++)
         {
-            if (_bus->write(static_cast<uint8_t>(Cmd::RW_MINUTE_ALARM) + i, buffer) == false)
+            if (_bus->write(static_cast<uint8_t>(static_cast<uint8_t>(Cmd::RW_MINUTE_ALARM) + i), buffer) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
                 return false;

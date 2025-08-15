@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-08-07 18:18:00
+ * @LastEditTime: 2025-08-15 14:14:59
  * @License: GPL 3.0
  */
 #include "bus_guide.h"
@@ -121,33 +121,17 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    // bool Bus_Iic_Guide::write(const uint16_t write_c16, Endian endian)
-    // {
-    //     uint8_t buffer[2] = {0};
+    bool Bus_Iic_Guide::write(const uint16_t write_c16, const uint8_t write_d8)
+    {
+        const uint8_t buffer[] = {static_cast<uint8_t>(write_c16 >> 8), static_cast<uint8_t>(write_c16), write_d8};
+        if (write(buffer, 3) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
 
-    //     switch (endian)
-    //     {
-    //     case Endian::BIG:
-    //         buffer[0] = write_c16 >> 8;
-    //         buffer[1] = write_c16;
-    //         break;
-    //     case Endian::LITTLE:
-    //         buffer[0] = write_c16;
-    //         buffer[1] = write_c16 >> 8;
-    //         break;
-
-    //     default:
-    //         break;
-    //     }
-
-    //     if (write(buffer, 2) == false)
-    //     {
-    //         assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
-    //         return false;
-    //     }
-
-    //     return true;
-    // }
+        return true;
+    }
 
     bool Bus_Iic_Guide::write(const uint8_t write_c8, const uint8_t *write_data, size_t write_data_length)
     {
