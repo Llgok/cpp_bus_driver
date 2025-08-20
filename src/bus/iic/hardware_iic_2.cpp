@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-08-20 14:45:32
+ * @LastEditTime: 2025-08-20 15:37:22
  * @License: GPL 3.0
  */
 #include "hardware_iic_2.h"
@@ -196,11 +196,11 @@ namespace Cpp_Bus_Driver
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "nack on transmit of address\n");
             return false;
         case 3:
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "nack on transmit of data\n");
-            return false;
+            // assert_log(Log_Level::BUS, __FILE__, __LINE__, "nack on transmit of data\n");
+            // return false;
         case 4:
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "other error\n");
-            return false;
+            // assert_log(Log_Level::BUS, __FILE__, __LINE__, "other error\n");
+            // return false;
         default:
             break;
         }
