@@ -2,13 +2,17 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-31 13:37:28
+ * @LastEditTime: 2025-08-20 12:08:20
  * @License: GPL 3.0
  */
 #include "tca8418.h"
 
 namespace Cpp_Bus_Driver
 {
+#if defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+    constexpr const uint8_t Tca8418::_init_list[];
+#endif
+
     bool Tca8418::begin(int32_t freq_hz)
     {
         if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
@@ -29,7 +33,7 @@ namespace Cpp_Bus_Driver
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get tca8418 id: %#X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get tca8418 id success (id: %#X)\n", buffer);
         }
 
         if (init_list(_init_list, sizeof(_init_list)) == false)

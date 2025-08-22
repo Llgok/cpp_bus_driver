@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2025-07-30 16:12:02
+ * @LastEditTime: 2025-08-15 11:10:24
  * @License: GPL 3.0
  */
 #include "cst2xxse.h"
@@ -37,7 +37,7 @@ namespace Cpp_Bus_Driver
         }
         else
         {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get cst2xxse id: %#X\n", buffer);
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get cst2xxse id success (id: %#X)\n", buffer);
         }
 
         return true;

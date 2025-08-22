@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-08-07 11:14:02
+ * @LastEditTime: 2025-08-15 13:56:50
  * @License: GPL 3.0
  */
 
@@ -40,7 +40,7 @@ namespace Cpp_Bus_Driver
         bool read(const uint16_t write_c16, uint8_t *read_data, size_t read_data_length = 1);
         bool write(const uint8_t write_c8, const uint8_t write_d8);
         bool write(const uint8_t write_c8, const uint16_t write_d16, Endian endian = Endian::BIG);
-        // bool write(const uint16_t write_c16, Endian endian = Endian::BIG);
+        bool write(const uint16_t write_c16, const uint8_t write_d8);
         bool write(const uint8_t write_c8, const uint8_t *write_data, size_t write_data_length);
 
         bool scan_7bit_address(std::vector<uint8_t> *address);

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-08-09 11:58:05
+ * @LastEditTime: 2025-08-20 14:45:59
  * @License: GPL 3.0
  */
 #include "hardware_iic_1.h"
@@ -12,7 +12,7 @@ namespace Cpp_Bus_Driver
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Hardware_Iic_1::begin(uint32_t freq_hz, uint16_t address)
     {
-        if (freq_hz == DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (freq_hz == static_cast<uint32_t>(DEFAULT_CPP_BUS_DRIVER_VALUE))
         {
             freq_hz = DEFAULT_CPP_BUS_DRIVER_IIC_FREQ_HZ;
         }
