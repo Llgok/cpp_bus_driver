@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-08-15 13:56:50
+ * @LastEditTime: 2025-08-22 14:20:02
  * @License: GPL 3.0
  */
 
@@ -34,6 +34,9 @@ namespace Cpp_Bus_Driver
         virtual bool write(i2c_cmd_handle_t cmd_handle, const uint8_t *data, size_t data_len, bool ack_en = true);
         virtual bool read(i2c_cmd_handle_t cmd_handle, uint8_t *data, size_t data_len, i2c_ack_type_t ack = I2C_MASTER_LAST_NACK);
         virtual bool stop_transmit(i2c_cmd_handle_t cmd_handle);
+
+        virtual bool start_transmit(void);
+        virtual bool stop_transmit(void);
 #endif
 
         bool read(const uint8_t write_c8, uint8_t *read_data, size_t read_data_length = 1);

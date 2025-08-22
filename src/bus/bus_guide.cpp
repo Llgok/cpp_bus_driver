@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-08-15 14:14:59
+ * @LastEditTime: 2025-08-22 14:20:39
  * @License: GPL 3.0
  */
 #include "bus_guide.h"
@@ -41,6 +41,18 @@ namespace Cpp_Bus_Driver
     }
 
     bool Bus_Iic_Guide::stop_transmit(i2c_cmd_handle_t cmd_handle)
+    {
+        assert_log(Log_Level::BUS, __FILE__, __LINE__, "stop_transmit fail\n");
+        return false;
+    }
+
+    bool Bus_Iic_Guide::start_transmit(void)
+    {
+        assert_log(Log_Level::BUS, __FILE__, __LINE__, "start_transmit fail\n");
+        return false;
+    }
+
+    bool Bus_Iic_Guide::stop_transmit(void)
     {
         assert_log(Log_Level::BUS, __FILE__, __LINE__, "stop_transmit fail\n");
         return false;
