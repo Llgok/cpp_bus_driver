@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:14:18
- * @LastEditTime: 2025-07-31 17:30:23
+ * @LastEditTime: 2025-08-15 17:57:17
  * @License: GPL 3.0
  */
 
@@ -17,6 +17,7 @@
 
 #include "./bus/iic/hardware_iic_1.h"
 #include "./bus/iic/hardware_iic_2.h"
+#include "./bus/iic/software_iic.h"
 #include "./bus/spi/hardware_spi.h"
 #include "./bus/spi/hardware_qspi.h"
 #include "./bus/uart/hardware_uart.h"
