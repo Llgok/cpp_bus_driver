@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-08-22 17:07:02
+ * @LastEditTime: 2025-08-22 18:20:08
  * @License: GPL 3.0
  */
 #include "software_iic.h"
@@ -91,7 +91,7 @@ namespace Cpp_Bus_Driver
         }
 
         uint8_t *buffer_ptr = data;
-        for (size_t i = 0; i < length; i++)
+        for (size_t i = 0; i < (length - 1); i++)
         {
             if (read(buffer_ptr++) == false)
             {
@@ -104,6 +104,13 @@ namespace Cpp_Bus_Driver
                 assert_log(Log_Level::BUS, __FILE__, __LINE__, "wait_ack fail\n");
                 return false;
             }
+        }
+
+        // 读取最后一位数据
+        if (read(buffer_ptr) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "read fail\n");
+            return false;
         }
 
         if (write_ack(Ack_Bit::NACK) == false)
