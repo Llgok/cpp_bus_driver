@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-08-22 16:27:44
+ * @LastEditTime: 2025-08-22 17:07:02
  * @License: GPL 3.0
  */
 #include "software_iic.h"
@@ -238,14 +238,14 @@ namespace Cpp_Bus_Driver
         }
 
         // 写操作发送地址最后一位为0
-        if (write(_address << 1) == false)
+        if (write(address << 1) == false)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
             return false;
         }
         if (wait_ack() == false)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "wait_ack fail\n");
+            // assert_log(Log_Level::BUS, __FILE__, __LINE__, "wait_ack fail\n");
             return false;
         }
 
