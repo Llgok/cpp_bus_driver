@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-08-23 09:57:32
+ * @LastEditTime: 2025-08-23 10:18:26
  * @License: GPL 3.0
  */
 #include "software_iic.h"
@@ -17,10 +17,13 @@ namespace Cpp_Bus_Driver
             freq_hz = DEFAULT_CPP_BUS_DRIVER_IIC_FREQ_HZ;
         }
 
+        uint32_t buffer_transmit_delay_us = static_cast<uint32_t>((1000000.0 / static_cast<double>(freq_hz)) / 2.0 + 0.5);
+
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "software_iic config address: %#X\n", address);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "software_iic config _sda: %d\n", _sda);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "software_iic config _scl: %d\n", _scl);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "software_iic config freq_hz: %d hz\n", freq_hz);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "software_iic config _transmit_delay_us: %d us\n", buffer_transmit_delay_us);
 
         if (pin_mode(_sda, Pin_Mode::INPUT_OUTPUT_OD, Pin_Status::PULLUP) == false)
         {
@@ -35,7 +38,7 @@ namespace Cpp_Bus_Driver
         }
 
         _freq_hz = freq_hz;
-        _transmit_delay_us = static_cast<uint32_t>((1000000.0 / static_cast<double>(freq_hz)) / 2.0 + 0.5);
+        _transmit_delay_us = buffer_transmit_delay_us;
         _address = address;
 
         return true;
