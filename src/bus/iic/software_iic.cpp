@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-08-23 10:18:26
+ * @LastEditTime: 2025-08-23 10:39:40
  * @License: GPL 3.0
  */
 #include "software_iic.h"
@@ -203,8 +203,12 @@ namespace Cpp_Bus_Driver
             }
             if (wait_ack() == false)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "wait_ack fail\n");
-                return false;
+                // 如果不为最后一位数据，则报错
+                if (i != (write_length - 1))
+                {
+                    assert_log(Log_Level::BUS, __FILE__, __LINE__, "wait_ack fail\n");
+                    return false;
+                }
             }
         }
 
