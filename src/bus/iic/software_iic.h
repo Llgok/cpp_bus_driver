@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-08-22 15:53:34
+ * @LastEditTime: 2025-08-23 10:44:38
  * @License: GPL 3.0
  */
 #pragma once
@@ -15,7 +15,7 @@ namespace Cpp_Bus_Driver
     class Software_Iic : public Bus_Iic_Guide
     {
     public:
-        // iic通信中，应答(ACK)是低电平(0)，非应答(NACK)是高电平(1)
+        // iic通信中，应答(ack)是低电平(0)，非应答(nack)是高电平(1)
         enum class Ack_Bit
         {
             ACK = 0,
