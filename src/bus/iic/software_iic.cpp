@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-08-22 18:20:08
+ * @LastEditTime: 2025-08-23 09:57:32
  * @License: GPL 3.0
  */
 #include "software_iic.h"
@@ -312,6 +312,8 @@ namespace Cpp_Bus_Driver
         uint8_t buffer_data = 0;
         for (uint8_t i = 0; i < 8; i++)
         {
+            buffer_data <<= 1;
+
             if (pin_write(_scl, 1) == false)
             {
                 assert_log(Log_Level::BUS, __FILE__, __LINE__, "pin_write fail\n");
@@ -330,8 +332,6 @@ namespace Cpp_Bus_Driver
                 return false;
             }
             delay_us(_transmit_delay_us);
-
-            buffer_data <<= 1;
         }
 
         *data = buffer_data;
