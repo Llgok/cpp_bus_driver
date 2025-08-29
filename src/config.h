@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2025-08-01 09:03:03
+ * @LastEditTime: 2025-08-29 18:00:25
  * @License: GPL 3.0
  */
 #pragma once
@@ -54,6 +54,8 @@
 #undef RISING
 #undef FALLING
 #undef CHANGE
+
+#include "nrfx_i2s.h"
 
 #endif
 

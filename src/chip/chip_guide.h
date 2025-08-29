@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-08-08 10:06:49
+ * @LastEditTime: 2025-08-28 17:19:00
  * @License: GPL 3.0
  */
 #pragma once
@@ -127,7 +127,9 @@ namespace Cpp_Bus_Driver
         {
         }
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-        virtual bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width);
+        virtual bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) = 0;
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        virtual bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width) = 0;
 #endif
     };
 

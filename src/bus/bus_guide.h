@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-08-22 14:20:02
+ * @LastEditTime: 2025-08-29 17:56:19
  * @License: GPL 3.0
  */
 
@@ -57,13 +57,59 @@ namespace Cpp_Bus_Driver
         }
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         virtual bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) = 0;
-#endif
+
         virtual size_t read(void *data, size_t byte) = 0;
         virtual size_t write(const void *data, size_t byte) = 0;
-        // virtual bool write_read(const uint8_t *write_data, size_t write_length, uint8_t *read_data, size_t read_length) = 0;
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        virtual bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width) = 0;
 
-        // bool read(uint8_t write_c8, uint8_t *read_d8);
-        // bool write(const uint8_t write_c8, const uint8_t write_d8);
+        /**
+         * @brief 数据流传输开始
+         * @param *write_buffer 写数据流缓存指针，如果为nullptr表示不写入数据，*write_buffer需要使用ram分配的内存
+         * @param *read_buffer 读数据流缓存指针，如果为nullptr表示不读取数据，*read_buffer需要使用ram分配的内存
+         * @param max_buffer_length 数据流缓存最大长度
+         * @return
+         * @Date 2025-08-29 17:49:07
+         */
+        virtual bool start_transmit(uint32_t *write_buffer, uint32_t *read_buffer, size_t max_buffer_length) = 0;
+
+        /**
+         * @brief 停止数据流传输
+         * @return
+         * @Date 2025-08-29 17:51:03
+         */
+        virtual void stop_transmit(void) = 0;
+
+        /**
+         * @brief 设置下一个读取的指针
+         * @param *data 数据指针
+         * @return
+         * @Date 2025-08-29 17:52:08
+         */
+        virtual bool set_next_read_buffer(uint32_t *data) = 0;
+
+        /**
+         * @brief 设置下一个写入的指针
+         * @param *data 数据指针
+         * @return
+         * @Date 2025-08-29 17:52:08
+         */
+        virtual bool set_next_write_buffer(uint32_t *data) = 0;
+
+        /**
+         * @brief 获取读取事件标志
+         * @return [true]：有数据可读，[false]：无数据可读
+         * @Date 2025-08-29 17:52:43
+         */
+        virtual bool get_read_event_flag(void) = 0;
+
+        /**
+         * @brief 获取写入事件标志
+         * @return [true]：可以继续写入数据，[false]：不能写入数据
+         * @Date 2025-08-29 17:52:43
+         */
+        virtual bool get_write_event_flag(void) = 0;
+#endif
     };
 
     class Bus_Spi_Guide : public Tool

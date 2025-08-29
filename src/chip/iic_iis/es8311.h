@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:42:57
- * @LastEditTime: 2025-07-30 11:26:07
+ * @LastEditTime: 2025-08-29 17:53:52
  * @License: GPL 3.0
  */
 
@@ -13,7 +13,6 @@
 namespace Cpp_Bus_Driver
 {
 #define ES8311_DEVICE_DEFAULT_ADDRESS_1 0x18
-#define ES8311_DEVICE_DEFAULT_ADDRESS_2 0x19
 #define ES8311_DEVICE_DEFAULT_ADDRESS_2 0x19
 
     class Es8311 : public Iic_Guide, Iis_Guide
@@ -321,6 +320,9 @@ namespace Cpp_Bus_Driver
         bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) override;
+
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width) override;
 #endif
 
         uint16_t get_device_id(void);
@@ -486,6 +488,7 @@ namespace Cpp_Bus_Driver
          */
         bool set_dac_equalizer(bool enable);
 
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         /**
          * @brief 读取数据
          * @param *data 数据指针
@@ -503,6 +506,56 @@ namespace Cpp_Bus_Driver
          * @Date 2025-03-13 14:02:47
          */
         size_t write_data(const void *data, size_t byte);
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+
+        /**
+         * @brief 数据流传输开始
+         * @param *write_buffer 写数据流缓存指针，如果为nullptr表示不写入数据，*write_buffer需要使用ram分配的内存
+         * @param *read_buffer 读数据流缓存指针，如果为nullptr表示不读取数据，*read_buffer需要使用ram分配的内存
+         * @param max_buffer_length 数据流缓存最大长度
+         * @return
+         * @Date 2025-08-29 17:49:07
+         */
+        bool start_transmit(uint32_t *write_buffer, uint32_t *read_buffer, size_t max_buffer_length);
+
+        /**
+         * @brief 停止数据流传输
+         * @return
+         * @Date 2025-08-29 17:51:03
+         */
+        void stop_transmit(void);
+
+        /**
+         * @brief 设置下一个读取的指针
+         * @param *data 数据指针
+         * @return
+         * @Date 2025-08-29 17:52:08
+         */
+        bool set_next_read_buffer(uint32_t *data);
+
+        /**
+         * @brief 设置下一个写入的指针
+         * @param *data 数据指针
+         * @return
+         * @Date 2025-08-29 17:52:08
+         */
+        bool set_next_write_buffer(uint32_t *data);
+
+        /**
+         * @brief 获取读取事件标志
+         * @return [true]：有数据可读，[false]：无数据可读
+         * @Date 2025-08-29 17:52:43
+         */
+        bool get_read_event_flag(void);
+
+        /**
+         * @brief 获取写入事件标志
+         * @return [true]：可以继续写入数据，[false]：不能写入数据
+         * @Date 2025-08-29 17:52:43
+         */
+        bool get_write_event_flag(void);
+
+#endif
 
         /**
          * @brief ADC增益

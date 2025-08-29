@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-08-15 11:30:01
+ * @LastEditTime: 2025-08-28 17:19:44
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -258,6 +258,18 @@ namespace Cpp_Bus_Driver
 
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Iis_Guide::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
+    {
+        if (_bus->begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "begin fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+    bool Iis_Guide::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width)
     {
         if (_bus->begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
         {

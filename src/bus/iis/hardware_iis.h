@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-07-23 10:26:19
+ * @LastEditTime: 2025-08-29 15:55:25
  * @License: GPL 3.0
  */
 
@@ -12,22 +12,24 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+
     class Hardware_Iis : public Bus_Iis_Guide
     {
     private:
         int32_t _data_in, _data_out;
         int32_t _ws_lrck, _bclk, _mclk;
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         i2s_port_t _port;
+        i2s_chan_handle_t _chan_tx_handle = nullptr;
+        i2s_chan_handle_t _chan_rx_handle = nullptr;
+#endif
 
         uint16_t _mclk_multiple = -1;
         uint32_t _sample_rate_hz = -1;
         uint8_t _data_bit_width = -1;
 
-        i2s_chan_handle_t _chan_tx_handle = nullptr;
-        i2s_chan_handle_t _chan_rx_handle = nullptr;
-
     public:
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         enum class Data_Mode
         {
             INPUT,  // 输入模式
@@ -58,7 +60,24 @@ namespace Cpp_Bus_Driver
         size_t read(void *data, size_t byte) override;
         size_t write(const void *data, size_t byte) override;
 
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+
+        // 配置输入和输出设备
+        Hardware_Iis(int32_t data_in, int32_t data_out, int32_t ws_lrck, int32_t bclk, int32_t mclk)
+            : _data_in(data_in), _data_out(data_out), _ws_lrck(ws_lrck), _bclk(bclk), _mclk(mclk)
+        {
+        }
+
+        bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width) override;
+
+        bool start_transmit(uint32_t *write_buffer, uint32_t *read_buffer, size_t max_buffer_length) override;
+        void stop_transmit(void) override;
+        bool set_next_read_buffer(uint32_t *data) override;
+        bool set_next_write_buffer(uint32_t *data) override;
+        bool get_read_event_flag(void) override;
+        bool get_write_event_flag(void) override;
+#endif
+
         // bool end() override;
     };
-#endif
 }
