@@ -643,22 +643,22 @@ namespace Cpp_Bus_Driver
         Iis_Guide::_bus->stop_transmit();
     }
 
-    bool Es8311::set_next_read_buffer(uint32_t *data)
+    bool Es8311::set_next_read_data(uint32_t *data)
     {
-        if (Iis_Guide::_bus->set_next_read_buffer(data) == false)
+        if (Iis_Guide::_bus->set_next_read_data(data) == false)
         {
-            Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_next_read_buffer fail\n");
+            Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_next_read_data fail\n");
             return false;
         }
 
         return true;
     }
 
-    bool Es8311::set_next_write_buffer(uint32_t *data)
+    bool Es8311::set_next_write_data(uint32_t *data)
     {
-        if (Iis_Guide::_bus->set_next_write_buffer(data) == false)
+        if (Iis_Guide::_bus->set_next_write_data(data) == false)
         {
-            Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_next_write_buffer fail\n");
+            Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_next_write_data fail\n");
             return false;
         }
 

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-08-29 17:56:19
+ * @LastEditTime: 2025-09-01 10:21:10
  * @License: GPL 3.0
  */
 
@@ -65,13 +65,13 @@ namespace Cpp_Bus_Driver
 
         /**
          * @brief 数据流传输开始
-         * @param *write_buffer 写数据流缓存指针，如果为nullptr表示不写入数据，*write_buffer需要使用ram分配的内存
-         * @param *read_buffer 读数据流缓存指针，如果为nullptr表示不读取数据，*read_buffer需要使用ram分配的内存
-         * @param max_buffer_length 数据流缓存最大长度
+         * @param *write_data 写数据流缓存指针，如果为nullptr表示不写入数据，*write_data需要使用ram分配的内存
+         * @param *read_data 读数据流缓存指针，如果为nullptr表示不读取数据，*read_data需要使用ram分配的内存
+         * @param max_data_length 数据流缓存最大长度
          * @return
          * @Date 2025-08-29 17:49:07
          */
-        virtual bool start_transmit(uint32_t *write_buffer, uint32_t *read_buffer, size_t max_buffer_length) = 0;
+        virtual bool start_transmit(uint32_t *write_data, uint32_t *read_data, size_t max_data_length) = 0;
 
         /**
          * @brief 停止数据流传输
@@ -86,7 +86,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-08-29 17:52:08
          */
-        virtual bool set_next_read_buffer(uint32_t *data) = 0;
+        virtual bool set_next_read_data(uint32_t *data) = 0;
 
         /**
          * @brief 设置下一个写入的指针
@@ -94,7 +94,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-08-29 17:52:08
          */
-        virtual bool set_next_write_buffer(uint32_t *data) = 0;
+        virtual bool set_next_write_data(uint32_t *data) = 0;
 
         /**
          * @brief 获取读取事件标志

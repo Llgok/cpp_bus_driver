@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-08-29 17:45:25
+ * @LastEditTime: 2025-09-01 10:21:28
  * @License: GPL 3.0
  */
 #include "hardware_iis.h"
@@ -609,51 +609,51 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Hardware_Iis::start_transmit(uint32_t *write_buffer, uint32_t *read_buffer, size_t max_buffer_length)
+    bool Hardware_Iis::start_transmit(uint32_t *write_data, uint32_t *read_data, size_t max_data_length)
     {
-        if (write_buffer == nullptr && read_buffer == nullptr)
+        if (write_data == nullptr && read_data == nullptr)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "start_transmit fail (write_buffer == nullptr && read_buffer == nullptr)\n");
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "start_transmit fail (write_data == nullptr && read_data == nullptr)\n");
             return false;
         }
-        if (max_buffer_length == 0)
+        if (max_data_length == 0)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "start_transmit fail (max_buffer_length == 0)\n");
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "start_transmit fail (max_data_length == 0)\n");
             return false;
         }
 
-        if (write_buffer != nullptr)
+        if (write_data != nullptr)
         {
-            if (nrfx_is_in_ram(write_buffer) == false)
+            if (nrfx_is_in_ram(write_data) == false)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "nrfx_is_in_ram fail (write_buffer is not located in the data ram region)\n");
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "nrfx_is_in_ram fail (write_data is not located in the data ram region)\n");
                 return false;
             }
-            if (nrfx_is_word_aligned(write_buffer) == false)
+            if (nrfx_is_word_aligned(write_data) == false)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "nrfx_is_word_aligned fail (write_buffer is not aligned to a 32-bit word)\n");
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "nrfx_is_word_aligned fail (write_data is not aligned to a 32-bit word)\n");
                 return false;
             }
 
             nrf_i2s_event_clear(NRF_I2S, NRF_I2S_EVENT_TXPTRUPD);
         }
-        if (read_buffer != nullptr)
+        if (read_data != nullptr)
         {
-            if (nrfx_is_in_ram(read_buffer) == false)
+            if (nrfx_is_in_ram(read_data) == false)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "nrfx_is_in_ram fail (write_buffer is not located in the data ram region)\n");
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "nrfx_is_in_ram fail (write_data is not located in the data ram region)\n");
                 return false;
             }
-            if (nrfx_is_word_aligned(read_buffer) == false)
+            if (nrfx_is_word_aligned(read_data) == false)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "nrfx_is_word_aligned fail (write_buffer is not aligned to a 32-bit word)\n");
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "nrfx_is_word_aligned fail (write_data is not aligned to a 32-bit word)\n");
                 return false;
             }
 
             nrf_i2s_event_clear(NRF_I2S, NRF_I2S_EVENT_RXPTRUPD);
         }
 
-        nrf_i2s_transfer_set(NRF_I2S, max_buffer_length, read_buffer, write_buffer);
+        nrf_i2s_transfer_set(NRF_I2S, max_data_length, read_data, write_data);
 
         // 启动iis音频流传输任务
         nrf_i2s_enable(NRF_I2S);
@@ -670,11 +670,11 @@ namespace Cpp_Bus_Driver
         nrf_i2s_disable(NRF_I2S);
     }
 
-    bool Hardware_Iis::set_next_read_buffer(uint32_t *data)
+    bool Hardware_Iis::set_next_read_data(uint32_t *data)
     {
         if (data == nullptr)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "set_next_read_buffer fail (data == nullptr)\n");
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "set_next_read_data fail (data == nullptr)\n");
             return false;
         }
 
@@ -696,11 +696,11 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Hardware_Iis::set_next_write_buffer(uint32_t *data)
+    bool Hardware_Iis::set_next_write_data(uint32_t *data)
     {
         if (data == nullptr)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "set_next_write_buffer fail (data == nullptr)\n");
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "set_next_write_data fail (data == nullptr)\n");
             return false;
         }
 

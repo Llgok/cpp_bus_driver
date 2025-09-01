@@ -531,7 +531,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-08-29 17:52:08
          */
-        bool set_next_read_buffer(uint32_t *data);
+        bool set_next_read_data(uint32_t *data);
 
         /**
          * @brief 设置下一个写入的指针
@@ -539,7 +539,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-08-29 17:52:08
          */
-        bool set_next_write_buffer(uint32_t *data);
+        bool set_next_write_data(uint32_t *data);
 
         /**
          * @brief 获取读取事件标志

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-08-29 15:55:25
+ * @LastEditTime: 2025-09-01 10:21:18
  * @License: GPL 3.0
  */
 
@@ -70,10 +70,10 @@ namespace Cpp_Bus_Driver
 
         bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width) override;
 
-        bool start_transmit(uint32_t *write_buffer, uint32_t *read_buffer, size_t max_buffer_length) override;
+        bool start_transmit(uint32_t *write_data, uint32_t *read_data, size_t max_data_length) override;
         void stop_transmit(void) override;
-        bool set_next_read_buffer(uint32_t *data) override;
-        bool set_next_write_buffer(uint32_t *data) override;
+        bool set_next_read_data(uint32_t *data) override;
+        bool set_next_write_data(uint32_t *data) override;
         bool get_read_event_flag(void) override;
         bool get_write_event_flag(void) override;
 #endif
