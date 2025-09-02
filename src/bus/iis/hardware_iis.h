@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-09-01 10:21:18
+ * @LastEditTime: 2025-09-02 17:14:51
  * @License: GPL 3.0
  */
 
@@ -68,7 +68,8 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width) override;
+        bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width,
+                   nrf_i2s_channels_t channel = nrf_i2s_channels_t::NRF_I2S_CHANNELS_STEREO) override;
 
         bool start_transmit(uint32_t *write_data, uint32_t *read_data, size_t max_data_length) override;
         void stop_transmit(void) override;

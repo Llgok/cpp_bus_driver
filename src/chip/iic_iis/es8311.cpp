@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-08-29 17:00:23
+ * @LastEditTime: 2025-09-02 17:08:59
  * @License: GPL 3.0
  */
 #include "es8311.h"
@@ -62,9 +62,9 @@ namespace Cpp_Bus_Driver
         return true;
     }
 #elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-    bool Es8311::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width)
+    bool Es8311::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width, nrf_i2s_channels_t channel)
     {
-        if (Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
+        if (Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width, channel) == false)
         {
             Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
             return false;

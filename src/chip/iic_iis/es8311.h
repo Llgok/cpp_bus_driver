@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:42:57
- * @LastEditTime: 2025-08-29 17:53:52
+ * @LastEditTime: 2025-09-02 17:14:00
  * @License: GPL 3.0
  */
 
@@ -322,7 +322,7 @@ namespace Cpp_Bus_Driver
         bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) override;
 
 #elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-        bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width) override;
+        bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width, nrf_i2s_channels_t channel) override;
 #endif
 
         uint16_t get_device_id(void);

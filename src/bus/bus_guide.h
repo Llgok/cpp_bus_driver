@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-09-01 10:21:10
+ * @LastEditTime: 2025-09-02 17:07:32
  * @License: GPL 3.0
  */
 
@@ -61,7 +61,7 @@ namespace Cpp_Bus_Driver
         virtual size_t read(void *data, size_t byte) = 0;
         virtual size_t write(const void *data, size_t byte) = 0;
 #elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-        virtual bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width) = 0;
+        virtual bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width, nrf_i2s_channels_t channel) = 0;
 
         /**
          * @brief 数据流传输开始

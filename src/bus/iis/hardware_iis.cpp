@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-09-01 10:21:28
+ * @LastEditTime: 2025-09-02 17:07:05
  * @License: GPL 3.0
  */
 #include "hardware_iis.h"
@@ -434,7 +434,7 @@ namespace Cpp_Bus_Driver
     }
 
 #elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-    bool Hardware_Iis::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width)
+    bool Hardware_Iis::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width, nrf_i2s_channels_t channel)
     {
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _ws_lrck: %d\n", _ws_lrck);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _bclk: %d\n", _bclk);
@@ -600,7 +600,7 @@ namespace Cpp_Bus_Driver
         nrf_i2s_pins_set(NRF_I2S, _bclk, _ws_lrck, _mclk, _data_out, _data_in);
 
         if (nrf_i2s_configure(NRF_I2S, nrf_i2s_mode_t::NRF_I2S_MODE_MASTER, nrf_i2s_format_t::NRF_I2S_FORMAT_I2S, nrf_i2s_align_t::NRF_I2S_ALIGN_LEFT,
-                              data_bit_width, nrf_i2s_channels_t::NRF_I2S_CHANNELS_STEREO, buffer_mclk_division, mclk_multiple) == false)
+                              data_bit_width, channel, buffer_mclk_division, mclk_multiple) == false)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "nrf_i2s_configure fail\n");
             return false;
