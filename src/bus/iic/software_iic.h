@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-08-23 10:44:38
+ * @LastEditTime: 2025-09-04 10:17:10
  * @License: GPL 3.0
  */
 #pragma once
@@ -42,8 +42,8 @@ namespace Cpp_Bus_Driver
 
         bool probe(const uint16_t address) override;
 
-        bool write(uint8_t data);
-        bool read(uint8_t *data);
+        bool write_byte(uint8_t data);
+        bool read_byte(uint8_t *data);
         bool wait_ack(void);
 
         /**

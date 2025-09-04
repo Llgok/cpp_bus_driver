@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-08-23 10:39:40
+ * @LastEditTime: 2025-09-04 10:50:36
  * @License: GPL 3.0
  */
 #include "software_iic.h"
@@ -82,9 +82,9 @@ namespace Cpp_Bus_Driver
         }
 
         // 读操作发送地址最后一位为1
-        if (write((_address << 1) | 1) == false)
+        if (write_byte((_address << 1) | 1) == false)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write_byte fail\n");
             return false;
         }
         if (wait_ack() == false)
@@ -96,9 +96,9 @@ namespace Cpp_Bus_Driver
         uint8_t *buffer_ptr = data;
         for (size_t i = 0; i < (length - 1); i++)
         {
-            if (read(buffer_ptr++) == false)
+            if (read_byte(buffer_ptr++) == false)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "read fail\n");
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "read_byte fail\n");
                 return false;
             }
 
@@ -110,9 +110,9 @@ namespace Cpp_Bus_Driver
         }
 
         // 读取最后一位数据
-        if (read(buffer_ptr) == false)
+        if (read_byte(buffer_ptr) == false)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "read fail\n");
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "read_byte fail\n");
             return false;
         }
 
@@ -140,9 +140,9 @@ namespace Cpp_Bus_Driver
         }
 
         // 写操作发送地址最后一位为0
-        if (write(_address << 1) == false)
+        if (write_byte(_address << 1) == false)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write_byte fail\n");
             return false;
         }
         if (wait_ack() == false)
@@ -153,9 +153,9 @@ namespace Cpp_Bus_Driver
 
         for (size_t i = 0; i < length; i++)
         {
-            if (write(data[i]) == false)
+            if (write_byte(data[i]) == false)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "write_byte fail\n");
                 return false;
             }
             if (wait_ack() == false)
@@ -183,9 +183,9 @@ namespace Cpp_Bus_Driver
         }
 
         // 写操作发送地址最后一位为0
-        if (write(_address << 1) == false)
+        if (write_byte(_address << 1) == false)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write_byte fail\n");
             return false;
         }
         if (wait_ack() == false)
@@ -196,9 +196,9 @@ namespace Cpp_Bus_Driver
 
         for (size_t i = 0; i < write_length; i++)
         {
-            if (write(write_data[i]) == false)
+            if (write_byte(write_data[i]) == false)
             {
-                assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "write_byte fail\n");
                 return false;
             }
             if (wait_ack() == false)
@@ -252,9 +252,9 @@ namespace Cpp_Bus_Driver
         }
 
         // 写操作发送地址最后一位为0
-        if (write(address << 1) == false)
+        if (write_byte(address << 1) == false)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write_byte fail\n");
             return false;
         }
         if (wait_ack() == false)
@@ -272,7 +272,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Software_Iic::write(uint8_t data)
+    bool Software_Iic::write_byte(uint8_t data)
     {
         for (uint8_t i = 0; i < 8; i++)
         {
@@ -308,7 +308,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Software_Iic::read(uint8_t *data)
+    bool Software_Iic::read_byte(uint8_t *data)
     {
         if (pin_write(_sda, 1) == false)
         {
