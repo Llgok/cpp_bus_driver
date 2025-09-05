@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-07-16 11:15:53
+ * @LastEditTime: 2025-09-05 16:11:03
  * @License: GPL 3.0
  */
 #include "hardware_spi.h"
@@ -31,29 +31,34 @@ namespace Cpp_Bus_Driver
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _flags: %d\n", _flags);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config freq_hz: %d hz\n", freq_hz);
 
-        const spi_bus_config_t bus_config =
-            {
-                .mosi_io_num = _mosi,
-                .miso_io_num = _miso,
-                .sclk_io_num = _sclk,
-                .quadwp_io_num = -1, // WP引脚不设置，这个引脚配置Quad SPI的时候才有用
-                .quadhd_io_num = -1, // HD引脚不设置，这个引脚配置Quad SPI的时候才有用
-                .data4_io_num = -1,
-                .data5_io_num = -1,
-                .data6_io_num = -1,
-                .data7_io_num = -1,
-                .data_io_default_level = 0,
-                .max_transfer_sz = 0,
-                .flags = SPICOMMON_BUSFLAG_MASTER,
-                .isr_cpu_id = ESP_INTR_CPU_AFFINITY_AUTO,
-                .intr_flags = static_cast<uint32_t>(NULL),
-            };
-
-        esp_err_t assert = spi_bus_initialize(_port, &bus_config, SPI_DMA_CH_AUTO);
-        if (assert != ESP_OK)
+        if (_spi_bus_init_flag == false)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_initialize fail (error code: %#X)\n", assert);
-            return false;
+            const spi_bus_config_t bus_config =
+                {
+                    .mosi_io_num = _mosi,
+                    .miso_io_num = _miso,
+                    .sclk_io_num = _sclk,
+                    .quadwp_io_num = -1, // WP引脚不设置，这个引脚配置Quad SPI的时候才有用
+                    .quadhd_io_num = -1, // HD引脚不设置，这个引脚配置Quad SPI的时候才有用
+                    .data4_io_num = -1,
+                    .data5_io_num = -1,
+                    .data6_io_num = -1,
+                    .data7_io_num = -1,
+                    .data_io_default_level = 0,
+                    .max_transfer_sz = 0,
+                    .flags = SPICOMMON_BUSFLAG_MASTER,
+                    .isr_cpu_id = ESP_INTR_CPU_AFFINITY_AUTO,
+                    .intr_flags = static_cast<uint32_t>(NULL),
+                };
+
+            esp_err_t assert = spi_bus_initialize(_port, &bus_config, SPI_DMA_CH_AUTO);
+            if (assert != ESP_OK)
+            {
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_initialize fail (error code: %#X)\n", assert);
+                return false;
+            }
+
+            _spi_bus_init_flag = true;
         }
 
         const spi_device_interface_config_t device_config =
@@ -74,7 +79,7 @@ namespace Cpp_Bus_Driver
                 .pre_cb = NULL,  // 无传输前回调
                 .post_cb = NULL, // 无传输后回调
             };
-        assert = spi_bus_add_device(_port, &device_config, &_spi_device);
+        esp_err_t assert = spi_bus_add_device(_port, &device_config, &_spi_device);
         if (assert != ESP_OK)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_add_device fail (error code: %#X)\n", assert);
