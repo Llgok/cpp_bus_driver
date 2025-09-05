@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-09-02 17:07:05
+ * @LastEditTime: 2025-09-05 16:16:43
  * @License: GPL 3.0
  */
 #include "hardware_iis.h"
@@ -24,15 +24,13 @@ namespace Cpp_Bus_Driver
         // 自动清除DMA缓冲区中的旧数据
         chan_config.auto_clear = true;
 
-        esp_err_t assert = ESP_FAIL;
-
         if (_data_mode == Data_Mode::INPUT_OUTPUT)
         {
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config data_mode: input_output\n");
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _data_in: %d\n", _data_in);
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _data_out: %d\n", _data_out);
 
-            assert = i2s_new_channel(&chan_config, &_chan_tx_handle, &_chan_rx_handle);
+            esp_err_t assert = i2s_new_channel(&chan_config, &_chan_tx_handle, &_chan_rx_handle);
             if (assert != ESP_OK)
             {
                 assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
@@ -211,11 +209,12 @@ namespace Cpp_Bus_Driver
                 switch (_data_mode)
                 {
                 case Data_Mode::INPUT:
+                {
                     assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config data_mode: input\n");
 
                     config.gpio_cfg.din = static_cast<gpio_num_t>(_data_in);
 
-                    assert = i2s_new_channel(&chan_config, NULL, &_chan_rx_handle);
+                    esp_err_t assert = i2s_new_channel(&chan_config, NULL, &_chan_rx_handle);
                     if (assert != ESP_OK)
                     {
                         assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
@@ -235,14 +234,15 @@ namespace Cpp_Bus_Driver
                         assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
                         return false;
                     }
-
-                    break;
+                }
+                break;
                 case Data_Mode::OUTPUT:
+                {
                     assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config data_mode: output\n");
 
                     config.gpio_cfg.dout = static_cast<gpio_num_t>(_data_out);
 
-                    assert = i2s_new_channel(&chan_config, &_chan_tx_handle, NULL);
+                    esp_err_t assert = i2s_new_channel(&chan_config, &_chan_tx_handle, NULL);
                     if (assert != ESP_OK)
                     {
                         assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
@@ -262,8 +262,8 @@ namespace Cpp_Bus_Driver
                         assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
                         return false;
                     }
-
-                    break;
+                }
+                break;
 
                 default:
                     break;
@@ -302,7 +302,7 @@ namespace Cpp_Bus_Driver
                             },
                     };
 
-                    assert = i2s_new_channel(&chan_config, NULL, &_chan_rx_handle);
+                    esp_err_t assert = i2s_new_channel(&chan_config, NULL, &_chan_rx_handle);
                     if (assert != ESP_OK)
                     {
                         assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
@@ -355,7 +355,7 @@ namespace Cpp_Bus_Driver
                             },
                     };
 
-                    assert = i2s_new_channel(&chan_config, &_chan_tx_handle, NULL);
+                    esp_err_t assert = i2s_new_channel(&chan_config, &_chan_tx_handle, NULL);
                     if (assert != ESP_OK)
                     {
                         assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_new_channel fail (error code: %#X)\n", assert);
