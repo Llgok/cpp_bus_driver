@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-08-20 14:45:59
+ * @LastEditTime: 2025-09-05 16:12:28
  * @License: GPL 3.0
  */
 #include "hardware_iic_1.h"
@@ -23,8 +23,6 @@ namespace Cpp_Bus_Driver
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config _scl: %d\n", _scl);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config freq_hz: %d hz\n", freq_hz);
 
-        esp_err_t assert = ESP_FAIL;
-
         if (_iic_bus_handle == nullptr)
         {
             const i2c_master_bus_config_t bus_config =
@@ -43,7 +41,7 @@ namespace Cpp_Bus_Driver
                         },
                 };
 
-            assert = i2c_new_master_bus(&bus_config, &_iic_bus_handle);
+            esp_err_t assert = i2c_new_master_bus(&bus_config, &_iic_bus_handle);
             if (assert != ESP_OK)
             {
                 assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_new_master_bus fail (error code: %#X)\n", assert);
@@ -77,7 +75,7 @@ namespace Cpp_Bus_Driver
                         },
                 };
 
-            assert = i2c_master_bus_add_device(_iic_bus_handle, &device_config, &_iic_device_handle);
+            esp_err_t assert = i2c_master_bus_add_device(_iic_bus_handle, &device_config, &_iic_device_handle);
             if (assert != ESP_OK)
             {
                 assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_bus_add_device fail (error code: %#X)\n", assert);
