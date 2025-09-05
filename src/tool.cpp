@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2025-08-12 14:59:43
+ * @LastEditTime: 2025-09-05 17:01:46
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -349,7 +349,7 @@ namespace Cpp_Bus_Driver
         if (assert != ESP_OK)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "gpio_install_isr_service fail (error code: %#X)\n", assert);
-            return false;
+            // return false;
         }
 
         assert = gpio_isr_handler_add(static_cast<gpio_num_t>(pin), interrupt, args);
