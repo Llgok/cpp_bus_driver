@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-09-02 17:08:59
+ * @LastEditTime: 2025-09-06 16:53:52
  * @License: GPL 3.0
  */
 #include "es8311.h"
@@ -91,19 +91,10 @@ namespace Cpp_Bus_Driver
 
     bool Es8311::software_reset(bool enable)
     {
-        uint8_t buffer = 0;
-
         // 启动复位
         if (enable == true)
         {
-            if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), &buffer) == false)
-            {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
-                return false;
-            }
-            buffer = (buffer & 0B01100000) | 0B00011111;
-
-            if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), buffer) == false)
+            if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), static_cast<uint8_t>(0x1F)) == false)
             {
                 Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
                 return false;
@@ -111,13 +102,12 @@ namespace Cpp_Bus_Driver
         }
         else // 关闭复位
         {
-            if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), &buffer) == false)
+            if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), static_cast<uint8_t>(0x00)) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
                 return false;
             }
-            buffer = (buffer & 0B01100000) | 0B10000000;
-            if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), buffer) == false)
+            if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), static_cast<uint8_t>(0x80)) == false)
             {
                 Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
                 return false;
