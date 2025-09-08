@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-08-15 11:13:24
+ * @LastEditTime: 2025-09-08 16:28:38
  * @License: GPL 3.0
  */
 #include "Sx126x.h"
@@ -1424,7 +1424,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Sx126x::set_gfsk_modulation_params(double br, Pulse_Shape ps, Gfsk_Bw bw, double freq_deviation)
+    bool Sx126x::set_gfsk_modulation_params(double br, Pulse_Shape ps, Gfsk_Bw bw, double freq_deviation_khz)
     {
         if (br < 0.6)
         {
@@ -1437,22 +1437,22 @@ namespace Cpp_Bus_Driver
             br = 300.0;
         }
 
-        if (freq_deviation < 0.6)
+        if (freq_deviation_khz < 0.6)
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "freq_deviation=%u out of range\n", freq_deviation);
-            freq_deviation = 0.6;
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "freq_deviation_khz=%u out of range\n", freq_deviation_khz);
+            freq_deviation_khz = 0.6;
         }
-        else if (freq_deviation > 200.0)
+        else if (freq_deviation_khz > 200.0)
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "freq_deviation=%u out of range\n", freq_deviation);
-            freq_deviation = 200.0;
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "freq_deviation_khz=%u out of range\n", freq_deviation_khz);
+            freq_deviation_khz = 200.0;
         }
 
         // 计算原始比特率值
         uint32_t buffer_br = (32.0 * 1000000.0 * 32.0) / (br * 1000.0);
 
         // 计算原始频率偏差值
-        uint32_t buffer_freq_deviation = ((freq_deviation * 1000.0) * static_cast<double>(static_cast<uint32_t>(1) << 25)) / (32.0 * 1000000.0);
+        uint32_t buffer_freq_deviation_khz = ((freq_deviation_khz * 1000.0) * static_cast<double>(static_cast<uint32_t>(1) << 25)) / (32.0 * 1000000.0);
 
         uint8_t buffer[] =
             {
@@ -1461,9 +1461,9 @@ namespace Cpp_Bus_Driver
                 static_cast<uint8_t>(buffer_br),
                 static_cast<uint8_t>(ps),
                 static_cast<uint8_t>(bw),
-                static_cast<uint8_t>(buffer_freq_deviation >> 16),
-                static_cast<uint8_t>(buffer_freq_deviation >> 8),
-                static_cast<uint8_t>(buffer_freq_deviation),
+                static_cast<uint8_t>(buffer_freq_deviation_khz >> 16),
+                static_cast<uint8_t>(buffer_freq_deviation_khz >> 8),
+                static_cast<uint8_t>(buffer_freq_deviation_khz),
             };
 
         check_busy();
@@ -1475,7 +1475,7 @@ namespace Cpp_Bus_Driver
         _param.gfsk.bit_rate = br;
         _param.gfsk.pulse_shape = ps;
         _param.gfsk.band_width = bw;
-        _param.gfsk.freq_deviation = freq_deviation;
+        _param.gfsk.freq_deviation_khz = freq_deviation_khz;
 
         return true;
     }
@@ -1554,7 +1554,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Sx126x::config_gfsk_params(double freq_mhz, double br, Gfsk_Bw bw, float current_limit, int8_t power, double freq_deviation,
+    bool Sx126x::config_gfsk_params(double freq_mhz, double br, Gfsk_Bw bw, float current_limit, int8_t power, double freq_deviation_khz,
                                     uint8_t *sync_word, uint8_t sync_word_length, Pulse_Shape ps, Sf sf, Gfsk_Crc_Type crc_type,
                                     uint16_t crc_initial, uint16_t crc_polynomial, uint16_t preamble_length)
     {
@@ -1597,7 +1597,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        if (set_gfsk_modulation_params(br, ps, bw, freq_deviation) == false)
+        if (set_gfsk_modulation_params(br, ps, bw, freq_deviation_khz) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_gfsk_modulation_params fail\n");
             return false;

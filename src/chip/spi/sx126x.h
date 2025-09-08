@@ -943,7 +943,7 @@ namespace Cpp_Bus_Driver
             {
                 uint32_t bit_rate = 100.0;
                 Gfsk_Bw band_width = Gfsk_Bw::BW_467000HZ;
-                float freq_deviation = 10.0;
+                float freq_deviation_khz = 10.0;
 
                 struct
                 {
@@ -1029,11 +1029,11 @@ namespace Cpp_Bus_Driver
          * @param br （0.6 ~ 300）传输比特率
          * @param ps 使用 Pulse_Shape:: 配置，高斯滤波器的滚降因子
          * @param bw 使用 Gfsk_Bw:: 配置，带宽
-         * @param freq_deviation （0.6 ~ 200）频率偏移
+         * @param freq_deviation_khz （0.6 ~ 200）频率偏移
          * @return
          * @Date 2025-02-19 09:17:55
          */
-        bool set_gfsk_modulation_params(double br, Pulse_Shape ps, Gfsk_Bw bw, double freq_deviation);
+        bool set_gfsk_modulation_params(double br, Pulse_Shape ps, Gfsk_Bw bw, double freq_deviation_khz);
 
         /**
          * @brief 配置GFSK模式的传输参数
@@ -1042,7 +1042,7 @@ namespace Cpp_Bus_Driver
          * @param bw 使用 Gfsk_Bw:: 配置，带宽设置
          * @param current_limit （0 ~ 140）电流限制
          * @param power （-9 ~ 22）设置功率
-         * @param freq_deviation （0.6 ~ 200）频率偏移
+         * @param freq_deviation_khz （0.6 ~ 200）频率偏移
          * @param *sync_word 设置同步字数据指针
          * @param sync_word_length 设置同步字数据长度
          * @param ps 使用 Pulse_Shape:: 配置，高斯滤波器的滚降因子
@@ -1054,7 +1054,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-02-19 09:17:55
          */
-        bool config_gfsk_params(double freq_mhz, double br, Gfsk_Bw bw, float current_limit, int8_t power, double freq_deviation = 10.0,
+        bool config_gfsk_params(double freq_mhz, double br, Gfsk_Bw bw, float current_limit, int8_t power, double freq_deviation_khz = 10.0,
                                 uint8_t *sync_word = nullptr, uint8_t sync_word_length = 0, Pulse_Shape ps = Pulse_Shape::GAUSSIAN_BT_1,
                                 Sf sf = Sf::SF9, Gfsk_Crc_Type crc_type = Gfsk_Crc_Type::CRC_2_BYTE_INV, uint16_t crc_initial = 0x1D0F, uint16_t crc_polynomial = 0x1021,
                                 uint16_t preamble_length = 32);
