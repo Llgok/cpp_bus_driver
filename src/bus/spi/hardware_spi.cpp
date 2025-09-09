@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-09-05 16:11:03
+ * @LastEditTime: 2025-09-09 10:00:31
  * @License: GPL 3.0
  */
 #include "hardware_spi.h"
@@ -12,6 +12,12 @@ namespace Cpp_Bus_Driver
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Hardware_Spi::begin(int32_t freq_hz, int32_t cs)
     {
+        if ((_spi_bus_init_flag == true) && (_spi_device_init_flag == true))
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "hardware_spi has been initialized\n");
+            return false;
+        }
+
         if (freq_hz == DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
             freq_hz = DEFAULT_CPP_BUS_DRIVER_SPI_FREQ_HZ;
@@ -61,29 +67,34 @@ namespace Cpp_Bus_Driver
             _spi_bus_init_flag = true;
         }
 
-        const spi_device_interface_config_t device_config =
-            {
-                .command_bits = 0,
-                .address_bits = 0,
-                .dummy_bits = 0, // 无虚拟位
-                .mode = _mode,
-                .clock_source = SPI_CLK_SRC_DEFAULT, // 默认时钟源
-                .duty_cycle_pos = 128,               // 50% 占空比
-                .cs_ena_pretrans = 1,                // 在数据传输开始之前，片选信号（CS）应该提前多少个SPI位周期被激活
-                .cs_ena_posttrans = 1,               // 在数据传输结束后，片选信号（CS）应该保持激活状态多少个SPI位周期
-                .clock_speed_hz = freq_hz,
-                .input_delay_ns = 0, // 无输入延迟
-                .spics_io_num = cs,
-                .flags = _flags, // 标志，可以填入SPI_DEVICE_BIT_LSBFIRST等信息
-                .queue_size = 1,
-                .pre_cb = NULL,  // 无传输前回调
-                .post_cb = NULL, // 无传输后回调
-            };
-        esp_err_t assert = spi_bus_add_device(_port, &device_config, &_spi_device);
-        if (assert != ESP_OK)
+        if (_spi_device_init_flag == false)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_add_device fail (error code: %#X)\n", assert);
-            return false;
+            const spi_device_interface_config_t device_config =
+                {
+                    .command_bits = 0,
+                    .address_bits = 0,
+                    .dummy_bits = 0, // 无虚拟位
+                    .mode = _mode,
+                    .clock_source = SPI_CLK_SRC_DEFAULT, // 默认时钟源
+                    .duty_cycle_pos = 128,               // 50% 占空比
+                    .cs_ena_pretrans = 1,                // 在数据传输开始之前，片选信号（CS）应该提前多少个SPI位周期被激活
+                    .cs_ena_posttrans = 1,               // 在数据传输结束后，片选信号（CS）应该保持激活状态多少个SPI位周期
+                    .clock_speed_hz = freq_hz,
+                    .input_delay_ns = 0, // 无输入延迟
+                    .spics_io_num = cs,
+                    .flags = _flags, // 标志，可以填入SPI_DEVICE_BIT_LSBFIRST等信息
+                    .queue_size = 1,
+                    .pre_cb = NULL,  // 无传输前回调
+                    .post_cb = NULL, // 无传输后回调
+                };
+            esp_err_t assert = spi_bus_add_device(_port, &device_config, &_spi_device);
+            if (assert != ESP_OK)
+            {
+                assert_log(Log_Level::BUS, __FILE__, __LINE__, "spi_bus_add_device fail (error code: %#X)\n", assert);
+                return false;
+            }
+
+            _spi_device_init_flag = true;
         }
 
         _freq_hz = freq_hz;
