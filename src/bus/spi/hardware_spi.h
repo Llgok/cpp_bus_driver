@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-09-09 10:02:03
+ * @LastEditTime: 2025-09-10 13:45:16
  * @License: GPL 3.0
  */
 #pragma once
@@ -19,8 +19,8 @@ namespace Cpp_Bus_Driver
         spi_host_device_t _port;
         uint8_t _mode;
         uint32_t _flags;
-        bool _spi_bus_init_flag = false;
-        bool _spi_device_init_flag = false;
+        bool _bus_init_flag = false;
+        bool _device_init_flag = false;
 
         spi_device_handle_t _spi_device;
 

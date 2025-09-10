@@ -12,7 +12,7 @@ namespace Cpp_Bus_Driver
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Hardware_Spi::begin(int32_t freq_hz, int32_t cs)
     {
-        if ((_spi_bus_init_flag == true) && (_spi_device_init_flag == true))
+        if ((_bus_init_flag == true) && (_device_init_flag == true))
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "hardware_spi has been initialized\n");
             return false;
@@ -37,7 +37,7 @@ namespace Cpp_Bus_Driver
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _flags: %d\n", _flags);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config freq_hz: %d hz\n", freq_hz);
 
-        if (_spi_bus_init_flag == false)
+        if (_bus_init_flag == false)
         {
             const spi_bus_config_t bus_config =
                 {
@@ -64,10 +64,10 @@ namespace Cpp_Bus_Driver
                 return false;
             }
 
-            _spi_bus_init_flag = true;
+            _bus_init_flag = true;
         }
 
-        if (_spi_device_init_flag == false)
+        if (_device_init_flag == false)
         {
             const spi_device_interface_config_t device_config =
                 {
@@ -94,7 +94,7 @@ namespace Cpp_Bus_Driver
                 return false;
             }
 
-            _spi_device_init_flag = true;
+            _device_init_flag = true;
         }
 
         _freq_hz = freq_hz;
