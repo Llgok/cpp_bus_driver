@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-30 11:23:54
+ * @LastEditTime: 2025-09-15 18:18:22
  * @License: GPL 3.0
  */
 
@@ -108,7 +108,7 @@ namespace Cpp_Bus_Driver
         {
             OFF = 0x00,
             LOW = 0x04,
-            MEDIUM,
+            MEDIUM = 0x06,
             HIGH,
         };
 
