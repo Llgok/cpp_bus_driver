@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-08-15 14:12:58
+ * @LastEditTime: 2025-09-18 11:31:53
  * @License: GPL 3.0
  */
 
@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
 #define GZ030PCC02_DEVICE_DEFAULT_ADDRESS 0x28
 
-    class Gz030pcc02 : public Iic_Guide
+    class Gz030pcc0x : public Iic_Guide
     {
     private:
         static constexpr uint8_t DEVICE_ID = 0x03; // 默认值
@@ -24,6 +24,9 @@ namespace Cpp_Bus_Driver
             RO_DEVICE_ID = 0x0001,
 
             RW_INTERNAL_TEST_MODE_INPUT_DATA_FORMAT = 0x0001,
+            RW_HORIZONTAL_VERTICAL_MIRROR,
+
+            RW_DISPLAY_BRIGHTNESS = 0x5800,
 
             RO_TEMPERATURE_READING = 0x3001,
         };
@@ -137,7 +140,15 @@ namespace Cpp_Bus_Driver
             CHECKERBOARD = 0B11100000,
         };
 
-        Gz030pcc02(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
+        enum class Show_Direction
+        {
+            NORMAL = 0B00000000,
+            HORIZONTAL_MIRROR = 0B00000001,          // 水平镜像
+            VERTICAL_MIRROR = 0B00000010,            // 垂直镜像
+            HORIZONTAL_VERTICAL_MIRROR = 0B00000011, // 水平垂直镜像
+        };
+
+        Gz030pcc0x(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
             : Iic_Guide(bus, address), _rst(rst)
         {
         }
@@ -168,5 +179,21 @@ namespace Cpp_Bus_Driver
          * @Date 2025-08-15 14:05:28
          */
         bool set_internal_test_mode(Internal_Test_Mode mode);
+
+        /**
+         * @brief 设置显示方向
+         * @param direction 使用Show_Direction::配置
+         * @return
+         * @Date 2025-09-18 10:52:45
+         */
+        bool set_show_direction(Show_Direction direction);
+
+        /**
+         * @brief 设置亮度
+         * @param value 值范围：0~255
+         * @return
+         * @Date 2025-09-18 11:05:59
+         */
+        bool set_brightness(uint8_t value);
     };
 }
