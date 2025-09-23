@@ -503,7 +503,7 @@ namespace Cpp_Bus_Driver
         constexpr const double buffer_division_freq_15 = 32.0 / 15.0;
         constexpr const double buffer_division_freq_11 = 32.0 / 11.0;
         constexpr const double buffer_division_freq_10 = 32.0 / 10.0;
-        constexpr const double buffer_division_freq_8 = 32.0 / 8.0;
+        constexpr const double buffer_division_freq_8 = 32.0 / 8.0 + 1; // 计算出来的值有可能大于32.0 / 8.0
 
         // 计算每个范围的中点
         constexpr const double buffer_division_freq_mid_125_63 = (buffer_division_freq_125 + buffer_division_freq_63) / 2.0;
