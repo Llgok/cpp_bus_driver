@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-09-02 17:07:32
+ * @LastEditTime: 2025-09-23 10:40:06
  * @License: GPL 3.0
  */
 
@@ -109,6 +109,8 @@ namespace Cpp_Bus_Driver
          * @Date 2025-08-29 17:52:43
          */
         virtual bool get_write_event_flag(void) = 0;
+
+        virtual void end(void) = 0;
 #endif
     };
 

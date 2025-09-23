@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-09-02 17:14:51
+ * @LastEditTime: 2025-09-23 10:39:37
  * @License: GPL 3.0
  */
 
@@ -77,8 +77,8 @@ namespace Cpp_Bus_Driver
         bool set_next_write_data(uint32_t *data) override;
         bool get_read_event_flag(void) override;
         bool get_write_event_flag(void) override;
-#endif
 
-        // bool end() override;
+        void end(void) override;
+#endif
     };
 }
