@@ -2,10 +2,10 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-09-08 16:28:38
+ * @LastEditTime: 2025-09-25 14:34:40
  * @License: GPL 3.0
  */
-#include "Sx126x.h"
+#include "sx126x.h"
 
 namespace Cpp_Bus_Driver
 {

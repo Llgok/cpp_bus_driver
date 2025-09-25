@@ -2,10 +2,10 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-08-15 11:10:11
+ * @LastEditTime: 2025-09-25 14:33:53
  * @License: GPL 3.0
  */
-#include "Bq27220xxxx.h"
+#include "bq27220xxxx.h"
 
 namespace Cpp_Bus_Driver
 {

@@ -2,10 +2,10 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-09-24 15:34:35
+ * @LastEditTime: 2025-09-25 14:34:04
  * @License: GPL 3.0
  */
-#include "Hi8561_Touch.h"
+#include "hi8561_touch.h"
 
 namespace Cpp_Bus_Driver
 {
