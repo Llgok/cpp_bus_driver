@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date 2025-07-09 09:15:31
- * @LastEditTime: 2025-07-11 10:18:53
+ * @LastEditTime: 2025-09-24 15:33:20
  * @License: GPL 3.0
  */
 #include "gt9895.h"
@@ -23,19 +23,6 @@ namespace Cpp_Bus_Driver
 
         return true;
     }
-
-    // uint8_t Gt9895::device_id(void)
-    // {
-    //     uint8_t buffer = 0;
-
-    //     if (_bus->read(static_cast<uint8_t>(Cmd::RO_DEVICE_ID), &buffer) == false)
-    //     {
-    //         assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
-    //         return -1;
-    //     }
-
-    //     return buffer;
-    // }
 
     uint8_t Gt9895::get_finger_count(void)
     {

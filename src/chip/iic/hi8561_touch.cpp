@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-07-30 16:10:16
+ * @LastEditTime: 2025-09-24 15:34:35
  * @License: GPL 3.0
  */
 #include "Hi8561_Touch.h"
@@ -72,19 +72,6 @@ namespace Cpp_Bus_Driver
 
         return true;
     }
-
-    // uint8_t Hi8561_Touch::device_id(void)
-    // {
-    //     uint8_t buffer = 0;
-
-    //     if (_bus->read(static_cast<uint8_t>(Cmd::RO_DEVICE_ID), &buffer) == false)
-    //     {
-    //         assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
-    //         return -1;
-    //     }
-
-    //     return buffer;
-    // }
 
     uint8_t Hi8561_Touch::get_finger_count(void)
     {

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-31 13:38:36
+ * @LastEditTime: 2025-09-24 15:36:01
  * @License: GPL 3.0
  */
 
@@ -17,14 +17,11 @@ namespace Cpp_Bus_Driver
     class Tca8418 : public Iic_Guide
     {
     private:
-        static constexpr uint8_t DEVICE_ID = 0xC4;
         static constexpr uint8_t MAX_WIDTH_SIZE = 10;
         static constexpr uint8_t MAX_HEIGHT_SIZE = 8;
 
         enum class Cmd
         {
-            RO_DEVICE_ID = 0x2F,
-
             RW_CONFIGURATION = 0x01,
             RW_INTERRUPT_STATUS,
             RW_KEY_LOCK_AND_EVENT_COUNTER,
@@ -140,8 +137,6 @@ namespace Cpp_Bus_Driver
         }
 
         bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
-
-        uint8_t get_device_id(void);
 
         /**
          * @brief 设置键盘扫描模式开窗大小

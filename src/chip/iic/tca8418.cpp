@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-08-20 12:08:20
+ * @LastEditTime: 2025-09-24 16:48:37
  * @License: GPL 3.0
  */
 #include "tca8418.h"
@@ -25,17 +25,6 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        uint8_t buffer = get_device_id();
-        if (buffer != DEVICE_ID)
-        {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get tca8418 id fail (error id: %#X)\n", buffer);
-            return false;
-        }
-        else
-        {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get tca8418 id success (id: %#X)\n", buffer);
-        }
-
         if (init_list(_init_list, sizeof(_init_list)) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "init_list fail\n");
@@ -43,19 +32,6 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
-    }
-
-    uint8_t Tca8418::get_device_id(void)
-    {
-        uint8_t buffer = 0;
-
-        if (_bus->read(static_cast<uint8_t>(Cmd::RO_DEVICE_ID), &buffer) == false)
-        {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
-            return -1;
-        }
-
-        return buffer;
     }
 
     bool Tca8418::set_keypad_scan_window(uint8_t x, uint8_t y, uint8_t w, uint8_t h)
@@ -157,12 +133,24 @@ namespace Cpp_Bus_Driver
 
         uint8_t buffer[buffer_finger_count] = {0};
 
+#if defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        // 地址不能自动偏移
+        for (size_t i = 0; i < buffer_finger_count; i++)
+        {
+            if (_bus->read(static_cast<uint8_t>(Cmd::RO_KEY_EVENT), &buffer[i]) == false)
+            {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                return false;
+            }
+        }
+#else
         // 地址自动偏移
         if (_bus->read(static_cast<uint8_t>(Cmd::RO_KEY_EVENT), buffer, buffer_finger_count) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
+#endif
 
         tp.finger_count = buffer_finger_count;
 
@@ -259,7 +247,13 @@ namespace Cpp_Bus_Driver
     {
         if (num == static_cast<uint8_t>(-1))
         {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse error\n");
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse error (num == -1)\n");
+            return false;
+        }
+
+        if ((num == static_cast<uint8_t>(-1)) || (num == 0))
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "parse error (num == 0)\n");
             return false;
         }
 

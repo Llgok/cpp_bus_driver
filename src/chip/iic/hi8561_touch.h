@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-08 13:36:22
+ * @LastEditTime: 2025-09-24 15:35:44
  * @License: GPL 3.0
  */
 
@@ -30,12 +30,6 @@ namespace Cpp_Bus_Driver
 
         static constexpr uint8_t TOUCH_POINT_ADDRESS_OFFSET = 3;
         static constexpr uint8_t SINGLE_TOUCH_POINT_DATA_SIZE = 5;
-
-        // enum class Cmd
-        // {
-        //     // 0x首地址
-        //     RO_DEVICE_ID = 0x3C,
-        // };
 
         // static constexpr uint8_t Init_List[];
 

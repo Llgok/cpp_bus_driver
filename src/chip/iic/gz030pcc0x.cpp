@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-09-18 11:16:24
+ * @LastEditTime: 2025-09-24 15:35:06
  * @License: GPL 3.0
  */
 #include "gz030pcc0x.h"
@@ -21,17 +21,6 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        uint8_t buffer = get_device_id();
-        if (buffer != DEVICE_ID)
-        {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get gz030pcc02 id fail (error id: %#X)\n", buffer);
-            // return false;
-        }
-        else
-        {
-            assert_log(Log_Level::INFO, __FILE__, __LINE__, "get gz030pcc02 id success (id: %#X)\n", buffer);
-        }
-
         if (init_list(_init_list, sizeof(_init_list) / sizeof(uint16_t)) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "init_list fail\n");
@@ -39,19 +28,6 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
-    }
-
-    uint8_t Gz030pcc0x::get_device_id(void)
-    {
-        uint8_t buffer = 0;
-
-        if (_bus->read(static_cast<uint16_t>(Cmd::RO_DEVICE_ID), &buffer) == false)
-        {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
-            return -1;
-        }
-
-        return buffer;
     }
 
     float Gz030pcc0x::get_temperature_celsius(void)

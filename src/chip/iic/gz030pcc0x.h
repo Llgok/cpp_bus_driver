@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-09-18 11:31:53
+ * @LastEditTime: 2025-09-24 15:35:00
  * @License: GPL 3.0
  */
 
@@ -17,12 +17,8 @@ namespace Cpp_Bus_Driver
     class Gz030pcc0x : public Iic_Guide
     {
     private:
-        static constexpr uint8_t DEVICE_ID = 0x03; // 默认值
-
         enum class Cmd
         {
-            RO_DEVICE_ID = 0x0001,
-
             RW_INTERNAL_TEST_MODE_INPUT_DATA_FORMAT = 0x0001,
             RW_HORIZONTAL_VERTICAL_MIRROR,
 
