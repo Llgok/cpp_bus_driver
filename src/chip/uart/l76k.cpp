@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-08-15 11:13:39
+ * @LastEditTime: 2025-09-26 10:14:31
  * @License: GPL 3.0
  */
 #include "l76k.h"
@@ -44,12 +44,6 @@ namespace Cpp_Bus_Driver
         {
             Uart_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get l76k id success (index: %d)\n", buffer_index);
         }
-
-        // if (_bus->BufferOperation(_address, PCF85063_Initialization_BufferOperations,
-        //                           sizeof(PCF85063_Initialization_BufferOperations)) == false)
-        // {
-        //     return false;
-        // }
 
         return true;
     }
