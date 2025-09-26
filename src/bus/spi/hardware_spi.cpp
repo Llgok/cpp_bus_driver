@@ -15,7 +15,7 @@ namespace Cpp_Bus_Driver
         if ((_bus_init_flag == true) && (_device_init_flag == true))
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "hardware_spi has been initialized\n");
-            return false;
+            return true;
         }
 
         if (freq_hz == DEFAULT_CPP_BUS_DRIVER_VALUE)

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-09-09 10:00:44
+ * @LastEditTime: 2025-09-26 10:39:30
  * @License: GPL 3.0
  */
 #include "hardware_iic_1.h"
@@ -15,7 +15,7 @@ namespace Cpp_Bus_Driver
         if ((_bus_handle != nullptr) && (_device_handle != nullptr))
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "hardware_iic_1 has been initialized\n");
-            return false;
+            return true;
         }
 
         if (freq_hz == static_cast<uint32_t>(DEFAULT_CPP_BUS_DRIVER_VALUE))

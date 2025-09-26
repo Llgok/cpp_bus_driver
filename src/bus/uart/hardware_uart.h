@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-07-16 11:16:03
+ * @LastEditTime: 2025-09-26 10:31:23
  * @License: GPL 3.0
  */
 #pragma once
@@ -20,6 +20,7 @@ namespace Cpp_Bus_Driver
         int32_t _tx, _rx;
         uart_port_t _port;
         int32_t _baud_rate;
+        bool _init_flag = false;
 
     public:
         Hardware_Uart(int32_t tx, int32_t rx, uart_port_t port = uart_port_t::UART_NUM_1)

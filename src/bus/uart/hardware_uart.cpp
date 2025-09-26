@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:26:23
- * @LastEditTime: 2025-07-30 11:02:42
+ * @LastEditTime: 2025-09-26 10:38:23
  * @License: GPL 3.0
  */
 #include "hardware_uart.h"
@@ -12,6 +12,12 @@ namespace Cpp_Bus_Driver
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Hardware_Uart::begin(int32_t baud_rate)
     {
+        if (_init_flag == true)
+        {
+            assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_uart has been initialized\n");
+            return true;
+        }
+
         if (baud_rate == DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
             baud_rate = DEFAULT_CPP_BUS_DRIVER_UART_BAUD_RATE;
@@ -61,6 +67,7 @@ namespace Cpp_Bus_Driver
         }
 
         _baud_rate = baud_rate;
+        _init_flag = true;
 
         return true;
     }
