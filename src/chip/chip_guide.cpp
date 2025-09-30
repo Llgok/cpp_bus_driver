@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2025-09-02 17:07:58
+ * @LastEditTime: 2025-09-30 09:04:14
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -19,7 +19,7 @@ namespace Cpp_Bus_Driver
 
         if (_bus->probe(_address) == false)
         {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "probe fail (error address: %#X)\n", _address);
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "probe fail (not found address: %#X)\n", _address);
             return false;
         }
 
