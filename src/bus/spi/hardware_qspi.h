@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-07-04 12:04:28
+ * @LastEditTime: 2025-10-11 15:36:30
  * @License: GPL 3.0
  */
 #pragma once
@@ -22,6 +22,7 @@ namespace Cpp_Bus_Driver
         int32_t _data0, _data1, _data2, _data3, _sclk, _cs, _freq_hz;
         spi_host_device_t _port;
         uint8_t _mode;
+        spi_clock_source_t _clock_source;
         uint32_t _flags;
         size_t _max_transfer_size;
 
@@ -29,8 +30,10 @@ namespace Cpp_Bus_Driver
 
     public:
         Hardware_Qspi(int32_t data0, int32_t data1, int32_t data2, int32_t data3, int32_t sclk,
-                      spi_host_device_t port = SPI2_HOST, int8_t mode = 0, uint32_t flags = DEFAULT_CPP_BUS_DRIVER_VALUE)
-            : _data0(data0), _data1(data1), _data2(data2), _data3(data3), _sclk(sclk), _port(port), _mode(mode), _flags(flags)
+                      spi_host_device_t port = SPI2_HOST, int8_t mode = 0, spi_clock_source_t clock_source = SPI_CLK_SRC_DEFAULT,
+                      uint32_t flags = DEFAULT_CPP_BUS_DRIVER_VALUE)
+            : _data0(data0), _data1(data1), _data2(data2), _data3(data3), _sclk(sclk), _port(port), _mode(mode),
+              _clock_source(clock_source), _flags(flags)
         {
         }
 

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-07-16 11:15:36
+ * @LastEditTime: 2025-10-11 15:40:30
  * @License: GPL 3.0
  */
 #include "hardware_qspi.h"
@@ -37,6 +37,7 @@ namespace Cpp_Bus_Driver
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config cs: %d\n", _cs);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _port: %d\n", _port);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _mode: %d\n", _mode);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _clock_source: %d\n", _clock_source);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config _flags: %d\n", _flags);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_qspi config freq_hz: %d hz\n", freq_hz);
 
@@ -71,10 +72,10 @@ namespace Cpp_Bus_Driver
                 .address_bits = 0,
                 .dummy_bits = 0, // 无虚拟位
                 .mode = _mode,
-                .clock_source = SPI_CLK_SRC_DEFAULT, // 默认时钟源
-                .duty_cycle_pos = 128,               // 50% 占空比
-                .cs_ena_pretrans = 0,                // 在数据传输开始之前，片选信号（CS）应该提前多少个SPI位周期被激活
-                .cs_ena_posttrans = 0,               // 在数据传输结束后，片选信号（CS）应该保持激活状态多少个SPI位周期
+                .clock_source = _clock_source, // 默认时钟源
+                .duty_cycle_pos = 128,         // 50% 占空比
+                .cs_ena_pretrans = 0,          // 在数据传输开始之前，片选信号（CS）应该提前多少个SPI位周期被激活
+                .cs_ena_posttrans = 0,         // 在数据传输结束后，片选信号（CS）应该保持激活状态多少个SPI位周期
                 .clock_speed_hz = freq_hz,
                 .input_delay_ns = 0, // 无输入延迟
                 .spics_io_num = -1,

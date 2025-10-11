@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-09-10 13:45:16
+ * @LastEditTime: 2025-10-11 15:36:22
  * @License: GPL 3.0
  */
 #pragma once
@@ -18,6 +18,7 @@ namespace Cpp_Bus_Driver
         int32_t _mosi, _sclk, _miso, _cs, _freq_hz;
         spi_host_device_t _port;
         uint8_t _mode;
+        spi_clock_source_t _clock_source;
         uint32_t _flags;
         bool _bus_init_flag = false;
         bool _device_init_flag = false;
@@ -25,8 +26,9 @@ namespace Cpp_Bus_Driver
         spi_device_handle_t _spi_device;
 
         Hardware_Spi(int32_t mosi, int32_t sclk, int32_t miso = DEFAULT_CPP_BUS_DRIVER_VALUE,
-                     spi_host_device_t port = SPI2_HOST, int8_t mode = 0, uint32_t flags = DEFAULT_CPP_BUS_DRIVER_VALUE)
-            : _mosi(mosi), _sclk(sclk), _miso(miso), _port(port), _mode(mode), _flags(flags)
+                     spi_host_device_t port = SPI2_HOST, int8_t mode = 0, spi_clock_source_t clock_source = SPI_CLK_SRC_DEFAULT,
+                     uint32_t flags = DEFAULT_CPP_BUS_DRIVER_VALUE)
+            : _mosi(mosi), _sclk(sclk), _miso(miso), _port(port), _mode(mode), _clock_source(clock_source), _flags(flags)
         {
         }
 
