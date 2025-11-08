@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-09-25 14:34:40
+ * @LastEditTime: 2025-11-07 14:39:07
  * @License: GPL 3.0
  */
 #include "sx126x.h"
@@ -1225,7 +1225,7 @@ namespace Cpp_Bus_Driver
         }
 
         metrics.lora.rssi_average = -1.0 * static_cast<float>(buffer[1]) / 2.0;
-        metrics.lora.snr = static_cast<float>(buffer[2]) / 4.0;
+        metrics.lora.snr = static_cast<float>(static_cast<int8_t>(buffer[2])) / 4.0;
         metrics.lora.rssi_instantaneous = -1.0 * static_cast<float>(buffer[3]) / 2.0;
 
         return true;
