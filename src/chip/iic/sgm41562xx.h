@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-30 16:40:54
+ * @LastEditTime: 2025-11-08 14:33:10
  * @License: GPL 3.0
  */
 
@@ -51,11 +51,9 @@ namespace Cpp_Bus_Driver
 
                 //  static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_POWER_ON_CONFIGURATION), 0B10101100,        // 关闭电池充电功能
 
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RD_SYSTEM_STATUS), 0B01000000, // 关闭输入电流限制
+                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RD_SYSTEM_STATUS), 0B01000000 // 关闭输入电流限制
 
                 // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RD_SYSTEM_STATUS), 0B00100000, // 添加200ma电流阈值到输入电流限制中（仅在电流限制模式有效）
-
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RD_FAULT), 0B10000000, // 设置进入运输模式时间为4秒
 
             };
 
@@ -68,6 +66,14 @@ namespace Cpp_Bus_Driver
             PRECHARGE,
             CHARGE,
             CHARGE_DONE,
+        };
+
+        enum class Enter_Ship_Time
+        {
+            WAIT_1S = 0B00000000,
+            WAIT_2S = 0B01000000,
+            WAIT_4S = 0B10000000,
+            WAIT_8S = 0B11000000,
         };
 
         struct Irq_Status // 中断状态
@@ -146,5 +152,13 @@ namespace Cpp_Bus_Driver
          * @Date 2025-07-19 16:14:57
          */
         bool set_ship_mode_enable(bool enable);
+
+        /**
+         * @brief 设置进入运输模式的时间
+         * @param time 使用Enter_Ship_Time::进行配置
+         * @return
+         * @Date 2025-11-08 14:29:54
+         */
+        bool set_enter_ship_time(Enter_Ship_Time time);
     };
 }
