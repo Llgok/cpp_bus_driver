@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-26 11:13:26
- * @LastEditTime: 2025-08-15 11:09:38
+ * @LastEditTime: 2025-11-22 15:13:21
  * @License: GPL 3.0
  */
 #include "aw862xx.h"
@@ -13,6 +13,14 @@ namespace Cpp_Bus_Driver
     {
         if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
+            pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
+            
+            pin_write(_rst, 1);
+            delay_ms(10);
+            pin_write(_rst, 0);
+            delay_ms(10);
+            pin_write(_rst, 1);
+            delay_ms(10);
         }
 
         if (Iic_Guide::begin(freq_hz) == false)

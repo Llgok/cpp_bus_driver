@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-09-26 10:14:31
+ * @LastEditTime: 2025-11-22 15:19:28
  * @License: GPL 3.0
  */
 #include "l76k.h"
@@ -13,6 +13,14 @@ namespace Cpp_Bus_Driver
     {
         if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
+            Uart_Guide::pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
+
+            Uart_Guide::pin_write(_rst, 1);
+            Uart_Guide::delay_ms(10);
+            Uart_Guide::pin_write(_rst, 0);
+            Uart_Guide::delay_ms(10);
+            Uart_Guide::pin_write(_rst, 1);
+            Uart_Guide::delay_ms(10);
         }
 
         if (_wake_up != DEFAULT_CPP_BUS_DRIVER_VALUE)

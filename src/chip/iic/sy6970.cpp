@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-11-18 16:53:41
+ * @LastEditTime: 2025-11-22 15:16:10
  * @License: GPL 3.0
  */
 #include "sy6970.h"
@@ -17,7 +17,14 @@ namespace Cpp_Bus_Driver
     {
         if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
-            // 硬件复位处理
+            pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
+
+            pin_write(_rst, 1);
+            delay_ms(10);
+            pin_write(_rst, 0);
+            delay_ms(10);
+            pin_write(_rst, 1);
+            delay_ms(10);
         }
 
         if (Iic_Guide::begin(freq_hz) == false)

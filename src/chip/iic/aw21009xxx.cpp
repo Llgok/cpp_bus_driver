@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: None
  * @Date: 2025-09-24 10:47:30
- * @LastEditTime: 2025-09-24 14:11:09
+ * @LastEditTime: 2025-11-22 15:15:23
  * @License: GPL 3.0
  */
 #include "aw21009xxx.h"
@@ -17,6 +17,14 @@ namespace Cpp_Bus_Driver
     {
         if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
+            pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
+            
+            pin_write(_rst, 1);
+            delay_ms(10);
+            pin_write(_rst, 0);
+            delay_ms(10);
+            pin_write(_rst, 1);
+            delay_ms(10);
         }
 
         if (Iic_Guide::begin(freq_hz) == false)

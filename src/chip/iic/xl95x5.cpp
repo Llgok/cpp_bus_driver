@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-08-15 11:12:31
+ * @LastEditTime: 2025-11-22 15:17:44
  * @License: GPL 3.0
  */
 #include "xl95x5.h"
@@ -13,6 +13,14 @@ namespace Cpp_Bus_Driver
     {
         if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
+            Tool::pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
+
+            Tool::pin_write(_rst, 1);
+            delay_ms(10);
+            Tool::pin_write(_rst, 0);
+            delay_ms(10);
+            Tool::pin_write(_rst, 1);
+            delay_ms(10);
         }
 
         if (Iic_Guide::begin(freq_hz) == false)

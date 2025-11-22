@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-07-29 15:04:48
+ * @LastEditTime: 2025-11-22 15:18:56
  * @License: GPL 3.0
  */
 #include "esp_at.h"
@@ -18,6 +18,7 @@ namespace Cpp_Bus_Driver
         if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
             pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
+            
             pin_write(_rst, 1);
             delay_ms(50);
             pin_write(_rst, 0);

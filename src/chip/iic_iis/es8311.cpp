@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-09-06 16:53:52
+ * @LastEditTime: 2025-11-22 15:18:23
  * @License: GPL 3.0
  */
 #include "es8311.h"
@@ -17,6 +17,14 @@ namespace Cpp_Bus_Driver
     {
         if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
+            Iic_Guide::pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
+
+            Iic_Guide::pin_write(_rst, 1);
+            Iic_Guide::delay_ms(10);
+            Iic_Guide::pin_write(_rst, 0);
+            Iic_Guide::delay_ms(10);
+            Iic_Guide::pin_write(_rst, 1);
+            Iic_Guide::delay_ms(10);
         }
 
         if (Iic_Guide::begin(freq_hz) == false)

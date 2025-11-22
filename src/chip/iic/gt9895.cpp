@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date 2025-07-09 09:15:31
- * @LastEditTime: 2025-09-24 15:33:20
+ * @LastEditTime: 2025-11-22 15:15:47
  * @License: GPL 3.0
  */
 #include "gt9895.h"
@@ -13,6 +13,14 @@ namespace Cpp_Bus_Driver
     {
         if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
+            pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
+            
+            pin_write(_rst, 1);
+            delay_ms(10);
+            pin_write(_rst, 0);
+            delay_ms(10);
+            pin_write(_rst, 1);
+            delay_ms(10);
         }
 
         if (Iic_Guide::begin(freq_hz) == false)
