@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-07-30 11:36:55
+ * @LastEditTime: 2025-12-05 10:22:26
  * @License: GPL 3.0
  */
 #include "sgm38121.h"
@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
         if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
             pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
-            
+
             pin_write(_rst, 1);
             delay_ms(10);
             pin_write(_rst, 0);
@@ -65,10 +65,12 @@ namespace Cpp_Bus_Driver
         case Channel::DVDD_1:
             if (voltage < 528)
             {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "DVDD_1 voltage setting failed (voltage < 528)\n");
                 voltage = 528;
             }
             else if (voltage > 1504)
             {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "DVDD_1 voltage setting failed (voltage > 1504)\n");
                 voltage = 1504;
             }
             buffer = (voltage - 504) / 8;
@@ -81,10 +83,12 @@ namespace Cpp_Bus_Driver
         case Channel::DVDD_2:
             if (voltage < 528)
             {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "DVDD_2 voltage setting failed (voltage < 528)\n");
                 voltage = 528;
             }
             else if (voltage > 1504)
             {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "DVDD_2 voltage setting failed (voltage > 1504)\n");
                 voltage = 1504;
             }
             buffer = (voltage - 504) / 8;
@@ -97,13 +101,15 @@ namespace Cpp_Bus_Driver
         case Channel::AVDD_1:
             if (voltage < 1504)
             {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "AVDD_1 voltage setting failed (voltage < 1504)\n");
                 voltage = 1504;
             }
             else if (voltage > 3424)
             {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "AVDD_1 voltage setting failed (voltage > 3424)\n");
                 voltage = 3424;
             }
-            buffer = (voltage - 1348) / 8;
+            buffer = (voltage - 1384) / 8;
             if (_bus->write(static_cast<uint8_t>(Cmd::RW_AVDD1_OUTPUT_VOLTAGE_LEVEL), buffer) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
@@ -113,13 +119,15 @@ namespace Cpp_Bus_Driver
         case Channel::AVDD_2:
             if (voltage < 1504)
             {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "AVDD_2 voltage setting failed (voltage < 1504)\n");
                 voltage = 1504;
             }
             else if (voltage > 3424)
             {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "AVDD_2 voltage setting failed (voltage > 3424)\n");
                 voltage = 3424;
             }
-            buffer = (voltage - 1348) / 8;
+            buffer = (voltage - 1384) / 8;
             if (_bus->write(static_cast<uint8_t>(Cmd::RW_AVDD2_OUTPUT_VOLTAGE_LEVEL), buffer) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
