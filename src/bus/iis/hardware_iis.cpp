@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-10-14 15:08:47
+ * @LastEditTime: 2025-12-11 09:49:17
  * @License: GPL 3.0
  */
 #include "hardware_iis.h"
@@ -745,11 +745,11 @@ namespace Cpp_Bus_Driver
         nrf_i2s_pins_set(NRF_I2S, NRF_I2S_PIN_NOT_CONNECTED, NRF_I2S_PIN_NOT_CONNECTED, NRF_I2S_PIN_NOT_CONNECTED,
                          NRF_I2S_PIN_NOT_CONNECTED, NRF_I2S_PIN_NOT_CONNECTED);
 
-        nrf_gpio_cfg_input(_bclk, NRF_GPIO_PIN_NOPULL);
-        nrf_gpio_cfg_input(_ws_lrck, NRF_GPIO_PIN_NOPULL);
-        nrf_gpio_cfg_input(_mclk, NRF_GPIO_PIN_NOPULL);
-        nrf_gpio_cfg_input(_data_out, NRF_GPIO_PIN_NOPULL);
-        nrf_gpio_cfg_input(_data_in, NRF_GPIO_PIN_NOPULL);
+        nrf_gpio_cfg_default(_bclk);
+        nrf_gpio_cfg_default(_ws_lrck);
+        nrf_gpio_cfg_default(_mclk);
+        nrf_gpio_cfg_default(_data_out);
+        nrf_gpio_cfg_default(_data_in);
     }
 
 #endif
