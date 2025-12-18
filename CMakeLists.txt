@@ -1,22 +1,22 @@
 set(
         src_dirs 
-        ./src 
+        "./src"
 
-        ./src/bus
-        ./src/bus/iic
-        ./src/bus/spi
-        ./src/bus/uart
-        ./src/bus/iis
-        ./src/bus/sdio
+        "./src/bus"
+        "./src/bus/iic"
+        "./src/bus/spi"
+        "./src/bus/uart"
+        "./src/bus/iis"
+        "./src/bus/sdio"
 
-        ./src/chip
-        ./src/chip/iic
-        ./src/chip/spi
-        ./src/chip/uart
-        ./src/chip/iic_iis
-        ./src/chip/sdio
+        "./src/chip"
+        "./src/chip/iic"
+        "./src/chip/spi"
+        "./src/chip/uart"
+        "./src/chip/iic_iis"
+        "./src/chip/sdio"
 
-        ./src/resources
+        "./src/resources"
     )
     
 idf_component_register(
