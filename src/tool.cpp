@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2025-09-05 17:01:46
+ * @LastEditTime: 2025-12-19 10:57:01
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -11,11 +11,12 @@ namespace Cpp_Bus_Driver
 {
     void Tool::assert_log(Log_Level level, const char *file_name, size_t line_number, const char *format, ...)
     {
-#if defined CPP_BUS_LOG_LEVEL_BUS || defined CPP_BUS_LOG_LEVEL_CHIP || defined CPP_BUS_LOG_LEVEL_INFO || defined CPP_BUS_LOG_LEVEL_DEBUG
+#if defined CPP_BUS_DRIVER_LOG_LEVEL_BUS || defined CPP_BUS_DRIVER_LOG_LEVEL_CHIP || \
+    defined CPP_BUS_DRIVER_LOG_LEVEL_INFO || defined CPP_BUS_DRIVER_LOG_LEVEL_DEBUG
 
         switch (level)
         {
-#if defined CPP_BUS_LOG_LEVEL_DEBUG
+#if defined CPP_BUS_DRIVER_LOG_LEVEL_DEBUG
         case Log_Level::DEBUG:
         {
             va_list args;
@@ -28,7 +29,7 @@ namespace Cpp_Bus_Driver
             break;
         }
 #endif
-#if defined CPP_BUS_LOG_LEVEL_INFO
+#if defined CPP_BUS_DRIVER_LOG_LEVEL_INFO
         case Log_Level::INFO:
         {
             va_list args;
@@ -41,7 +42,7 @@ namespace Cpp_Bus_Driver
             break;
         }
 #endif
-#if defined CPP_BUS_LOG_LEVEL_BUS
+#if defined CPP_BUS_DRIVER_LOG_LEVEL_BUS
         case Log_Level::BUS:
         {
             va_list args;
@@ -54,7 +55,7 @@ namespace Cpp_Bus_Driver
             break;
         }
 #endif
-#if defined CPP_BUS_LOG_LEVEL_CHIP
+#if defined CPP_BUS_DRIVER_LOG_LEVEL_CHIP
         case Log_Level::CHIP:
         {
             va_list args;

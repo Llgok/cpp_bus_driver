@@ -17,7 +17,7 @@ set(
         "./src/chip/sdio"
 
         "./src/resources"
-    )
+)
     
 idf_component_register(
         SRC_DIRS 
@@ -25,5 +25,6 @@ idf_component_register(
         INCLUDE_DIRS 
         ${src_dirs} 
         REQUIRES
-        "driver" "esp_timer"
+        "driver"
+        "esp_timer"
     )

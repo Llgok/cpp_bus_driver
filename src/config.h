@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2025-08-29 18:00:25
+ * @LastEditTime: 2025-12-19 10:56:01
  * @License: GPL 3.0
  */
 #pragma once
@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <cstring>
 #include <string>
+#include <stdarg.h>
 
 #if defined CONFIG_IDF_INIT_VERSION
 #define DEVELOPMENT_FRAMEWORK_ESPIDF
@@ -24,7 +25,6 @@
 #include "driver/i2c.h"
 #include "driver/gpio.h"
 #include "esp_attr.h"
-#include "esp_log.h"
 #include "driver/spi_master.h"
 #include "driver/uart.h"
 #include "driver/i2s_std.h"
@@ -65,10 +65,10 @@
 
 #include "tool.h"
 
-#define CPP_BUS_LOG_LEVEL_DEBUG
-#define CPP_BUS_LOG_LEVEL_INFO
-#define CPP_BUS_LOG_LEVEL_BUS
-#define CPP_BUS_LOG_LEVEL_CHIP
+#define CPP_BUS_DRIVER_LOG_LEVEL_DEBUG
+#define CPP_BUS_DRIVER_LOG_LEVEL_INFO
+#define CPP_BUS_DRIVER_LOG_LEVEL_BUS
+#define CPP_BUS_DRIVER_LOG_LEVEL_CHIP
 
 #define DEFAULT_CPP_BUS_DRIVER_VALUE -1
 
