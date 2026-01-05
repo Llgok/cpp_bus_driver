@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2025-12-19 10:57:01
+ * @LastEditTime: 2026-01-05 14:53:04
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -225,7 +225,40 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        switch (mode)
+        {
+        case Pin_Mode::DISABLE:
+            nrf_gpio_cfg_default(pin);
+            break;
+        case Pin_Mode::INPUT:
+            switch (status)
+            {
+            case Pin_Status::DISABLE:
+                pinMode(pin, 0x0);
+                break;
+            case Pin_Status::PULLUP:
+                pinMode(pin, 0x2);
+                break;
+            case Pin_Status::PULLDOWN:
+                pinMode(pin, 0x3);
+                break;
 
+            default:
+                pinMode(pin, 0x0);
+                break;
+            }
+            break;
+        case Pin_Mode::OUTPUT:
+            pinMode(pin, 0x1);
+            break;
+
+        default:
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "pin_mode fail (error mode: %#X)\n", mode);
+            return false;
+        }
+
+        return true;
 #else
         return false;
 #endif
@@ -242,6 +275,9 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        digitalWrite(pin, value);
+        return true;
 #else
         return false;
 #endif
@@ -251,6 +287,8 @@ namespace Cpp_Bus_Driver
     {
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         return gpio_get_level(static_cast<gpio_num_t>(pin));
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        return digitalRead(pin);
 #else
         return false;
 #endif

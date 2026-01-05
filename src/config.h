@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2025-12-19 10:56:01
+ * @LastEditTime: 2026-01-05 13:34:56
  * @License: GPL 3.0
  */
 #pragma once
@@ -38,6 +38,7 @@
 #include <stdarg.h>
 #include "Arduino.h"
 #include "Wire.h"
+#include "SPI.h"
 
 #if defined NRF52840_XXAA
 

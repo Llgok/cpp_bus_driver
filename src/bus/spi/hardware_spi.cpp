@@ -2,41 +2,59 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-10-14 15:26:51
+ * @LastEditTime: 2026-01-05 17:13:13
  * @License: GPL 3.0
  */
 #include "hardware_spi.h"
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Hardware_Spi::begin(int32_t freq_hz, int32_t cs)
     {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         if ((_bus_init_flag == true) && (_device_init_flag == true))
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "hardware_spi has been initialized\n");
             return true;
         }
 
+#endif
+
         if (freq_hz == DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
             freq_hz = DEFAULT_CPP_BUS_DRIVER_SPI_FREQ_HZ;
         }
 
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         if (_flags == DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
             _flags = static_cast<uint32_t>(NULL);
         }
+#endif
 
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _mosi: %d\n", _mosi);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _sclk: %d\n", _sclk);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _miso: %d\n", _miso);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config cs: %d\n", cs);
+
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _port: %d\n", _port);
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _port address: %#X\n", _port);
+#endif
+
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _mode: %d\n", _mode);
+
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _clock_source: %d\n", _clock_source);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _flags: %d\n", _flags);
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config _bit_order: %d\n", _bit_order);
+#endif
+
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_spi config freq_hz: %d hz\n", freq_hz);
+
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
 
         if (_bus_init_flag == false)
         {
@@ -101,6 +119,14 @@ namespace Cpp_Bus_Driver
             _device_init_flag = true;
         }
 
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        _spi_handle = std::make_unique<SPIClass>(_port, static_cast<uint8_t>(_miso), static_cast<uint8_t>(_sclk), static_cast<uint8_t>(_mosi));
+        pin_mode(cs, Pin_Mode::OUTPUT);
+        _spi_settings = SPISettings(freq_hz, _bit_order, _mode);
+
+        _spi_handle->begin();
+#endif
+
         _freq_hz = freq_hz;
         _cs = cs;
 
@@ -109,6 +135,7 @@ namespace Cpp_Bus_Driver
 
     bool Hardware_Spi::write(const void *data, size_t byte)
     {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         spi_transaction_t buffer =
             {
                 .flags = static_cast<uint32_t>(NULL),
@@ -132,10 +159,23 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
+
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        _spi_handle->beginTransaction(_spi_settings);
+        pin_write(_cs, 0);
+        _spi_handle->transfer(const_cast<void *>(data), byte);
+        pin_write(_cs, 1);
+        _spi_handle->endTransaction();
+
+        return true;
+#else
+        return false;
+#endif
     }
 
     bool Hardware_Spi::read(void *data, size_t byte)
     {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         spi_transaction_t buffer =
             {
                 .flags = static_cast<uint32_t>(NULL),
@@ -159,10 +199,24 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        uint8_t buffer[byte] = {0};
+
+        _spi_handle->beginTransaction(_spi_settings);
+        pin_write(_cs, 0);
+        _spi_handle->transfer(buffer, data, byte);
+        pin_write(_cs, 1);
+        _spi_handle->endTransaction();
+
+        return true;
+#else
+        return false;
+#endif
     }
 
     bool Hardware_Spi::write_read(const void *write_data, void *read_data, size_t data_byte)
     {
+#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         spi_transaction_t buffer =
             {
                 .flags = static_cast<uint32_t>(NULL),
@@ -186,6 +240,16 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
-    }
+#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        _spi_handle->beginTransaction(_spi_settings);
+        pin_write(_cs, 0);
+        _spi_handle->transfer(write_data, read_data, data_byte);
+        pin_write(_cs, 1);
+        _spi_handle->endTransaction();
+
+        return true;
+#else
+        return false;
 #endif
+    }
 }
