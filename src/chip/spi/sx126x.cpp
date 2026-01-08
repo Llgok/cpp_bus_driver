@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-11-07 14:39:07
+ * @LastEditTime: 2026-01-08 16:38:06
  * @License: GPL 3.0
  */
 #include "sx126x.h"
@@ -1356,8 +1356,8 @@ namespace Cpp_Bus_Driver
             if (_param.gfsk.payload_length != length)
             {
                 // 重新设置长度
-                if (set_gfsk_packet_params(_param.gfsk.preamble_length, _param.gfsk.preamble_detector, length * 8, _param.gfsk.address_comparison,
-                                           _param.gfsk.header_type, _param.gfsk.payload_length, _param.gfsk.crc.type, _param.gfsk.whitening) == false)
+                if (set_gfsk_packet_params(_param.gfsk.preamble_length, _param.gfsk.preamble_detector, _param.gfsk.sync_word.length * 8, _param.gfsk.address_comparison,
+                                           _param.gfsk.header_type, length, _param.gfsk.crc.type, _param.gfsk.whitening) == false)
                 {
                     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_gfsk_packet_params fail\n");
                     return false;
@@ -1641,7 +1641,7 @@ namespace Cpp_Bus_Driver
 
         // 设置包的参数
         if (set_gfsk_packet_params(preamble_length, _param.gfsk.preamble_detector, sync_word_length * 8, Addr_Comp::FILTERING_DISABLE,
-                                   Gfsk_Header_Type::VARIABLE_PACKET, MAX_TRANSMIT_BUFFER_SIZE, crc_type, Whitening::NO_ENCODING) == false)
+                                   Gfsk_Header_Type::VARIABLE_PACKET, _param.gfsk.payload_length, crc_type, Whitening::NO_ENCODING) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_gfsk_packet_params fail\n");
             return false;
