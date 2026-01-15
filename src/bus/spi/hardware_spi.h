@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-01-05 15:56:20
+ * @LastEditTime: 2026-01-15 09:31:09
  * @License: GPL 3.0
  */
 #pragma once
@@ -25,11 +25,8 @@ namespace Cpp_Bus_Driver
         uint8_t _mode;
 
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-        spi_clock_source_t _clock_source;
-#endif
-
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         uint32_t _flags;
+        spi_clock_source_t _clock_source;
 
         bool _bus_init_flag = false;
         bool _device_init_flag = false;
@@ -46,9 +43,9 @@ namespace Cpp_Bus_Driver
 
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
         Hardware_Spi(int32_t mosi, int32_t sclk, int32_t miso = DEFAULT_CPP_BUS_DRIVER_VALUE,
-                     spi_host_device_t port = SPI2_HOST, uint8_t mode = 0, spi_clock_source_t clock_source = SPI_CLK_SRC_DEFAULT,
-                     uint32_t flags = DEFAULT_CPP_BUS_DRIVER_VALUE)
-            : _mosi(mosi), _sclk(sclk), _miso(miso), _port(port), _mode(mode), _clock_source(clock_source), _flags(flags)
+                     spi_host_device_t port = SPI2_HOST, uint8_t mode = 0, uint32_t flags = DEFAULT_CPP_BUS_DRIVER_VALUE,
+                     spi_clock_source_t clock_source = SPI_CLK_SRC_DEFAULT)
+            : _mosi(mosi), _sclk(sclk), _miso(miso), _port(port), _mode(mode), _flags(flags), _clock_source(clock_source)
         {
         }
 #elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF

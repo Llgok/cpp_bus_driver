@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-06-20 13:45:50
+ * @LastEditTime: 2026-01-15 09:11:18
  * @License: GPL 3.0
  */
 
@@ -12,7 +12,7 @@
 
 namespace Cpp_Bus_Driver
 {
-    class Ecx336c : public Spi_Guide
+    class Ecx336cn : public Spi_Guide
     {
     private:
         enum class Cmd
@@ -155,7 +155,7 @@ namespace Cpp_Bus_Driver
         int32_t _rst;
 
     public:
-        Ecx336c(std::shared_ptr<Bus_Spi_Guide> bus, int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE,
+        Ecx336cn(std::shared_ptr<Bus_Spi_Guide> bus, int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE,
                  int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
             : Spi_Guide(bus, cs), _rst(rst)
         {

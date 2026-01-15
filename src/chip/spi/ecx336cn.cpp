@@ -2,14 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-06-23 18:02:57
+ * @LastEditTime: 2026-01-15 09:11:35
  * @License: GPL 3.0
  */
-#include "ecx336c.h"
+#include "ecx336cn.h"
 
 namespace Cpp_Bus_Driver
 {
-    bool Ecx336c::begin(int32_t freq_hz)
+    bool Ecx336cn::begin(int32_t freq_hz)
     {
         if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
         {
@@ -38,18 +38,18 @@ namespace Cpp_Bus_Driver
         // auto buffer = get_device_id();
         // if ((buffer == 0x00) || (buffer == 0xFF))
         // {
-        //     assert_log(Log_Level::INFO, __FILE__, __LINE__, "get  ecx336c id fail (error id: %#X)\n", buffer);
+        //     assert_log(Log_Level::INFO, __FILE__, __LINE__, "get  ecx336cn id fail (error id: %#X)\n", buffer);
         //     return false;
         // }
         // else
         // {
-        //     assert_log(Log_Level::INFO, __FILE__, __LINE__, "get  ecx336c id: %#X\n", buffer);
+        //     assert_log(Log_Level::INFO, __FILE__, __LINE__, "get  ecx336cn id: %#X\n", buffer);
         // }
 
         return true;
     }
 
-    uint8_t Ecx336c::get_device_id(void)
+    uint8_t Ecx336cn::get_device_id(void)
     {
         return false;
     }

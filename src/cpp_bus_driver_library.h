@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:14:18
- * @LastEditTime: 2025-11-17 17:40:59
+ * @LastEditTime: 2026-01-15 09:10:44
  * @License: GPL 3.0
  */
 
@@ -40,7 +40,7 @@
 #include "./chip/iic/aw21009xxx.h"
 #include "./chip/iic/sy6970.h"
 #include "./chip/spi/sx126x.h"
-#include "./chip/spi/ecx336c.h"
+#include "./chip/spi/ecx336cn.h"
 #include "./chip/spi/co5300.h"
 #include "./chip/spi/sh8601.h"
 #include "./chip/uart/l76k.h"
