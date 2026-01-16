@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-01-15 09:11:35
+ * @LastEditTime: 2026-01-16 10:09:07
  * @License: GPL 3.0
  */
 #include "ecx336cn.h"
@@ -29,29 +29,41 @@ namespace Cpp_Bus_Driver
             // return false;
         }
 
-        if (init_list(_init_list, sizeof(_init_list)) == false)
+        if (init_list(_init_list_640x400_60hz, sizeof(_init_list_640x400_60hz)) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "init_list fail\n");
             return false;
         }
 
-        // auto buffer = get_device_id();
-        // if ((buffer == 0x00) || (buffer == 0xFF))
-        // {
-        //     assert_log(Log_Level::INFO, __FILE__, __LINE__, "get  ecx336cn id fail (error id: %#X)\n", buffer);
-        //     return false;
-        // }
-        // else
-        // {
-        //     assert_log(Log_Level::INFO, __FILE__, __LINE__, "get  ecx336cn id: %#X\n", buffer);
-        // }
+        if (set_power_save_mode(false) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_power_save_mode fail\n");
+            return false;
+        }
 
         return true;
     }
 
-    uint8_t Ecx336cn::get_device_id(void)
+    bool Ecx336cn::set_power_save_mode(bool enable)
     {
-        return false;
+        if (enable == true)
+        {
+            if (_bus->write(static_cast<uint8_t>(Cmd::WO_POWER_SAVE_MODE), 0x0E) == false)
+            {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+                return false;
+            }
+        }
+        else
+        {
+            if (_bus->write(static_cast<uint8_t>(Cmd::WO_POWER_SAVE_MODE), 0x0F) == false)
+            {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }
