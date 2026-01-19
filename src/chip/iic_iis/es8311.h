@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:42:57
- * @LastEditTime: 2025-09-03 10:15:44
+ * @LastEditTime: 2026-01-19 15:50:17
  * @License: GPL 3.0
  */
 
@@ -51,7 +51,7 @@ namespace Cpp_Bus_Driver
             RW_ADC_EQUALIZER_BYPASS = 0x1C,
             RW_DAC_VOLUME = 0x32,
             RW_DAC_RAMPRATE_EQBYPASS = 0x37,
-            RW_ADC_DAC_CONTROL = 0x44,
+            RW_ADC_DAC_CONTROL_ADCDAT_SEL = 0x44,
 
         };
 
@@ -280,9 +280,21 @@ namespace Cpp_Bus_Driver
             MASTER,
         };
 
+        enum class Adc_Data_Format
+        {
+            ADC_ADC = 0,
+            ADC_NONE,
+            NONE_ADC,
+            NONE_NONE,
+            DACL_ADC,
+            ADC_DACR,
+            DACL_DACR,
+            NA,
+        };
+
         struct Power_Status
         {
-            //[true]：启动，[false]：关闭，控制设置
+            // [true]：启动，[false]：关闭，控制设置
             struct
             {
                 bool analog_circuits = false;               // 模拟电路
@@ -319,7 +331,8 @@ namespace Cpp_Bus_Driver
 
         bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-        bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) override;
+        bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width,
+                   i2s_slot_mode_t slot_mode = i2s_slot_mode_t::I2S_SLOT_MODE_STEREO) override;
 
 #elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width,
@@ -589,5 +602,13 @@ namespace Cpp_Bus_Driver
          * @Date 2025-03-29 16:13:18
          */
         bool set_serial_port_mode(Serial_Port_Mode mode);
+
+        /**
+         * @brief 设置ADC数据传输格式，用于回声消除
+         * @param format 使用Adc_Data_Format::配置
+         * @return
+         * @Date 2026-01-19 15:47:14
+         */
+        bool set_adc_data_format(Adc_Data_Format format);
     };
 }

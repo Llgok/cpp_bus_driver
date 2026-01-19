@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-09-23 10:39:37
+ * @LastEditTime: 2026-01-19 14:58:33
  * @License: GPL 3.0
  */
 
@@ -55,7 +55,8 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) override;
+        bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width,
+                   i2s_slot_mode_t slot_mode = i2s_slot_mode_t::I2S_SLOT_MODE_STEREO) override;
 
         size_t read(void *data, size_t byte) override;
         size_t write(const void *data, size_t byte) override;

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-11-22 15:18:23
+ * @LastEditTime: 2026-01-19 15:40:10
  * @License: GPL 3.0
  */
 #include "es8311.h"
@@ -60,9 +60,9 @@ namespace Cpp_Bus_Driver
     }
 
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-    bool Es8311::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
+    bool Es8311::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width, i2s_slot_mode_t slot_mode)
     {
-        if (Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
+        if (Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width, slot_mode) == false)
         {
             Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
             return false;
@@ -698,13 +698,13 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL), &buffer) == false)
+        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL_ADCDAT_SEL), &buffer) == false)
         {
             Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B01111111) | (static_cast<uint8_t>(enable) << 7);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL), buffer) == false)
+        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL_ADCDAT_SEL), buffer) == false)
         {
             Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
@@ -743,6 +743,25 @@ namespace Cpp_Bus_Driver
         }
         buffer = (buffer & 0B10111011) | (static_cast<uint8_t>(mode) << 6) | (!static_cast<uint8_t>(mode) << 2);
         if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), buffer) == false)
+        {
+            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Es8311::set_adc_data_format(Adc_Data_Format format)
+    {
+        uint8_t buffer = 0;
+
+        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL_ADCDAT_SEL), &buffer) == false)
+        {
+            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            return false;
+        }
+        buffer = (buffer & 0B10001111) | (static_cast<uint8_t>(format) << 4);
+        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL_ADCDAT_SEL), buffer) == false)
         {
             Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;

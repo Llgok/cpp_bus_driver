@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-09-23 10:40:06
+ * @LastEditTime: 2026-01-19 14:59:47
  * @License: GPL 3.0
  */
 
@@ -56,7 +56,8 @@ namespace Cpp_Bus_Driver
         {
         }
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-        virtual bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) = 0;
+        virtual bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width,
+                           i2s_slot_mode_t slot_mode = i2s_slot_mode_t::I2S_SLOT_MODE_STEREO) = 0;
 
         virtual size_t read(void *data, size_t byte) = 0;
         virtual size_t write(const void *data, size_t byte) = 0;

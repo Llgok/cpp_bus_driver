@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2025-12-11 09:49:17
+ * @LastEditTime: 2026-01-19 14:57:26
  * @License: GPL 3.0
  */
 #include "hardware_iis.h"
@@ -10,7 +10,7 @@
 namespace Cpp_Bus_Driver
 {
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-    bool Hardware_Iis::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
+    bool Hardware_Iis::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width, i2s_slot_mode_t slot_mode)
     {
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _port: %d\n", _port);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _ws_lrck: %d\n", _ws_lrck);
@@ -19,6 +19,7 @@ namespace Cpp_Bus_Driver
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config mclk_multiple: %d\n", mclk_multiple);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config sample_rate_hz: %d hz\n", sample_rate_hz);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config data_bit_width: %d\n", data_bit_width);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config slot_mode: %d\n", slot_mode);
 
         i2s_chan_config_t chan_config = I2S_CHANNEL_DEFAULT_CONFIG(_port, I2S_ROLE_MASTER);
         // 自动清除DMA缓冲区中的旧数据
@@ -57,7 +58,7 @@ namespace Cpp_Bus_Driver
                                 .bclk_div = 8,
 #endif
                             },
-                        .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
+                        .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(data_bit_width, slot_mode),
                         .gpio_cfg =
                             {
                                 .mclk = static_cast<gpio_num_t>(_mclk),
@@ -103,7 +104,7 @@ namespace Cpp_Bus_Driver
                             .dn_sample_mode = I2S_PDM_DSR_8S,
                             .bclk_div = 8,
                         },
-                    .slot_cfg = I2S_PDM_RX_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
+                    .slot_cfg = I2S_PDM_RX_SLOT_DEFAULT_CONFIG(data_bit_width, slot_mode),
                     .gpio_cfg =
                         {
                             .clk = static_cast<gpio_num_t>(_ws_lrck),
@@ -125,7 +126,7 @@ namespace Cpp_Bus_Driver
                             .up_sample_fs = 480,
                             .bclk_div = 8,
                         },
-                    .slot_cfg = I2S_PDM_TX_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
+                    .slot_cfg = I2S_PDM_TX_SLOT_DEFAULT_CONFIG(data_bit_width, slot_mode),
                     .gpio_cfg =
                         {
                             .clk = static_cast<gpio_num_t>(_ws_lrck),
@@ -195,7 +196,7 @@ namespace Cpp_Bus_Driver
                                 .bclk_div = 8,
 #endif
                             },
-                        .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
+                        .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(data_bit_width, slot_mode),
                         .gpio_cfg =
                             {
                                 .mclk = static_cast<gpio_num_t>(_mclk),
@@ -296,7 +297,7 @@ namespace Cpp_Bus_Driver
                                 .dn_sample_mode = I2S_PDM_DSR_8S,
                                 .bclk_div = 8,
                             },
-                        .slot_cfg = I2S_PDM_RX_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
+                        .slot_cfg = I2S_PDM_RX_SLOT_DEFAULT_CONFIG(data_bit_width, slot_mode),
                         .gpio_cfg =
                             {
                                 .clk = static_cast<gpio_num_t>(_ws_lrck),
@@ -346,7 +347,7 @@ namespace Cpp_Bus_Driver
                                 .up_sample_fs = 480,
                                 .bclk_div = 8,
                             },
-                        .slot_cfg = I2S_PDM_TX_SLOT_DEFAULT_CONFIG(data_bit_width, I2S_SLOT_MODE_STEREO),
+                        .slot_cfg = I2S_PDM_TX_SLOT_DEFAULT_CONFIG(data_bit_width, slot_mode),
                         .gpio_cfg =
                             {
                                 .clk = static_cast<gpio_num_t>(_ws_lrck),
