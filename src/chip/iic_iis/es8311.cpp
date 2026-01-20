@@ -60,9 +60,9 @@ namespace Cpp_Bus_Driver
     }
 
 #if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-    bool Es8311::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width, i2s_slot_mode_t slot_mode)
+    bool Es8311::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
     {
-        if (Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width, slot_mode) == false)
+        if (Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
         {
             Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
             return false;
