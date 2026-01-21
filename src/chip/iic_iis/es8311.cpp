@@ -9,13 +9,13 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
     constexpr const Es8311::Clock_Coeff Es8311::_clock_coeff_list[];
 #endif
 
     bool Es8311::begin(int32_t freq_hz)
     {
-        if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             Iic_Guide::pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
 
@@ -59,7 +59,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Es8311::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
     {
         if (Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
@@ -69,7 +69,7 @@ namespace Cpp_Bus_Driver
         }
         return true;
     }
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
     bool Es8311::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width, nrf_i2s_channels_t channel)
     {
         if (Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width, channel) == false)
@@ -598,7 +598,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     size_t Es8311::read_data(void *data, size_t byte)
     {
         size_t buffer = Iis_Guide::_bus->read(data, byte);
@@ -624,7 +624,7 @@ namespace Cpp_Bus_Driver
 
         return buffer;
     }
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 
     bool Es8311::start_transmit(uint32_t *write_buffer, uint32_t *read_buffer, size_t max_buffer_length)
     {

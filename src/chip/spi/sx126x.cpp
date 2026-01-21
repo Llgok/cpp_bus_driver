@@ -11,12 +11,12 @@ namespace Cpp_Bus_Driver
 {
     bool Sx126x::begin(int32_t freq_hz)
     {
-        if (_busy != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_busy != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             pin_mode(_busy, Pin_Mode::INPUT, Pin_Status::DISABLE);
         }
 
-        if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
 
@@ -99,7 +99,7 @@ namespace Cpp_Bus_Driver
 
     bool Sx126x::check_busy(void)
     {
-        if (_busy != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_busy != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             uint16_t timeout_count = 0;
             while (1)

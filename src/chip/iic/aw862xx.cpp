@@ -11,7 +11,7 @@ namespace Cpp_Bus_Driver
 {
     bool Aw862xx::begin(int32_t freq_hz)
     {
-        if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
             
@@ -30,7 +30,7 @@ namespace Cpp_Bus_Driver
         }
 
         uint8_t buffer = get_device_id();
-        if (buffer == static_cast<uint8_t>(DEFAULT_CPP_BUS_DRIVER_VALUE))
+        if (buffer == static_cast<uint8_t>(CPP_BUS_DRIVER_DEFAULT_VALUE))
         {
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "get aw862xx id fail (error id: %#X)\n", buffer);
             return false;

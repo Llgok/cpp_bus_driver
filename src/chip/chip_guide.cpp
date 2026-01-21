@@ -256,7 +256,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Iis_Guide::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
     {
         if (_bus->begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
@@ -268,7 +268,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
     bool Iis_Guide::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width, nrf_i2s_channels_t channel)
     {
         if (_bus->begin(mclk_multiple, sample_rate_hz, data_bit_width, channel) == false)

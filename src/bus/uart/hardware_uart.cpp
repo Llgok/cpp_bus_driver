@@ -9,7 +9,7 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Hardware_Uart::begin(int32_t baud_rate)
     {
         if (_init_flag == true)
@@ -18,9 +18,9 @@ namespace Cpp_Bus_Driver
             return true;
         }
 
-        if (baud_rate == DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (baud_rate == CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
-            baud_rate = DEFAULT_CPP_BUS_DRIVER_UART_BAUD_RATE;
+            baud_rate = CPP_BUS_DRIVER_DEFAULT_UART_BAUD_RATE;
         }
 
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "configuring _port: %d\n", _port);
@@ -74,7 +74,7 @@ namespace Cpp_Bus_Driver
 
     int32_t Hardware_Uart::read(void *data, uint32_t length)
     {
-        int32_t buffer_size = uart_read_bytes(static_cast<uart_port_t>(_port), data, length, pdMS_TO_TICKS(DEFAULT_CPP_BUS_DRIVER_UART_WAIT_TIMEOUT_MS));
+        int32_t buffer_size = uart_read_bytes(static_cast<uart_port_t>(_port), data, length, pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_UART_WAIT_TIMEOUT_MS));
         if (buffer_size == (-1))
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_read_bytes fail (uart_read_bytes == (-1))\n");

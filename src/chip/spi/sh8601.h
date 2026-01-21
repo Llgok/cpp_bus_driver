@@ -112,13 +112,13 @@ namespace Cpp_Bus_Driver
             HIGH,
         };
 
-        Sh8601(std::shared_ptr<Bus_Qspi_Guide> bus, uint16_t width, uint16_t height, int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE,
+        Sh8601(std::shared_ptr<Bus_Qspi_Guide> bus, uint16_t width, uint16_t height, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE,
                int16_t x_offset = 0, int16_t y_offset = 0, Color_Format color_format = Color_Format::RGB565)
             : Qspi_Guide(bus, cs), _rst(rst), _width(width), _height(height), _x_offset(x_offset), _y_offset(y_offset), _color_format(color_format)
         {
         }
 
-        bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+        bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
 
         /**
          * @brief 设置需要渲染的窗口

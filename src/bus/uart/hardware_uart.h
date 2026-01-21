@@ -11,7 +11,7 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     class Hardware_Uart : public Bus_Uart_Guide
     {
     private:
@@ -28,7 +28,7 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        bool begin(int32_t baud_rate = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+        bool begin(int32_t baud_rate = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
         int32_t read(void *data, uint32_t length) override;
         int32_t write(const void *data, size_t length) override;
 

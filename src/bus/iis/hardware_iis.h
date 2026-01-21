@@ -18,7 +18,7 @@ namespace Cpp_Bus_Driver
     private:
         int32_t _data_in, _data_out;
         int32_t _ws_lrck, _bclk, _mclk;
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         i2s_port_t _port;
         i2s_chan_handle_t _chan_tx_handle = nullptr;
         i2s_chan_handle_t _chan_rx_handle = nullptr;
@@ -29,7 +29,7 @@ namespace Cpp_Bus_Driver
         uint8_t _data_bit_width = -1;
 
     public:
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         enum class Data_Mode
         {
             INPUT,  // 输入模式
@@ -63,7 +63,7 @@ namespace Cpp_Bus_Driver
         size_t read(void *data, size_t byte) override;
         size_t write(const void *data, size_t byte) override;
 
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 
         // 配置输入和输出设备
         Hardware_Iis(int32_t data_in, int32_t data_out, int32_t ws_lrck, int32_t bclk, int32_t mclk)

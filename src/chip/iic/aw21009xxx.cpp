@@ -2,20 +2,20 @@
  * @Description: None
  * @Author: None
  * @Date: 2025-09-24 10:47:30
- * @LastEditTime: 2025-11-22 15:15:23
+ * @LastEditTime: 2026-01-21 18:09:30
  * @License: GPL 3.0
  */
 #include "aw21009xxx.h"
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
     constexpr const uint8_t Aw21009xxx::_init_list[];
 #endif
 
     bool Aw21009xxx::begin(int32_t freq_hz)
     {
-        if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
             

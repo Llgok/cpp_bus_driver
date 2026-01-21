@@ -9,12 +9,12 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Software_Iic::begin(uint32_t freq_hz, uint16_t address)
     {
-        if (freq_hz == DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (freq_hz == CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
-            freq_hz = DEFAULT_CPP_BUS_DRIVER_IIC_FREQ_HZ;
+            freq_hz = CPP_BUS_DRIVER_DEFAULT_IIC_FREQ_HZ;
         }
 
         uint32_t buffer_transmit_delay_us = static_cast<uint32_t>((1000000.0 / static_cast<double>(freq_hz)) / 2.0 + 0.5);

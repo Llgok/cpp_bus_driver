@@ -2,14 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2025-09-26 10:39:30
+ * @LastEditTime: 2026-01-21 17:33:36
  * @License: GPL 3.0
  */
 #include "hardware_iic_1.h"
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Hardware_Iic_1::begin(uint32_t freq_hz, uint16_t address)
     {
         if ((_bus_handle != nullptr) && (_device_handle != nullptr))
@@ -18,9 +18,9 @@ namespace Cpp_Bus_Driver
             return true;
         }
 
-        if (freq_hz == static_cast<uint32_t>(DEFAULT_CPP_BUS_DRIVER_VALUE))
+        if (freq_hz == static_cast<uint32_t>(CPP_BUS_DRIVER_DEFAULT_VALUE))
         {
-            freq_hz = DEFAULT_CPP_BUS_DRIVER_IIC_FREQ_HZ;
+            freq_hz = CPP_BUS_DRIVER_DEFAULT_IIC_FREQ_HZ;
         }
 
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config address: %#X\n", address);
@@ -61,7 +61,7 @@ namespace Cpp_Bus_Driver
             }
         }
 
-        if (address == static_cast<uint16_t>(DEFAULT_CPP_BUS_DRIVER_VALUE))
+        if (address == static_cast<uint16_t>(CPP_BUS_DRIVER_DEFAULT_VALUE))
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "address is null\n");
             return false;
@@ -97,7 +97,7 @@ namespace Cpp_Bus_Driver
 
     bool Hardware_Iic_1::read(uint8_t *data, size_t length)
     {
-        esp_err_t assert = i2c_master_receive(_device_handle, data, length, DEFAULT_CPP_BUS_DRIVER_IIC_WAIT_TIMEOUT_MS);
+        esp_err_t assert = i2c_master_receive(_device_handle, data, length, CPP_BUS_DRIVER_DEFAULT_IIC_WAIT_TIMEOUT_MS);
         if (assert != ESP_OK)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_receive fail (error code: %#X)\n", assert);
@@ -108,7 +108,7 @@ namespace Cpp_Bus_Driver
     }
     bool Hardware_Iic_1::write(const uint8_t *data, size_t length)
     {
-        esp_err_t assert = i2c_master_transmit(_device_handle, data, length, DEFAULT_CPP_BUS_DRIVER_IIC_WAIT_TIMEOUT_MS);
+        esp_err_t assert = i2c_master_transmit(_device_handle, data, length, CPP_BUS_DRIVER_DEFAULT_IIC_WAIT_TIMEOUT_MS);
         if (assert != ESP_OK)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_transmit fail (error code: %#X)\n", assert);
@@ -119,7 +119,7 @@ namespace Cpp_Bus_Driver
     }
     bool Hardware_Iic_1::write_read(const uint8_t *write_data, size_t write_length, uint8_t *read_data, size_t read_length)
     {
-        esp_err_t assert = i2c_master_transmit_receive(_device_handle, write_data, write_length, read_data, read_length, DEFAULT_CPP_BUS_DRIVER_IIC_WAIT_TIMEOUT_MS);
+        esp_err_t assert = i2c_master_transmit_receive(_device_handle, write_data, write_length, read_data, read_length, CPP_BUS_DRIVER_DEFAULT_IIC_WAIT_TIMEOUT_MS);
         if (assert != ESP_OK)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_transmit_receive fail (error code: %#X)\n", assert);
@@ -131,7 +131,7 @@ namespace Cpp_Bus_Driver
 
     bool Hardware_Iic_1::probe(const uint16_t address)
     {
-        esp_err_t assert = i2c_master_probe(_bus_handle, address, DEFAULT_CPP_BUS_DRIVER_IIC_WAIT_TIMEOUT_MS);
+        esp_err_t assert = i2c_master_probe(_bus_handle, address, CPP_BUS_DRIVER_DEFAULT_IIC_WAIT_TIMEOUT_MS);
         if (assert != ESP_OK)
         {
             // assert_log(Log_Level::INFO, __FILE__, __LINE__, "i2c_master_probe fail (error code: %#X)\n", assert);

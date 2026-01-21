@@ -9,13 +9,13 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
     constexpr const uint8_t Tca8418::_init_list[];
 #endif
 
     bool Tca8418::begin(int32_t freq_hz)
     {
-        if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
             
@@ -141,7 +141,7 @@ namespace Cpp_Bus_Driver
 
         uint8_t buffer[buffer_finger_count] = {0};
 
-#if defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         // 地址不能自动偏移
         for (size_t i = 0; i < buffer_finger_count; i++)
         {

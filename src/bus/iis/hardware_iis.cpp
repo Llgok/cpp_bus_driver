@@ -9,7 +9,7 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Hardware_Iis::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
     {
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _port: %d\n", _port);
@@ -415,7 +415,7 @@ namespace Cpp_Bus_Driver
         }
 
         size_t buffer = 0;
-        esp_err_t assert = i2s_channel_read(_chan_rx_handle, data, byte, &buffer, DEFAULT_CPP_BUS_DRIVER_IIS_WAIT_TIMEOUT_MS);
+        esp_err_t assert = i2s_channel_read(_chan_rx_handle, data, byte, &buffer, CPP_BUS_DRIVER_DEFAULT_IIS_WAIT_TIMEOUT_MS);
         if (assert != ESP_OK)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_read fail (error code: %#X)\n", assert);
@@ -434,7 +434,7 @@ namespace Cpp_Bus_Driver
         }
 
         size_t buffer = 0;
-        esp_err_t assert = i2s_channel_write(_chan_tx_handle, data, byte, &buffer, DEFAULT_CPP_BUS_DRIVER_IIS_WAIT_TIMEOUT_MS);
+        esp_err_t assert = i2s_channel_write(_chan_tx_handle, data, byte, &buffer, CPP_BUS_DRIVER_DEFAULT_IIS_WAIT_TIMEOUT_MS);
         if (assert != ESP_OK)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_write fail (error code: %#X)\n", assert);
@@ -444,7 +444,7 @@ namespace Cpp_Bus_Driver
         return buffer;
     }
 
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
     bool Hardware_Iis::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width, nrf_i2s_channels_t channel)
     {
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _ws_lrck: %d\n", _ws_lrck);

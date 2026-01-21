@@ -45,7 +45,7 @@ namespace Cpp_Bus_Driver
             CONF_OFFSET = 0,
         };
 
-        int32_t _rst = DEFAULT_CPP_BUS_DRIVER_VALUE;
+        int32_t _rst = CPP_BUS_DRIVER_DEFAULT_VALUE;
         void (*_rst_callback)(bool value) = nullptr;
 
         struct Esp_At_Connect
@@ -123,7 +123,7 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+        bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
 
         /**
          * @brief None

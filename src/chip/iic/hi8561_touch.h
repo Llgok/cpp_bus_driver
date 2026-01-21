@@ -52,12 +52,12 @@ namespace Cpp_Bus_Driver
             std::vector<struct Touch_Info> info;
         };
 
-        Hi8561_Touch(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
+        Hi8561_Touch(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : Iic_Guide(bus, address), _rst(rst)
         {
         }
 
-        bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+        bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
 
     private:
         bool init_address_info(void);

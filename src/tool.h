@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
     class Tool
     {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     private:
         struct Pwm
         {
@@ -85,7 +85,7 @@ namespace Cpp_Bus_Driver
             PULLDOWN,
         };
 
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         Pwm _pwm;
 #endif
 
@@ -119,7 +119,7 @@ namespace Cpp_Bus_Driver
         void delay_ms(uint32_t value);
         void delay_us(uint32_t value);
 
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         int64_t get_system_time_us(void);
         int64_t get_system_time_ms(void);
 

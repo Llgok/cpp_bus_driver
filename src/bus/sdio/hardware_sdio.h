@@ -11,7 +11,7 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     class Hardware_Sdio : public Bus_Sdio_Guide
     {
     private:
@@ -44,15 +44,15 @@ namespace Cpp_Bus_Driver
 
         std::unique_ptr<sdmmc_card_t> _sdio_handle = std::make_unique<sdmmc_card_t>();
 
-        Hardware_Sdio(int32_t clk, int32_t cmd, int32_t d0, int32_t d1 = DEFAULT_CPP_BUS_DRIVER_VALUE,
-                      int32_t d2 = DEFAULT_CPP_BUS_DRIVER_VALUE, int32_t d3 = DEFAULT_CPP_BUS_DRIVER_VALUE, int32_t d4 = DEFAULT_CPP_BUS_DRIVER_VALUE,
-                      int32_t d5 = DEFAULT_CPP_BUS_DRIVER_VALUE, int32_t d6 = DEFAULT_CPP_BUS_DRIVER_VALUE, int32_t d7 = DEFAULT_CPP_BUS_DRIVER_VALUE,
+        Hardware_Sdio(int32_t clk, int32_t cmd, int32_t d0, int32_t d1 = CPP_BUS_DRIVER_DEFAULT_VALUE,
+                      int32_t d2 = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t d3 = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t d4 = CPP_BUS_DRIVER_DEFAULT_VALUE,
+                      int32_t d5 = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t d6 = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t d7 = CPP_BUS_DRIVER_DEFAULT_VALUE,
                       Sdio_Port port = Sdio_Port::SLOT_1)
             : _clk(clk), _cmd(cmd), _d0(d0), _d1(d1), _d2(d2), _d3(d3), _d4(d4), _d5(d5), _d6(d6), _d7(d7), _port(port)
         {
         }
 
-        bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+        bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
         bool wait_interrupt(uint32_t timeout_ms) override;
 
         /**

@@ -47,7 +47,7 @@
 #include "./chip/uart/l76k.h"
 #include "./chip/sdio/esp_at.h"
 
-#if defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 
 #define LOW (0x0)
 #define HIGH (0x1)

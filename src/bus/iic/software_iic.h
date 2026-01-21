@@ -11,7 +11,7 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     class Software_Iic : public Bus_Iic_Guide
     {
     public:
@@ -23,8 +23,8 @@ namespace Cpp_Bus_Driver
         };
 
         int32_t _sda, _scl;
-        uint16_t _address = DEFAULT_CPP_BUS_DRIVER_VALUE;
-        uint32_t _freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE;
+        uint16_t _address = CPP_BUS_DRIVER_DEFAULT_VALUE;
+        uint32_t _freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE;
         uint32_t _transmit_delay_us = 0;
 
         Software_Iic(int32_t sda, int32_t scl)
@@ -32,7 +32,7 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        bool begin(uint32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE, uint16_t address = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+        bool begin(uint32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE, uint16_t address = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
 
         bool start_transmit(void) override;
         bool read(uint8_t *data, size_t length) override;

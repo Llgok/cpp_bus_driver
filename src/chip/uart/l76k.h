@@ -27,7 +27,7 @@ namespace Cpp_Bus_Driver
 
         std::function<bool(bool)> _wake_up_callback = nullptr;
 
-        int32_t _wake_up = DEFAULT_CPP_BUS_DRIVER_VALUE;
+        int32_t _wake_up = CPP_BUS_DRIVER_DEFAULT_VALUE;
         int32_t _rst;
 
     public:
@@ -69,13 +69,13 @@ namespace Cpp_Bus_Driver
 
         uint16_t _update_freq = 1000; // 默认更新频率为 1000ms（1Hz）
 
-        L76k(const std::shared_ptr<Bus_Uart_Guide> bus, const int32_t wake_up, const int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
+        L76k(const std::shared_ptr<Bus_Uart_Guide> bus, const int32_t wake_up, const int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : Uart_Guide(bus), _wake_up(wake_up), _rst(rst)
         {
         }
 
         L76k(const std::shared_ptr<Bus_Uart_Guide> bus, const std::function<bool(bool)> &wake_up_callback,
-             const int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
+             const int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : Uart_Guide(bus), _wake_up_callback(wake_up_callback), _rst(rst)
         {
         }

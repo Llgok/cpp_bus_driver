@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:42:57
- * @LastEditTime: 2026-01-20 13:36:20
+ * @LastEditTime: 2026-01-21 17:50:46
  * @License: GPL 3.0
  */
 
@@ -324,16 +324,16 @@ namespace Cpp_Bus_Driver
 
         Clock_Coeff _clock_coeff;
 
-        Es8311(std::shared_ptr<Bus_Iic_Guide> iic_bus, std::shared_ptr<Bus_Iis_Guide> iis_bus, int16_t iic_address, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
+        Es8311(std::shared_ptr<Bus_Iic_Guide> iic_bus, std::shared_ptr<Bus_Iis_Guide> iis_bus, int16_t iic_address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : Iic_Guide(iic_bus, iic_address), Iis_Guide(iis_bus), _rst(rst)
         {
         }
 
-        bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+        bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) override;
 
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width,
                    nrf_i2s_channels_t channel = nrf_i2s_channels_t::NRF_I2S_CHANNELS_STEREO) override;
 #endif
@@ -501,7 +501,7 @@ namespace Cpp_Bus_Driver
          */
         bool set_dac_equalizer(bool enable);
 
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         /**
          * @brief 读取数据
          * @param *data 数据指针
@@ -519,7 +519,7 @@ namespace Cpp_Bus_Driver
          * @Date 2025-03-13 14:02:47
          */
         size_t write_data(const void *data, size_t byte);
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 
         /**
          * @brief 数据流传输开始

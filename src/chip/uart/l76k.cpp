@@ -11,7 +11,7 @@ namespace Cpp_Bus_Driver
 {
     bool L76k::begin(int32_t baud_rate)
     {
-        if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             Uart_Guide::pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
 
@@ -23,7 +23,7 @@ namespace Cpp_Bus_Driver
             Uart_Guide::delay_ms(10);
         }
 
-        if (_wake_up != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_wake_up != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             if (Uart_Guide::pin_mode(_wake_up, Pin_Mode::OUTPUT, Pin_Status::PULLUP) == false)
             {
@@ -58,7 +58,7 @@ namespace Cpp_Bus_Driver
 
     bool L76k::sleep(bool enable)
     {
-        if (_wake_up != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_wake_up != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             if (Uart_Guide::pin_write(_wake_up, !enable) == false)
             {

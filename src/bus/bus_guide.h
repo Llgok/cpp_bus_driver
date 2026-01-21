@@ -27,7 +27,7 @@ namespace Cpp_Bus_Driver
 
         virtual bool end(void);
 
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         virtual i2c_cmd_handle_t cmd_link_create(void);
         virtual bool start_transmit(i2c_cmd_handle_t cmd_handle, i2c_rw_t rw, bool ack_en = true);
         virtual bool write(i2c_cmd_handle_t cmd_handle, uint8_t data, bool ack_en = true);
@@ -55,12 +55,12 @@ namespace Cpp_Bus_Driver
         Bus_Iis_Guide()
         {
         }
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         virtual bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) = 0;
 
         virtual size_t read(void *data, size_t byte) = 0;
         virtual size_t write(const void *data, size_t byte) = 0;
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         virtual bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width, nrf_i2s_channels_t channel) = 0;
 
         /**
@@ -218,7 +218,7 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        virtual bool begin(int32_t baud_rate = DEFAULT_CPP_BUS_DRIVER_VALUE) = 0;
+        virtual bool begin(int32_t baud_rate = CPP_BUS_DRIVER_DEFAULT_VALUE) = 0;
 
         virtual int32_t read(void *data, uint32_t length) = 0;
         virtual int32_t write(const void *data, size_t length) = 0;

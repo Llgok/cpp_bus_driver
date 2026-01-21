@@ -940,13 +940,13 @@ namespace Cpp_Bus_Driver
         int32_t _rst;
 
     public:
-        Ecx336cn(std::shared_ptr<Bus_Spi_Guide> bus, int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE,
-                 int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
+        Ecx336cn(std::shared_ptr<Bus_Spi_Guide> bus, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE,
+                 int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : Spi_Guide(bus, cs), _rst(rst)
         {
         }
 
-        bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+        bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
 
         /**
          * @brief 设置使能省电模式

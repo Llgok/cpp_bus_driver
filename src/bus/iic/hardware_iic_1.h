@@ -11,14 +11,14 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     class Hardware_Iic_1 : public Bus_Iic_Guide
     {
     public:
         int32_t _sda, _scl;
         i2c_port_t _port;
-        uint16_t _address = DEFAULT_CPP_BUS_DRIVER_VALUE;
-        uint32_t _freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE;
+        uint16_t _address = CPP_BUS_DRIVER_DEFAULT_VALUE;
+        uint32_t _freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE;
 
         i2c_master_dev_handle_t _device_handle = nullptr;
         i2c_master_bus_handle_t _bus_handle = nullptr;
@@ -28,7 +28,7 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        bool begin(uint32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE, uint16_t address = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+        bool begin(uint32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE, uint16_t address = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
         bool read(uint8_t *data, size_t length) override;
         bool write(const uint8_t *data, size_t length) override;
         bool write_read(const uint8_t *write_data, size_t write_length, uint8_t *read_data, size_t read_length) override;

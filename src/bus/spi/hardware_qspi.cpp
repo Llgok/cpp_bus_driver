@@ -9,20 +9,20 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Hardware_Qspi::begin(int32_t freq_hz, int32_t cs)
     {
-        if (freq_hz == DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (freq_hz == CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
-            freq_hz = DEFAULT_CPP_BUS_DRIVER_QSPI_FREQ_HZ;
+            freq_hz = CPP_BUS_DRIVER_DEFAULT_QSPI_FREQ_HZ;
         }
 
-        if (_flags == DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_flags == CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             _flags = SPI_DEVICE_HALFDUPLEX;
         }
 
-        if (_cs != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_cs != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             _cs = cs;
             pin_mode(_cs, Pin_Mode::OUTPUT, Pin_Status ::PULLUP);
@@ -192,7 +192,7 @@ namespace Cpp_Bus_Driver
 
     bool Hardware_Qspi::set_cs(bool value)
     {
-        if (_cs != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_cs != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             if (pin_write(_cs, value) == false)
             {

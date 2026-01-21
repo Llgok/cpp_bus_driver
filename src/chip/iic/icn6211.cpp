@@ -12,7 +12,7 @@ namespace Cpp_Bus_Driver
 {
     bool Icn6211::begin(int32_t freq_hz)
     {
-        if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
             pin_write(_rst, 1);

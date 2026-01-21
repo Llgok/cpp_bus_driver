@@ -11,26 +11,26 @@ namespace Cpp_Bus_Driver
 {
     bool Hardware_Iic_2::begin(uint32_t freq_hz, uint16_t address)
     {
-        if (freq_hz == static_cast<uint32_t>(DEFAULT_CPP_BUS_DRIVER_VALUE))
+        if (freq_hz == static_cast<uint32_t>(CPP_BUS_DRIVER_DEFAULT_VALUE))
         {
-            freq_hz = DEFAULT_CPP_BUS_DRIVER_IIC_FREQ_HZ;
+            freq_hz = CPP_BUS_DRIVER_DEFAULT_IIC_FREQ_HZ;
         }
 
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config address: %#X\n", address);
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config _port: %d\n", _port);
 #endif
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config _sda: %d\n", _sda);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config _scl: %d\n", _scl);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iic config freq_hz: %d hz\n", freq_hz);
 
-        if (address == static_cast<uint16_t>(DEFAULT_CPP_BUS_DRIVER_VALUE))
+        if (address == static_cast<uint16_t>(CPP_BUS_DRIVER_DEFAULT_VALUE))
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "address is null\n");
             // return false;
         }
 
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         const i2c_config_t iic_config =
             {
                 .mode = I2C_MODE_MASTER,
@@ -59,7 +59,7 @@ namespace Cpp_Bus_Driver
             // return false;
         }
 
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 
         _iic_handle->setPins(static_cast<uint8_t>(_sda), static_cast<uint8_t>(_scl));
         _iic_handle->setClock(freq_hz);
@@ -75,7 +75,7 @@ namespace Cpp_Bus_Driver
 
     bool Hardware_Iic_2::end(void)
     {
-#if defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 
         _iic_handle->end();
 
@@ -87,8 +87,8 @@ namespace Cpp_Bus_Driver
 
     bool Hardware_Iic_2::read(uint8_t *data, size_t length)
     {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-        esp_err_t assert = i2c_master_read_from_device(_port, _address, data, length, pdMS_TO_TICKS(DEFAULT_CPP_BUS_DRIVER_IIC_WAIT_TIMEOUT_MS));
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+        esp_err_t assert = i2c_master_read_from_device(_port, _address, data, length, pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_IIC_WAIT_TIMEOUT_MS));
         if (assert != ESP_OK)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_read_from_device fail (error code: %#X)\n", assert);
@@ -97,7 +97,7 @@ namespace Cpp_Bus_Driver
 
         return true;
 
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         if (_iic_handle->requestFrom(_address, length) == false)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "requestFrom fail\n");
@@ -112,8 +112,8 @@ namespace Cpp_Bus_Driver
     }
     bool Hardware_Iic_2::write(const uint8_t *data, size_t length)
     {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-        esp_err_t assert = i2c_master_write_to_device(_port, _address, data, length, pdMS_TO_TICKS(DEFAULT_CPP_BUS_DRIVER_IIC_WAIT_TIMEOUT_MS));
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+        esp_err_t assert = i2c_master_write_to_device(_port, _address, data, length, pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_IIC_WAIT_TIMEOUT_MS));
         if (assert != ESP_OK)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_write_to_device fail (error code: %#X)\n", assert);
@@ -121,7 +121,7 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         _iic_handle->beginTransmission(_address);
 
         size_t assert = _iic_handle->write(data, length);
@@ -162,8 +162,8 @@ namespace Cpp_Bus_Driver
     }
     bool Hardware_Iic_2::write_read(const uint8_t *write_data, size_t write_length, uint8_t *read_data, size_t read_length)
     {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
-        esp_err_t assert = i2c_master_write_read_device(_port, _address, write_data, write_length, read_data, read_length, pdMS_TO_TICKS(DEFAULT_CPP_BUS_DRIVER_IIC_WAIT_TIMEOUT_MS));
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+        esp_err_t assert = i2c_master_write_read_device(_port, _address, write_data, write_length, read_data, read_length, pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_IIC_WAIT_TIMEOUT_MS));
         if (assert != ESP_OK)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_transmit_receive fail (error code: %#X)\n", assert);
@@ -172,7 +172,7 @@ namespace Cpp_Bus_Driver
 
         return true;
 
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         _iic_handle->beginTransmission(_address);
 
         size_t assert = _iic_handle->write(write_data, write_length);
@@ -221,9 +221,9 @@ namespace Cpp_Bus_Driver
 
     bool Hardware_Iic_2::probe(const uint16_t address)
     {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         uint8_t buffer = 0;
-        esp_err_t assert = i2c_master_read_from_device(_port, address, &buffer, 1, pdMS_TO_TICKS(DEFAULT_CPP_BUS_DRIVER_IIC_WAIT_TIMEOUT_MS));
+        esp_err_t assert = i2c_master_read_from_device(_port, address, &buffer, 1, pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_IIC_WAIT_TIMEOUT_MS));
         if (assert != ESP_OK)
         {
             // assert_log(Log_Level::INFO, __FILE__, __LINE__, "i2c_master_read_from_device fail (error code: %#X)\n", assert);
@@ -232,7 +232,7 @@ namespace Cpp_Bus_Driver
 
         return true;
 
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 
         _iic_handle->beginTransmission(address);
         uint8_t assert = _iic_handle->endTransmission();
@@ -261,7 +261,7 @@ namespace Cpp_Bus_Driver
 #endif
     }
 
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     i2c_cmd_handle_t Hardware_Iic_2::cmd_link_create(void)
     {
         return i2c_cmd_link_create();
@@ -337,7 +337,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        assert = i2c_master_cmd_begin(_port, cmd_handle, pdMS_TO_TICKS(DEFAULT_CPP_BUS_DRIVER_IIC_WAIT_TIMEOUT_MS));
+        assert = i2c_master_cmd_begin(_port, cmd_handle, pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_IIC_WAIT_TIMEOUT_MS));
         if (assert != ESP_OK)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2c_master_cmd_begin fail (error code: %#X)\n", assert);

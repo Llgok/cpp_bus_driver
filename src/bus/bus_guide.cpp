@@ -9,7 +9,7 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     i2c_cmd_handle_t Bus_Iic_Guide::cmd_link_create(void)
     {
         assert_log(Log_Level::BUS, __FILE__, __LINE__, "cmd_link_create fail\n");

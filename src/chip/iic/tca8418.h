@@ -131,12 +131,12 @@ namespace Cpp_Bus_Driver
             uint8_t y = -1; // y 坐标
         };
 
-        Tca8418(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
+        Tca8418(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : Iic_Guide(bus, address), _rst(rst)
         {
         }
 
-        bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+        bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
 
         /**
          * @brief 设置键盘扫描模式开窗大小

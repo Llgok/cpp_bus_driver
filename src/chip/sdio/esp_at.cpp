@@ -15,7 +15,7 @@ namespace Cpp_Bus_Driver
         _connect.error_count = 0;
         _connect.receive_total_length_index = 0;
 
-        if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
             
@@ -71,7 +71,7 @@ namespace Cpp_Bus_Driver
     {
         if (mode == Sleep_Mode::POWER_DOWN)
         {
-            if (_rst != DEFAULT_CPP_BUS_DRIVER_VALUE)
+            if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
             {
                 pin_write(_rst, 0);
             }

@@ -93,7 +93,7 @@ namespace Cpp_Bus_Driver
 
         int32_t _rst;
 
-        int32_t _busy = DEFAULT_CPP_BUS_DRIVER_VALUE;
+        int32_t _busy = CPP_BUS_DRIVER_DEFAULT_VALUE;
         bool (*_busy_wait_callback)(void) = nullptr;
 
     public:
@@ -330,18 +330,18 @@ namespace Cpp_Bus_Driver
         uint8_t _assert = 0;
 
         Sx126x(std::shared_ptr<Bus_Spi_Guide> bus, Chip_Type chip_type, int32_t busy,
-               int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
+               int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : Spi_Guide(bus, cs), _chip_type(chip_type), _rst(rst), _busy(busy)
         {
         }
 
         Sx126x(std::shared_ptr<Bus_Spi_Guide> bus, Chip_Type chip_type, bool (*busy_wait_callback)(void),
-               int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE, int32_t rst = DEFAULT_CPP_BUS_DRIVER_VALUE)
+               int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : Spi_Guide(bus, cs), _chip_type(chip_type), _rst(rst), _busy_wait_callback(busy_wait_callback)
         {
         }
 
-        bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+        bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
 
         std::string get_device_id(void);
 

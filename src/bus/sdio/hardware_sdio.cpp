@@ -9,17 +9,17 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Hardware_Sdio::begin(int32_t freq_hz)
     {
-        if (freq_hz == DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (freq_hz == CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
-            freq_hz = DEFAULT_CPP_BUS_DRIVER_SDIO_FREQ_HZ;
+            freq_hz = CPP_BUS_DRIVER_DEFAULT_SDIO_FREQ_HZ;
         }
         else if ((freq_hz != SDMMC_FREQ_DEFAULT) || (freq_hz != SDMMC_FREQ_HIGHSPEED) || (freq_hz != SDMMC_FREQ_PROBING) ||
                  (freq_hz != SDMMC_FREQ_52M) || (freq_hz != SDMMC_FREQ_26M))
         {
-            freq_hz = DEFAULT_CPP_BUS_DRIVER_SDIO_FREQ_HZ;
+            freq_hz = CPP_BUS_DRIVER_DEFAULT_SDIO_FREQ_HZ;
         }
 
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_sdio config _port: %d\n", _port);
@@ -35,31 +35,31 @@ namespace Cpp_Bus_Driver
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_sdio config _d6: %d\n", _d6);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_sdio config _d7: %d\n", _d7);
 
-        if (_d7 != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        if (_d7 != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             _width = 8;
         }
-        else if (_d6 != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        else if (_d6 != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             _width = 7;
         }
-        else if (_d5 != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        else if (_d5 != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             _width = 6;
         }
-        else if (_d4 != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        else if (_d4 != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             _width = 5;
         }
-        else if (_d3 != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        else if (_d3 != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             _width = 4;
         }
-        else if (_d2 != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        else if (_d2 != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             _width = 3;
         }
-        else if (_d1 != DEFAULT_CPP_BUS_DRIVER_VALUE)
+        else if (_d1 != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             _width = 2;
         }

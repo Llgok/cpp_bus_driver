@@ -25,7 +25,7 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        virtual bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE);
+        virtual bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
         virtual bool end(void);
 
         bool init_list(const uint8_t *list, size_t length);
@@ -40,12 +40,12 @@ namespace Cpp_Bus_Driver
         int32_t _cs;
 
     public:
-        Spi_Guide(std::shared_ptr<Bus_Spi_Guide> bus, int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE)
+        Spi_Guide(std::shared_ptr<Bus_Spi_Guide> bus, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : _bus(bus), _cs(cs)
         {
         }
 
-        virtual bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE);
+        virtual bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
 
         bool init_list(const uint8_t *list, size_t length);
     };
@@ -53,7 +53,7 @@ namespace Cpp_Bus_Driver
     class Qspi_Guide : public Tool
     {
     protected:
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         enum class Spi_Trans
         {
             MODE_DIO = SPI_TRANS_MODE_DIO,
@@ -92,12 +92,12 @@ namespace Cpp_Bus_Driver
         int32_t _cs;
 
     public:
-        Qspi_Guide(std::shared_ptr<Bus_Qspi_Guide> bus, int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE)
+        Qspi_Guide(std::shared_ptr<Bus_Qspi_Guide> bus, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : _bus(bus), _cs(cs)
         {
         }
 
-        virtual bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE);
+        virtual bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
 
         bool init_list(const uint32_t *list, size_t length);
     };
@@ -113,7 +113,7 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        virtual bool begin(int32_t baud_rate = DEFAULT_CPP_BUS_DRIVER_VALUE);
+        virtual bool begin(int32_t baud_rate = CPP_BUS_DRIVER_DEFAULT_VALUE);
     };
 
     class Iis_Guide : public Tool
@@ -126,9 +126,9 @@ namespace Cpp_Bus_Driver
             : _bus(bus)
         {
         }
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         virtual bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) = 0;
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         virtual bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width, nrf_i2s_channels_t channel) = 0;
 #endif
     };
@@ -144,6 +144,6 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        virtual bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE);
+        virtual bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
     };
 }

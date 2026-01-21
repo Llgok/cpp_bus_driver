@@ -11,7 +11,7 @@
 
 namespace Cpp_Bus_Driver
 {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     class Hardware_Qspi : public Bus_Qspi_Guide
     {
     private:
@@ -31,13 +31,13 @@ namespace Cpp_Bus_Driver
     public:
         Hardware_Qspi(int32_t data0, int32_t data1, int32_t data2, int32_t data3, int32_t sclk,
                       spi_host_device_t port = SPI2_HOST, int8_t mode = 0, spi_clock_source_t clock_source = SPI_CLK_SRC_DEFAULT,
-                      uint32_t flags = DEFAULT_CPP_BUS_DRIVER_VALUE)
+                      uint32_t flags = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : _data0(data0), _data1(data1), _data2(data2), _data3(data3), _sclk(sclk), _port(port), _mode(mode),
               _clock_source(clock_source), _flags(flags)
         {
         }
 
-        bool begin(int32_t freq_hz = DEFAULT_CPP_BUS_DRIVER_VALUE, int32_t cs = DEFAULT_CPP_BUS_DRIVER_VALUE) override;
+        bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
         // bool write(const uint16_t cmd, const uint64_t addr, const uint8_t *data = NULL, size_t byte = 0, uint32_t flags = static_cast<uint32_t>(NULL)) override;
         // bool write(const void *data, size_t byte, bool cs_keep_active) override;
         bool write(const void *data, size_t byte, uint32_t flags = static_cast<uint32_t>(NULL), bool cs_keep_active = false) override;

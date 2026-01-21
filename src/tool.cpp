@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2026-01-21 12:10:27
+ * @LastEditTime: 2026-01-21 18:16:11
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -167,7 +167,7 @@ namespace Cpp_Bus_Driver
 
     bool Tool::pin_mode(uint32_t pin, Pin_Mode mode, Pin_Status status)
     {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         gpio_config_t config;
         config.pin_bit_mask = BIT64(pin);
         switch (mode)
@@ -225,7 +225,7 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         switch (mode)
         {
         case Pin_Mode::DISABLE:
@@ -266,7 +266,7 @@ namespace Cpp_Bus_Driver
 
     bool Tool::pin_write(uint32_t pin, bool value)
     {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         esp_err_t assert = gpio_set_level(static_cast<gpio_num_t>(pin), value);
         if (assert != ESP_OK)
         {
@@ -275,7 +275,7 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif define CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         digitalWrite(pin, value);
         return true;
 #else
@@ -285,9 +285,9 @@ namespace Cpp_Bus_Driver
 
     bool Tool::pin_read(uint32_t pin)
     {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         return gpio_get_level(static_cast<gpio_num_t>(pin));
-#elif defined DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         return digitalRead(pin);
 #else
         return false;
@@ -296,25 +296,25 @@ namespace Cpp_Bus_Driver
 
     void Tool::delay_ms(uint32_t value)
     {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         // 默认状态下vTaskDelay在小于10ms延时的时候不精确
         // vTaskDelay(pdMS_TO_TICKS(value));
         usleep(value * 1000);
-#elif defined ARDUINO
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         delay(value);
 #endif
     }
 
     void Tool::delay_us(uint32_t value)
     {
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         usleep(value);
-#elif defined ARDUINO
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         delayMicroseconds(value);
 #endif
     }
 
-#if defined DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
 
     int64_t Tool::get_system_time_us(void)
     {
