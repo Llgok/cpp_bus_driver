@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 17:58:03
- * @LastEditTime: 2025-08-09 14:45:45
+ * @LastEditTime: 2026-01-21 12:03:59
  * @License: GPL 3.0
  */
 
@@ -108,6 +108,10 @@ namespace Cpp_Bus_Driver
         bool search(const uint8_t *search_library, size_t search_library_length, const char *search_sample, size_t sample_length, size_t *search_index = nullptr);
         bool search(const char *search_library, size_t search_library_length, const char *search_sample, size_t sample_length, size_t *search_index = nullptr);
 
+        bool safe_stoi(const std::string &input, long *output);
+        bool safe_stof(const std::string &input, float *output);
+        bool safe_stod(const std::string &input, double *output);
+
         bool pin_mode(uint32_t pin, Pin_Mode mode, Pin_Status status = Pin_Status::DISABLE);
         bool pin_write(uint32_t pin, bool value);
         bool pin_read(uint32_t pin);
@@ -174,7 +178,7 @@ namespace Cpp_Bus_Driver
                 struct
                 {
                     uint8_t degrees = -1;        // 度
-                    double minutes = -1;         // 分
+                    float minutes = -1;         // 分
                     double degrees_minutes = -1; // 带小数的度分转度
 
                     // 纬度方向
@@ -189,7 +193,7 @@ namespace Cpp_Bus_Driver
                 struct
                 {
                     uint8_t degrees = -1;
-                    double minutes = -1;
+                    float minutes = -1;
                     double degrees_minutes = -1;
 
                     // 经度方向
@@ -230,7 +234,7 @@ namespace Cpp_Bus_Driver
                 {
                     uint8_t degrees = -1;       // 度
                     float minutes = -1;         // 分
-                    float degrees_minutes = -1; // 带小数的度分转度
+                    double degrees_minutes = -1; // 带小数的度分转度
 
                     // 纬度方向
                     // N = 北
@@ -245,7 +249,7 @@ namespace Cpp_Bus_Driver
                 {
                     uint8_t degrees = -1;
                     float minutes = -1;
-                    float degrees_minutes = -1;
+                    double degrees_minutes = -1;
 
                     // 经度方向
                     // E = 东

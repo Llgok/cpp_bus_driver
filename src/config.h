@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2026-01-05 13:34:56
+ * @LastEditTime: 2026-01-21 14:36:24
  * @License: GPL 3.0
  */
 #pragma once
@@ -17,6 +17,7 @@
 #include <cstring>
 #include <string>
 #include <stdarg.h>
+#include <sstream>
 
 #if defined CONFIG_IDF_INIT_VERSION
 #define DEVELOPMENT_FRAMEWORK_ESPIDF
@@ -35,7 +36,6 @@
 #include "esp_timer.h"
 
 #elif defined ARDUINO
-#include <stdarg.h>
 #include "Arduino.h"
 #include "Wire.h"
 #include "SPI.h"

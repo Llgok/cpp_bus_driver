@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2026-01-05 14:53:04
+ * @LastEditTime: 2026-01-21 12:10:27
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -584,256 +584,281 @@ namespace Cpp_Bus_Driver
     }
 #endif
 
+    /**
+     * @brief 安全的字符串转整数
+     * @param &input 输入需要转换的字符串
+     * @param *output 输出转换后的数据
+     * @return
+     * @Date 2026-01-21 09:50:30
+     */
+    bool Tool::safe_stoi(const std::string &input, long *output)
+    {
+        if (input.empty())
+        {
+            assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "safe_stoi input is empty\n");
+            return false;
+        }
+
+        if (output == nullptr)
+        {
+            assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "output is nullptr\n");
+            return false;
+        }
+
+        char *endptr = nullptr;
+        // strtol 会尝试转换，并将停止位置存入 endptr
+        long val = std::strtol(input.c_str(), &endptr, 10);
+
+        // 检查是否发生了有效转换
+        // 如果 endptr 依然指向字符串起始位置，说明输入如 "abc"
+        if (endptr == input.c_str())
+        {
+            assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "safe_stoi conversion fail (error Input: %s)\n", input.c_str());
+            return false;
+        }
+
+        *output = val;
+
+        return true;
+    }
+
+    /**
+     * @brief 安全的字符串转浮点数
+     * @param &input 需要转换的字符串
+     * @param *output 输出转换后的数据
+     * @return
+     * @Date 2026-01-21 09:50:30
+     */
+    bool Tool::safe_stof(const std::string &input, float *output)
+    {
+        if (input.empty())
+        {
+            assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "safe_stof Input is empty\n");
+            return false;
+        }
+
+        if (output == nullptr)
+        {
+            assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "output is nullptr\n");
+            return false;
+        }
+
+        char *endptr = nullptr;
+        float val = std::strtof(input.c_str(), &endptr);
+
+        // 如果转换没能开始，或者输入的第一个字符就非法
+        if (endptr == input.c_str())
+        {
+            assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "safe_stof conversion fail (error Input: %s)\n", input.c_str());
+            return false;
+        }
+
+        *output = val;
+
+        return true;
+    }
+
+    /**
+     * @brief 安全的字符串转双精度浮点数
+     * @param &input 需要转换的字符串
+     * @param *output 输出转换后的数据
+     * @return
+     * @Date 2026-01-21 11:58:00
+     */
+    bool Tool::safe_stod(const std::string &input, double *output)
+    {
+        if (input.empty())
+        {
+            assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "safe_stod Input is empty\n");
+            return false;
+        }
+
+        if (output == nullptr)
+        {
+            assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "output is nullptr\n");
+            return false;
+        }
+
+        char *endptr = nullptr;
+        // 使用 std::strtod 处理 double 类型
+        double val = std::strtod(input.c_str(), &endptr);
+
+        // 如果转换没能开始（例如输入是非数字字符），或者 endptr 指向字符串开头
+        if (endptr == input.c_str())
+        {
+            assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "safe_stod conversion fail (error Input: %s)\n", input.c_str());
+            return false;
+        }
+
+        *output = val;
+
+        return true;
+    }
+
     bool Gnss::parse_rmc_info(const uint8_t *data, size_t length, Rmc &rmc)
     {
         assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "parse_rmc_info(length: %d): \n---begin---\n%s\n---end---\n", length, data);
 
-        size_t buffer_index = 0;
-        const char *buffer_cmd = "$GNRMC";
-        bool buffer_exit_flag = true;
-        size_t buffer_used_size = 0;
+        // 将接收到的数据转为字符串（即使末尾被截断也能处理）
+        std::string received_data(reinterpret_cast<const char *>(data), length);
+        std::string target = "$GNRMC";
+        size_t start_pos = 0;
 
-        // 循环搜索数据里面所有的命令
-        while (1)
+        bool exit_flag = false;
+
+        // 循环搜索数据中可能存在的所有 $GNRMC 命令
+        while ((start_pos = received_data.find(target, start_pos)) != std::string::npos)
         {
-            if (search(data + buffer_used_size, length - buffer_used_size, buffer_cmd, std::strlen(buffer_cmd), &buffer_index) == false)
+            // 寻找当前行的结束符，如果找不到说明被截断了，解析到字符串末尾
+            size_t end_pos = received_data.find("\r\n", start_pos);
+            std::string line;
+            if (end_pos == std::string::npos)
             {
-                // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
-                buffer_exit_flag = true;
+                // 数据被截断
+                line = received_data.substr(start_pos);
+
+                assert_log(Log_Level::INFO, __FILE__, __LINE__, "the data has been truncated\n");
             }
             else
             {
-                buffer_used_size += buffer_index;
-                assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "$GNRMC index: %d\n", buffer_used_size);
+                line = received_data.substr(start_pos, end_pos - start_pos);
+            }
 
-                buffer_used_size += std::strlen(buffer_cmd);
+            start_pos = end_pos + 2;
 
-                uint8_t buffer_field_count = 0; // 记录当前的字段号
-                for (auto i = buffer_used_size; i < length; i++)
+            // 处理校验和：寻找 '*' 号
+            size_t star_pos = line.find('*');
+            // 这里暂时不校验逻辑，只按需截取有效内容进行解析
+            std::string content = (star_pos != std::string::npos) ? line.substr(0, star_pos) : line;
+
+            std::stringstream ss(content);
+            std::string token;
+            std::vector<std::string> parts;
+
+            // 按 ',' 分割字符串
+            while (std::getline(ss, token, ','))
+            {
+                parts.push_back(token);
+            }
+
+            // 基础安全检查：如果分割出的字段少于 2，跳过（防止只有个头）
+            if (parts.size() < 2)
+            {
+                assert_log(Log_Level::INFO, __FILE__, __LINE__, "insufficient data input\n");
+                continue;
+            }
+
+            // 开始安全解析各个字段
+
+            // Data 1: UTC Time (hhmmss.ss 或 hhmmss.sss)
+            if (parts.size() > 1 && parts[1].length() >= 6)
+            {
+                long buffer_hour, buffer_minute = 0;
+                float buffer_second = 0.0;
+
+                if (safe_stoi(parts[1].substr(0, 2), &buffer_hour) == true)
                 {
-                    if ((data[i] == '\r') && (data[i + 1] == '\n')) // 停止符
+                    if (safe_stoi(parts[1].substr(2, 2), &buffer_minute) == true)
                     {
-                        break;
-                    }
-                    else if (data[i] == ',')
-                    {
-                        buffer_field_count++;
-                        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_field_count++\n");
-                    }
-                    else
-                    {
-                        switch (buffer_field_count)
+                        if (safe_stof(parts[1].substr(4), &buffer_second) == true) // 自动处理 .ss 或 .sss
                         {
-                        case 1: //<UTC>
-                        {
-                            // 确保数据长度正确
-                            size_t buffer_index_2 = 0;
-                            const char *buffer_cmd_2 = ",";
-                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
-                                break;
-                            }
+                            rmc.utc.hour = buffer_hour;
+                            rmc.utc.minute = buffer_minute;
+                            rmc.utc.second = buffer_second;
 
-                            switch (buffer_index_2)
-                            {
-                            case 9: // 可能为9位（hhmmss.ss）
-                            {
-                                char buffer_hour[] = {data[i], data[i + 1], '\0'};
-                                char buffer_minute[] = {data[i + 2], data[i + 3], '\0'};
-                                // data[i + 6]为小数点
-                                char buffer_second[] =
-                                    {
-                                        data[i + 4],
-                                        data[i + 5],
-                                        data[i + 6],
-                                        data[i + 7],
-                                        data[i + 8],
-                                        '\0',
-                                    };
+                            rmc.utc.update_flag = true;
 
-                                rmc.utc.hour = std::stoi(buffer_hour);
-                                rmc.utc.minute = std::stoi(buffer_minute);
-                                rmc.utc.second = std::stof(buffer_second, nullptr);
-                                rmc.utc.update_flag = true;
-
-                                i += (9 - 1);
-                                break;
-                            }
-                            case 10: // 可能为10位（hhmmss.sss）
-                            {
-
-                                char buffer_hour[] = {data[i], data[i + 1], '\0'};
-                                char buffer_minute[] = {data[i + 2], data[i + 3], '\0'};
-                                // data[i + 6]为小数点
-                                char buffer_second[] =
-                                    {
-                                        data[i + 4],
-                                        data[i + 5],
-                                        data[i + 6],
-                                        data[i + 7],
-                                        data[i + 8],
-                                        data[i + 9],
-                                        '\0',
-                                    };
-
-                                rmc.utc.hour = std::stoi(buffer_hour);
-                                rmc.utc.minute = std::stoi(buffer_minute);
-                                rmc.utc.second = std::stof(buffer_second, nullptr);
-                                rmc.utc.update_flag = true;
-
-                                i += (10 - 1);
-                                break;
-                            }
-                            default:
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<UTC> length error((length = %d) != 9 or 10)\n", buffer_index_2);
-                                i += (buffer_index_2 - 1);
-                                buffer_exit_flag = false;
-                                break;
-                            }
-
-                            break;
-                        }
-                        case 2: //<Status>
-                            rmc.location_status = data[i];
-                            break;
-                        case 3: //<Lat>
-                        {
-                            // 确保数据长度正确
-                            size_t buffer_index_2 = 0;
-                            const char *buffer_cmd_2 = ",";
-                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
-                                break;
-                            }
-                            if (buffer_index_2 != 10)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<Lat> length error((length = %d) != 10)\n", buffer_index_2);
-                                i += (buffer_index_2 - 1);
-                                buffer_exit_flag = false;
-                                break;
-                            }
-
-                            char buffer_lat_degrees[] = {data[i], data[i + 1], '\0'};
-                            char buffer_lat_minutes[] =
-                                {
-                                    data[i + 2],
-                                    data[i + 3],
-                                    data[i + 4],
-                                    data[i + 5],
-                                    data[i + 6],
-                                    data[i + 7],
-                                    data[i + 8],
-                                    data[i + 9],
-                                    '\0',
-                                };
-
-                            rmc.location.lat.degrees = std::stoi(buffer_lat_degrees);
-                            rmc.location.lat.minutes = std::stof(buffer_lat_minutes, nullptr);
-                            rmc.location.lat.degrees_minutes = static_cast<double>(rmc.location.lat.degrees) + (rmc.location.lat.minutes / 60.0);
-
-                            rmc.location.lat.update_flag = true;
-
-                            i += (10 - 1);
-                            break;
-                        }
-                        case 4: //<N/S>
-                            rmc.location.lat.direction = data[i];
-
-                            rmc.location.lat.direction_update_flag = true;
-                            break;
-                        case 5: //<Lon>
-                        {
-                            // 确保数据长度正确
-                            size_t buffer_index_2 = 0;
-                            const char *buffer_cmd_2 = ",";
-                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
-                                break;
-                            }
-                            if (buffer_index_2 != 11)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<Lon> length error((length = %d) != 11)\n", buffer_index_2);
-                                i += (buffer_index_2 - 1);
-                                buffer_exit_flag = false;
-                                break;
-                            }
-
-                            char buffer_lon_degrees[] = {data[i], data[i + 1], data[i + 2], '\0'};
-                            char buffer_lon_minutes[] =
-                                {
-                                    data[i + 3],
-                                    data[i + 4],
-                                    data[i + 5],
-                                    data[i + 6],
-                                    data[i + 7],
-                                    data[i + 8],
-                                    data[i + 9],
-                                    data[i + 10],
-                                    '\0',
-                                };
-
-                            rmc.location.lon.degrees = std::stoi(buffer_lon_degrees);
-                            rmc.location.lon.minutes = std::stof(buffer_lon_minutes, nullptr);
-                            rmc.location.lon.degrees_minutes = static_cast<double>(rmc.location.lon.degrees) + (rmc.location.lon.minutes / 60.0);
-
-                            rmc.location.lon.update_flag = true;
-
-                            i += (11 - 1);
-                            break;
-                        }
-                        case 6: //<E/W>
-                            rmc.location.lon.direction = data[i];
-
-                            rmc.location.lon.direction_update_flag = true;
-                            break;
-                        case 7:
-                            break;
-                        case 8:
-                            break;
-                        case 9: //<Date>
-                        {
-                            // 确保数据长度正确
-                            size_t buffer_index_2 = 0;
-                            const char *buffer_cmd_2 = ",";
-                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
-                                break;
-                            }
-                            if (buffer_index_2 != 6)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<Date> length error((length = %d) != 6)\n", buffer_index_2);
-                                i += (buffer_index_2 - 1);
-                                buffer_exit_flag = false;
-                                break;
-                            }
-
-                            char buffer_day[] = {data[i], data[i + 1], '\0'};
-                            char buffer_month[] = {data[i + 2], data[i + 3], '\0'};
-                            char buffer_year[] = {data[i + 4], data[i + 5], '\0'};
-
-                            rmc.data.day = std::stoi(buffer_day);
-                            rmc.data.month = std::stoi(buffer_month);
-                            rmc.data.year = std::stoi(buffer_year);
-                            rmc.data.update_flag = true;
-
-                            i += (6 - 1);
-                            break;
-                        }
-                        default:
-                            break;
+                            exit_flag = true;
                         }
                     }
                 }
-
-                assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "parse_rmc_info finish(field count: %d)\n", buffer_field_count);
             }
 
-            if (buffer_exit_flag == true)
+            // Data 2: Status (A=有效, V=无效)
+            if (parts.size() > 2 && !parts[2].empty())
             {
+                rmc.location_status = parts[2][0];
+
+                exit_flag = true;
+            }
+
+            // Data 3 & 4: Lat (ddmm.mmmm) & N/S
+            if (parts.size() > 4 && parts[3].length() >= 4)
+            {
+                long buffer_degrees = 0;
+                float buffer_minutes = 0.0;
+
+                if (safe_stoi(parts[3].substr(0, 2), &buffer_degrees) == true)
+                {
+                    if (safe_stof(parts[3].substr(2), &buffer_minutes) == true)
+                    {
+                        rmc.location.lat.degrees = buffer_degrees;
+                        rmc.location.lat.minutes = buffer_minutes;
+                        rmc.location.lat.degrees_minutes = static_cast<double>(rmc.location.lat.degrees) + static_cast<double>(rmc.location.lat.minutes / 60.0);
+                        rmc.location.lat.update_flag = true;
+
+                        if (!parts[4].empty())
+                        {
+                            rmc.location.lat.direction = parts[4][0];
+                            rmc.location.lat.direction_update_flag = true;
+                        }
+
+                        exit_flag = true;
+                    }
+                }
+            }
+
+            // Data 5 & 6: Lon (dddmm.mmmm) & E/W
+            if (parts.size() > 6 && parts[5].length() >= 5)
+            {
+                long buffer_degrees = 0;
+                float buffer_minutes = 0.0;
+
+                if (safe_stoi(parts[5].substr(0, 3), &buffer_degrees) == true)
+                {
+                    if (safe_stof(parts[5].substr(3), &buffer_minutes) == true)
+                    {
+                        rmc.location.lon.degrees = buffer_degrees;
+                        rmc.location.lon.minutes = buffer_minutes;
+                        rmc.location.lon.degrees_minutes = static_cast<double>(rmc.location.lon.degrees) + static_cast<double>(rmc.location.lon.minutes / 60.0);
+                        rmc.location.lon.update_flag = true;
+
+                        if (!parts[6].empty())
+                        {
+                            rmc.location.lon.direction = parts[6][0];
+                            rmc.location.lon.direction_update_flag = true;
+                        }
+
+                        exit_flag = true;
+                    }
+                }
+            }
+
+            // Data 9: Date (ddmmyy)
+            if (parts.size() > 9 && parts[9].length() == 6)
+            {
+                long buffer_day = 0, buffer_month = 0, buffer_year = 0;
+
+                if (safe_stoi(parts[9].substr(0, 2), &buffer_day) == true)
+                {
+                    if (safe_stoi(parts[9].substr(2, 2), &buffer_month) == true)
+                    {
+                        if (safe_stoi(parts[9].substr(4, 2), &buffer_year) == true)
+                        {
+                            rmc.data.day = buffer_day;
+                            rmc.data.month = buffer_month;
+                            rmc.data.year = buffer_year;
+                            rmc.data.update_flag = true;
+
+                            exit_flag = true;
+                        }
+                    }
+                }
+            }
+
+            if (exit_flag == true)
+            {
+                assert_log(Log_Level::INFO, __FILE__, __LINE__, "parse_rmc_info finish (success parse size: %d)\n", parts.size());
                 break;
             }
         }
@@ -845,238 +870,161 @@ namespace Cpp_Bus_Driver
     {
         assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "parse_gga_info(length: %d): \n---begin---\n%s\n---end---\n", length, data);
 
-        size_t buffer_index = 0;
-        const char *buffer_cmd = "$GNGGA";
-        bool buffer_exit_flag = true;
-        size_t buffer_used_size = 0;
+        std::string received_data(reinterpret_cast<const char *>(data), length);
+        std::string target = "$GNGGA";
+        size_t start_pos = 0;
 
-        // 循环搜索数据里面所有的命令
-        while (1)
+        bool exit_flag = false;
+
+        while ((start_pos = received_data.find(target, start_pos)) != std::string::npos)
         {
-            if (search(data + buffer_used_size, length - buffer_used_size, buffer_cmd, std::strlen(buffer_cmd), &buffer_index) == false)
+            size_t end_pos = received_data.find("\r\n", start_pos);
+            std::string line;
+            if (end_pos == std::string::npos)
             {
-                // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
-                break;
+                // 数据被截断
+                line = received_data.substr(start_pos);
+
+                assert_log(Log_Level::INFO, __FILE__, __LINE__, "the data has been truncated\n");
             }
             else
             {
-                buffer_used_size += buffer_index;
-                assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "$GNGGA index: %d\n", buffer_used_size);
+                line = received_data.substr(start_pos, end_pos - start_pos);
+            }
 
-                buffer_used_size += std::strlen(buffer_cmd);
+            start_pos = end_pos + 2;
 
-                uint8_t buffer_field_count = 0; // 记录当前的字段号
-                for (auto i = buffer_used_size; i < length; i++)
+            size_t star_pos = line.find('*');
+            std::string content = (star_pos != std::string::npos) ? line.substr(0, star_pos) : line;
+
+            std::stringstream ss(content);
+            std::string token;
+            std::vector<std::string> parts;
+            while (std::getline(ss, token, ','))
+            {
+                parts.push_back(token);
+            }
+
+            if (parts.size() < 2)
+            {
+                assert_log(Log_Level::INFO, __FILE__, __LINE__, "insufficient data input\n");
+                continue;
+            }
+
+            // Data 1: UTC Time (hhmmss.ss 或 hhmmss.sss)
+            if (parts.size() > 1 && parts[1].length() >= 6)
+            {
+                long buffer_hour = 0, buffer_minute = 0;
+                float buffer_second = 0.0;
+
+                if (safe_stoi(parts[1].substr(0, 2), &buffer_hour) == true)
                 {
-                    if ((data[i] == '\r') && (data[i + 1] == '\n')) // 停止符
+                    if (safe_stoi(parts[1].substr(2, 2), &buffer_minute) == true)
                     {
-                        break;
-                    }
-                    else if (data[i] == ',')
-                    {
-                        buffer_field_count++;
-                        // assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_field_count++\n");
-                    }
-                    else
-                    {
-                        switch (buffer_field_count)
+                        if (safe_stof(parts[1].substr(4), &buffer_second) == true)
                         {
-                        case 1: //<UTC>
-                        {
-                            // 确保数据长度正确
-                            size_t buffer_index_2 = 0;
-                            const char *buffer_cmd_2 = ",";
-                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
-                                break;
-                            }
-                            if (buffer_index_2 != 10)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<UTC> length error((length = %d) != 10)\n", buffer_index_2);
-                                i += (buffer_index_2 - 1);
-                                buffer_exit_flag = false;
-                                break;
-                            }
-
-                            char buffer_hour[] = {data[i], data[i + 1], '\0'};
-                            char buffer_minute[] = {data[i + 2], data[i + 3], '\0'};
-                            // data[i + 6]为小数点
-                            char buffer_second[] =
-                                {
-                                    data[i + 4],
-                                    data[i + 5],
-                                    data[i + 6],
-                                    data[i + 7],
-                                    data[i + 8],
-                                    data[i + 9],
-                                    '\0',
-                                };
-
-                            gga.utc.hour = std::stoi(buffer_hour);
-                            gga.utc.minute = std::stoi(buffer_minute);
-                            gga.utc.second = std::stof(buffer_second, nullptr);
+                            gga.utc.hour = buffer_hour;
+                            gga.utc.minute = buffer_minute;
+                            gga.utc.second = buffer_second;
                             gga.utc.update_flag = true;
 
-                            i += (10 - 1);
-                            break;
-                        }
-                        case 2: //<Lat>
-                        {
-                            // 确保数据长度正确
-                            size_t buffer_index_2 = 0;
-                            const char *buffer_cmd_2 = ",";
-                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
-                                break;
-                            }
-                            if (buffer_index_2 != 10)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<Lat> length error((length = %d) != 10)\n", buffer_index_2);
-                                i += (buffer_index_2 - 1);
-                                buffer_exit_flag = false;
-                                break;
-                            }
-
-                            char buffer_lat_degrees[] = {data[i], data[i + 1], '\0'};
-                            char buffer_lat_minutes[] =
-                                {
-                                    data[i + 2],
-                                    data[i + 3],
-                                    data[i + 4],
-                                    data[i + 5],
-                                    data[i + 6],
-                                    data[i + 7],
-                                    data[i + 8],
-                                    data[i + 9],
-                                    '\0',
-                                };
-
-                            gga.location.lat.degrees = std::stoi(buffer_lat_degrees);
-                            gga.location.lat.minutes = std::stof(buffer_lat_minutes, nullptr);
-                            gga.location.lat.degrees_minutes = static_cast<double>(gga.location.lat.degrees) + (gga.location.lat.minutes / 60.0);
-
-                            gga.location.lat.update_flag = true;
-
-                            i += (10 - 1);
-                            break;
-                        }
-                        case 3: //<N/S>
-                            gga.location.lat.direction = data[i];
-
-                            gga.location.lat.direction_update_flag = true;
-                            break;
-                        case 4: //<Lon>
-                        {
-                            // 确保数据长度正确
-                            size_t buffer_index_2 = 0;
-                            const char *buffer_cmd_2 = ",";
-                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
-                                break;
-                            }
-                            if (buffer_index_2 != 11)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<Lon> length error((length = %d) != 11)\n", buffer_index_2);
-                                i += (buffer_index_2 - 1);
-                                buffer_exit_flag = false;
-                                break;
-                            }
-
-                            char buffer_lon_degrees[] = {data[i], data[i + 1], data[i + 2], '\0'};
-                            char buffer_lon_minutes[] =
-                                {
-                                    data[i + 3],
-                                    data[i + 4],
-                                    data[i + 5],
-                                    data[i + 6],
-                                    data[i + 7],
-                                    data[i + 8],
-                                    data[i + 9],
-                                    data[i + 10],
-                                    '\0',
-                                };
-
-                            gga.location.lon.degrees = std::stoi(buffer_lon_degrees);
-                            gga.location.lon.minutes = std::stof(buffer_lon_minutes, nullptr);
-                            gga.location.lon.degrees_minutes = static_cast<double>(gga.location.lon.degrees) + (gga.location.lon.minutes / 60.0);
-
-                            gga.location.lon.update_flag = true;
-
-                            i += (11 - 1);
-                            break;
-                        }
-                        case 5: //<E/W>
-                            gga.location.lon.direction = data[i];
-
-                            gga.location.lon.direction_update_flag = true;
-                            break;
-                        case 6: //<Quality>
-                        {
-                            char buffer_gps_mode_status[] = {data[i], '\0'};
-
-                            gga.gps_mode_status = std::stoi(buffer_gps_mode_status);
-                            break;
-                        }
-                        case 7: //<NumSatUsed>
-                        {
-                            // 确保数据长度正确
-                            size_t buffer_index_2 = 0;
-                            const char *buffer_cmd_2 = ",";
-                            if (search(data + i, length - i, buffer_cmd_2, std::strlen(buffer_cmd_2), &buffer_index_2) == false)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
-                                break;
-                            }
-                            if (buffer_index_2 != 2)
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "<NumSatUsed> length error((length = %d) != 2)\n", buffer_index_2);
-                                i += (buffer_index_2 - 1);
-                                buffer_exit_flag = false;
-                                break;
-                            }
-
-                            char buffer_online_satellite_count[] = {data[i], data[i + 1], '\0'};
-
-                            gga.online_satellite_count = std::stoi(buffer_online_satellite_count);
-
-                            i += (2 - 1);
-                            break;
-                        }
-                        case 8: // <HDOP>
-                        {
-                            size_t buffer_index_3 = 0;
-
-                            if (search(data + i, length - i, ",", 1, &buffer_index_3) == false) // 搜索下一个
-                            {
-                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
-                                break;
-                            }
-
-                            char buffer_1[buffer_index_3 + 1] = {0};
-
-                            std::memcpy(buffer_1, data + i, buffer_index_3);
-
-                            buffer_1[buffer_index_3] = '\0';
-
-                            gga.hdop = std::stof(buffer_1, nullptr); // 转为float
-
-                            i += (buffer_index_3 - 1);
-                            break;
-                        }
-                        default:
-                            break;
+                            exit_flag = true;
                         }
                     }
                 }
-
-                assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "buffer_field_count: %d\n", buffer_field_count);
             }
 
-            if (buffer_exit_flag == true)
+            // Data 2 & 3: Lat (dddmm.mmmm) & N/S
+            if (parts.size() > 3 && parts[2].length() >= 4)
             {
+                long buffer_degrees = 0;
+                float buffer_minutes = 0.0;
+
+                if (safe_stoi(parts[2].substr(0, 2), &buffer_degrees) == true)
+                {
+                    if (safe_stof(parts[2].substr(2), &buffer_minutes) == true)
+                    {
+                        gga.location.lat.degrees = buffer_degrees;
+                        gga.location.lat.minutes = buffer_minutes;
+                        gga.location.lat.degrees_minutes = static_cast<double>(gga.location.lat.degrees) + static_cast<double>(gga.location.lat.minutes / 60.0);
+                        gga.location.lat.update_flag = true;
+
+                        if (!parts[3].empty())
+                        {
+                            gga.location.lat.direction = parts[3][0];
+                            gga.location.lat.direction_update_flag = true;
+                        }
+
+                        exit_flag = true;
+                    }
+                }
+            }
+
+            // Data 4 & 5: Lon (dddmm.mmmm) & E/W
+            if (parts.size() > 5 && parts[4].length() >= 5)
+            {
+                long buffer_degrees = 0;
+                float buffer_minutes = 0.0;
+
+                if (safe_stoi(parts[4].substr(0, 3), &buffer_degrees) == true)
+                {
+                    if (safe_stof(parts[4].substr(3), &buffer_minutes) == true)
+                    {
+                        gga.location.lon.degrees = buffer_degrees;
+                        gga.location.lon.minutes = buffer_minutes;
+                        gga.location.lon.degrees_minutes = static_cast<double>(gga.location.lon.degrees) + static_cast<double>(gga.location.lon.minutes / 60.0);
+                        gga.location.lon.update_flag = true;
+
+                        if (!parts[5].empty())
+                        {
+                            gga.location.lon.direction = parts[5][0];
+                            gga.location.lon.direction_update_flag = true;
+                        }
+
+                        exit_flag = true;
+                    }
+                }
+            }
+
+            // Data 6: Quality
+            if (parts.size() > 6)
+            {
+                long buffer_gps_mode = 0;
+
+                if (safe_stoi(parts[6], &buffer_gps_mode) == true)
+                {
+                    gga.gps_mode_status = buffer_gps_mode;
+                    exit_flag = true;
+                }
+            }
+
+            // Data 7: NumSatUsed
+            if (parts.size() > 7)
+            {
+                long buffer_satellite_count = 0;
+
+                if (safe_stoi(parts[7], &buffer_satellite_count) == true)
+                {
+                    gga.online_satellite_count = buffer_satellite_count;
+                    exit_flag = true;
+                }
+            }
+
+            // Data 8: HDOP
+            if (parts.size() > 8)
+            {
+                float buffer_hdop = 0.0;
+
+                if (safe_stof(parts[8], &buffer_hdop) == true)
+                {
+                    gga.hdop = buffer_hdop;
+                    exit_flag = true;
+                }
+            }
+
+            if (exit_flag == true)
+            {
+                assert_log(Log_Level::INFO, __FILE__, __LINE__, "parse_gga_info finish (success parse size: %d)\n", parts.size());
                 break;
             }
         }
