@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2026-01-21 17:36:14
+ * @LastEditTime: 2026-01-22 09:17:41
  * @License: GPL 3.0
  */
 #pragma once
@@ -61,7 +61,7 @@
 #endif
 
 #else
-#error "development framework not selected"
+#error "no macro definition is set"
 #endif
 
 #include "tool.h"
@@ -127,7 +127,7 @@ namespace std
     }
 
 #else
-#error "development framework not selected"
+#error "no macro definition is set"
 #endif
 }
 #endif
