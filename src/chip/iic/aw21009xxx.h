@@ -41,29 +41,29 @@ namespace Cpp_Bus_Driver
         static constexpr const uint8_t _init_list[] =
             {
                 // 复位
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_RESET_REGISTER), 0,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_RESET_REGISTER), 0,
 
-                static_cast<uint8_t>(Init_List_Cmd::DELAY_MS), 10,
+                static_cast<uint8_t>(Init_List_Format::DELAY_MS), 10,
 
                 // 启动自动省电模式，12位pwm消抖模式，使能芯片
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_GLOBAL_CONTROL_REGISTER), 0B10000111,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_GLOBAL_CONTROL_REGISTER), 0B10000111,
 
                 // 设置全局最大电流为最大
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_GLOBAL_CURRENT_CONTROL_REGISTER), 0B11111111,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_GLOBAL_CURRENT_CONTROL_REGISTER), 0B11111111,
 
                 // 设置所有通道的电流限制为最大
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START), 0B11111111,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 1, 0B11111111,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 2, 0B11111111,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 3, 0B11111111,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 4, 0B11111111,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 5, 0B11111111,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 6, 0B11111111,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 7, 0B11111111,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 8, 0B11111111,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START), 0B11111111,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 1, 0B11111111,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 2, 0B11111111,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 3, 0B11111111,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 4, 0B11111111,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 5, 0B11111111,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 6, 0B11111111,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 7, 0B11111111,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SCALING_REGISTER_START) + 8, 0B11111111,
 
                 // 更新寄存器
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_UPDATE_REGISTER), 0};
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::WO_UPDATE_REGISTER), 0};
 
         int32_t _rst;
 

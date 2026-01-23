@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:14:18
- * @LastEditTime: 2026-01-16 16:18:21
+ * @LastEditTime: 2026-01-23 10:51:49
  * @License: GPL 3.0
  */
 
@@ -23,6 +23,7 @@
 #include "./bus/uart/hardware_uart.h"
 #include "./bus/iis/hardware_iis.h"
 #include "./bus/sdio/hardware_sdio.h"
+#include "./bus/mipi/hardware_mipi.h"
 
 #include "./chip/iic/xl95x5.h"
 #include "./chip/iic/aw862xx.h"
@@ -46,6 +47,7 @@
 #include "./chip/spi/sh8601.h"
 #include "./chip/uart/l76k.h"
 #include "./chip/sdio/esp_at.h"
+#include "./chip/mipi/hi8561.h"
 
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 

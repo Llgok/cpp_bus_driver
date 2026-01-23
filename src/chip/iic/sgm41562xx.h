@@ -38,22 +38,22 @@ namespace Cpp_Bus_Driver
 
         static constexpr const uint8_t _init_list[] =
             {
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_CHARGE_CURRENT_CONTROL), 0B11001111, // 重置寄存器
-                // static_cast<uint8_t>(Init_List_Cmd::DELAY_MS), 120,
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SYSTEM_VOLTAGE_REGULATION), 0B10110111,       // 关闭PCB OTP
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), 0B01000000, // 关闭NTC
+                // static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_CHARGE_CURRENT_CONTROL), 0B11001111, // 重置寄存器
+                // static_cast<uint8_t>(Init_List_Format::DELAY_MS), 120,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_SYSTEM_VOLTAGE_REGULATION), 0B10110111,       // 关闭PCB OTP
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), 0B01000000, // 关闭NTC
 
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), 0B11011111, // 屏蔽INT
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_IIC_ADDRESS_MISCELLANEOUS_CONFIGURATION), 0B01100001, // 充电电流权重限制
+                // static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), 0B11011111, // 屏蔽INT
+                // static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_IIC_ADDRESS_MISCELLANEOUS_CONFIGURATION), 0B01100001, // 充电电流权重限制
 
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_CHARGE_TERMINATION_TIMER_CONTROL), 0B00011010, // 关闭看门狗功能
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_POWER_ON_CONFIGURATION), 0B10100100,           // 开启电池充电功能
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_CHARGE_TERMINATION_TIMER_CONTROL), 0B00011010, // 关闭看门狗功能
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_POWER_ON_CONFIGURATION), 0B10100100,           // 开启电池充电功能
 
-                //  static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_POWER_ON_CONFIGURATION), 0B10101100,        // 关闭电池充电功能
+                //  static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_POWER_ON_CONFIGURATION), 0B10101100,        // 关闭电池充电功能
 
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RD_SYSTEM_STATUS), 0B01000000 // 关闭输入电流限制
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RD_SYSTEM_STATUS), 0B01000000 // 关闭输入电流限制
 
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RD_SYSTEM_STATUS), 0B00100000, // 添加200ma电流阈值到输入电流限制中（仅在电流限制模式有效）
+                // static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RD_SYSTEM_STATUS), 0B00100000, // 添加200ma电流阈值到输入电流限制中（仅在电流限制模式有效）
 
             };
 

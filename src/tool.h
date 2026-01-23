@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 17:58:03
- * @LastEditTime: 2026-01-21 12:03:59
+ * @LastEditTime: 2026-01-23 17:23:16
  * @License: GPL 3.0
  */
 
@@ -32,10 +32,11 @@ namespace Cpp_Bus_Driver
         static constexpr uint16_t MAX_LOG_BUFFER_SIZE = 1024;
 
     protected:
-        enum class Init_List_Cmd
+        enum class Init_List_Format
         {
             DELAY_MS,
-            WRITE_DATA,
+            WRITE_C8,
+            WRITE_C8_BYTE_DATA,
             WRITE_C8_D8,
             WRITE_C8_R24,
             WRITE_C8_R24_D8,
@@ -178,7 +179,7 @@ namespace Cpp_Bus_Driver
                 struct
                 {
                     uint8_t degrees = -1;        // 度
-                    float minutes = -1;         // 分
+                    float minutes = -1;          // 分
                     double degrees_minutes = -1; // 带小数的度分转度
 
                     // 纬度方向
@@ -232,8 +233,8 @@ namespace Cpp_Bus_Driver
             {
                 struct
                 {
-                    uint8_t degrees = -1;       // 度
-                    float minutes = -1;         // 分
+                    uint8_t degrees = -1;        // 度
+                    float minutes = -1;          // 分
                     double degrees_minutes = -1; // 带小数的度分转度
 
                     // 纬度方向

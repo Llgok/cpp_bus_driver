@@ -47,8 +47,8 @@ namespace Cpp_Bus_Driver
 
         static constexpr const uint8_t _init_list[] =
             {
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_INPUT_SOURCE_CONTROL), 0B00111111,            // 关闭 ILIM引脚，输入电流限制修改为最大
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_CHARGE_TERMINATION_TIMER_CONTROL), 0B10001101 // 禁用看门狗定时喂狗功能
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_INPUT_SOURCE_CONTROL), 0B00111111,            // 关闭 ILIM引脚，输入电流限制修改为最大
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_CHARGE_TERMINATION_TIMER_CONTROL), 0B10001101 // 禁用看门狗定时喂狗功能
             };
 
         int32_t _rst;

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2026-01-22 09:17:41
+ * @LastEditTime: 2026-01-23 16:15:44
  * @License: GPL 3.0
  */
 #pragma once
@@ -34,6 +34,9 @@
 #include "driver/sdmmc_host.h"
 #include "sdmmc_cmd.h"
 #include "esp_timer.h"
+#include "esp_lcd_mipi_dsi.h"
+#include "esp_lcd_panel_io.h"
+#include "esp_lcd_panel_ops.h"
 
 #elif defined ARDUINO
 #include "Arduino.h"
@@ -85,6 +88,9 @@
 #define CPP_BUS_DRIVER_DEFAULT_UART_WAIT_TIMEOUT_MS 1000
 
 #define CPP_BUS_DRIVER_DEFAULT_IIS_WAIT_TIMEOUT_MS 1000
+
+#define CPP_BUS_DRIVER_DEFAULT_MIPI_FREQ_MHZ 60
+#define CPP_BUS_DRIVER_DEFAULT_MIPI_LANE_BIT_RATE_MBPS 1000
 
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
 #define CPP_BUS_DRIVER_DEFAULT_SDIO_FREQ_HZ SDMMC_FREQ_DEFAULT

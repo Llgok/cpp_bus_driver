@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-01-20 13:36:34
+ * @LastEditTime: 2026-01-23 17:26:24
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -44,21 +44,12 @@ namespace Cpp_Bus_Driver
         {
             switch (list[index])
             {
-            case static_cast<uint8_t>(Init_List_Cmd::DELAY_MS):
+            case static_cast<uint8_t>(Init_List_Format::DELAY_MS):
                 index++;
                 delay_ms(list[index]);
                 index++;
                 break;
-            case static_cast<uint8_t>(Init_List_Cmd::WRITE_DATA):
-                index++;
-                if (_bus->write(&list[index + 1], list[index]) == false)
-                {
-                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "iic_init_list WRITE_DATA fail\n");
-                    return false;
-                }
-                index += list[index] + 1;
-                break;
-            case static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8):
+            case static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8):
                 index++;
                 if (_bus->write(&list[index], 2) == false)
                 {
@@ -69,7 +60,7 @@ namespace Cpp_Bus_Driver
                 break;
 
             default:
-                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail (index = %d)\n", index);
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "init_list fail (error index = %d)\n", index);
                 return false;
                 break;
             }
@@ -85,12 +76,12 @@ namespace Cpp_Bus_Driver
         {
             switch (list[index])
             {
-            case static_cast<uint8_t>(Init_List_Cmd::DELAY_MS):
+            case static_cast<uint8_t>(Init_List_Format::DELAY_MS):
                 index++;
                 delay_ms(list[index]);
                 index++;
                 break;
-            case static_cast<uint8_t>(Init_List_Cmd::WRITE_C16_D8):
+            case static_cast<uint8_t>(Init_List_Format::WRITE_C16_D8):
             {
                 index++;
                 const uint8_t buffer[] =
@@ -109,7 +100,7 @@ namespace Cpp_Bus_Driver
                 break;
             }
             default:
-                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail (index = %d)\n", index);
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "init_list fail (error index = %d)\n", index);
                 return false;
                 break;
             }
@@ -136,21 +127,12 @@ namespace Cpp_Bus_Driver
         {
             switch (list[index])
             {
-            case static_cast<uint8_t>(Init_List_Cmd::DELAY_MS):
+            case static_cast<uint8_t>(Init_List_Format::DELAY_MS):
                 index++;
                 delay_ms(list[index]);
                 index++;
                 break;
-            case static_cast<uint8_t>(Init_List_Cmd::WRITE_DATA):
-                index++;
-                if (_bus->write(&list[index + 1], list[index]) == false)
-                {
-                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "spi_init_list WRITE_DATA fail (index = %d)\n", index);
-                    return false;
-                }
-                index += list[index] + 1;
-                break;
-            case static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8):
+            case static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8):
                 index++;
                 if (_bus->write(&list[index], 2) == false)
                 {
@@ -161,7 +143,7 @@ namespace Cpp_Bus_Driver
                 break;
 
             default:
-                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail (index = %d)\n", index);
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "init_list fail (error index = %d)\n", index);
                 return false;
                 break;
             }
@@ -188,12 +170,12 @@ namespace Cpp_Bus_Driver
         {
             switch (list[index])
             {
-            case static_cast<uint8_t>(Init_List_Cmd::DELAY_MS):
+            case static_cast<uint8_t>(Init_List_Format::DELAY_MS):
                 index++;
                 delay_ms(list[index]);
                 index++;
                 break;
-            case static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24):
+            case static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24):
             {
                 index++;
                 uint8_t buffer[] =
@@ -213,7 +195,7 @@ namespace Cpp_Bus_Driver
                 break;
             }
 
-            case static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8):
+            case static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8):
             {
                 index++;
                 uint8_t buffer[] =
@@ -236,7 +218,7 @@ namespace Cpp_Bus_Driver
             }
 
             default:
-                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "unknown init_list_cmd, init_list fail (index = %d)\n", index);
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "init_list fail (error index = %d)\n", index);
                 return false;
                 break;
             }
@@ -287,6 +269,67 @@ namespace Cpp_Bus_Driver
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "begin fail\n");
             return false;
+        }
+
+        return true;
+    }
+
+    bool Mipi_Guide::begin(int32_t freq_mhz, int32_t lane_bit_rate_mbps)
+    {
+        if (_bus->begin(freq_mhz, lane_bit_rate_mbps, _init_list_format) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "begin fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Mipi_Guide::init_list(const uint8_t *list, size_t length)
+    {
+        size_t index = 0;
+        while (index < length)
+        {
+            switch (list[index])
+            {
+            case static_cast<uint8_t>(Init_List_Format::DELAY_MS):
+                index++;
+                delay_ms(list[index]);
+                index++;
+                break;
+            case static_cast<uint8_t>(Init_List_Format::WRITE_C8):
+                index++;
+                if (_bus->write(static_cast<int32_t>(list[index]), static_cast<uint8_t[]>(0x00), 0) == false)
+                {
+                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "mipi_init_list WRITE_C8 fail (index = %d)\n", index);
+                    return false;
+                }
+                index++;
+                break;
+            case static_cast<uint8_t>(Init_List_Format::WRITE_C8_BYTE_DATA):
+                index++;
+                if (_bus->write(static_cast<int32_t>(list[index]), &list[index + 2], list[index + 1]) == false)
+                {
+                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "mipi_init_list WRITE_C8_BYTE_DATA fail (index = %d)\n", index);
+                    return false;
+                }
+                index += list[index + 1] + 2;
+                break;
+            case static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8):
+                index++;
+                if (_bus->write(static_cast<int32_t>(list[index]), &list[index + 1], 1) == false)
+                {
+                    assert_log(Log_Level::CHIP, __FILE__, __LINE__, "mipi_init_list WRITE_C8_D8 fail (index = %d)\n", index);
+                    return false;
+                }
+                index += 2;
+                break;
+
+            default:
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "init_list fail (error index = %d)\n", index);
+                return false;
+                break;
+            }
         }
 
         return true;

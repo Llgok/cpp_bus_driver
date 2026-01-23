@@ -8,6 +8,7 @@ set(
         "./src/bus/uart"
         "./src/bus/iis"
         "./src/bus/sdio"
+        "./src/bus/mipi"
 
         "./src/chip"
         "./src/chip/iic"
@@ -15,6 +16,7 @@ set(
         "./src/chip/uart"
         "./src/chip/iic_iis"
         "./src/chip/sdio"
+        "./src/chip/mipi"
 
         "./src/resources"
 )
@@ -27,4 +29,5 @@ idf_component_register(
         REQUIRES
         "driver"
         "esp_timer"
+        "esp_lcd"
     )

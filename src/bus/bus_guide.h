@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2026-01-20 13:35:43
+ * @LastEditTime: 2026-01-23 16:33:10
  * @License: GPL 3.0
  */
 
@@ -244,5 +244,18 @@ namespace Cpp_Bus_Driver
         virtual bool write(uint32_t function, uint32_t write_c32, const void *data, size_t byte) = 0;
         virtual bool write(uint32_t function, uint32_t write_c32, uint8_t data, uint8_t *read_d8_verify = NULL) = 0;
         virtual bool write_block(uint32_t function, uint32_t write_c32, const void *data, size_t byte) = 0;
+    };
+
+    class Bus_Mipi_Guide : public Tool
+    {
+    public:
+        Bus_Mipi_Guide()
+        {
+        }
+
+        virtual bool begin(int32_t freq_mhz, int32_t lane_bit_rate_mbps, Init_List_Format init_list_format) = 0;
+        virtual bool start_transmit(void) = 0;
+        virtual bool read(int32_t cmd, void *data, size_t byte) = 0;
+        virtual bool write(int32_t cmd, const void *data, size_t byte) = 0;
     };
 }

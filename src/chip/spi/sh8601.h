@@ -74,27 +74,27 @@ namespace Cpp_Bus_Driver
 
         static constexpr uint32_t _init_list[] =
             {
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x001100,
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x001100,
 
-                static_cast<uint8_t>(Init_List_Cmd::DELAY_MS), 120,
+                static_cast<uint8_t>(Init_List_Format::DELAY_MS), 120,
 
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x001300,          // normal display mode on
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x003600, 0x00, // RGB
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x003600, 0x08, // BGR
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x003A00, 0x55, // interface pixel format 16bit/pixel
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x003A00, 0x66, // interface pixel format 18bit/pixel
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x003A00, 0x77, // interface pixel format 24bit/pixel
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005300, 0x28, // brightness control on and display dimming on
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x006300, 0xFF, // write display brightness value in hbm mode
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x001300,          // normal display mode on
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x003600, 0x00, // RGB
+                // static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x003600, 0x08, // BGR
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x003A00, 0x55, // interface pixel format 16bit/pixel
+                // static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x003A00, 0x66, // interface pixel format 18bit/pixel
+                // static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x003A00, 0x77, // interface pixel format 24bit/pixel
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005300, 0x28, // brightness control on and display dimming on
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x006300, 0xFF, // write display brightness value in hbm mode
 
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005100, 0x00, // brightness adjustment
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x00, // sunlight readability enhancement off
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x04, // sunlight readability enhancement low
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x05, // sunlight readability enhancement medium
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x06, // sunlight readability enhancement high
-                static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x002900, // display on
-                static_cast<uint8_t>(Init_List_Cmd::DELAY_MS), 10,
-                // static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005100, 0xFF, // brightness adjustment
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005100, 0x00, // brightness adjustment
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x00, // sunlight readability enhancement off
+                // static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x04, // sunlight readability enhancement low
+                // static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x05, // sunlight readability enhancement medium
+                // static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005800, 0x06, // sunlight readability enhancement high
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x002900, // display on
+                static_cast<uint8_t>(Init_List_Format::DELAY_MS), 10,
+                // static_cast<uint8_t>(Init_List_Format::WRITE_C8_R24_D8), static_cast<uint8_t>(Cmd::WO_WRITE_REGISTER), 0x005100, 0xFF, // brightness adjustment
             };
 
         int32_t _rst;

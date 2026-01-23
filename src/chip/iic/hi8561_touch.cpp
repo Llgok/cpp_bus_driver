@@ -11,7 +11,7 @@ namespace Cpp_Bus_Driver
 {
     // constexpr uint8_t Hi8561_Touch::Init_List[] =
     //     {
-    //         static_cast<uint8_t>(Init_List_Cmd::WRITE_C8_D8),
+    //         static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8),
     //         static_cast<uint8_t>(Cmd::RW_CLKOUT_CONTROL),
     //         0B00000000,
     // };

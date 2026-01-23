@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-01-20 13:40:10
+ * @LastEditTime: 2026-01-23 16:34:54
  * @License: GPL 3.0
  */
 #pragma once
@@ -145,5 +145,23 @@ namespace Cpp_Bus_Driver
         }
 
         virtual bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
+    };
+
+    class Mipi_Guide : public Tool
+    {
+    protected:
+        std::shared_ptr<Bus_Mipi_Guide> _bus;
+
+        Init_List_Format _init_list_format;
+
+    public:
+        Mipi_Guide(std::shared_ptr<Bus_Mipi_Guide> bus, Init_List_Format init_list_format = Init_List_Format::WRITE_C8_D8)
+            : _bus(bus), _init_list_format(init_list_format)
+        {
+        }
+
+        virtual bool begin(int32_t freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE);
+
+        bool init_list(const uint8_t *list, size_t length);
     };
 }
