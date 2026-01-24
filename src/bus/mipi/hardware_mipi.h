@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-01-23 16:31:58
+ * @LastEditTime: 2026-01-24 17:21:56
  * @License: GPL 3.0
  */
 
@@ -53,6 +53,7 @@ namespace Cpp_Bus_Driver
 
         bool read(int32_t cmd, void *data, size_t byte) override;
         bool write(int32_t cmd, const void *data, size_t byte) override;
+        bool write(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, const uint8_t *data) override;
 
         bool set_device_handle(esp_lcd_panel_handle_t handle);
 

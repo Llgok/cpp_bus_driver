@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-01-24 15:22:39
+ * @LastEditTime: 2026-01-24 17:33:42
  * @License: GPL 3.0
  */
 #include "hi8561.h"
@@ -73,7 +73,7 @@ namespace Cpp_Bus_Driver
 
     bool Hi8561::set_sleep(bool enable)
     {
-        if (_bus->write(enable ? static_cast<uint8_t>(Cmd::WO_SLPIN) : static_cast<uint8_t>(Cmd::WO_SLPOUT), nullptr, 0) == false)
+        if (_bus->write(enable ? static_cast<uint8_t>(Cmd::WO_SLPIN) : static_cast<uint8_t>(Cmd::WO_SLPOUT)) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
@@ -86,7 +86,7 @@ namespace Cpp_Bus_Driver
 
     bool Hi8561::set_screen_off(bool enable)
     {
-        if (_bus->write(enable ? static_cast<uint8_t>(Cmd::WO_DISPOFF) : static_cast<uint8_t>(Cmd::WO_DISPON), nullptr, 0) == false)
+        if (_bus->write(enable ? static_cast<uint8_t>(Cmd::WO_DISPOFF) : static_cast<uint8_t>(Cmd::WO_DISPON)) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
@@ -119,7 +119,7 @@ namespace Cpp_Bus_Driver
             break;
         }
 
-        if (_bus->write(static_cast<uint8_t>(Cmd::WO_MADCTL), &_madctl_data, 1) == false)
+        if (_bus->write(static_cast<uint8_t>(Cmd::WO_MADCTL), _madctl_data) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
@@ -130,7 +130,7 @@ namespace Cpp_Bus_Driver
 
     bool Hi8561::set_inversion(bool enable)
     {
-        if (_bus->write(enable ? static_cast<uint8_t>(Cmd::WO_INVON) : static_cast<uint8_t>(Cmd::WO_INVOFF), nullptr, 0) == false)
+        if (_bus->write(enable ? static_cast<uint8_t>(Cmd::WO_INVON) : static_cast<uint8_t>(Cmd::WO_INVOFF)) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_inversion write fail\n");
             return false;
@@ -141,7 +141,7 @@ namespace Cpp_Bus_Driver
 
     bool Hi8561::set_brightness(uint8_t brightness)
     {
-        if (_bus->write(static_cast<uint8_t>(Cmd::WO_WRDISBV), &brightness, 1) == false)
+        if (_bus->write(static_cast<uint8_t>(Cmd::WO_WRDISBV), brightness) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_brightness write fail\n");
             return false;
@@ -154,7 +154,7 @@ namespace Cpp_Bus_Driver
     {
         _madctl_data = (_madctl_data & 0xB11110111) | (static_cast<uint8_t>(order) << 3);
 
-        if (_bus->write(static_cast<uint8_t>(Cmd::WO_MADCTL), &_madctl_data, 1) == false)
+        if (_bus->write(static_cast<uint8_t>(Cmd::WO_MADCTL), _madctl_data) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
@@ -165,7 +165,18 @@ namespace Cpp_Bus_Driver
 
     bool Hi8561::set_cabc_mode(Cabc_Mode mode)
     {
-        if (_bus->write(static_cast<uint8_t>(Cmd::WO_WRCABC), static_cast<uint8_t[]>(static_cast<uint8_t>(mode)), 1) == false)
+        if (_bus->write(static_cast<uint8_t>(Cmd::WO_WRCABC), static_cast<uint8_t>(mode)) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Hi8561::send_color_stream_coordinate(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, const uint8_t *data)
+    {
+        if (_bus->write(x_start, x_end, y_start, y_end, data) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;

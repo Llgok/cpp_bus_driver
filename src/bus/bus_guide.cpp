@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2025-08-22 14:20:39
+ * @LastEditTime: 2026-01-24 17:29:46
  * @License: GPL 3.0
  */
 #include "bus_guide.h"
@@ -377,15 +377,26 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    // bool Bus_Qspi_Guide::write(const uint16_t cmd, const uint64_t addr, const uint8_t write_d8)
-    // {
-    //     if (write(cmd, addr, &write_d8, 1) == false)
-    //     {
-    //         assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
-    //         return false;
-    //     }
+    bool Bus_Mipi_Guide::write(const uint8_t write_c8)
+    {
+        if (write(static_cast<uint8_t>(write_c8), nullptr, 0) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
 
-    //     return true;
-    // }
+        return true;
+    }
+
+    bool Bus_Mipi_Guide::write(const uint8_t write_c8, const uint8_t write_d8)
+    {
+        if (write(static_cast<uint8_t>(write_c8), static_cast<uint8_t[]>(write_d8), 1) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+
+        return true;
+    }
 
 }

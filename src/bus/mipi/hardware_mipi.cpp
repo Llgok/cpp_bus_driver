@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-01-23 18:18:44
+ * @LastEditTime: 2026-01-24 17:21:06
  * @License: GPL 3.0
  */
 #include "hardware_mipi.h"
@@ -219,6 +219,18 @@ namespace Cpp_Bus_Driver
     esp_lcd_panel_handle_t Hardware_Mipi::get_device_handle(void)
     {
         return _device_handle;
+    }
+
+    bool Hardware_Mipi::write(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, const uint8_t *data)
+    {
+        esp_err_t assert = esp_lcd_panel_draw_bitmap(_device_handle, static_cast<int>(x_start), x_end, y_start, y_end, data);
+        if (assert != ESP_OK)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "esp_lcd_panel_draw_bitmap fail\n");
+            return false;
+        }
+
+        return true;
     }
 
 }
