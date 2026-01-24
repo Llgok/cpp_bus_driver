@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:14:18
- * @LastEditTime: 2026-01-23 10:51:49
+ * @LastEditTime: 2026-01-24 14:24:18
  * @License: GPL 3.0
  */
 
@@ -48,6 +48,7 @@
 #include "./chip/uart/l76k.h"
 #include "./chip/sdio/esp_at.h"
 #include "./chip/mipi/hi8561.h"
+#include "./chip/mipi/rm69a10.h"
 
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 
