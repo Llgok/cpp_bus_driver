@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-09-16 12:04:59
+ * @LastEditTime: 2026-01-24 11:10:39
  * @License: GPL 3.0
  */
 #include "sh8601.h"
@@ -214,7 +214,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Sh8601::set_sleep(bool status)
+    bool Sh8601::set_sleep(bool enable)
     {
         uint8_t buffer[] =
             {
@@ -224,7 +224,7 @@ namespace Cpp_Bus_Driver
                 static_cast<uint8_t>(Reg::WO_SLEEP_IN),
             };
 
-        if (status == false)
+        if (enable == false)
         {
             buffer[1] = static_cast<uint8_t>(static_cast<uint32_t>(Reg::WO_SLEEP_OUT) >> 16);
             buffer[2] = static_cast<uint8_t>(static_cast<uint32_t>(Reg::WO_SLEEP_OUT) >> 8);
@@ -240,7 +240,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Sh8601::set_screen_off(bool status)
+    bool Sh8601::set_screen_off(bool enable)
     {
         uint8_t buffer[] =
             {
@@ -250,7 +250,7 @@ namespace Cpp_Bus_Driver
                 static_cast<uint8_t>(Reg::WO_DISPLAY_OFF),
             };
 
-        if (status == false)
+        if (enable == false)
         {
             buffer[1] = static_cast<uint8_t>(static_cast<uint32_t>(Reg::WO_DISPLAY_ON) >> 16);
             buffer[2] = static_cast<uint8_t>(static_cast<uint32_t>(Reg::WO_DISPLAY_ON) >> 8);

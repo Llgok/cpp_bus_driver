@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-01-23 17:23:45
+ * @LastEditTime: 2026-01-24 14:19:48
  * @License: GPL 3.0
  */
 
@@ -15,6 +15,28 @@ namespace Cpp_Bus_Driver
     class Hi8561 : public Mipi_Guide
     {
     private:
+        static constexpr uint32_t DEVICE_ID = 0X856110;
+
+        enum class Cmd
+        {
+            RO_DEVICE_ID_START = 0xDA,
+
+            WO_SLPIN = 0x10,
+            WO_SLPOUT,
+
+            WO_INVOFF = 0x20,
+            WO_INVON,
+
+            WO_MADCTL = 0x36,
+
+            WO_WRDISBV = 0x51,
+
+            WO_WRCABC = 0x55,
+
+            WO_DISPOFF = 0x28,
+            WO_DISPON,
+        };
+
         static constexpr const uint8_t _init_list[] =
             {
                 static_cast<uint8_t>(Init_List_Format::WRITE_C8_BYTE_DATA), 0xDF, 3,
@@ -197,7 +219,31 @@ namespace Cpp_Bus_Driver
 
         int32_t _rst;
 
+        uint8_t _madctl_data = 0;
+
     public:
+        enum class Cabc_Mode
+        {
+            OFF = 0x00,    // CABC关闭
+            UI_MODE,       // 用户界面模式
+            STILL_PICTURE, // 静态图片模式
+            MOVING_PICTURE // 动态图片模式
+        };
+
+        enum class Mirror_Mode
+        {
+            OFF = 0x00,         // 无镜像
+            HORIZONTAL,         // 水平镜像
+            VERTICAL,           // 垂直镜像
+            HORIZONTAL_VERTICAL // 水平和垂直镜像
+        };
+
+        enum class Color_Order
+        {
+            RGB = 0,
+            BGR,
+        };
+
         Hi8561(std::shared_ptr<Bus_Mipi_Guide> bus, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : Mipi_Guide(bus, Init_List_Format::WRITE_C8_D8), _rst(rst)
         {
@@ -205,20 +251,62 @@ namespace Cpp_Bus_Driver
 
         bool begin(int32_t freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
 
+        uint32_t get_device_id(void);
+
         /**
          * @brief 设置睡眠
-         * @param status [true]：进入睡眠 [false]：退出睡眠
+         * @param enable [true]：进入睡眠 [false]：退出睡眠
          * @return
-         * @Date 2025-07-11 11:52:48
+         * @Date 2026-01-24 10:37:09
          */
-        bool set_sleep(bool status);
+        bool set_sleep(bool enable);
 
         /**
          * @brief 设置屏幕关闭
-         * @param status [true]：关闭屏幕 [false]：开启屏幕
+         * @param enable [true]：关闭屏幕 [false]：开启屏幕
          * @return
-         * @Date 2025-07-11 11:52:48
+         * @Date 2026-01-24 10:37:09
          */
-        bool set_screen_off(bool status);
+        bool set_screen_off(bool enable);
+
+        /**
+         * @brief 设置屏幕镜像
+         * @param mode 使用Mirror_Mode::配置
+         * @return
+         * @Date 2026-01-24 10:37:09
+         */
+        bool set_mirror(Mirror_Mode mode);
+
+        /**
+         * @brief 设置颜色反转
+         * @param enable [true]：开启颜色反转 [false]：关闭颜色反转
+         * @return
+         * @Date 2026-01-24 10:37:09
+         */
+        bool set_inversion(bool enable);
+
+        /**
+         * @brief 设置屏幕亮度
+         * @param brightness 亮度值 [0-255]，0最暗，255最亮
+         * @return
+         * @Date 2026-01-24 10:37:09
+         */
+        bool set_brightness(uint8_t brightness);
+
+        /**
+         * @brief 设置颜色顺序
+         * @param order 使用Color_Order::配置
+         * @return
+         * @Date 2026-01-24 10:37:09
+         */
+        bool set_color_order(Color_Order order);
+
+        /**
+         * @brief 设置CABC（内容自适应亮度控制）模式
+         * @param mode 使用Cabc_Mode::配置
+         * @return
+         * @Date 2026-01-24 10:37:09
+         */
+        bool set_cabc_mode(Cabc_Mode mode);
     };
 };

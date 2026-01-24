@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-01-23 17:26:24
+ * @LastEditTime: 2026-01-24 11:09:03
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -299,7 +299,7 @@ namespace Cpp_Bus_Driver
                 break;
             case static_cast<uint8_t>(Init_List_Format::WRITE_C8):
                 index++;
-                if (_bus->write(static_cast<int32_t>(list[index]), static_cast<uint8_t[]>(0x00), 0) == false)
+                if (_bus->write(static_cast<int32_t>(list[index]), nullptr, 0) == false)
                 {
                     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "mipi_init_list WRITE_C8 fail (index = %d)\n", index);
                     return false;

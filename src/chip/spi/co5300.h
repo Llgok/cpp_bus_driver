@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-07-30 11:23:33
+ * @LastEditTime: 2026-01-24 11:09:58
  * @License: GPL 3.0
  */
 
@@ -162,19 +162,19 @@ namespace Cpp_Bus_Driver
 
         /**
          * @brief 设置睡眠
-         * @param status [true]：进入睡眠 [false]：退出睡眠
+         * @param enable [true]：进入睡眠 [false]：退出睡眠
          * @return
          * @Date 2025-07-11 11:52:48
          */
-        bool set_sleep(bool status);
+        bool set_sleep(bool enable);
 
         /**
          * @brief 设置屏幕关闭
-         * @param status [true]：关闭屏幕 [false]：开启屏幕
+         * @param enable [true]：关闭屏幕 [false]：开启屏幕
          * @return
          * @Date 2025-07-11 11:52:48
          */
-        bool set_screen_off(bool status);
+        bool set_screen_off(bool enable);
 
         /**
          * @brief 设置颜色增强模式
