@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-01-24 14:09:27
+ * @LastEditTime: 2026-01-24 15:22:39
  * @License: GPL 3.0
  */
 #include "hi8561.h"
@@ -55,6 +55,22 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
+    uint16_t Hi8561::get_device_id(void)
+    {
+        uint8_t buffer[2] = {0};
+
+        for (uint8_t i = 0; i < 2; i++)
+        {
+            if (_bus->read(static_cast<uint8_t>(Cmd::RO_DEVICE_ID_START) + i, &buffer[i], 1) == false)
+            {
+                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                return -1;
+            }
+        }
+
+        return (static_cast<uint16_t>(buffer[0]) << 8) | static_cast<uint16_t>(buffer[1]);
+    }
+
     bool Hi8561::set_sleep(bool enable)
     {
         if (_bus->write(enable ? static_cast<uint8_t>(Cmd::WO_SLPIN) : static_cast<uint8_t>(Cmd::WO_SLPOUT), nullptr, 0) == false)
@@ -77,22 +93,6 @@ namespace Cpp_Bus_Driver
         }
 
         return true;
-    }
-
-    uint32_t Hi8561::get_device_id(void)
-    {
-        uint8_t buffer[3] = {0};
-
-        for (uint8_t i = 0; i < 3; i++)
-        {
-            if (_bus->read(static_cast<uint8_t>(Cmd::RO_DEVICE_ID_START) + i, &buffer[i], 1) == false)
-            {
-                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
-                return -1;
-            }
-        }
-
-        return static_cast<uint32_t>(buffer[0]) << 16 | static_cast<uint32_t>(buffer[1]) << 8 | static_cast<uint32_t>(buffer[2]);
     }
 
     bool Hi8561::set_mirror(Mirror_Mode mode)

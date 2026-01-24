@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-01-24 14:19:48
+ * @LastEditTime: 2026-01-24 15:21:28
  * @License: GPL 3.0
  */
 
@@ -15,7 +15,7 @@ namespace Cpp_Bus_Driver
     class Hi8561 : public Mipi_Guide
     {
     private:
-        static constexpr uint32_t DEVICE_ID = 0X856110;
+        static constexpr uint16_t DEVICE_ID = 0x8561;
 
         enum class Cmd
         {
@@ -213,9 +213,7 @@ namespace Cpp_Bus_Driver
 
                 static_cast<uint8_t>(Init_List_Format::DELAY_MS), 120,
 
-                static_cast<uint8_t>(Init_List_Format::WRITE_C8), 0x29,
-
-                static_cast<uint8_t>(Init_List_Format::DELAY_MS), 50};
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8), 0x29};
 
         int32_t _rst;
 
@@ -251,7 +249,7 @@ namespace Cpp_Bus_Driver
 
         bool begin(int32_t freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
 
-        uint32_t get_device_id(void);
+        uint16_t get_device_id(void);
 
         /**
          * @brief 设置睡眠
