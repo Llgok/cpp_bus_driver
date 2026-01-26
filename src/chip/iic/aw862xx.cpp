@@ -29,7 +29,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        uint8_t buffer = get_device_id();
+        auto buffer = get_device_id();
         if (buffer == static_cast<uint8_t>(CPP_BUS_DRIVER_DEFAULT_VALUE))
         {
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "get aw862xx id fail (error id: %#X)\n", buffer);

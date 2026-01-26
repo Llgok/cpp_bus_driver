@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-08-15 11:14:35
+ * @LastEditTime: 2026-01-26 09:05:28
  * @License: GPL 3.0
  */
 #include "ft3x68.h"
@@ -29,7 +29,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        uint8_t buffer = get_device_id();
+        auto buffer = get_device_id();
         if (buffer != DEVICE_ID)
         {
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "get ft3x68 id fail (error id: %#X)\n", buffer);

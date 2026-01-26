@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2025-09-25 14:33:53
+ * @LastEditTime: 2026-01-26 09:05:06
  * @License: GPL 3.0
  */
 #include "bq27220xxxx.h"
@@ -36,7 +36,7 @@ namespace Cpp_Bus_Driver
             // return false;
         }
 
-        uint16_t buffer = get_device_id();
+        auto buffer = get_device_id();
         if (buffer != DEVICE_ID)
         {
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "get bq27220xxxx id fail (error id: %#X)\n", buffer);

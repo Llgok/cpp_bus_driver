@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-11-08 14:33:34
+ * @LastEditTime: 2026-01-26 09:05:47
  * @License: GPL 3.0
  */
 #include "sgm41562xx.h"
@@ -33,7 +33,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        uint8_t buffer = get_device_id();
+        auto buffer = get_device_id();
         if (buffer != DEVICE_ID)
         {
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "get sgm41562xx id fail (error id: %#X)\n", buffer);

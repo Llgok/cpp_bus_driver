@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-01-19 15:40:10
+ * @LastEditTime: 2026-01-26 09:06:13
  * @License: GPL 3.0
  */
 #include "es8311.h"
@@ -45,7 +45,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        uint16_t buffer = get_device_id();
+        auto buffer = get_device_id();
         if (buffer != DEVICE_ID)
         {
             Chip_Iic_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get es8311 id fail (error id: %#X)\n", buffer);

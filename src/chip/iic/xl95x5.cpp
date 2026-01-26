@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2025-11-22 15:17:44
+ * @LastEditTime: 2026-01-26 09:06:07
  * @License: GPL 3.0
  */
 #include "xl95x5.h"
@@ -29,7 +29,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        uint8_t buffer = get_device_id();
+        auto buffer = get_device_id();
         if (buffer == static_cast<uint8_t>(CPP_BUS_DRIVER_DEFAULT_VALUE))
         {
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "get xl95x5 id fail (error id: %#X)\n", buffer);

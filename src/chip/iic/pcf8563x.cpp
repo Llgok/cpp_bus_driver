@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2025-08-15 14:14:14
+ * @LastEditTime: 2026-01-26 09:05:32
  * @License: GPL 3.0
  */
 #include "pcf8563x.h"
@@ -29,7 +29,7 @@ namespace Cpp_Bus_Driver
             // return false;
         }
 
-        uint8_t buffer = get_device_id();
+        auto buffer = get_device_id();
         if (buffer == static_cast<uint8_t>(CPP_BUS_DRIVER_DEFAULT_VALUE))
         {
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "get pcf8563x id fail (error id: %#X)\n", buffer);

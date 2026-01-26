@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: None
  * @Date: 2025-09-24 10:47:30
- * @LastEditTime: 2026-01-21 18:09:30
+ * @LastEditTime: 2026-01-26 09:04:32
  * @License: GPL 3.0
  */
 #include "aw21009xxx.h"
@@ -33,7 +33,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        uint8_t buffer = get_device_id();
+        auto buffer = get_device_id();
         if (buffer != DEVICE_ID)
         {
             assert_log(Log_Level::INFO, __FILE__, __LINE__, "get aw21009xxx id fail (error id: %#X)\n", buffer);
