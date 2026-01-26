@@ -2,12 +2,13 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-01-24 17:21:06
+ * @LastEditTime: 2026-01-26 10:54:32
  * @License: GPL 3.0
  */
 #include "hardware_mipi.h"
 
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined CPP_BUS_DRIVER_CHIP_ESP32P4
 namespace Cpp_Bus_Driver
 {
     bool Hardware_Mipi::begin(int32_t freq_mhz, int32_t lane_bit_rate_mbps, Init_List_Format init_list_format)
@@ -235,4 +236,5 @@ namespace Cpp_Bus_Driver
 
 }
 
+#endif
 #endif

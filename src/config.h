@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2026-01-23 16:15:44
+ * @LastEditTime: 2026-01-26 10:54:44
  * @License: GPL 3.0
  */
 #pragma once
@@ -22,6 +22,10 @@
 #if defined CONFIG_IDF_INIT_VERSION
 #define CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
 
+#if defined CONFIG_IDF_TARGET_ESP32P4
+#define CPP_BUS_DRIVER_CHIP_ESP32P4
+#endif
+
 #include "driver/i2c_master.h"
 #include "driver/i2c.h"
 #include "driver/gpio.h"
@@ -34,7 +38,9 @@
 #include "driver/sdmmc_host.h"
 #include "sdmmc_cmd.h"
 #include "esp_timer.h"
+#if defined CPP_BUS_DRIVER_CHIP_ESP32P4
 #include "esp_lcd_mipi_dsi.h"
+#endif
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
 
