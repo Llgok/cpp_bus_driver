@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-01-26 09:05:06
+ * @LastEditTime: 2026-01-26 09:08:32
  * @License: GPL 3.0
  */
 #include "bq27220xxxx.h"
@@ -33,7 +33,7 @@ namespace Cpp_Bus_Driver
         if (Chip_Iic_Guide::begin(freq_hz) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
-            // return false;
+            return false;
         }
 
         auto buffer = get_device_id();

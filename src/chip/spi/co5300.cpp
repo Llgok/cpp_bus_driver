@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-01-24 11:10:12
+ * @LastEditTime: 2026-01-26 09:12:45
  * @License: GPL 3.0
  */
 #include "co5300.h"
@@ -26,7 +26,7 @@ namespace Cpp_Bus_Driver
         if (Chip_Qspi_Guide::begin(freq_hz) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
-            // return false;
+            return false;
         }
 
         if (init_list(_init_list, sizeof(_init_list) / sizeof(uint32_t)) == false)

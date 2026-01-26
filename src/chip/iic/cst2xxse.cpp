@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2025-08-15 11:10:24
+ * @LastEditTime: 2026-01-26 09:09:43
  * @License: GPL 3.0
  */
 #include "cst2xxse.h"
@@ -26,7 +26,7 @@ namespace Cpp_Bus_Driver
         if (Chip_Iic_Guide::begin(freq_hz) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
-            // return false;
+            return false;
         }
 
         auto buffer = get_device_id();

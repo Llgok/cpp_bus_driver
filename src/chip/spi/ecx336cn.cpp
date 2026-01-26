@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-01-16 10:09:07
+ * @LastEditTime: 2026-01-26 09:12:49
  * @License: GPL 3.0
  */
 #include "ecx336cn.h"
@@ -26,7 +26,7 @@ namespace Cpp_Bus_Driver
         if (Chip_Spi_Guide::begin(freq_hz) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
-            // return false;
+            return false;
         }
 
         if (init_list(_init_list_640x400_60hz, sizeof(_init_list_640x400_60hz)) == false)

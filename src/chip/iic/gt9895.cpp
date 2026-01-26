@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date 2025-07-09 09:15:31
- * @LastEditTime: 2025-11-22 15:15:47
+ * @LastEditTime: 2026-01-26 09:10:00
  * @License: GPL 3.0
  */
 #include "gt9895.h"
@@ -26,7 +26,7 @@ namespace Cpp_Bus_Driver
         if (Chip_Iic_Guide::begin(freq_hz) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
-            // return false;
+            return false;
         }
 
         return true;
