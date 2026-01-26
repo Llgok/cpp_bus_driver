@@ -15,7 +15,7 @@ namespace Cpp_Bus_Driver
 #define ES8311_DEVICE_DEFAULT_ADDRESS_1 0x18
 #define ES8311_DEVICE_DEFAULT_ADDRESS_2 0x19
 
-    class Es8311 : public Iic_Guide, Iis_Guide
+    class Es8311 : public Chip_Iic_Guide, Chip_Iis_Guide
     {
     private:
         static constexpr uint16_t DEVICE_ID = 0x8311;
@@ -325,7 +325,7 @@ namespace Cpp_Bus_Driver
         Clock_Coeff _clock_coeff;
 
         Es8311(std::shared_ptr<Bus_Iic_Guide> iic_bus, std::shared_ptr<Bus_Iis_Guide> iis_bus, int16_t iic_address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(iic_bus, iic_address), Iis_Guide(iis_bus), _rst(rst)
+            : Chip_Iic_Guide(iic_bus, iic_address), Chip_Iis_Guide(iis_bus), _rst(rst)
         {
         }
 

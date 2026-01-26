@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
 #define PCF8563X_DEVICE_DEFAULT_ADDRESS 0x51
 
-    class Pcf8563x : public Iic_Guide
+    class Pcf8563x : public Chip_Iic_Guide
     {
     private:
         enum class Cmd
@@ -114,7 +114,7 @@ namespace Cpp_Bus_Driver
         };
 
         Pcf8563x(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _rst(rst)
+            : Chip_Iic_Guide(bus, address), _rst(rst)
         {
         }
 

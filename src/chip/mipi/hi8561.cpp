@@ -23,7 +23,7 @@ namespace Cpp_Bus_Driver
             delay_ms(120);
         }
 
-        if (Mipi_Guide::begin(freq_mhz, lane_bit_rate_mbps) == false)
+        if (Chip_Mipi_Guide::begin(freq_mhz, lane_bit_rate_mbps) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
             return false;

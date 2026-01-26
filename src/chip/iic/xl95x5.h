@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
 #define XL9535_DEVICE_DEFAULT_ADDRESS 0x20
 
-    class Xl95x5 : public Iic_Guide
+    class Xl95x5 : public Chip_Iic_Guide
     {
     private:
         enum class Cmd
@@ -71,7 +71,7 @@ namespace Cpp_Bus_Driver
         };
 
         Xl95x5(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _rst(rst)
+            : Chip_Iic_Guide(bus, address), _rst(rst)
         {
         }
 

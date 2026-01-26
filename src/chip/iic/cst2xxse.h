@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
 #define CST2xxSE_DEVICE_DEFAULT_ADDRESS 0x5A
 
-    class Cst2xxse : public Iic_Guide
+    class Cst2xxse : public Chip_Iic_Guide
     {
     private:
         static constexpr uint8_t DEVICE_ID = 0xAB;
@@ -48,7 +48,7 @@ namespace Cpp_Bus_Driver
         };
 
         Cst2xxse(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _rst(rst)
+            : Chip_Iic_Guide(bus, address), _rst(rst)
         {
         }
 

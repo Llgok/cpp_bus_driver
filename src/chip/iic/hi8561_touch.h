@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
 #define HI8561_TOUCH_DEVICE_DEFAULT_ADDRESS 0x68
 
-    class Hi8561_Touch : public Iic_Guide
+    class Hi8561_Touch : public Chip_Iic_Guide
     {
     private:
         static constexpr uint32_t MEMORY_ADDRESS_ERAM = 0x20011000;
@@ -53,7 +53,7 @@ namespace Cpp_Bus_Driver
         };
 
         Hi8561_Touch(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _rst(rst)
+            : Chip_Iic_Guide(bus, address), _rst(rst)
         {
         }
 

@@ -23,7 +23,7 @@ namespace Cpp_Bus_Driver
             delay_ms(10);
         }
 
-        if (Iic_Guide::begin(freq_hz) == false)
+        if (Chip_Iic_Guide::begin(freq_hz) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
             return false;

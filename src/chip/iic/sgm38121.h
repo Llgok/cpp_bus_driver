@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
 #define SGM38121_DEVICE_DEFAULT_ADDRESS 0x28
 
-    class Sgm38121 : public Iic_Guide
+    class Sgm38121 : public Chip_Iic_Guide
     {
     private:
         static constexpr uint8_t DEVICE_ID = 0x80;
@@ -55,7 +55,7 @@ namespace Cpp_Bus_Driver
         };
 
         Sgm38121(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _rst(rst)
+            : Chip_Iic_Guide(bus, address), _rst(rst)
         {
         }
 

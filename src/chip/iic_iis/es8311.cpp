@@ -17,43 +17,43 @@ namespace Cpp_Bus_Driver
     {
         if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
-            Iic_Guide::pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
+            Chip_Iic_Guide::pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
 
-            Iic_Guide::pin_write(_rst, 1);
-            Iic_Guide::delay_ms(10);
-            Iic_Guide::pin_write(_rst, 0);
-            Iic_Guide::delay_ms(10);
-            Iic_Guide::pin_write(_rst, 1);
-            Iic_Guide::delay_ms(10);
+            Chip_Iic_Guide::pin_write(_rst, 1);
+            Chip_Iic_Guide::delay_ms(10);
+            Chip_Iic_Guide::pin_write(_rst, 0);
+            Chip_Iic_Guide::delay_ms(10);
+            Chip_Iic_Guide::pin_write(_rst, 1);
+            Chip_Iic_Guide::delay_ms(10);
         }
 
-        if (Iic_Guide::begin(freq_hz) == false)
+        if (Chip_Iic_Guide::begin(freq_hz) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
             return false;
         }
 
         if (software_reset(true) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "software_reset fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "software_reset fail\n");
             return false;
         }
-        Iic_Guide::delay_ms(20);
+        Chip_Iic_Guide::delay_ms(20);
         if (software_reset(false) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "software_reset fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "software_reset fail\n");
             return false;
         }
 
         uint16_t buffer = get_device_id();
         if (buffer != DEVICE_ID)
         {
-            Iic_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get es8311 id fail (error id: %#X)\n", buffer);
+            Chip_Iic_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get es8311 id fail (error id: %#X)\n", buffer);
             return false;
         }
         else
         {
-            Iic_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get es8311 id success (id: %#X)\n", buffer);
+            Chip_Iic_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get es8311 id success (id: %#X)\n", buffer);
         }
 
         return true;
@@ -62,9 +62,9 @@ namespace Cpp_Bus_Driver
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     bool Es8311::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
     {
-        if (Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
+        if (Chip_Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
         {
-            Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
+            Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
             return false;
         }
         return true;
@@ -72,9 +72,9 @@ namespace Cpp_Bus_Driver
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
     bool Es8311::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width, nrf_i2s_channels_t channel)
     {
-        if (Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width, channel) == false)
+        if (Chip_Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width, channel) == false)
         {
-            Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
+            Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
             return false;
         }
         return true;
@@ -87,9 +87,9 @@ namespace Cpp_Bus_Driver
 
         for (uint8_t i = 0; i < 2; i++)
         {
-            if (Iic_Guide::_bus->read(static_cast<uint8_t>(static_cast<uint8_t>(Cmd::RO_DEVICE_ID_START) + i), &buffer[i]) == false)
+            if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(static_cast<uint8_t>(Cmd::RO_DEVICE_ID_START) + i), &buffer[i]) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return -1;
             }
         }
@@ -102,22 +102,22 @@ namespace Cpp_Bus_Driver
         // 启动复位
         if (enable == true)
         {
-            if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), static_cast<uint8_t>(0x1F)) == false)
+            if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), static_cast<uint8_t>(0x1F)) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
                 return false;
             }
         }
         else // 关闭复位
         {
-            if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), static_cast<uint8_t>(0x00)) == false)
+            if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), static_cast<uint8_t>(0x00)) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
                 return false;
             }
-            if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), static_cast<uint8_t>(0x80)) == false)
+            if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), static_cast<uint8_t>(0x80)) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
                 return false;
             }
         }
@@ -129,15 +129,15 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_1), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_1), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B01111111) | (static_cast<uint8_t>(clock) << 7);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_1), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_1), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -151,9 +151,9 @@ namespace Cpp_Bus_Driver
         switch (clock)
         {
         case Clock_Source::ADC_DAC_MCLK:
-            if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_1), &buffer) == false)
+            if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_1), &buffer) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return false;
             }
             buffer = (buffer & 0B10111111) | (static_cast<uint8_t>(invert) << 6);
@@ -162,17 +162,17 @@ namespace Cpp_Bus_Driver
             buffer = (buffer & 0B11111011) | (static_cast<uint8_t>(enalbe) << 2); // 控制内部DAC时钟的开启或关闭的控制位
             buffer = (buffer & 0B11111101) | (static_cast<uint8_t>(enalbe) << 1); // 未知位，必须置1才能正常工作
             buffer = (buffer & 0B11111110) | (static_cast<uint8_t>(enalbe));      // 未知位，必须置1才能正常工作
-            if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_1), buffer) == false)
+            if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_1), buffer) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
                 return false;
             }
             break;
         case Clock_Source::ADC_DAC_BCLK:
         {
-            if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_1), &buffer) == false)
+            if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_1), &buffer) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return false;
             }
             buffer = (buffer & 0B11101111) | (static_cast<uint8_t>(enalbe) << 4);
@@ -180,21 +180,21 @@ namespace Cpp_Bus_Driver
             buffer = (buffer & 0B11111011) | (static_cast<uint8_t>(enalbe) << 2); // 控制内部DAC时钟的开启或关闭的控制位
             buffer = (buffer & 0B11111101) | (static_cast<uint8_t>(enalbe) << 1); // 未知位，必须置1才能正常工作
             buffer = (buffer & 0B11111110) | (static_cast<uint8_t>(enalbe));      // 未知位，必须置1才能正常工作
-            if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_1), buffer) == false)
+            if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_1), buffer) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
                 return false;
             }
 
-            if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_6), &buffer) == false)
+            if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_6), &buffer) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return false;
             }
             buffer = (buffer & 0B11011111) | (static_cast<uint8_t>(invert) << 5);
-            if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_6), buffer) == false)
+            if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_6), buffer) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
                 return false;
             }
             break;
@@ -208,9 +208,9 @@ namespace Cpp_Bus_Driver
 
     bool Es8311::set_dac_volume(uint8_t volume)
     {
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_DAC_VOLUME), volume) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_DAC_VOLUME), volume) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -219,9 +219,9 @@ namespace Cpp_Bus_Driver
 
     bool Es8311::set_adc_volume(uint8_t volume)
     {
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_VOLUME), volume) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_VOLUME), volume) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -232,15 +232,15 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_ALC), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_ALC), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B01111111) | (static_cast<uint8_t>(enable) << 7);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_ALC), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_ALC), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -251,16 +251,16 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_DMIC_PGA_GAIN), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_DMIC_PGA_GAIN), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B10111111) | (static_cast<uint8_t>(type) << 6);
         buffer = (buffer & 0B11001111) | (static_cast<uint8_t>(input) << 4);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_DMIC_PGA_GAIN), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_DMIC_PGA_GAIN), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -278,9 +278,9 @@ namespace Cpp_Bus_Driver
             static_cast<uint8_t>(status.contorl.internal_reference_circuits) << 2 |
             static_cast<uint8_t>(status.vmid);
 
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_POWER_UP_POWER_DOWN_CONTORL), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_POWER_UP_POWER_DOWN_CONTORL), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -299,9 +299,9 @@ namespace Cpp_Bus_Driver
             static_cast<uint8_t>(status.flash) << 1 |
             static_cast<uint8_t>(status.int1);
 
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_LOW_POWER_CONTROL), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_LOW_POWER_CONTROL), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -334,53 +334,53 @@ namespace Cpp_Bus_Driver
         if (search_clock_coeff(mclk_multiple, sample_rate_hz,
                                _clock_coeff_list, sizeof(_clock_coeff_list) / sizeof(Clock_Coeff), &buffer_index) == false)
         {
-            Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search _clock_coeff_list fail\n");
+            Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search _clock_coeff_list fail\n");
             return false;
         }
 
-        // Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_index: %d\n", buffer_index);
+        // Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_index: %d\n", buffer_index);
 
         const Clock_Coeff *buffer_clock_coeff = &_clock_coeff_list[buffer_index];
 
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_2), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_2), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer &= 0x07;
         buffer |= (buffer_clock_coeff->pre_div - 1) << 5;
         buffer |= buffer_clock_coeff->pre_multi << 3;
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_2), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_2), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
         buffer = (buffer_clock_coeff->fs_mode << 6) | buffer_clock_coeff->adc_osr;
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_3), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_3), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_4), buffer_clock_coeff->dac_osr) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_4), buffer_clock_coeff->dac_osr) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
         buffer = ((buffer_clock_coeff->adc_div - 1) << 4) | (buffer_clock_coeff->dac_div - 1);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_5), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_5), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_6), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_6), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer &= 0xE0;
@@ -392,28 +392,28 @@ namespace Cpp_Bus_Driver
         {
             buffer |= (buffer_clock_coeff->bclk_div) << 0;
         }
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_6), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_6), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_7), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_7), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer &= 0xC0;
         buffer |= buffer_clock_coeff->lrck_h << 0;
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_7), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_7), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_8), buffer_clock_coeff->lrck_l) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_CLOCK_MANAGER_8), buffer_clock_coeff->lrck_l) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -427,28 +427,28 @@ namespace Cpp_Bus_Driver
         switch (dsp)
         {
         case Sdp::DAC:
-            if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_SDP_IN_FORMAT), &buffer) == false)
+            if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_SDP_IN_FORMAT), &buffer) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return false;
             }
             buffer = (buffer & 0B11100011) | (static_cast<uint8_t>(length) << 2);
-            if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_SDP_IN_FORMAT), buffer) == false)
+            if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_SDP_IN_FORMAT), buffer) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
                 return false;
             }
             break;
         case Sdp::ADC:
-            if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_SDP_OUT_FORMAT), &buffer) == false)
+            if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_SDP_OUT_FORMAT), &buffer) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return false;
             }
             buffer = (buffer & 0B11100011) | (static_cast<uint8_t>(length) << 2);
-            if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_SDP_OUT_FORMAT), buffer) == false)
+            if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_SDP_OUT_FORMAT), buffer) == false)
             {
-                Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+                Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
                 return false;
             }
             break;
@@ -464,15 +464,15 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_PGA_ADC_MODULATOR_POWER_CONTROL), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_PGA_ADC_MODULATOR_POWER_CONTROL), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B10111111) | (static_cast<uint8_t>(!enable) << 6);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_PGA_ADC_MODULATOR_POWER_CONTROL), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_PGA_ADC_MODULATOR_POWER_CONTROL), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -483,16 +483,16 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_PGA_ADC_MODULATOR_POWER_CONTROL), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_PGA_ADC_MODULATOR_POWER_CONTROL), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B11011111) | (static_cast<uint8_t>(!enable) << 5);
         buffer = (buffer & 0B11101111) | (static_cast<uint8_t>(!enable) << 4);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_PGA_ADC_MODULATOR_POWER_CONTROL), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_PGA_ADC_MODULATOR_POWER_CONTROL), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -511,9 +511,9 @@ namespace Cpp_Bus_Driver
         {
             buffer = 0x02; // 默认值
         }
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_DAC_POWER_CONTROL), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_DAC_POWER_CONTROL), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -532,9 +532,9 @@ namespace Cpp_Bus_Driver
         {
             buffer = 0x40; // 默认值
         }
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_OUTPUT_TO_HP_DRIVE_CONTROL), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_OUTPUT_TO_HP_DRIVE_CONTROL), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -545,15 +545,15 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_EQUALIZER_BYPASS), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_EQUALIZER_BYPASS), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B11011111) | (static_cast<uint8_t>(offset_freeze) << 5);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_EQUALIZER_BYPASS), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_EQUALIZER_BYPASS), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -564,15 +564,15 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_EQUALIZER_BYPASS), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_EQUALIZER_BYPASS), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B11100000) | coeff;
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_EQUALIZER_BYPASS), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_EQUALIZER_BYPASS), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -583,15 +583,15 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_DAC_RAMPRATE_EQBYPASS), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_DAC_RAMPRATE_EQBYPASS), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B11110111) | (static_cast<uint8_t>(!enable) << 3);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_DAC_RAMPRATE_EQBYPASS), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_DAC_RAMPRATE_EQBYPASS), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -601,11 +601,11 @@ namespace Cpp_Bus_Driver
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
     size_t Es8311::read_data(void *data, size_t byte)
     {
-        size_t buffer = Iis_Guide::_bus->read(data, byte);
+        size_t buffer = Chip_Iis_Guide::_bus->read(data, byte);
 
         if (buffer == 0)
         {
-            Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
 
@@ -614,11 +614,11 @@ namespace Cpp_Bus_Driver
 
     size_t Es8311::write_data(const void *data, size_t byte)
     {
-        size_t buffer = Iis_Guide::_bus->write(data, byte);
+        size_t buffer = Chip_Iis_Guide::_bus->write(data, byte);
 
         if (buffer == 0)
         {
-            Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -628,9 +628,9 @@ namespace Cpp_Bus_Driver
 
     bool Es8311::start_transmit(uint32_t *write_buffer, uint32_t *read_buffer, size_t max_buffer_length)
     {
-        if (Iis_Guide::_bus->start_transmit(write_buffer, read_buffer, max_buffer_length) == false)
+        if (Chip_Iis_Guide::_bus->start_transmit(write_buffer, read_buffer, max_buffer_length) == false)
         {
-            Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "start_transmit fail\n");
+            Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "start_transmit fail\n");
             return false;
         }
         return true;
@@ -638,14 +638,14 @@ namespace Cpp_Bus_Driver
 
     void Es8311::stop_transmit(void)
     {
-        Iis_Guide::_bus->stop_transmit();
+        Chip_Iis_Guide::_bus->stop_transmit();
     }
 
     bool Es8311::set_next_read_data(uint32_t *data)
     {
-        if (Iis_Guide::_bus->set_next_read_data(data) == false)
+        if (Chip_Iis_Guide::_bus->set_next_read_data(data) == false)
         {
-            Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_next_read_data fail\n");
+            Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_next_read_data fail\n");
             return false;
         }
 
@@ -654,9 +654,9 @@ namespace Cpp_Bus_Driver
 
     bool Es8311::set_next_write_data(uint32_t *data)
     {
-        if (Iis_Guide::_bus->set_next_write_data(data) == false)
+        if (Chip_Iis_Guide::_bus->set_next_write_data(data) == false)
         {
-            Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_next_write_data fail\n");
+            Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_next_write_data fail\n");
             return false;
         }
 
@@ -665,12 +665,12 @@ namespace Cpp_Bus_Driver
 
     bool Es8311::get_read_event_flag(void)
     {
-        return Iis_Guide::_bus->get_read_event_flag();
+        return Chip_Iis_Guide::_bus->get_read_event_flag();
     }
 
     bool Es8311::get_write_event_flag(void)
     {
-        return Iis_Guide::_bus->get_write_event_flag();
+        return Chip_Iis_Guide::_bus->get_write_event_flag();
     }
 
 #endif
@@ -679,15 +679,15 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_GAIN_SCALE_UP), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_GAIN_SCALE_UP), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B11111000) | static_cast<uint8_t>(gain);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_GAIN_SCALE_UP), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_GAIN_SCALE_UP), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -698,15 +698,15 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL_ADCDAT_SEL), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL_ADCDAT_SEL), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B01111111) | (static_cast<uint8_t>(enable) << 7);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL_ADCDAT_SEL), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL_ADCDAT_SEL), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -717,15 +717,15 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_DMIC_PGA_GAIN), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_DMIC_PGA_GAIN), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B11110000) | static_cast<uint8_t>(gain);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_DMIC_PGA_GAIN), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_DMIC_PGA_GAIN), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -736,15 +736,15 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B10111011) | (static_cast<uint8_t>(mode) << 6) | (!static_cast<uint8_t>(mode) << 2);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_RESET_SERIAL_PORT_MODE_CONTROL), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -755,15 +755,15 @@ namespace Cpp_Bus_Driver
     {
         uint8_t buffer = 0;
 
-        if (Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL_ADCDAT_SEL), &buffer) == false)
+        if (Chip_Iic_Guide::_bus->read(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL_ADCDAT_SEL), &buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
             return false;
         }
         buffer = (buffer & 0B10001111) | (static_cast<uint8_t>(format) << 4);
-        if (Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL_ADCDAT_SEL), buffer) == false)
+        if (Chip_Iic_Guide::_bus->write(static_cast<uint8_t>(Cmd::RW_ADC_DAC_CONTROL_ADCDAT_SEL), buffer) == false)
         {
-            Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 

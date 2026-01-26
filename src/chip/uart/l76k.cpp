@@ -13,44 +13,44 @@ namespace Cpp_Bus_Driver
     {
         if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
-            Uart_Guide::pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
+            Chip_Uart_Guide::pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
 
-            Uart_Guide::pin_write(_rst, 1);
-            Uart_Guide::delay_ms(10);
-            Uart_Guide::pin_write(_rst, 0);
-            Uart_Guide::delay_ms(10);
-            Uart_Guide::pin_write(_rst, 1);
-            Uart_Guide::delay_ms(10);
+            Chip_Uart_Guide::pin_write(_rst, 1);
+            Chip_Uart_Guide::delay_ms(10);
+            Chip_Uart_Guide::pin_write(_rst, 0);
+            Chip_Uart_Guide::delay_ms(10);
+            Chip_Uart_Guide::pin_write(_rst, 1);
+            Chip_Uart_Guide::delay_ms(10);
         }
 
         if (_wake_up != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
-            if (Uart_Guide::pin_mode(_wake_up, Pin_Mode::OUTPUT, Pin_Status::PULLUP) == false)
+            if (Chip_Uart_Guide::pin_mode(_wake_up, Pin_Mode::OUTPUT, Pin_Status::PULLUP) == false)
             {
-                Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "pin_mode fail\n");
+                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "pin_mode fail\n");
             }
         }
 
         if (sleep(false) == false)
         {
-            Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "sleep fail\n");
+            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "sleep fail\n");
         }
 
-        if (Uart_Guide::begin(baud_rate) == false)
+        if (Chip_Uart_Guide::begin(baud_rate) == false)
         {
-            Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
+            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
             return false;
         }
 
         size_t buffer_index = 0;
         if (get_device_id(&buffer_index) == false)
         {
-            Uart_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get l76k id fail\n");
+            Chip_Uart_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get l76k id fail\n");
             return false;
         }
         else
         {
-            Uart_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get l76k id success (index: %d)\n", buffer_index);
+            Chip_Uart_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get l76k id success (index: %d)\n", buffer_index);
         }
 
         return true;
@@ -60,9 +60,9 @@ namespace Cpp_Bus_Driver
     {
         if (_wake_up != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
-            if (Uart_Guide::pin_write(_wake_up, !enable) == false)
+            if (Chip_Uart_Guide::pin_write(_wake_up, !enable) == false)
             {
-                Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "pin_write fail\n");
+                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "pin_write fail\n");
                 return false;
             }
         }
@@ -70,7 +70,7 @@ namespace Cpp_Bus_Driver
         {
             if (_wake_up_callback(!enable) == false)
             {
-                Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "_wake_up_callback fail\n");
+                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "_wake_up_callback fail\n");
                 return false;
             }
         }
@@ -85,14 +85,14 @@ namespace Cpp_Bus_Driver
 
         if (get_info_data(buffer, &buffer_lenght) == false)
         {
-            Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_info_data fail\n");
+            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_info_data fail\n");
             return false;
         }
 
         const char *buffer_cmd = "\r\n$G";
-        if (Uart_Guide::search(buffer.get(), buffer_lenght, buffer_cmd, std::strlen(buffer_cmd), search_index) == false)
+        if (Chip_Uart_Guide::search(buffer.get(), buffer_lenght, buffer_cmd, std::strlen(buffer_cmd), search_index) == false)
         {
-            Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
+            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
             return false;
         }
 
@@ -104,7 +104,7 @@ namespace Cpp_Bus_Driver
         uint32_t length_buffer = _bus->get_rx_buffer_length();
         if (length_buffer == 0)
         {
-            // Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_rx_buffer_length is empty\n");
+            // Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_rx_buffer_length is empty\n");
             return false;
         }
 
@@ -112,7 +112,7 @@ namespace Cpp_Bus_Driver
         {
             if (_bus->read(data, length_buffer) == false)
             {
-                Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return false;
             }
         }
@@ -120,7 +120,7 @@ namespace Cpp_Bus_Driver
         {
             if (_bus->read(data, length) == false)
             {
-                Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                 return false;
             }
         }
@@ -144,7 +144,7 @@ namespace Cpp_Bus_Driver
 
         while (1)
         {
-            Uart_Guide::delay_ms(_update_freq);
+            Chip_Uart_Guide::delay_ms(_update_freq);
 
             uint32_t buffer_lenght = get_rx_buffer_length();
             if (buffer_lenght > max_length)
@@ -157,7 +157,7 @@ namespace Cpp_Bus_Driver
                 data = std::make_unique<uint8_t[]>(buffer_lenght);
                 if (data == nullptr)
                 {
-                    Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "data std::make_unique fail\n");
+                    Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "data std::make_unique fail\n");
                     data = nullptr;
                     *length = 0;
                     return false;
@@ -166,13 +166,13 @@ namespace Cpp_Bus_Driver
                 buffer_lenght = _bus->read(data.get(), buffer_lenght);
                 if (buffer_lenght == false)
                 {
-                    Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+                    Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
                     data = nullptr;
                     *length = 0;
                     return false;
                 }
 
-                Uart_Guide::assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "get_info_data lenght: %d\n", buffer_lenght);
+                Chip_Uart_Guide::assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "get_info_data lenght: %d\n", buffer_lenght);
                 *length = buffer_lenght;
                 break;
             }
@@ -180,7 +180,7 @@ namespace Cpp_Bus_Driver
             buffer_timeout_count++;
             if (buffer_timeout_count > timeout_count) // 超时
             {
-                Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read timeout\n");
+                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read timeout\n");
                 data = nullptr;
                 *length = 0;
                 return false;
@@ -214,7 +214,7 @@ namespace Cpp_Bus_Driver
 
         if (_bus->write(buffer, strlen(buffer)) == false)
         {
-            Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -252,15 +252,15 @@ namespace Cpp_Bus_Driver
 
         if (_bus->write(buffer, strlen(buffer)) == false)
         {
-            Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
         // 只有设置波特率时候需要延时
         //  因为没有忙总线所以这里写入数据需要在模块未发送数据空闲的时候写，所以要延时，延时时间为更新频率的一半
-        Uart_Guide::delay_ms(_update_freq / 2);
+        Chip_Uart_Guide::delay_ms(_update_freq / 2);
         if (_bus->write(buffer, strlen(buffer)) == false)
         {
-            Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -269,42 +269,42 @@ namespace Cpp_Bus_Driver
         case Baud_Rate::BR_4800_BPS:
             if (_bus->set_baud_rate(4800) == false)
             {
-                Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
+                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
                 return false;
             }
             break;
         case Baud_Rate::BR_9600_BPS:
             if (_bus->set_baud_rate(9600) == false)
             {
-                Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
+                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
                 return false;
             }
             break;
         case Baud_Rate::BR_19200_BPS:
             if (_bus->set_baud_rate(19200) == false)
             {
-                Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
+                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
                 return false;
             }
             break;
         case Baud_Rate::BR_38400_BPS:
             if (_bus->set_baud_rate(38400) == false)
             {
-                Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
+                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
                 return false;
             }
             break;
         case Baud_Rate::BR_57600_BPS:
             if (_bus->set_baud_rate(57600) == false)
             {
-                Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
+                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
                 return false;
             }
             break;
         case Baud_Rate::BR_115200_BPS:
             if (_bus->set_baud_rate(115200) == false)
             {
-                Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
+                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
                 return false;
             }
             break;
@@ -345,7 +345,7 @@ namespace Cpp_Bus_Driver
 
         if (_bus->write(buffer, strlen(buffer)) == false)
         {
-            Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 
@@ -385,7 +385,7 @@ namespace Cpp_Bus_Driver
 
         if (_bus->write(buffer, strlen(buffer)) == false)
         {
-            Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
         }
 

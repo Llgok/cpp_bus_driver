@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
 #define GT9895_TOUCH_DEVICE_DEFAULT_ADDRESS_1 0x5D
 
-    class Gt9895 : public Iic_Guide
+    class Gt9895 : public Chip_Iic_Guide
     {
     private:
         static constexpr uint8_t MAX_TOUCH_FINGER_COUNT = 10;
@@ -54,7 +54,7 @@ namespace Cpp_Bus_Driver
 
         Gt9895(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, float x_scale_factor = 1.0, float y_scale_factor = 1.0,
                int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _x_scale_factor(x_scale_factor), _y_scale_factor(y_scale_factor), _rst(rst)
+            : Chip_Iic_Guide(bus, address), _x_scale_factor(x_scale_factor), _y_scale_factor(y_scale_factor), _rst(rst)
         {
         }
 

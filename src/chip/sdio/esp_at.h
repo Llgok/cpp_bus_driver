@@ -12,7 +12,7 @@
 
 namespace Cpp_Bus_Driver
 {
-    class Esp_At : public Sdio_Guide
+    class Esp_At : public Chip_Sdio_Guide
     {
     private:
         static constexpr uint16_t MAX_TRANSMIT_BLOCK_BUFFER_SIZE = 512;
@@ -114,12 +114,12 @@ namespace Cpp_Bus_Driver
         };
 
         Esp_At(std::shared_ptr<Bus_Sdio_Guide> bus, int32_t rst)
-            : Sdio_Guide(bus), _rst(rst)
+            : Chip_Sdio_Guide(bus), _rst(rst)
         {
         }
 
         Esp_At(std::shared_ptr<Bus_Sdio_Guide> bus, void (*rst_callback)(bool value))
-            : Sdio_Guide(bus), _rst_callback(rst_callback)
+            : Chip_Sdio_Guide(bus), _rst_callback(rst_callback)
         {
         }
 

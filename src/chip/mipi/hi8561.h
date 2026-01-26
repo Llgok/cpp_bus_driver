@@ -12,7 +12,7 @@
 
 namespace Cpp_Bus_Driver
 {
-    class Hi8561 : public Mipi_Guide
+    class Hi8561 : public Chip_Mipi_Guide
     {
     private:
         static constexpr uint16_t DEVICE_ID = 0x8561;
@@ -243,7 +243,7 @@ namespace Cpp_Bus_Driver
         };
 
         Hi8561(std::shared_ptr<Bus_Mipi_Guide> bus, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Mipi_Guide(bus, Init_List_Format::WRITE_C8_D8), _rst(rst)
+            : Chip_Mipi_Guide(bus, Init_List_Format::WRITE_C8_D8), _rst(rst)
         {
         }
 

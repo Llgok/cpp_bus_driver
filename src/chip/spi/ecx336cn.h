@@ -12,7 +12,7 @@
 
 namespace Cpp_Bus_Driver
 {
-    class Ecx336cn : public Spi_Guide
+    class Ecx336cn : public Chip_Spi_Guide
     {
     private:
         enum class Cmd
@@ -942,7 +942,7 @@ namespace Cpp_Bus_Driver
     public:
         Ecx336cn(std::shared_ptr<Bus_Spi_Guide> bus, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE,
                  int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Spi_Guide(bus, cs), _rst(rst)
+            : Chip_Spi_Guide(bus, cs), _rst(rst)
         {
         }
 

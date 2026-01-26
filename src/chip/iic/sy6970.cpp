@@ -27,7 +27,7 @@ namespace Cpp_Bus_Driver
             delay_ms(10);
         }
 
-        if (Iic_Guide::begin(freq_hz) == false)
+        if (Chip_Iic_Guide::begin(freq_hz) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
             return false;
@@ -55,7 +55,7 @@ namespace Cpp_Bus_Driver
 
     bool Sy6970::end(void)
     {
-        if (Iic_Guide::end() == false)
+        if (Chip_Iic_Guide::end() == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "end fail\n");
             return false;

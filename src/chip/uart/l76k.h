@@ -12,7 +12,7 @@
 
 namespace Cpp_Bus_Driver
 {
-    class L76k : public Uart_Guide, public Gnss
+    class L76k : public Chip_Uart_Guide, public Gnss
     {
     private:
         static constexpr uint8_t GET_INFORMATION_TIMEOUT_COUNT = 3; // 获取信息超时计数
@@ -70,13 +70,13 @@ namespace Cpp_Bus_Driver
         uint16_t _update_freq = 1000; // 默认更新频率为 1000ms（1Hz）
 
         L76k(const std::shared_ptr<Bus_Uart_Guide> bus, const int32_t wake_up, const int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Uart_Guide(bus), _wake_up(wake_up), _rst(rst)
+            : Chip_Uart_Guide(bus), _wake_up(wake_up), _rst(rst)
         {
         }
 
         L76k(const std::shared_ptr<Bus_Uart_Guide> bus, const std::function<bool(bool)> &wake_up_callback,
              const int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Uart_Guide(bus), _wake_up_callback(wake_up_callback), _rst(rst)
+            : Chip_Uart_Guide(bus), _wake_up_callback(wake_up_callback), _rst(rst)
         {
         }
 

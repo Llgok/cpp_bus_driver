@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
 #define ICN6211_DEVICE_DEFAULT_ADDRESS 0x2C
 
-    class Icn6211 : public Iic_Guide
+    class Icn6211 : public Chip_Iic_Guide
     {
     private:
         static constexpr uint16_t DEVICE_ID = 0x6211;
@@ -124,7 +124,7 @@ namespace Cpp_Bus_Driver
 
     public:
         Icn6211(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _rst(rst) {}
+            : Chip_Iic_Guide(bus, address), _rst(rst) {}
 
         bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
 

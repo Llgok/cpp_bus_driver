@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
 #define TCA8418_DEVICE_DEFAULT_ADDRESS 0x34
 
-    class Tca8418 : public Iic_Guide
+    class Tca8418 : public Chip_Iic_Guide
     {
     private:
         static constexpr uint8_t MAX_WIDTH_SIZE = 10;
@@ -132,7 +132,7 @@ namespace Cpp_Bus_Driver
         };
 
         Tca8418(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _rst(rst)
+            : Chip_Iic_Guide(bus, address), _rst(rst)
         {
         }
 

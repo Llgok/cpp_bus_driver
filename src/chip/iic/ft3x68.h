@@ -15,7 +15,7 @@ namespace Cpp_Bus_Driver
 #define FT3168_DEVICE_DEFAULT_ADDRESS 0x38
 #define FT3268_DEVICE_DEFAULT_ADDRESS 0x38
 
-    class Ft3x68 : public Iic_Guide
+    class Ft3x68 : public Chip_Iic_Guide
     {
     private:
         static constexpr uint8_t DEVICE_ID = 0x03;
@@ -47,7 +47,7 @@ namespace Cpp_Bus_Driver
         };
 
         Ft3x68(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _rst(rst)
+            : Chip_Iic_Guide(bus, address), _rst(rst)
         {
         }
 

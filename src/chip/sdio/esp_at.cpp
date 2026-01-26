@@ -36,7 +36,7 @@ namespace Cpp_Bus_Driver
             delay_ms(1000);
         }
 
-        if (Sdio_Guide::begin(freq_hz) == false)
+        if (Chip_Sdio_Guide::begin(freq_hz) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
             return false;

@@ -2,14 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-01-24 11:09:03
+ * @LastEditTime: 2026-01-24 17:50:31
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
 
 namespace Cpp_Bus_Driver
 {
-    bool Iic_Guide::begin(int32_t freq_hz)
+    bool Chip_Iic_Guide::begin(int32_t freq_hz)
     {
         if (_bus->begin(freq_hz, _address) == false)
         {
@@ -26,7 +26,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Iic_Guide::end(void)
+    bool Chip_Iic_Guide::end(void)
     {
         if (_bus->end() == false)
         {
@@ -37,7 +37,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Iic_Guide::init_list(const uint8_t *list, size_t length)
+    bool Chip_Iic_Guide::init_list(const uint8_t *list, size_t length)
     {
         size_t index = 0;
         while (index < length)
@@ -69,7 +69,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Iic_Guide::init_list(const uint16_t *list, size_t length)
+    bool Chip_Iic_Guide::init_list(const uint16_t *list, size_t length)
     {
         size_t index = 0;
         while (index < length)
@@ -109,7 +109,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Spi_Guide::begin(int32_t freq_hz)
+    bool Chip_Spi_Guide::begin(int32_t freq_hz)
     {
         if (_bus->begin(freq_hz, _cs) == false)
         {
@@ -120,7 +120,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Spi_Guide::init_list(const uint8_t *list, size_t length)
+    bool Chip_Spi_Guide::init_list(const uint8_t *list, size_t length)
     {
         size_t index = 0;
         while (index < length)
@@ -152,7 +152,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Qspi_Guide::begin(int32_t freq_hz)
+    bool Chip_Qspi_Guide::begin(int32_t freq_hz)
     {
         if (_bus->begin(freq_hz, _cs) == false)
         {
@@ -163,7 +163,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Qspi_Guide::init_list(const uint32_t *list, size_t length)
+    bool Chip_Qspi_Guide::init_list(const uint32_t *list, size_t length)
     {
         size_t index = 0;
         while (index < length)
@@ -227,7 +227,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Uart_Guide::begin(int32_t baud_rate)
+    bool Chip_Uart_Guide::begin(int32_t baud_rate)
     {
         if (_bus->begin(baud_rate) == false)
         {
@@ -239,7 +239,7 @@ namespace Cpp_Bus_Driver
     }
 
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
-    bool Iis_Guide::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
+    bool Chip_Iis_Guide::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
     {
         if (_bus->begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
         {
@@ -251,7 +251,7 @@ namespace Cpp_Bus_Driver
     }
 
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-    bool Iis_Guide::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width, nrf_i2s_channels_t channel)
+    bool Chip_Iis_Guide::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width, nrf_i2s_channels_t channel)
     {
         if (_bus->begin(mclk_multiple, sample_rate_hz, data_bit_width, channel) == false)
         {
@@ -263,7 +263,7 @@ namespace Cpp_Bus_Driver
     }
 #endif
 
-    bool Sdio_Guide::begin(int32_t freq_hz)
+    bool Chip_Sdio_Guide::begin(int32_t freq_hz)
     {
         if (_bus->begin(freq_hz) == false)
         {
@@ -274,7 +274,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Mipi_Guide::begin(int32_t freq_mhz, int32_t lane_bit_rate_mbps)
+    bool Chip_Mipi_Guide::begin(int32_t freq_mhz, int32_t lane_bit_rate_mbps)
     {
         if (_bus->begin(freq_mhz, lane_bit_rate_mbps, _init_list_format) == false)
         {
@@ -285,7 +285,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Mipi_Guide::init_list(const uint8_t *list, size_t length)
+    bool Chip_Mipi_Guide::init_list(const uint8_t *list, size_t length)
     {
         size_t index = 0;
         while (index < length)

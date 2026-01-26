@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
 #define SY6970_DEVICE_DEFAULT_ADDRESS 0x6A
 
-    class Sy6970 : public Iic_Guide
+    class Sy6970 : public Chip_Iic_Guide
     {
     private:
         static constexpr uint8_t DEVICE_ID = 0x01;
@@ -112,7 +112,7 @@ namespace Cpp_Bus_Driver
         };
 
         Sy6970(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _rst(rst)
+            : Chip_Iic_Guide(bus, address), _rst(rst)
         {
         }
 

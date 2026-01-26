@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
 #define GZ030PCC02_DEVICE_DEFAULT_ADDRESS 0x28
 
-    class Gz030pcc0x : public Iic_Guide
+    class Gz030pcc0x : public Chip_Iic_Guide
     {
     private:
         enum class Cmd
@@ -145,7 +145,7 @@ namespace Cpp_Bus_Driver
         };
 
         Gz030pcc0x(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _rst(rst)
+            : Chip_Iic_Guide(bus, address), _rst(rst)
         {
         }
 

@@ -12,7 +12,7 @@
 
 namespace Cpp_Bus_Driver
 {
-    class Sx126x : public Spi_Guide
+    class Sx126x : public Chip_Spi_Guide
     {
     private:
         // SX1262的ID为SX1261
@@ -331,13 +331,13 @@ namespace Cpp_Bus_Driver
 
         Sx126x(std::shared_ptr<Bus_Spi_Guide> bus, Chip_Type chip_type, int32_t busy,
                int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Spi_Guide(bus, cs), _chip_type(chip_type), _rst(rst), _busy(busy)
+            : Chip_Spi_Guide(bus, cs), _chip_type(chip_type), _rst(rst), _busy(busy)
         {
         }
 
         Sx126x(std::shared_ptr<Bus_Spi_Guide> bus, Chip_Type chip_type, bool (*busy_wait_callback)(void),
                int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Spi_Guide(bus, cs), _chip_type(chip_type), _rst(rst), _busy_wait_callback(busy_wait_callback)
+            : Chip_Spi_Guide(bus, cs), _chip_type(chip_type), _rst(rst), _busy_wait_callback(busy_wait_callback)
         {
         }
 

@@ -15,7 +15,7 @@ namespace Cpp_Bus_Driver
 {
 #define AW862XX_DEVICE_DEFAULT_ADDRESS 0x58
 
-    class Aw862xx : public Iic_Guide
+    class Aw862xx : public Chip_Iic_Guide
     {
     private:
         enum class Cmd
@@ -160,7 +160,7 @@ namespace Cpp_Bus_Driver
         uint32_t _f0_value = 1700;
 
         Aw862xx(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _rst(rst)
+            : Chip_Iic_Guide(bus, address), _rst(rst)
         {
         }
 

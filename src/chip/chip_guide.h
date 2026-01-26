@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-01-23 16:34:54
+ * @LastEditTime: 2026-01-24 17:57:23
  * @License: GPL 3.0
  */
 #pragma once
@@ -11,7 +11,7 @@
 
 namespace Cpp_Bus_Driver
 {
-    class Iic_Guide : public Tool
+    class Chip_Iic_Guide : public Tool
     {
     protected:
         std::shared_ptr<Bus_Iic_Guide> _bus;
@@ -20,7 +20,7 @@ namespace Cpp_Bus_Driver
         int16_t _address;
 
     public:
-        Iic_Guide(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address)
+        Chip_Iic_Guide(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address)
             : _bus(bus), _address(address)
         {
         }
@@ -32,7 +32,7 @@ namespace Cpp_Bus_Driver
         bool init_list(const uint16_t *list, size_t length);
     };
 
-    class Spi_Guide : public Tool
+    class Chip_Spi_Guide : public Tool
     {
     protected:
         std::shared_ptr<Bus_Spi_Guide> _bus;
@@ -40,7 +40,7 @@ namespace Cpp_Bus_Driver
         int32_t _cs;
 
     public:
-        Spi_Guide(std::shared_ptr<Bus_Spi_Guide> bus, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE)
+        Chip_Spi_Guide(std::shared_ptr<Bus_Spi_Guide> bus, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : _bus(bus), _cs(cs)
         {
         }
@@ -50,7 +50,7 @@ namespace Cpp_Bus_Driver
         bool init_list(const uint8_t *list, size_t length);
     };
 
-    class Qspi_Guide : public Tool
+    class Chip_Qspi_Guide : public Tool
     {
     protected:
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
@@ -92,7 +92,7 @@ namespace Cpp_Bus_Driver
         int32_t _cs;
 
     public:
-        Qspi_Guide(std::shared_ptr<Bus_Qspi_Guide> bus, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE)
+        Chip_Qspi_Guide(std::shared_ptr<Bus_Qspi_Guide> bus, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE)
             : _bus(bus), _cs(cs)
         {
         }
@@ -102,13 +102,13 @@ namespace Cpp_Bus_Driver
         bool init_list(const uint32_t *list, size_t length);
     };
 
-    class Uart_Guide : public Tool
+    class Chip_Uart_Guide : public Tool
     {
     protected:
         std::shared_ptr<Bus_Uart_Guide> _bus;
 
     public:
-        Uart_Guide(std::shared_ptr<Bus_Uart_Guide> bus)
+        Chip_Uart_Guide(std::shared_ptr<Bus_Uart_Guide> bus)
             : _bus(bus)
         {
         }
@@ -116,13 +116,13 @@ namespace Cpp_Bus_Driver
         virtual bool begin(int32_t baud_rate = CPP_BUS_DRIVER_DEFAULT_VALUE);
     };
 
-    class Iis_Guide : public Tool
+    class Chip_Iis_Guide : public Tool
     {
     protected:
         std::shared_ptr<Bus_Iis_Guide> _bus;
 
     public:
-        Iis_Guide(std::shared_ptr<Bus_Iis_Guide> bus)
+        Chip_Iis_Guide(std::shared_ptr<Bus_Iis_Guide> bus)
             : _bus(bus)
         {
         }
@@ -133,13 +133,13 @@ namespace Cpp_Bus_Driver
 #endif
     };
 
-    class Sdio_Guide : public Tool
+    class Chip_Sdio_Guide : public Tool
     {
     protected:
         std::shared_ptr<Bus_Sdio_Guide> _bus;
 
     public:
-        Sdio_Guide(std::shared_ptr<Bus_Sdio_Guide> bus)
+        Chip_Sdio_Guide(std::shared_ptr<Bus_Sdio_Guide> bus)
             : _bus(bus)
         {
         }
@@ -147,7 +147,7 @@ namespace Cpp_Bus_Driver
         virtual bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
     };
 
-    class Mipi_Guide : public Tool
+    class Chip_Mipi_Guide : public Tool
     {
     protected:
         std::shared_ptr<Bus_Mipi_Guide> _bus;
@@ -155,7 +155,7 @@ namespace Cpp_Bus_Driver
         Init_List_Format _init_list_format;
 
     public:
-        Mipi_Guide(std::shared_ptr<Bus_Mipi_Guide> bus, Init_List_Format init_list_format = Init_List_Format::WRITE_C8_D8)
+        Chip_Mipi_Guide(std::shared_ptr<Bus_Mipi_Guide> bus, Init_List_Format init_list_format = Init_List_Format::WRITE_C8_D8)
             : _bus(bus), _init_list_format(init_list_format)
         {
         }

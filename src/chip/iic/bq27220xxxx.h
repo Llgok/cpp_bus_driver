@@ -14,7 +14,7 @@ namespace Cpp_Bus_Driver
 {
 #define BQ27220YZFR_DEVICE_DEFAULT_ADDRESS 0x55
 
-    class Bq27220xxxx : public Iic_Guide
+    class Bq27220xxxx : public Chip_Iic_Guide
     {
     private:
         static constexpr uint16_t DEVICE_ID = 0x0220;
@@ -131,7 +131,7 @@ namespace Cpp_Bus_Driver
 
     public:
         Bq27220xxxx(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _rst(rst)
+            : Chip_Iic_Guide(bus, address), _rst(rst)
         {
         }
 

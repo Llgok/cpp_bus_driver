@@ -17,7 +17,7 @@ namespace Cpp_Bus_Driver
 #define AW21009QNR_DEVICE_DEFAULT_ADDRESS_3 0x24
 #define AW21009QNR_DEVICE_DEFAULT_ADDRESS_4 0x25
 
-    class Aw21009xxx : public Iic_Guide
+    class Aw21009xxx : public Chip_Iic_Guide
     {
     private:
         static constexpr uint8_t DEVICE_ID = 0x12;
@@ -84,7 +84,7 @@ namespace Cpp_Bus_Driver
         };
 
         Aw21009xxx(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Iic_Guide(bus, address), _rst(rst)
+            : Chip_Iic_Guide(bus, address), _rst(rst)
         {
         }
 
