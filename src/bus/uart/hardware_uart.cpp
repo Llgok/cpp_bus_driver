@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:26:23
- * @LastEditTime: 2025-09-26 10:38:23
+ * @LastEditTime: 2026-01-28 15:23:13
  * @License: GPL 3.0
  */
 #include "hardware_uart.h"
@@ -39,8 +39,8 @@ namespace Cpp_Bus_Driver
                 .source_clk = UART_SCLK_DEFAULT,
                 .flags =
                     {
-                        .allow_pd = 1,
-                        .backup_before_sleep = 1,
+                        .allow_pd = 0,
+                        .backup_before_sleep = 0,
                     },
             };
 
