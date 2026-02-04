@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-11-08 14:33:10
+ * @LastEditTime: 2026-02-04 15:36:59
  * @License: GPL 3.0
  */
 
@@ -70,10 +70,10 @@ namespace Cpp_Bus_Driver
 
         enum class Enter_Ship_Time
         {
-            WAIT_1S = 0B00000000,
-            WAIT_2S = 0B01000000,
-            WAIT_4S = 0B10000000,
-            WAIT_8S = 0B11000000,
+            WAIT_1S = 0,
+            WAIT_2S,
+            WAIT_4S,
+            WAIT_8S,
         };
 
         struct Irq_Status // 中断状态

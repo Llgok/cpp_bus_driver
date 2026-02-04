@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-01-26 09:05:47
+ * @LastEditTime: 2026-02-04 15:37:17
  * @License: GPL 3.0
  */
 #include "sgm41562xx.h"
@@ -18,7 +18,7 @@ namespace Cpp_Bus_Driver
         if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {
             pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
-            
+
             pin_write(_rst, 1);
             delay_ms(10);
             pin_write(_rst, 0);
@@ -198,7 +198,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        buffer = (buffer & 0B00111111) | static_cast<uint8_t>(time);
+        buffer = (buffer & 0B00111111) | (static_cast<uint8_t>(time) << 6);
 
         if (_bus->write(static_cast<uint8_t>(Cmd::RD_FAULT), buffer) == false)
         {
