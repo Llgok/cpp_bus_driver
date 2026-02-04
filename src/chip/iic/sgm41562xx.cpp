@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-02-04 15:37:17
+ * @LastEditTime: 2026-02-04 15:53:29
  * @License: GPL 3.0
  */
 #include "sgm41562xx.h"
@@ -162,7 +162,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Sgm41562xx::set_ship_mode_enable(bool enable)
+    bool Sgm41562xx::set_shipping_mode_enable(bool enable)
     {
         uint8_t buffer = 0;
         if (_bus->read(static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), &buffer) == false)
@@ -189,7 +189,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Sgm41562xx::set_enter_ship_time(Enter_Ship_Time time)
+    bool Sgm41562xx::set_enter_shipping_time(Enter_Shipping_Time time)
     {
         uint8_t buffer = 0;
         if (_bus->read(static_cast<uint8_t>(Cmd::RD_FAULT), &buffer) == false)

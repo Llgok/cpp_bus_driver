@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-01-26 09:06:00
+ * @LastEditTime: 2026-02-04 15:55:09
  * @License: GPL 3.0
  */
 #include "sy6970.h"
@@ -142,7 +142,7 @@ namespace Cpp_Bus_Driver
         return 2600 + (buffer * 100);
     }
 
-    bool Sy6970::set_ship_mode_enable(bool enable)
+    bool Sy6970::set_shipping_mode_enable(bool enable)
     {
         uint8_t buffer = 0;
         if (_bus->read(static_cast<uint8_t>(Cmd::RW_MISCELLANEOUS_OPERATION_CONTROL), &buffer) == false)

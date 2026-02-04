@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-02-04 15:36:59
+ * @LastEditTime: 2026-02-04 15:52:35
  * @License: GPL 3.0
  */
 
@@ -68,7 +68,7 @@ namespace Cpp_Bus_Driver
             CHARGE_DONE,
         };
 
-        enum class Enter_Ship_Time
+        enum class Enter_Shipping_Time
         {
             WAIT_1S = 0,
             WAIT_2S,
@@ -151,14 +151,14 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-07-19 16:14:57
          */
-        bool set_ship_mode_enable(bool enable);
+        bool set_shipping_mode_enable(bool enable);
 
         /**
          * @brief 设置进入运输模式的时间
-         * @param time 使用Enter_Ship_Time::进行配置
+         * @param time 使用Enter_Shipping_Time::进行配置
          * @return
          * @Date 2025-11-08 14:29:54
          */
-        bool set_enter_ship_time(Enter_Ship_Time time);
+        bool set_enter_shipping_time(Enter_Shipping_Time time);
     };
 }

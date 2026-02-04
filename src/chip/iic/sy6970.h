@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2025-11-20 12:13:57
+ * @LastEditTime: 2026-02-04 15:54:57
  * @License: GPL 3.0
  */
 
@@ -156,7 +156,7 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2025-11-18 16:30:58
          */
-        bool set_ship_mode_enable(bool enable);
+        bool set_shipping_mode_enable(bool enable);
 
         /**
          * @brief 获取充电电流
