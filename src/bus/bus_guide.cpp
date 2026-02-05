@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2026-01-24 17:29:46
+ * @LastEditTime: 2026-02-05 16:38:38
  * @License: GPL 3.0
  */
 #include "bus_guide.h"
@@ -390,7 +390,9 @@ namespace Cpp_Bus_Driver
 
     bool Bus_Mipi_Guide::write(const uint8_t write_c8, const uint8_t write_d8)
     {
-        if (write(static_cast<uint8_t>(write_c8), static_cast<uint8_t[]>(write_d8), 1) == false)
+        uint8_t buffer = write_d8;
+
+        if (write(static_cast<uint8_t>(write_c8), &buffer, 1) == false)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
             return false;
