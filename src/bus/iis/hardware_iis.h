@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-01-20 13:41:05
+ * @LastEditTime: 2026-02-05 14:01:13
  * @License: GPL 3.0
  */
 
@@ -18,6 +18,8 @@ namespace Cpp_Bus_Driver
     private:
         int32_t _data_in, _data_out;
         int32_t _ws_lrck, _bclk, _mclk;
+
+    public:
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         i2s_port_t _port;
         i2s_chan_handle_t _chan_tx_handle = nullptr;
@@ -28,7 +30,6 @@ namespace Cpp_Bus_Driver
         uint32_t _sample_rate_hz = -1;
         uint8_t _data_bit_width = -1;
 
-    public:
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
         enum class Data_Mode
         {
