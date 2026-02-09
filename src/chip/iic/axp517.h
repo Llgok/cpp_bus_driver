@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2026-02-03 15:06:34
- * @LastEditTime: 2026-02-09 09:44:38
+ * @LastEditTime: 2026-02-09 16:37:17
  * @License: GPL 3.0
  */
 
@@ -114,6 +114,8 @@ namespace Cpp_Bus_Driver
         static constexpr const uint8_t _init_list[] =
             {
                 static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_INPUT_CURRENT_LIMIT_CONTROL), 0B11111100, // 输入电流限制修改为最大
+
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_INPUT_VOLTAGE_LIMIT_CONTROL), 0B00001100, // 输入电压限制修改为4.7v
 
                 static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_ICC_SETTING), 0B00001000 // 设置充电电流为512mA
             };
