@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2026-02-03 15:06:34
- * @LastEditTime: 2026-02-04 16:26:12
+ * @LastEditTime: 2026-02-09 09:44:38
  * @License: GPL 3.0
  */
 
@@ -506,12 +506,20 @@ namespace Cpp_Bus_Driver
         bool set_shipping_mode_enable(bool enable);
 
         /**
-         * @brief 强制设置batfet启动或者关闭
+         * @brief 强制设置batfet（电池开关）启动或者关闭
          * @param mode 使用Force_Batfet::配置
          * @return
          * @Date 2026-02-03 15:06:34
          */
         bool set_force_batfet_mode(Force_Batfet mode);
+
+        /**
+         * @brief 强制设置rbfet（vbus反向供电开关）启动或者关闭
+         * @param enable enable [true]：强制开启 [false]：强制关闭
+         * @return
+         * @Date 2026-02-03 15:06:34
+         */
+        bool set_force_rbfet_enable(bool enable);
 
         // /**
         //  * @brief 设置Boost输出电压

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2026-02-03 15:06:34
- * @LastEditTime: 2026-02-04 16:46:16
+ * @LastEditTime: 2026-02-09 09:47:25
  * @License: GPL 3.0
  */
 #include "axp517.h"
@@ -755,6 +755,17 @@ namespace Cpp_Bus_Driver
         }
 
         if (_bus->write(static_cast<uint8_t>(Cmd::RW_BATFET_CONTROL), buffer) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Axp517::set_force_rbfet_enable(bool enable)
+    {
+        if (_bus->write(static_cast<uint8_t>(Cmd::RW_RBFET_CONTROL), static_cast<uint8_t>(enable)) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;
