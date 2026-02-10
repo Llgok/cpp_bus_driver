@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-02-04 15:54:57
+ * @LastEditTime: 2026-02-10 16:47:56
  * @License: GPL 3.0
  */
 
@@ -47,8 +47,10 @@ namespace Cpp_Bus_Driver
 
         static constexpr const uint8_t _init_list[] =
             {
-                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_INPUT_SOURCE_CONTROL), 0B00111111,            // 关闭 ILIM引脚，输入电流限制修改为最大
-                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_CHARGE_TERMINATION_TIMER_CONTROL), 0B10001101 // 禁用看门狗定时喂狗功能
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_INPUT_SOURCE_CONTROL), 0B00111111,             // 关闭 ILIM引脚，输入电流限制修改为最大
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_CHARGE_TERMINATION_TIMER_CONTROL), 0B10001101, // 禁用看门狗定时喂狗功能
+
+                static_cast<uint8_t>(Init_List_Format::WRITE_C8_D8), static_cast<uint8_t>(Cmd::RW_CHARGE_CURRENT_CONTROL), 0B00001000 // 快速充电电流限制设置为512ma
             };
 
         int32_t _rst;
