@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2026-02-03 15:06:34
- * @LastEditTime: 2026-02-09 09:47:25
+ * @LastEditTime: 2026-02-24 16:31:55
  * @License: GPL 3.0
  */
 #include "axp517.h"
@@ -541,7 +541,7 @@ namespace Cpp_Bus_Driver
     {
         uint16_t buffer = get_adc_data();
 
-        if (buffer == -1)
+        if (buffer == static_cast<uint16_t>(-1))
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_adc_data fail\n");
             return -1;
@@ -554,7 +554,7 @@ namespace Cpp_Bus_Driver
     {
         uint16_t buffer = get_adc_data();
 
-        if (buffer == -1)
+        if (buffer == static_cast<uint16_t>(-1))
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_adc_data fail\n");
             return -1;
@@ -567,7 +567,7 @@ namespace Cpp_Bus_Driver
     {
         uint16_t buffer = get_adc_data();
 
-        if (buffer == -1)
+        if (buffer == static_cast<uint16_t>(-1))
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_adc_data fail\n");
             return -1;
@@ -580,7 +580,7 @@ namespace Cpp_Bus_Driver
     {
         uint16_t buffer = get_adc_data();
 
-        if (buffer == -1)
+        if (buffer == static_cast<uint16_t>(-1))
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_adc_data fail\n");
             return -1;
