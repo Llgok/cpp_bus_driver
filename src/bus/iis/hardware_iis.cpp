@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-02-26 09:09:45
+ * @LastEditTime: 2026-02-26 09:38:17
  * @License: GPL 3.0
  */
 #include "hardware_iis.h"
@@ -447,11 +447,12 @@ namespace Cpp_Bus_Driver
     }
 
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-    bool Hardware_Iis::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width, nrf_i2s_channels_t channel)
+    bool Hardware_Iis::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width)
     {
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _ws_lrck: %d\n", _ws_lrck);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _bclk: %d\n", _bclk);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _mclk: %d\n", _mclk);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _channel: %d\n", _channel);
 
         nrf_i2s_mck_t buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_DISABLED;
         double buffer_mclk_freq_mhz = 0.0;
@@ -613,7 +614,7 @@ namespace Cpp_Bus_Driver
         nrf_i2s_pins_set(NRF_I2S, _bclk, _ws_lrck, _mclk, _data_out, _data_in);
 
         if (nrf_i2s_configure(NRF_I2S, nrf_i2s_mode_t::NRF_I2S_MODE_MASTER, nrf_i2s_format_t::NRF_I2S_FORMAT_I2S, nrf_i2s_align_t::NRF_I2S_ALIGN_LEFT,
-                              data_bit_width, channel, buffer_mclk_division, mclk_multiple) == false)
+                              data_bit_width, _channel, buffer_mclk_division, mclk_multiple) == false)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "nrf_i2s_configure fail\n");
             return false;

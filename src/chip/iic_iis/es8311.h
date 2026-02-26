@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:42:57
- * @LastEditTime: 2026-01-21 17:50:46
+ * @LastEditTime: 2026-02-26 09:34:30
  * @License: GPL 3.0
  */
 
@@ -334,8 +334,7 @@ namespace Cpp_Bus_Driver
         bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) override;
 
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-        bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width,
-                   nrf_i2s_channels_t channel = nrf_i2s_channels_t::NRF_I2S_CHANNELS_STEREO) override;
+        bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width) override;
 #endif
 
         uint16_t get_device_id(void);
