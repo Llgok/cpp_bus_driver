@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-01-20 13:55:40
+ * @LastEditTime: 2026-02-26 09:09:45
  * @License: GPL 3.0
  */
 #include "hardware_iis.h"
@@ -19,6 +19,8 @@ namespace Cpp_Bus_Driver
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config mclk_multiple: %d\n", mclk_multiple);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config sample_rate_hz: %d hz\n", sample_rate_hz);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config data_bit_width: %d\n", data_bit_width);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _iis_mode: %d\n", _iis_mode);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _clock_source: %d\n", _clock_source);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _slot_mode_in: %d\n", _slot_mode_in);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _slot_mode_out: %d\n", _slot_mode_out);
 
@@ -50,7 +52,7 @@ namespace Cpp_Bus_Driver
                         .clk_cfg =
                             {
                                 .sample_rate_hz = sample_rate_hz,
-                                .clk_src = I2S_CLK_SRC_DEFAULT,
+                                .clk_src = _clock_source,
 #if SOC_I2S_HW_VERSION_2
                                 .ext_clk_freq_hz = 0,
 #endif
@@ -102,7 +104,7 @@ namespace Cpp_Bus_Driver
                     .clk_cfg =
                         {
                             .sample_rate_hz = sample_rate_hz,
-                            .clk_src = I2S_CLK_SRC_DEFAULT,
+                            .clk_src = _clock_source,
                             .mclk_multiple = mclk_multiple,
                             .dn_sample_mode = I2S_PDM_DSR_8S,
                             .bclk_div = 8,
@@ -123,7 +125,7 @@ namespace Cpp_Bus_Driver
                     .clk_cfg =
                         {
                             .sample_rate_hz = sample_rate_hz,
-                            .clk_src = I2S_CLK_SRC_DEFAULT,
+                            .clk_src = _clock_source,
                             .mclk_multiple = mclk_multiple,
                             .up_sample_fp = 960,
                             .up_sample_fs = 480,
@@ -190,7 +192,7 @@ namespace Cpp_Bus_Driver
                         .clk_cfg =
                             {
                                 .sample_rate_hz = sample_rate_hz,
-                                .clk_src = I2S_CLK_SRC_DEFAULT,
+                                .clk_src = _clock_source,
 #if SOC_I2S_HW_VERSION_2
                                 .ext_clk_freq_hz = 0,
 #endif
@@ -296,7 +298,7 @@ namespace Cpp_Bus_Driver
                         .clk_cfg =
                             {
                                 .sample_rate_hz = sample_rate_hz,
-                                .clk_src = I2S_CLK_SRC_DEFAULT,
+                                .clk_src = _clock_source,
                                 .mclk_multiple = mclk_multiple,
                                 .dn_sample_mode = I2S_PDM_DSR_8S,
                                 .bclk_div = 8,
@@ -345,7 +347,7 @@ namespace Cpp_Bus_Driver
                         .clk_cfg =
                             {
                                 .sample_rate_hz = sample_rate_hz,
-                                .clk_src = I2S_CLK_SRC_DEFAULT,
+                                .clk_src = _clock_source,
                                 .mclk_multiple = mclk_multiple,
                                 .up_sample_fp = 960,
                                 .up_sample_fs = 480,

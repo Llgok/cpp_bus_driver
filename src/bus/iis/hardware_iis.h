@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-02-05 14:01:13
+ * @LastEditTime: 2026-02-26 09:17:13
  * @License: GPL 3.0
  */
 
@@ -12,7 +12,6 @@
 
 namespace Cpp_Bus_Driver
 {
-
     class Hardware_Iis : public Bus_Iis_Guide
     {
     private:
@@ -47,15 +46,16 @@ namespace Cpp_Bus_Driver
 
         Data_Mode _data_mode;
         Iis_Mode _iis_mode;
+        i2s_clock_src_t _clock_source;
         i2s_slot_mode_t _slot_mode_in;
         i2s_slot_mode_t _slot_mode_out;
 
         // 配置输入和输出设备
-        Hardware_Iis(int32_t data_in, int32_t data_out, int32_t ws_lrck, int32_t bclk, int32_t mclk, i2s_port_t port = I2S_NUM_0,
-                     Data_Mode data_mode = Data_Mode::INPUT_OUTPUT, Iis_Mode iis_mode = Iis_Mode::STD,
+        Hardware_Iis(int32_t data_in, int32_t data_out, int32_t ws_lrck, int32_t bclk, int32_t mclk, i2s_port_t port = i2s_port_t::I2S_NUM_0,
+                     Data_Mode data_mode = Data_Mode::INPUT_OUTPUT, Iis_Mode iis_mode = Iis_Mode::STD, i2s_clock_src_t clock_source = i2s_clock_src_t::I2S_CLK_SRC_DEFAULT,
                      i2s_slot_mode_t slot_mode_in = i2s_slot_mode_t::I2S_SLOT_MODE_STEREO, i2s_slot_mode_t slot_mode_out = i2s_slot_mode_t::I2S_SLOT_MODE_STEREO)
             : _data_in(data_in), _data_out(data_out), _ws_lrck(ws_lrck), _bclk(bclk), _mclk(mclk), _port(port),
-              _data_mode(data_mode), _iis_mode(iis_mode), _slot_mode_in(slot_mode_in), _slot_mode_out(slot_mode_out)
+              _data_mode(data_mode), _iis_mode(iis_mode), _clock_source(clock_source), _slot_mode_in(slot_mode_in), _slot_mode_out(slot_mode_out)
         {
         }
 
