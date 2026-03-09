@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-09-26 10:31:23
+ * @LastEditTime: 2026-03-04 11:55:49
  * @License: GPL 3.0
  */
 #pragma once
@@ -17,14 +17,15 @@ namespace Cpp_Bus_Driver
     private:
         static constexpr uint16_t UART_RX_MAX_SIZE = 1024 * 2;
 
-        int32_t _tx, _rx;
+        int32_t _tx, _rx, _rts, _cts;
         uart_port_t _port;
         int32_t _baud_rate;
         bool _init_flag = false;
 
     public:
-        Hardware_Uart(int32_t tx, int32_t rx, uart_port_t port = uart_port_t::UART_NUM_1)
-            : _tx(tx), _rx(rx), _port(port)
+        Hardware_Uart(int32_t tx, int32_t rx, int32_t rts = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t cts = CPP_BUS_DRIVER_DEFAULT_VALUE,
+                      uart_port_t port = uart_port_t::UART_NUM_1)
+            : _tx(tx), _rx(rx), _rts(rts), _cts(cts), _port(port)
         {
         }
 

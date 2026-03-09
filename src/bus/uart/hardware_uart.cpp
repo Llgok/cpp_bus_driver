@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:26:23
- * @LastEditTime: 2026-01-28 15:23:13
+ * @LastEditTime: 2026-03-04 17:14:51
  * @License: GPL 3.0
  */
 #include "hardware_uart.h"
@@ -26,6 +26,8 @@ namespace Cpp_Bus_Driver
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "configuring _port: %d\n", _port);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "configuring _tx: %d\n", _tx);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "configuring _rx: %d\n", _rx);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "configuring _rts: %d\n", _rts);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "configuring _cts: %d\n", _cts);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "configuring baud_rate: %d bps\n", baud_rate);
 
         const uart_config_t uart_config =
@@ -34,7 +36,23 @@ namespace Cpp_Bus_Driver
                 .data_bits = UART_DATA_8_BITS,
                 .parity = UART_PARITY_DISABLE,
                 .stop_bits = UART_STOP_BITS_1,
-                .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+                .flow_ctrl = [](int32_t rts, int32_t cts) -> uart_hw_flowcontrol_t
+                {
+                    if ((rts != CPP_BUS_DRIVER_DEFAULT_VALUE) && (cts != CPP_BUS_DRIVER_DEFAULT_VALUE))
+                    {
+                        return uart_hw_flowcontrol_t::UART_HW_FLOWCTRL_CTS_RTS;
+                    }
+                    else if ((rts != CPP_BUS_DRIVER_DEFAULT_VALUE) && (cts == CPP_BUS_DRIVER_DEFAULT_VALUE))
+                    {
+                        return uart_hw_flowcontrol_t::UART_HW_FLOWCTRL_RTS;
+                    }
+                    else if ((rts == CPP_BUS_DRIVER_DEFAULT_VALUE) && (cts != CPP_BUS_DRIVER_DEFAULT_VALUE))
+                    {
+                        return uart_hw_flowcontrol_t::UART_HW_FLOWCTRL_CTS;
+                    }
+
+                    return uart_hw_flowcontrol_t::UART_HW_FLOWCTRL_DISABLE;
+                }(_rts, _cts),
                 .rx_flow_ctrl_thresh = 122,
                 .source_clk = UART_SCLK_DEFAULT,
                 .flags =
@@ -44,7 +62,6 @@ namespace Cpp_Bus_Driver
                     },
             };
 
-        // We won't use a buffer for sending data.
         esp_err_t assert = uart_driver_install(static_cast<uart_port_t>(_port), UART_RX_MAX_SIZE, 0, 0, NULL, 0);
         if (assert != ESP_OK)
         {
@@ -59,7 +76,7 @@ namespace Cpp_Bus_Driver
             return false;
         }
 
-        assert = uart_set_pin(static_cast<uart_port_t>(_port), _tx, _rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+        assert = uart_set_pin(static_cast<uart_port_t>(_port), _tx, _rx, _rts, _cts);
         if (assert != ESP_OK)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "uart_set_pin fail (error code: %#X)\n", assert);
