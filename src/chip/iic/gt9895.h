@@ -2,7 +2,7 @@
  * @Description: gt9895
  * @Author: LILYGO_L
  * @Date 2025-07-09 09:15:31
- * @LastEditTime: 2026-03-14 10:19:36
+ * @LastEditTime: 2026-03-14 10:28:11
  * @License: GPL 3.0
  */
 
@@ -32,10 +32,10 @@ namespace Cpp_Bus_Driver
             WO_REAL_TIME_COMMAND_START_ADDRESS = 0x00010174, // 实时命令开始地址
         };
 
+        int32_t _rst;
+
         // 触摸xy坐标缩放处理比例
         float _x_scale_factor, _y_scale_factor;
-
-        int32_t _rst;
 
     public:
         struct Touch_Info
@@ -54,9 +54,9 @@ namespace Cpp_Bus_Driver
             std::vector<struct Touch_Info> info;
         };
 
-        Gt9895(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, float x_scale_factor = 1.0, float y_scale_factor = 1.0,
-               int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : Chip_Iic_Guide(bus, address), _x_scale_factor(x_scale_factor), _y_scale_factor(y_scale_factor), _rst(rst)
+        Gt9895(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE,
+               float x_scale_factor = 1.0, float y_scale_factor = 1.0)
+            : Chip_Iic_Guide(bus, address), _rst(rst), _x_scale_factor(x_scale_factor), _y_scale_factor(y_scale_factor)
         {
         }
 
