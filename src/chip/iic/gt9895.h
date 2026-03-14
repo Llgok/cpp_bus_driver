@@ -1,8 +1,8 @@
 /*
- * @Description: None
+ * @Description: gt9895
  * @Author: LILYGO_L
  * @Date 2025-07-09 09:15:31
- * @LastEditTime: 2025-07-11 10:15:01
+ * @LastEditTime: 2026-03-14 10:19:36
  * @License: GPL 3.0
  */
 
@@ -17,6 +17,7 @@ namespace Cpp_Bus_Driver
     class Gt9895 : public Chip_Iic_Guide
     {
     private:
+        static constexpr uint8_t DEVICE_ID = 0xAD;
         static constexpr uint8_t MAX_TOUCH_FINGER_COUNT = 10;
 
         static constexpr uint8_t TOUCH_POINT_ADDRESS_OFFSET = 8;
@@ -24,10 +25,11 @@ namespace Cpp_Bus_Driver
 
         enum class Cmd
         {
-            // 触摸信息开始地址
-            RO_TOUCH_INFO_START_ADDRESS = 0x00010308,
+            RO_IC_INFO_START_ADDRESS = 0x00010070, // ic信息开始地址
 
-            WO_SLEEP_START_ADDRESS = 0x00010174,
+            RO_TOUCH_INFO_START_ADDRESS = 0x00010308, // 触摸信息开始地址
+
+            WO_REAL_TIME_COMMAND_START_ADDRESS = 0x00010174, // 实时命令开始地址
         };
 
         // 触摸xy坐标缩放处理比例
@@ -59,6 +61,8 @@ namespace Cpp_Bus_Driver
         }
 
         bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+
+        uint8_t get_device_id();
 
         /**
          * @brief 获取触摸总数

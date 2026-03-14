@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2026-02-05 16:38:38
+ * @LastEditTime: 2026-03-12 18:02:37
  * @License: GPL 3.0
  */
 #include "bus_guide.h"
@@ -93,6 +93,25 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
+    bool Bus_Iic_Guide::read(const uint32_t write_c32, uint8_t *read_data, size_t read_data_length)
+    {
+        const uint8_t buffer[] =
+            {
+                static_cast<uint8_t>(write_c32 >> 24),
+                static_cast<uint8_t>(write_c32 >> 16),
+                static_cast<uint8_t>(write_c32 >> 8),
+                static_cast<uint8_t>(write_c32),
+            };
+
+        if (write_read(buffer, 4, read_data, read_data_length) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "read fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
     bool Bus_Iic_Guide::write(const uint8_t write_c8, const uint8_t write_d8)
     {
         const uint8_t buffer[] = {write_c8, write_d8};
@@ -152,6 +171,26 @@ namespace Cpp_Bus_Driver
         std::memcpy(&buffer[1], write_data, write_data_length);
 
         if (write(buffer, 1 + write_data_length) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Bus_Iic_Guide::write(const uint32_t write_c32, const uint8_t *write_data, size_t write_data_length)
+    {
+        uint8_t buffer[4 + write_data_length] = {
+            static_cast<uint8_t>(write_c32 >> 24),
+            static_cast<uint8_t>(write_c32 >> 16),
+            static_cast<uint8_t>(write_c32 >> 8),
+            static_cast<uint8_t>(write_c32),
+        };
+
+        std::memcpy(&buffer[4], write_data, write_data_length);
+
+        if (write(buffer, 4 + write_data_length) == false)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "write fail\n");
             return false;
