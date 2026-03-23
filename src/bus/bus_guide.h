@@ -222,7 +222,7 @@ namespace Cpp_Bus_Driver
         virtual bool start_transmit(void) = 0;
         virtual bool read(int32_t cmd, void *data, size_t byte) = 0;
         virtual bool write(int32_t cmd, const void *data, size_t byte) = 0;
-        virtual bool write(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, const uint8_t *data) = 0;
+        virtual bool write(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, const void *data) = 0;
 
         bool write(const uint8_t write_c8);
         bool write(const uint8_t write_c8, const uint8_t write_d8);

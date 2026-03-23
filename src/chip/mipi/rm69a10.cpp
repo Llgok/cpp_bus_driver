@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-01-24 17:39:05
+ * @LastEditTime: 2026-03-23 14:51:56
  * @License: GPL 3.0
  */
 #include "rm69a10.h"
@@ -114,7 +114,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Rm69a10::send_color_stream_coordinate(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, const uint8_t *data)
+    bool Rm69a10::send_color_stream_coordinate(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, const void *data)
     {
         if (_bus->write(x_start, x_end, y_start, y_end, data) == false)
         {

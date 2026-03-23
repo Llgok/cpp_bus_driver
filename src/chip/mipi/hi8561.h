@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-01-24 17:08:10
+ * @LastEditTime: 2026-03-23 14:51:47
  * @License: GPL 3.0
  */
 
@@ -317,6 +317,6 @@ namespace Cpp_Bus_Driver
          * @return
          * @Date 2026-01-24 17:06:45
          */
-        bool send_color_stream_coordinate(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, const uint8_t *data);
+        bool send_color_stream_coordinate(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, const void *data);
     };
 };
