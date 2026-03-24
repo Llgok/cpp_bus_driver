@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2026-01-21 18:16:11
+ * @LastEditTime: 2026-03-24 17:42:25
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -441,8 +441,8 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Tool::create_pwm(int32_t pin, ledc_channel_t channel, uint32_t freq_hz, uint32_t duty, ledc_mode_t speed_mode,
-                          ledc_timer_bit_t duty_resolution, ledc_timer_t timer_num, ledc_sleep_mode_t sleep_mode)
+    bool Tool::create_pwm(int32_t pin, ledc_timer_t timer_num, ledc_channel_t channel, uint32_t freq_hz, uint32_t duty, ledc_mode_t speed_mode,
+                          ledc_timer_bit_t duty_resolution, ledc_sleep_mode_t sleep_mode)
     {
         const ledc_timer_config_t buffer_ledc_timer_config =
             {

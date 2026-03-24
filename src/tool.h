@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 17:58:03
- * @LastEditTime: 2026-01-23 17:23:16
+ * @LastEditTime: 2026-03-24 17:42:16
  * @License: GPL 3.0
  */
 
@@ -127,8 +127,9 @@ namespace Cpp_Bus_Driver
         bool create_gpio_interrupt(uint32_t pin, Interrupt_Mode mode, void (*interrupt)(void *arg), void *args = nullptr);
         bool delete_gpio_interrupt(uint32_t pin);
 
-        bool create_pwm(int32_t pin, ledc_channel_t channel, uint32_t freq_hz, uint32_t duty = 0, ledc_mode_t speed_mode = ledc_mode_t::LEDC_LOW_SPEED_MODE,
-                        ledc_timer_bit_t duty_resolution = ledc_timer_bit_t::LEDC_TIMER_10_BIT, ledc_timer_t timer_num = ledc_timer_t::LEDC_TIMER_0,
+        bool create_pwm(int32_t pin, ledc_timer_t timer_num, ledc_channel_t channel, uint32_t freq_hz,
+                        uint32_t duty = 0, ledc_mode_t speed_mode = ledc_mode_t::LEDC_LOW_SPEED_MODE,
+                        ledc_timer_bit_t duty_resolution = ledc_timer_bit_t::LEDC_TIMER_10_BIT,
                         ledc_sleep_mode_t sleep_mode = ledc_sleep_mode_t::LEDC_SLEEP_MODE_NO_ALIVE_NO_PD);
 
         /**
