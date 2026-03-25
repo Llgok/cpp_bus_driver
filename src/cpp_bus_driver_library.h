@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:14:18
- * @LastEditTime: 2026-02-04 11:00:38
+ * @LastEditTime: 2026-03-16 11:14:57
  * @License: GPL 3.0
  */
 
@@ -12,8 +12,6 @@
 #include <memory>
 #include <vector>
 #include <numeric>
-
-// #include "assert.h"
 
 #include "./bus/iic/hardware_iic_1.h"
 #include "./bus/iic/hardware_iic_2.h"
@@ -42,6 +40,7 @@
 #include "./chip/iic/sy6970.h"
 #include "./chip/iic/icn6211.h"
 #include "./chip/iic/axp517.h"
+#include "./chip/iic/s023msafjf10111e1.h"
 #include "./chip/spi/sx126x.h"
 #include "./chip/spi/ecx336cn.h"
 #include "./chip/spi/co5300.h"

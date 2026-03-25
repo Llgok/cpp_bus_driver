@@ -23,21 +23,21 @@ namespace Cpp_Bus_Driver
             lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_MIPI_LANE_BIT_RATE_MBPS;
         }
 
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config freq_mhz: %d\n", freq_mhz);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config lane_bit_rate_mbps: %d\n", lane_bit_rate_mbps);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config init_list_format: %d\n", init_list_format);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _width: %d\n", _width);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _height: %d\n", _height);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _hsync: %d\n", _hsync);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _hbp: %d\n", _hbp);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _hfp: %d\n", _hfp);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _vsync: %d\n", _vsync);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _vbp: %d\n", _vbp);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _vfp: %d\n", _vfp);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _num_data_lane: %d\n", _num_data_lane);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _color_format: %d\n", _color_format);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _num_frame_buffer: %d\n", _num_frame_buffer);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_iis config _port: %d\n", _port);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config freq_mhz: %d\n", freq_mhz);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config lane_bit_rate_mbps: %d\n", lane_bit_rate_mbps);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config init_list_format: %d\n", init_list_format);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _width: %d\n", _width);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _height: %d\n", _height);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _hsync: %d\n", _hsync);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _hbp: %d\n", _hbp);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _hfp: %d\n", _hfp);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _vsync: %d\n", _vsync);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _vbp: %d\n", _vbp);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _vfp: %d\n", _vfp);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _num_data_lane: %d\n", _num_data_lane);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _color_format: %d\n", _color_format);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _num_frame_buffer: %d\n", _num_frame_buffer);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _port: %d\n", _port);
 
         esp_lcd_dsi_bus_config_t bus_config =
             {
