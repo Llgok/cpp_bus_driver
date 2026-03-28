@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-03-19 09:48:40
+ * @LastEditTime: 2026-03-28 11:59:36
  * @License: GPL 3.0
  */
 #include "s023msafjf10111e1.h"
@@ -83,11 +83,58 @@ namespace Cpp_Bus_Driver
 
     bool S023msafjf10111e1::set_show_direction(Show_Direction direction)
     {
-        // if (_bus->write(static_cast<uint16_t>(Cmd::RW_HORIZONTAL_VERTICAL_MIRROR), static_cast<uint8_t>(direction)) == false)
-        // {
-        //     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
-        //     return false;
-        // }
+        uint8_t buffer[2] = {0};
+
+        if (_bus->read(static_cast<uint16_t>(Cmd::RW_HORIZONTAL_VERTICAL_MIRROR_1), &buffer[0]) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            return false;
+        }
+
+        if (_bus->read(static_cast<uint16_t>(Cmd::RW_HORIZONTAL_VERTICAL_MIRROR_2), &buffer[1]) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
+            return false;
+        }
+
+        switch (direction)
+        {
+        case Show_Direction::NORMAL:
+            buffer[0] |= 0B00010000;
+            buffer[1] &= 0B01111111;
+            break;
+
+        case Show_Direction::HORIZONTAL_MIRROR:
+            buffer[0] &= 0B11101111;
+            buffer[1] &= 0B01111111;
+            break;
+
+        case Show_Direction::VERTICAL_MIRROR:
+            buffer[0] |= 0B00010000;
+            buffer[1] |= 0B10000000;
+            break;
+
+        case Show_Direction::HORIZONTAL_VERTICAL_MIRROR:
+            buffer[0] &= 0B11101111;
+            buffer[1] |= 0B10000000;
+            break;
+
+        default:
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "invalid show direction\n");
+            return false;
+        }
+
+        if (_bus->write(static_cast<uint16_t>(Cmd::RW_HORIZONTAL_VERTICAL_MIRROR_1), buffer[0]) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
+
+        if (_bus->write(static_cast<uint16_t>(Cmd::RW_HORIZONTAL_VERTICAL_MIRROR_2), buffer[1]) == false)
+        {
+            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
+            return false;
+        }
 
         return true;
     }
@@ -118,18 +165,6 @@ namespace Cpp_Bus_Driver
         }
 
         if (_bus->write(static_cast<uint16_t>(Cmd::RW_DISPLAY_BRIGHTNESS_2), static_cast<uint8_t>(value >> 8)) == false)
-        {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
-            return false;
-        }
-
-        if (_bus->write(static_cast<uint16_t>(Cmd::RW_DISPLAY_BRIGHTNESS_REGISTER_CONTROL_1), 0x15) == false)
-        {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
-            return false;
-        }
-
-        if (_bus->write(static_cast<uint16_t>(Cmd::RW_DISPLAY_BRIGHTNESS_REGISTER_CONTROL_2), 0x01) == false)
         {
             assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
             return false;

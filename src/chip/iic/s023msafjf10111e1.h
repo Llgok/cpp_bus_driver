@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2026-03-14 11:11:19
- * @LastEditTime: 2026-03-16 13:39:30
+ * @LastEditTime: 2026-03-28 10:36:04
  * @License: GPL 3.0
  */
 
@@ -59,10 +59,10 @@ namespace Cpp_Bus_Driver
 
         enum class Show_Direction
         {
-            NORMAL = 0B00000000,
-            HORIZONTAL_MIRROR = 0B00000001,          // 水平镜像
-            VERTICAL_MIRROR = 0B00000010,            // 垂直镜像
-            HORIZONTAL_VERTICAL_MIRROR = 0B00000011, // 水平垂直镜像
+            NORMAL,
+            HORIZONTAL_MIRROR,          // 水平镜像
+            VERTICAL_MIRROR,            // 垂直镜像
+            HORIZONTAL_VERTICAL_MIRROR, // 水平垂直镜像
         };
 
         S023msafjf10111e1(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address, int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
