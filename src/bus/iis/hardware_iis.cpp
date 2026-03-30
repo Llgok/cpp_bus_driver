@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-02-26 09:38:17
+ * @LastEditTime: 2026-03-30 08:46:49
  * @License: GPL 3.0
  */
 #include "hardware_iis.h"
@@ -57,9 +57,7 @@ namespace Cpp_Bus_Driver
                                 .ext_clk_freq_hz = 0,
 #endif
                                 .mclk_multiple = mclk_multiple,
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
                                 .bclk_div = 8,
-#endif
                             },
                         .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(data_bit_width, _slot_mode_out),
                         .gpio_cfg =
@@ -197,9 +195,7 @@ namespace Cpp_Bus_Driver
                                 .ext_clk_freq_hz = 0,
 #endif
                                 .mclk_multiple = mclk_multiple,
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
                                 .bclk_div = 8,
-#endif
                             },
                         .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(data_bit_width, _slot_mode_out),
                         .gpio_cfg =

@@ -2,14 +2,14 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-03-23 14:51:56
+ * @LastEditTime: 2026-03-30 08:45:42
  * @License: GPL 3.0
  */
 #include "rm69a10.h"
 
 namespace Cpp_Bus_Driver
 {
-    bool Rm69a10::begin(int32_t freq_mhz, int32_t lane_bit_rate_mbps)
+    bool Rm69a10::begin(float freq_mhz, float lane_bit_rate_mbps)
     {
         if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {

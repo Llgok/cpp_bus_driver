@@ -218,7 +218,7 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        virtual bool begin(int32_t freq_mhz, int32_t lane_bit_rate_mbps, Init_List_Format init_list_format) = 0;
+        virtual bool begin(float freq_mhz, float lane_bit_rate_mbps, Init_List_Format init_list_format) = 0;
         virtual bool start_transmit(void) = 0;
         virtual bool read(int32_t cmd, void *data, size_t byte) = 0;
         virtual bool write(int32_t cmd, const void *data, size_t byte) = 0;

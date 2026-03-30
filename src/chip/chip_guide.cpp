@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-02-26 09:33:56
+ * @LastEditTime: 2026-03-30 08:50:00
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -274,7 +274,7 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-    bool Chip_Mipi_Guide::begin(int32_t freq_mhz, int32_t lane_bit_rate_mbps)
+    bool Chip_Mipi_Guide::begin(float freq_mhz, float lane_bit_rate_mbps)
     {
         if (_bus->begin(freq_mhz, lane_bit_rate_mbps, _init_list_format) == false)
         {

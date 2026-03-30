@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-03-23 14:43:47
+ * @LastEditTime: 2026-03-28 17:16:27
  * @License: GPL 3.0
  */
 #include "hardware_mipi.h"
@@ -11,20 +11,20 @@
 #if defined CPP_BUS_DRIVER_CHIP_ESP32P4
 namespace Cpp_Bus_Driver
 {
-    bool Hardware_Mipi::begin(int32_t freq_mhz, int32_t lane_bit_rate_mbps, Init_List_Format init_list_format)
+    bool Hardware_Mipi::begin(float freq_mhz, float lane_bit_rate_mbps, Init_List_Format init_list_format)
     {
-        if (freq_mhz == static_cast<int32_t>(CPP_BUS_DRIVER_DEFAULT_VALUE))
+        if (freq_mhz == static_cast<float>(CPP_BUS_DRIVER_DEFAULT_VALUE))
         {
             freq_mhz = CPP_BUS_DRIVER_DEFAULT_MIPI_FREQ_MHZ;
         }
 
-        if (lane_bit_rate_mbps == static_cast<int32_t>(CPP_BUS_DRIVER_DEFAULT_VALUE))
+        if (lane_bit_rate_mbps == static_cast<float>(CPP_BUS_DRIVER_DEFAULT_VALUE))
         {
             lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_MIPI_LANE_BIT_RATE_MBPS;
         }
 
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config freq_mhz: %d\n", freq_mhz);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config lane_bit_rate_mbps: %d\n", lane_bit_rate_mbps);
+        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config lane_bit_rate_mbps: %f\n", lane_bit_rate_mbps);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config init_list_format: %d\n", init_list_format);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _width: %d\n", _width);
         assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _height: %d\n", _height);
@@ -44,7 +44,7 @@ namespace Cpp_Bus_Driver
                 .bus_id = _port,
                 .num_data_lanes = _num_data_lane,
                 .phy_clk_src = MIPI_DSI_PHY_CLK_SRC_DEFAULT,
-                .lane_bit_rate_mbps = static_cast<uint32_t>(lane_bit_rate_mbps),
+                .lane_bit_rate_mbps = static_cast<float>(lane_bit_rate_mbps),
             };
 
         esp_err_t assert = esp_lcd_new_dsi_bus(&bus_config, &_bus_handle);
@@ -93,7 +93,7 @@ namespace Cpp_Bus_Driver
             {
                 .virtual_channel = 0,
                 .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,
-                .dpi_clock_freq_mhz = static_cast<uint32_t>(freq_mhz),
+                .dpi_clock_freq_mhz = static_cast<float>(freq_mhz),
                 .pixel_format = [](Color_Format format) -> lcd_color_rgb_pixel_format_t
                 {
                     switch (format)

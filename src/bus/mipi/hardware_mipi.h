@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-03-23 14:45:10
+ * @LastEditTime: 2026-03-28 17:17:37
  * @License: GPL 3.0
  */
 
@@ -47,7 +47,7 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        bool begin(int32_t freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE,
+        bool begin(float freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE, float lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE,
                    Init_List_Format init_list_format = Init_List_Format::WRITE_C8_D8) override;
 
         bool start_transmit(void) override;

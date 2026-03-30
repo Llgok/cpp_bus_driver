@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-02-26 09:33:41
+ * @LastEditTime: 2026-03-28 17:18:22
  * @License: GPL 3.0
  */
 #pragma once
@@ -160,7 +160,7 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        virtual bool begin(int32_t freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE);
+        virtual bool begin(float freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE, float lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE);
 
         bool init_list(const uint8_t *list, size_t length);
     };

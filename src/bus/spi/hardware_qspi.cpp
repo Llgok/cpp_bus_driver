@@ -78,9 +78,7 @@ namespace Cpp_Bus_Driver
                 .cs_ena_posttrans = 0,         // 在数据传输结束后，片选信号（CS）应该保持激活状态多少个SPI位周期
                 .clock_speed_hz = freq_hz,
                 .input_delay_ns = 0, // 无输入延迟
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
                 .sample_point = spi_sampling_point_t::SPI_SAMPLING_POINT_PHASE_0,
-#endif
                 .spics_io_num = -1,
                 .flags = _flags, // 标志，可以填入SPI_DEVICE_BIT_LSBFIRST等信息
                 .queue_size = 1,
@@ -121,9 +119,7 @@ namespace Cpp_Bus_Driver
                 .addr = 0,
                 .length = byte * 8,
                 .rxlength = 0,
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
                 .override_freq_hz = 0,
-#endif
                 .user = (void *)0,
                 .tx_buffer = data,
                 .rx_buffer = NULL,

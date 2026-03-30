@@ -9,7 +9,7 @@
 
 namespace Cpp_Bus_Driver
 {
-    bool Hi8561::begin(int32_t freq_mhz, int32_t lane_bit_rate_mbps)
+    bool Hi8561::begin(float freq_mhz, float lane_bit_rate_mbps)
     {
         if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
         {

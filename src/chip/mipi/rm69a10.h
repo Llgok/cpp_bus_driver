@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-01-24 15:47:38
+ * @LastEditTime: 2026-03-28 17:18:14
  * @License: GPL 3.0
  */
 
@@ -71,7 +71,7 @@ namespace Cpp_Bus_Driver
         {
         }
 
-        bool begin(int32_t freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+        bool begin(float freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE, float lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
 
         uint8_t get_device_id(void);
 
