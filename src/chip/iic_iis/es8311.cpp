@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-02-26 09:34:47
+ * @LastEditTime: 2026-04-13 17:15:43
  * @License: GPL 3.0
  */
 #include "es8311.h"
@@ -56,30 +56,109 @@ namespace Cpp_Bus_Driver
             Chip_Iic_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get es8311 id success (id: %#X)\n", buffer);
         }
 
+        if (set_master_clock_source(Clock_Source::ADC_DAC_MCLK) == false)
+        {
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_master_clock_source fail\n");
+            return false;
+        }
+        if (set_clock(Clock_Source::ADC_DAC_MCLK, true) == false)
+        {
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_clock fail\n");
+            return false;
+        }
+        if (set_clock(Clock_Source::ADC_DAC_BCLK, true) == false)
+        {
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_clock fail\n");
+            return false;
+        }
+        if (set_serial_port_mode(Serial_Port_Mode::SLAVE) == false)
+        {
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_serial_port_mode fail\n");
+            return false;
+        }
+
         return true;
     }
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
-    bool Es8311::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
+    bool Es8311::begin(uint16_t mclk_multiple, uint32_t sample_rate_hz, uint8_t data_bit_width)
     {
+        if (set_clock_coeff(mclk_multiple, sample_rate_hz) == false)
+        {
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_clock_coeff fail\n");
+            return false;
+        }
+
+        if (set_sdp_data_bit_length(Sdp::ADC, [this](uint8_t dbw) -> Bits_Per_Sample
+                                    {
+                                        if (dbw <= 16)
+                                        {
+                                            return Bits_Per_Sample::DATA_16BIT;
+                                        }
+                                        else if (dbw <= 18)
+                                        {
+                                            return Bits_Per_Sample::DATA_18BIT;
+                                        }
+                                        else if (dbw <= 20)
+                                        {
+                                            return Bits_Per_Sample::DATA_20BIT;
+                                        }
+                                        else if (dbw <= 24)
+                                        {
+                                            return Bits_Per_Sample::DATA_24BIT;
+                                        }
+                                        else if (dbw <= 32)
+                                        {
+                                            return Bits_Per_Sample::DATA_32BIT;
+                                        }
+                                        else
+                                        {
+                                            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "setting out of bounds\n");
+                                            return Bits_Per_Sample::DATA_16BIT;
+                                        } }(data_bit_width)) == false)
+        {
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_sdp_data_bit_length fail\n");
+            return false;
+        }
+        if (set_sdp_data_bit_length(Sdp::DAC, [this](uint8_t dbw) -> Bits_Per_Sample
+                                    {
+                                        if (dbw <= 16)
+                                        {
+                                            return Bits_Per_Sample::DATA_16BIT;
+                                        }
+                                        else if (dbw <= 18)
+                                        {
+                                            return Bits_Per_Sample::DATA_18BIT;
+                                        }
+                                        else if (dbw <= 20)
+                                        {
+                                            return Bits_Per_Sample::DATA_20BIT;
+                                        }
+                                        else if (dbw <= 24)
+                                        {
+                                            return Bits_Per_Sample::DATA_24BIT;
+                                        }
+                                        else if (dbw <= 32)
+                                        {
+                                            return Bits_Per_Sample::DATA_32BIT;
+                                        }
+                                        else
+                                        {
+                                            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "setting out of bounds\n");
+                                            return Bits_Per_Sample::DATA_16BIT;
+                                        } }(data_bit_width)) == false)
+        {
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_sdp_data_bit_length fail\n");
+            return false;
+        }
+
         if (Chip_Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
         {
             Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
             return false;
         }
+
         return true;
     }
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-    bool Es8311::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width)
-    {
-        if (Chip_Iis_Guide::begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
-        {
-            Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
-            return false;
-        }
-        return true;
-    }
-#endif
 
     uint16_t Es8311::get_device_id(void)
     {
@@ -334,11 +413,11 @@ namespace Cpp_Bus_Driver
         if (search_clock_coeff(mclk_multiple, sample_rate_hz,
                                _clock_coeff_list, sizeof(_clock_coeff_list) / sizeof(Clock_Coeff), &buffer_index) == false)
         {
-            Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search _clock_coeff_list fail\n");
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search _clock_coeff_list fail\n");
             return false;
         }
 
-        // Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_index: %d\n", buffer_index);
+        // Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "buffer_index: %d\n", buffer_index);
 
         const Clock_Coeff *buffer_clock_coeff = &_clock_coeff_list[buffer_index];
 
@@ -623,6 +702,34 @@ namespace Cpp_Bus_Driver
         }
 
         return buffer;
+    }
+
+    bool Es8311::set_clock_reconfig(uint16_t mclk_multiple, uint32_t sample_rate_hz)
+    {
+        if (set_clock_coeff(mclk_multiple, sample_rate_hz) == false)
+        {
+            Chip_Iic_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_clock_coeff fail\n");
+            return false;
+        }
+
+        if (Chip_Iis_Guide::set_clock_reconfig(mclk_multiple, sample_rate_hz) == false)
+        {
+            Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_clock_reconfig fail\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Es8311::set_iis_channel_enable(bool enable)
+    {
+        if (Chip_Iis_Guide::_bus->set_channel_enable(enable) == false)
+        {
+            Chip_Iis_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_channel_enable fail\n");
+            return false;
+        }
+
+        return true;
     }
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-03-30 08:50:00
+ * @LastEditTime: 2026-04-13 17:14:40
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -238,22 +238,129 @@ namespace Cpp_Bus_Driver
         return true;
     }
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
-    bool Chip_Iis_Guide::begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width)
+    bool Chip_Iis_Guide::begin(uint16_t mclk_multiple, uint32_t sample_rate_hz, uint8_t data_bit_width)
     {
-        if (_bus->begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+        if (_bus->begin([this](uint16_t mm) -> i2s_mclk_multiple_t
+                        {
+                            if (mm <= 128)
+                            {
+                                return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
+                            }
+                            else if (mm <= 192)
+                            {
+                                return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_192;
+                            }
+                            else if (mm <= 256)
+                            {
+                                return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
+                            }
+                            else if (mm <= 384)
+                            {
+                                return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_384;
+                            }
+                            else if (mm <= 512)
+                            {
+                                return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_512;
+                            }
+                            else if (mm <= 576)
+                            {
+                                return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_576;
+                            }
+                            else if (mm <= 768)
+                            {
+                                return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_768;
+                            }
+                            else if (mm <= 1024)
+                            {
+                                return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_1024;
+                            }
+                            else if (mm <= 1152)
+                            {
+                                return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_1152;
+                            }
+                            else
+                            {
+                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "setting out of bounds\n");
+                                return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
+                            } }(mclk_multiple), sample_rate_hz, [this](uint8_t dbw) -> i2s_data_bit_width_t
+                        {
+                            if (dbw <= 16)
+                            {
+                                return i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_16BIT;
+                            }
+                            else if (dbw <= 24)
+                            {
+                                return i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_24BIT;
+                            }
+                            else if (dbw <= 32)
+                            {
+                                return i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_32BIT;
+                            }
+                            else
+                            {
+                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "setting out of bounds\n");
+                                return i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_16BIT;
+                            } }(data_bit_width)) == false)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "begin fail\n");
             return false;
         }
 
         return true;
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#else
+        assert_log(Log_Level::BUS, __FILE__, __LINE__, "begin fail\n");
+        return false;
+#endif
     }
 
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-    bool Chip_Iis_Guide::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width)
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+    bool Chip_Iis_Guide::set_clock_reconfig(uint16_t mclk_multiple, uint32_t sample_rate_hz, Bus_Iis_Guide::Data_Mode data_mode)
     {
-        if (_bus->begin(mclk_multiple, sample_rate_hz, data_bit_width) == false)
+        if (_bus->set_clock_reconfig([this](uint16_t mm) -> i2s_mclk_multiple_t
+                                     {
+                                        if (mm <= 128)
+                                        {
+                                            return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
+                                        }
+                                        else if (mm <= 192)
+                                        {
+                                            return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_192;
+                                        }
+                                        else if (mm <= 256)
+                                        {
+                                            return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
+                                        }
+                                        else if (mm <= 384)
+                                        {
+                                            return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_384;
+                                        }
+                                        else if (mm <= 512)
+                                        {
+                                            return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_512;
+                                        }
+                                        else if (mm <= 576)
+                                        {
+                                            return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_576;
+                                        }
+                                        else if (mm <= 768)
+                                        {
+                                            return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_768;
+                                        }
+                                        else if (mm <= 1024)
+                                        {
+                                            return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_1024;
+                                        }
+                                        else if (mm <= 1152)
+                                        {
+                                            return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_1152;
+                                        }
+                                        else
+                                        {
+                                            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "setting out of bounds\n");
+                                            return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
+                                        } }(mclk_multiple), sample_rate_hz, data_mode) == false)
         {
             assert_log(Log_Level::BUS, __FILE__, __LINE__, "begin fail\n");
             return false;

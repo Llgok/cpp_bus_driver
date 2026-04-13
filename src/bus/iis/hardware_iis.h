@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-02-26 09:31:08
+ * @LastEditTime: 2026-04-13 15:18:47
  * @License: GPL 3.0
  */
 
@@ -30,14 +30,6 @@ namespace Cpp_Bus_Driver
         uint8_t _data_bit_width = -1;
 
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
-        enum class Data_Mode
-        {
-            INPUT,  // 输入模式
-            OUTPUT, // 输出模式
-
-            INPUT_OUTPUT, // 输入输出共有
-        };
-
         enum class Iis_Mode
         {
             STD, // 标准模式
@@ -63,6 +55,9 @@ namespace Cpp_Bus_Driver
 
         size_t read(void *data, size_t byte) override;
         size_t write(const void *data, size_t byte) override;
+
+        bool set_clock_reconfig(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, Data_Mode data_mode = Data_Mode::INPUT_OUTPUT) override;
+        bool set_channel_enable(bool enable, Data_Mode data_mode = Data_Mode::INPUT_OUTPUT) override;
 
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 

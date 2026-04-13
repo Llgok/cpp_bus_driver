@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-03-30 08:46:49
+ * @LastEditTime: 2026-04-13 15:45:01
  * @License: GPL 3.0
  */
 #include "hardware_iis.h"
@@ -442,6 +442,455 @@ namespace Cpp_Bus_Driver
         return buffer;
     }
 
+    bool Hardware_Iis::set_clock_reconfig(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, Data_Mode data_mode)
+    {
+        if (_data_mode == Data_Mode::INPUT_OUTPUT)
+        {
+            switch (data_mode)
+            {
+            case Data_Mode::INPUT:
+                switch (_iis_mode)
+                {
+                case Iis_Mode::STD:
+                {
+                    i2s_std_clk_config_t clk_config =
+                        {
+                            .sample_rate_hz = sample_rate_hz,
+                            .clk_src = _clock_source,
+#if SOC_I2S_HW_VERSION_2
+                            .ext_clk_freq_hz = 0,
+#endif
+                            .mclk_multiple = mclk_multiple,
+                            .bclk_div = 8,
+                        };
+
+                    esp_err_t assert = i2s_channel_reconfig_std_clock(_chan_rx_handle, &clk_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_reconfig_std_clock fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    break;
+                }
+                case Iis_Mode::PDM:
+                {
+                    i2s_pdm_rx_clk_config_t rx_clk_config =
+                        {
+                            .sample_rate_hz = sample_rate_hz,
+                            .clk_src = _clock_source,
+                            .mclk_multiple = mclk_multiple,
+                            .dn_sample_mode = I2S_PDM_DSR_8S,
+                            .bclk_div = 8,
+                        };
+
+                    esp_err_t assert = i2s_channel_reconfig_pdm_rx_clock(_chan_rx_handle, &rx_clk_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_reconfig_pdm_rx_clock fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    break;
+                }
+                default:
+                    break;
+                }
+
+                break;
+            case Data_Mode::OUTPUT:
+                switch (_iis_mode)
+                {
+                case Iis_Mode::STD:
+                {
+                    i2s_std_clk_config_t clk_config =
+                        {
+                            .sample_rate_hz = sample_rate_hz,
+                            .clk_src = _clock_source,
+#if SOC_I2S_HW_VERSION_2
+                            .ext_clk_freq_hz = 0,
+#endif
+                            .mclk_multiple = mclk_multiple,
+                            .bclk_div = 8,
+                        };
+
+                    esp_err_t assert = i2s_channel_reconfig_std_clock(_chan_tx_handle, &clk_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_reconfig_std_clock fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    break;
+                }
+                case Iis_Mode::PDM:
+                {
+                    i2s_pdm_tx_clk_config_t tx_clk_config =
+                        {
+                            .sample_rate_hz = sample_rate_hz,
+                            .clk_src = _clock_source,
+                            .mclk_multiple = mclk_multiple,
+                            .up_sample_fp = 960,
+                            .up_sample_fs = 480,
+                            .bclk_div = 8,
+                        };
+
+                    esp_err_t assert = i2s_channel_reconfig_pdm_tx_clock(_chan_tx_handle, &tx_clk_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_reconfig_pdm_tx_clock fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    break;
+                }
+                default:
+                    break;
+                }
+
+                break;
+            case Data_Mode::INPUT_OUTPUT:
+                switch (_iis_mode)
+                {
+                case Iis_Mode::STD:
+                {
+                    i2s_std_clk_config_t clk_config =
+                        {
+                            .sample_rate_hz = sample_rate_hz,
+                            .clk_src = _clock_source,
+#if SOC_I2S_HW_VERSION_2
+                            .ext_clk_freq_hz = 0,
+#endif
+                            .mclk_multiple = mclk_multiple,
+                            .bclk_div = 8,
+                        };
+
+                    esp_err_t assert = i2s_channel_reconfig_std_clock(_chan_tx_handle, &clk_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_reconfig_std_clock fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    assert = i2s_channel_reconfig_std_clock(_chan_rx_handle, &clk_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_reconfig_std_clock fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    break;
+                }
+                case Iis_Mode::PDM:
+                {
+                    i2s_pdm_rx_clk_config_t rx_clk_config =
+                        {
+                            .sample_rate_hz = sample_rate_hz,
+                            .clk_src = _clock_source,
+                            .mclk_multiple = mclk_multiple,
+                            .dn_sample_mode = I2S_PDM_DSR_8S,
+                            .bclk_div = 8,
+                        };
+
+                    i2s_pdm_tx_clk_config_t tx_clk_config =
+                        {
+                            .sample_rate_hz = sample_rate_hz,
+                            .clk_src = _clock_source,
+                            .mclk_multiple = mclk_multiple,
+                            .up_sample_fp = 960,
+                            .up_sample_fs = 480,
+                            .bclk_div = 8,
+                        };
+
+                    esp_err_t assert = i2s_channel_reconfig_pdm_rx_clock(_chan_rx_handle, &rx_clk_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_reconfig_pdm_rx_clock fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    assert = i2s_channel_reconfig_pdm_tx_clock(_chan_tx_handle, &tx_clk_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_reconfig_pdm_tx_clock fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    break;
+                }
+                default:
+                    break;
+                }
+
+                break;
+
+            default:
+                break;
+            }
+        }
+        else
+        {
+            switch (_iis_mode)
+            {
+            case Iis_Mode::STD:
+            {
+                i2s_std_clk_config_t clk_config =
+                    {
+                        .sample_rate_hz = sample_rate_hz,
+                        .clk_src = _clock_source,
+#if SOC_I2S_HW_VERSION_2
+                        .ext_clk_freq_hz = 0,
+#endif
+                        .mclk_multiple = mclk_multiple,
+                        .bclk_div = 8,
+                    };
+
+                switch (_data_mode)
+                {
+                case Data_Mode::INPUT:
+                {
+                    esp_err_t assert = i2s_channel_reconfig_std_clock(_chan_rx_handle, &clk_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_reconfig_std_clock fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+                }
+                break;
+                case Data_Mode::OUTPUT:
+                {
+                    esp_err_t assert = i2s_channel_reconfig_std_clock(_chan_tx_handle, &clk_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_reconfig_std_clock fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+                }
+                break;
+
+                default:
+                    break;
+                }
+
+                break;
+            }
+            case Iis_Mode::PDM:
+                switch (_data_mode)
+                {
+                case Data_Mode::INPUT:
+                {
+                    i2s_pdm_rx_clk_config_t rx_clk_config =
+                        {
+                            .sample_rate_hz = sample_rate_hz,
+                            .clk_src = _clock_source,
+                            .mclk_multiple = mclk_multiple,
+                            .dn_sample_mode = I2S_PDM_DSR_8S,
+                            .bclk_div = 8,
+                        };
+
+                    esp_err_t assert = i2s_channel_reconfig_pdm_rx_clock(_chan_rx_handle, &rx_clk_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_reconfig_pdm_rx_clock fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    break;
+                }
+                case Data_Mode::OUTPUT:
+                {
+                    i2s_pdm_tx_clk_config_t tx_clk_config =
+                        {
+                            .sample_rate_hz = sample_rate_hz,
+                            .clk_src = _clock_source,
+                            .mclk_multiple = mclk_multiple,
+                            .up_sample_fp = 960,
+                            .up_sample_fs = 480,
+                            .bclk_div = 8,
+                        };
+
+                    esp_err_t assert = i2s_channel_reconfig_pdm_tx_clock(_chan_tx_handle, &tx_clk_config);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_reconfig_pdm_tx_clock fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    break;
+                }
+                default:
+                    break;
+                }
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        return true;
+    }
+
+    bool Hardware_Iis::set_channel_enable(bool enable, Data_Mode data_mode)
+    {
+        if (enable == true)
+        {
+            if (_data_mode == Data_Mode::INPUT_OUTPUT)
+            {
+                switch (data_mode)
+                {
+                case Data_Mode::INPUT:
+                {
+                    esp_err_t assert = i2s_channel_enable(_chan_rx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+                    break;
+                }
+
+                case Data_Mode::OUTPUT:
+                {
+                    esp_err_t assert = i2s_channel_enable(_chan_tx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+                    break;
+                }
+                case Data_Mode::INPUT_OUTPUT:
+                {
+                    esp_err_t assert = i2s_channel_enable(_chan_tx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    assert = i2s_channel_enable(_chan_rx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+                    break;
+                }
+
+                default:
+                    break;
+                }
+            }
+            else
+            {
+                switch (_data_mode)
+                {
+                case Data_Mode::INPUT:
+                {
+                    esp_err_t assert = i2s_channel_enable(_chan_rx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+                    break;
+                }
+                case Data_Mode::OUTPUT:
+                {
+                    esp_err_t assert = i2s_channel_enable(_chan_tx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_enable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+                    break;
+                }
+                default:
+                    break;
+                }
+            }
+        }
+        else
+        {
+            if (_data_mode == Data_Mode::INPUT_OUTPUT)
+            {
+                switch (data_mode)
+                {
+                case Data_Mode::INPUT:
+                {
+                    esp_err_t assert = i2s_channel_disable(_chan_rx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_disable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+                    break;
+                }
+                case Data_Mode::OUTPUT:
+                {
+                    esp_err_t assert = i2s_channel_disable(_chan_tx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_disable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+                    break;
+                }
+                case Data_Mode::INPUT_OUTPUT:
+                {
+                    esp_err_t assert = i2s_channel_disable(_chan_tx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_disable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+
+                    assert = i2s_channel_disable(_chan_rx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_disable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+                    break;
+                }
+                default:
+                    break;
+                }
+            }
+            else
+            {
+                switch (_data_mode)
+                {
+                case Data_Mode::INPUT:
+                {
+                    esp_err_t assert = i2s_channel_disable(_chan_rx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_disable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+                    break;
+                }
+                case Data_Mode::OUTPUT:
+                {
+                    esp_err_t assert = i2s_channel_disable(_chan_tx_handle);
+                    if (assert != ESP_OK)
+                    {
+                        assert_log(Log_Level::BUS, __FILE__, __LINE__, "i2s_channel_disable fail (error code: %#X)\n", assert);
+                        return false;
+                    }
+                    break;
+                }
+                default:
+                    break;
+                }
+            }
+        }
+
+        return true;
+    }
+
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
     bool Hardware_Iis::begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width)
     {
@@ -757,5 +1206,4 @@ namespace Cpp_Bus_Driver
     }
 
 #endif
-
 }

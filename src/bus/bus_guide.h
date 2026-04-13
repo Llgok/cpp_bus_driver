@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2026-03-12 18:01:48
+ * @LastEditTime: 2026-04-13 15:18:29
  * @License: GPL 3.0
  */
 
@@ -54,6 +54,15 @@ namespace Cpp_Bus_Driver
     class Bus_Iis_Guide : public Tool
     {
     public:
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+        enum class Data_Mode
+        {
+            INPUT,  // 输入模式
+            OUTPUT, // 输出模式
+
+            INPUT_OUTPUT, // 输入输出共有
+        };
+#endif
         Bus_Iis_Guide()
         {
         }
@@ -62,6 +71,9 @@ namespace Cpp_Bus_Driver
 
         virtual size_t read(void *data, size_t byte) = 0;
         virtual size_t write(const void *data, size_t byte) = 0;
+
+        virtual bool set_clock_reconfig(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, Data_Mode data_mode = Data_Mode::INPUT_OUTPUT) = 0;
+        virtual bool set_channel_enable(bool enable, Data_Mode data_mode = Data_Mode::INPUT_OUTPUT) = 0;
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
         virtual bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width) = 0;
 

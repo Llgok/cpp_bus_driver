@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:42:57
- * @LastEditTime: 2026-02-26 09:34:30
+ * @LastEditTime: 2026-04-13 17:15:18
  * @License: GPL 3.0
  */
 
@@ -330,12 +330,7 @@ namespace Cpp_Bus_Driver
         }
 
         bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
-        bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) override;
-
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-        bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width) override;
-#endif
+        bool begin(uint16_t mclk_multiple, uint32_t sample_rate_hz, uint8_t data_bit_width) override;
 
         uint16_t get_device_id(void);
 
@@ -518,6 +513,23 @@ namespace Cpp_Bus_Driver
          * @Date 2025-03-13 14:02:47
          */
         size_t write_data(const void *data, size_t byte);
+
+        /**
+         * @brief 重新配置时钟信息
+         * @param mclk_multiple mclk倍速
+         * @param sample_rate_hz 采样率
+         * @return
+         * @Date 2026-04-13 15:26:05
+         */
+        bool set_clock_reconfig(uint16_t mclk_multiple, uint32_t sample_rate_hz);
+
+        /**
+         * @brief 设置iis通道使能
+         * @param enable [true]：启用iis，[false]：关闭iis
+         * @return
+         * @Date 2026-04-13 16:07:26
+         */
+        bool set_iis_channel_enable(bool enable);
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 
         /**

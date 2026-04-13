@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-03-28 17:18:22
+ * @LastEditTime: 2026-04-13 17:14:27
  * @License: GPL 3.0
  */
 #pragma once
@@ -126,10 +126,11 @@ namespace Cpp_Bus_Driver
             : _bus(bus)
         {
         }
+
+        virtual bool begin(uint16_t mclk_multiple, uint32_t sample_rate_hz, uint8_t data_bit_width) = 0;
+
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
-        virtual bool begin(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) = 0;
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-        virtual bool begin(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz, nrf_i2s_swidth_t data_bit_width) = 0;
+        bool set_clock_reconfig(uint16_t mclk_multiple, uint32_t sample_rate_hz, Bus_Iis_Guide::Data_Mode data_mode = Bus_Iis_Guide::Data_Mode::INPUT_OUTPUT);
 #endif
     };
 
