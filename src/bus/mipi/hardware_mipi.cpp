@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-03-28 17:16:27
+ * @LastEditTime: 2026-04-13 14:25:29
  * @License: GPL 3.0
  */
 #include "hardware_mipi.h"
@@ -57,7 +57,7 @@ namespace Cpp_Bus_Driver
         esp_lcd_dbi_io_config_t io_config =
             {
                 .virtual_channel = 0,
-                .lcd_cmd_bits = [](Init_List_Format format) -> int
+                .lcd_cmd_bits = [this](Init_List_Format format) -> int
                 {
                     switch (format)
                     {
@@ -66,10 +66,11 @@ namespace Cpp_Bus_Driver
                     case Init_List_Format::WRITE_C8_D8:
                         return 8;
                     default:
+                        assert_log(Log_Level::CHIP, __FILE__, __LINE__, "setting out of bounds\n");
                         return 8;
                     }
                 }(init_list_format),
-                .lcd_param_bits = [](Init_List_Format format) -> int
+                .lcd_param_bits = [this](Init_List_Format format) -> int
                 {
                     switch (format)
                     {
@@ -78,6 +79,7 @@ namespace Cpp_Bus_Driver
                     case Init_List_Format::WRITE_C8_D8:
                         return 8;
                     default:
+                        assert_log(Log_Level::CHIP, __FILE__, __LINE__, "setting out of bounds\n");
                         return 8;
                     }
                 }(init_list_format),
