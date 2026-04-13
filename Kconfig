@@ -4,13 +4,13 @@ menu "Cpp_Bus_Driver Configuration"
         prompt "Select log level"
         default CPP_BUS_DRIVER_LOG_LEVEL_INFO
             config CPP_BUS_DRIVER_LOG_LEVEL_DEBUG
-                bool "Log level debug"
+                bool "Debug"
             config CPP_BUS_DRIVER_LOG_LEVEL_INFO
-                bool "Log level info"
+                bool "Info"
             config CPP_BUS_DRIVER_LOG_LEVEL_ERROR
-                bool "Log level error"
+                bool "Error"
             config CPP_BUS_DRIVER_LOG_LEVEL_NONE
-                bool "Log level none"
+                bool "None"
     endchoice
 
 endmenu
