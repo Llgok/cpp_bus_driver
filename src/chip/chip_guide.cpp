@@ -2,7 +2,11 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-04-14 10:19:44
+<<<<<<< Updated upstream
+ * @LastEditTime: 2026-04-14 10:22:21
+=======
+ * @LastEditTime: 2026-04-14 10:18:01
+>>>>>>> Stashed changes
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -313,6 +317,73 @@ namespace Cpp_Bus_Driver
 
         return true;
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+        if (_bus->begin([this](uint16_t ratio) -> nrf_i2s_ratio_t
+                        {
+                            if (ratio <= 32)
+                            {
+                                return nrf_i2s_ratio_t::NRF_I2S_RATIO_32X;
+                            }
+                            else if (ratio <= 48)
+                            {
+                                return nrf_i2s_ratio_t::NRF_I2S_RATIO_48X;
+                            }
+                            else if (ratio <= 64)
+                            {
+                                return nrf_i2s_ratio_t::NRF_I2S_RATIO_64X;
+                            }
+                            else if (ratio <= 96)
+                            {
+                                return nrf_i2s_ratio_t::NRF_I2S_RATIO_96X;
+                            }
+                            else if (ratio <= 128)
+                            {
+                                return nrf_i2s_ratio_t::NRF_I2S_RATIO_128X;
+                            }
+                            else if (ratio <= 192)
+                            {
+                                return nrf_i2s_ratio_t::NRF_I2S_RATIO_192X;
+                            }
+                            else if (ratio <= 256)
+                            {
+                                return nrf_i2s_ratio_t::NRF_I2S_RATIO_256X;
+                            }
+                            else if (ratio <= 384)
+                            {
+                                return nrf_i2s_ratio_t::NRF_I2S_RATIO_384X;
+                            }
+                            else if (ratio <= 512)
+                            {
+                                return nrf_i2s_ratio_t::NRF_I2S_RATIO_512X;
+                            }
+                            else
+                            {
+                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "setting out of bounds\n");
+                                return nrf_i2s_ratio_t::NRF_I2S_RATIO_32X;
+                            } }(mclk_multiple), sample_rate_hz, [this](uint8_t swidth) -> nrf_i2s_swidth_t
+                        {
+                            if (swidth <= 8)
+                            {
+                                return nrf_i2s_swidth_t::NRF_I2S_SWIDTH_8BIT;
+                            }
+                            else if (swidth <= 16)
+                            {
+                                return nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16BIT;
+                            }
+                            else if (swidth <= 24)
+                            {
+                                return nrf_i2s_swidth_t::NRF_I2S_SWIDTH_24BIT;
+                            }
+                            else
+                            {
+                                assert_log(Log_Level::CHIP, __FILE__, __LINE__, "setting out of bounds\n");
+                                return nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16BIT;
+                            } }(data_bit_width)) == false)
+        {
+            assert_log(Log_Level::BUS, __FILE__, __LINE__, "begin fail\n");
+            return false;
+        }
+
+        return true;
 #else
         assert_log(Log_Level::BUS, __FILE__, __LINE__, "begin fail\n");
         return false;
