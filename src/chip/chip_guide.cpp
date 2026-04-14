@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-04-13 17:14:40
+ * @LastEditTime: 2026-04-14 10:19:44
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -285,7 +285,11 @@ namespace Cpp_Bus_Driver
                                 return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
                             } }(mclk_multiple), sample_rate_hz, [this](uint8_t dbw) -> i2s_data_bit_width_t
                         {
-                            if (dbw <= 16)
+                            if (dbw <= 8)
+                            {
+                                return i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_8BIT;
+                            }
+                            else if (dbw <= 16)
                             {
                                 return i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_16BIT;
                             }
