@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: None
  * @Date: 2025-09-24 10:47:30
- * @LastEditTime: 2026-01-26 09:04:32
+ * @LastEditTime: 2026-04-23 15:48:32
  * @License: GPL 3.0
  */
 #include "aw21009xxx.h"
@@ -128,7 +128,7 @@ namespace Cpp_Bus_Driver
                     return false;
                 }
 
-                uint8_t buffer_msb_value = (value >> 4) & 0x0F;
+                uint8_t buffer_msb_value = (value >> 8) & 0x0F;
                 if (_bus->write(buffer_address_msb, buffer_msb_value) == false)
                 {
                     assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
@@ -147,7 +147,7 @@ namespace Cpp_Bus_Driver
                 return false;
             }
 
-            uint8_t buffer_msb_value = (value >> 4) & 0x0F;
+            uint8_t buffer_msb_value = (value >> 8) & 0x0F;
             if (_bus->write(buffer_address_msb, buffer_msb_value) == false)
             {
                 assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
