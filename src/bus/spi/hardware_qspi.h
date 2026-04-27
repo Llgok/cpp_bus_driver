@@ -1,48 +1,57 @@
+
 /*
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2025-10-11 15:36:30
+ * @LastEditTime: 2026-04-17 13:59:01
  * @License: GPL 3.0
  */
 #pragma once
 
 #include "../bus_guide.h"
 
-namespace Cpp_Bus_Driver
-{
+namespace cpp_bus_driver {
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
-    class Hardware_Qspi : public Bus_Qspi_Guide
-    {
-    private:
-        // 这里设置最大传输尺寸
-        // esp32s3的dma最大尺寸是32k
-        static constexpr uint32_t QSPI_MAX_TRANSFER_SIZE = 32 * 1024;
+class HardwareQspi final : public BusQspiGuide {
+ public:
+  explicit HardwareQspi(int32_t data0, int32_t data1, int32_t data2,
+      int32_t data3, int32_t sclk, spi_host_device_t port = SPI2_HOST,
+      int8_t mode = 0, spi_clock_source_t clock_source = SPI_CLK_SRC_DEFAULT,
+      uint32_t flags = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      : data0_(data0),
+        data1_(data1),
+        data2_(data2),
+        data3_(data3),
+        sclk_(sclk),
+        port_(port),
+        mode_(mode),
+        clock_source_(clock_source),
+        flags_(flags) {}
 
-        int32_t _data0, _data1, _data2, _data3, _sclk, _cs, _freq_hz;
-        spi_host_device_t _port;
-        uint8_t _mode;
-        spi_clock_source_t _clock_source;
-        uint32_t _flags;
-        size_t _max_transfer_size;
+  bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE,
+      int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  // bool Write(const uint16_t cmd, const uint64_t addr, const uint8_t *data =
+  // NULL, size_t byte = 0, uint32_t flags = static_cast<uint32_t>(NULL))
+  // override; bool Write(const void *data, size_t byte, bool cs_keep_active)
+  // override;
+  bool Write(const void* data, size_t byte,
+      uint32_t flags = static_cast<uint32_t>(NULL),
+      bool cs_keep_active = false) override;
 
-        spi_device_handle_t _spi_device;
+  bool SetCs(bool value);
 
-    public:
-        Hardware_Qspi(int32_t data0, int32_t data1, int32_t data2, int32_t data3, int32_t sclk,
-                      spi_host_device_t port = SPI2_HOST, int8_t mode = 0, spi_clock_source_t clock_source = SPI_CLK_SRC_DEFAULT,
-                      uint32_t flags = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : _data0(data0), _data1(data1), _data2(data2), _data3(data3), _sclk(sclk), _port(port), _mode(mode),
-              _clock_source(clock_source), _flags(flags)
-        {
-        }
+ private:
+  // 这里设置最大传输尺寸
+  // esp32s3的dma最大尺寸是32k
+  static constexpr int32_t kQspiMaxTransferSize = 32 * 1024;
 
-        bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
-        // bool write(const uint16_t cmd, const uint64_t addr, const uint8_t *data = NULL, size_t byte = 0, uint32_t flags = static_cast<uint32_t>(NULL)) override;
-        // bool write(const void *data, size_t byte, bool cs_keep_active) override;
-        bool write(const void *data, size_t byte, uint32_t flags = static_cast<uint32_t>(NULL), bool cs_keep_active = false) override;
-
-        bool set_cs(bool value);
-    };
+  int32_t data0_, data1_, data2_, data3_, sclk_, cs_, freq_hz_;
+  spi_host_device_t port_;
+  uint8_t mode_;
+  spi_clock_source_t clock_source_;
+  uint32_t flags_;
+  size_t max_transfer_size_;
+  spi_device_handle_t spi_device_;
+};
 #endif
-}
+}  // namespace cpp_bus_driver

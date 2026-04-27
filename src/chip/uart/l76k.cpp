@@ -2,394 +2,363 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2025-11-22 15:19:28
+ * @LastEditTime: 2026-04-22 15:07:08
  * @License: GPL 3.0
  */
 #include "l76k.h"
 
-namespace Cpp_Bus_Driver
-{
-    bool L76k::begin(int32_t baud_rate)
-    {
-        if (_rst != CPP_BUS_DRIVER_DEFAULT_VALUE)
-        {
-            Chip_Uart_Guide::pin_mode(_rst, Pin_Mode::OUTPUT, Pin_Status::PULLUP);
+namespace cpp_bus_driver {
+bool L76k::Init(int32_t baud_rate) {
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    ChipUartGuide::SetPinMode(rst_, PinMode::kOutput, PinStatus::kPullup);
 
-            Chip_Uart_Guide::pin_write(_rst, 1);
-            Chip_Uart_Guide::delay_ms(10);
-            Chip_Uart_Guide::pin_write(_rst, 0);
-            Chip_Uart_Guide::delay_ms(10);
-            Chip_Uart_Guide::pin_write(_rst, 1);
-            Chip_Uart_Guide::delay_ms(10);
-        }
+    ChipUartGuide::PinWrite(rst_, 1);
+    ChipUartGuide::DelayMs(10);
+    ChipUartGuide::PinWrite(rst_, 0);
+    ChipUartGuide::DelayMs(10);
+    ChipUartGuide::PinWrite(rst_, 1);
+    ChipUartGuide::DelayMs(10);
+  }
 
-        if (_wake_up != CPP_BUS_DRIVER_DEFAULT_VALUE)
-        {
-            if (Chip_Uart_Guide::pin_mode(_wake_up, Pin_Mode::OUTPUT, Pin_Status::PULLUP) == false)
-            {
-                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "pin_mode fail\n");
-            }
-        }
-
-        if (sleep(false) == false)
-        {
-            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "sleep fail\n");
-        }
-
-        if (Chip_Uart_Guide::begin(baud_rate) == false)
-        {
-            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "begin fail\n");
-            return false;
-        }
-
-        size_t buffer_index = 0;
-        if (get_device_id(&buffer_index) == false)
-        {
-            Chip_Uart_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get l76k id fail\n");
-            return false;
-        }
-        else
-        {
-            Chip_Uart_Guide::assert_log(Log_Level::INFO, __FILE__, __LINE__, "get l76k id success (index: %d)\n", buffer_index);
-        }
-
-        return true;
+  if (wake_up_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    if (!ChipUartGuide::SetPinMode(
+            wake_up_, PinMode::kOutput, PinStatus::kPullup)) {
+      ChipUartGuide::LogMessage(
+          LogLevel::kChip, __FILE__, __LINE__, "PinMode failed\n");
     }
+  }
 
-    bool L76k::sleep(bool enable)
-    {
-        if (_wake_up != CPP_BUS_DRIVER_DEFAULT_VALUE)
-        {
-            if (Chip_Uart_Guide::pin_write(_wake_up, !enable) == false)
-            {
-                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "pin_write fail\n");
-                return false;
-            }
-        }
-        else if (_wake_up_callback != nullptr)
-        {
-            if (_wake_up_callback(!enable) == false)
-            {
-                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "_wake_up_callback fail\n");
-                return false;
-            }
-        }
+  if (!Sleep(false)) {
+    ChipUartGuide::LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "Sleep failed\n");
+  }
 
-        return true;
-    }
+  if (!ChipUartGuide::Init(baud_rate)) {
+    ChipUartGuide::LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    return false;
+  }
 
-    bool L76k::get_device_id(size_t *search_index)
-    {
-        std::unique_ptr<uint8_t[]> buffer;
-        uint32_t buffer_lenght = 0;
+  size_t buffer_index = 0;
+  if (!GetDeviceId(&buffer_index)) {
+    ChipUartGuide::LogMessage(
+        LogLevel::kInfo, __FILE__, __LINE__, "Get l76k id failed\n");
+    return false;
+  } else {
+    ChipUartGuide::LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+        "Get l76k id success (index: %d)\n", buffer_index);
+  }
 
-        if (get_info_data(buffer, &buffer_lenght) == false)
-        {
-            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_info_data fail\n");
-            return false;
-        }
-
-        const char *buffer_cmd = "\r\n$G";
-        if (Chip_Uart_Guide::search(buffer.get(), buffer_lenght, buffer_cmd, std::strlen(buffer_cmd), search_index) == false)
-        {
-            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "search fail\n");
-            return false;
-        }
-
-        return true;
-    }
-
-    uint32_t L76k::read_data(uint8_t *data, uint32_t length)
-    {
-        uint32_t length_buffer = _bus->get_rx_buffer_length();
-        if (length_buffer == 0)
-        {
-            // Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "get_rx_buffer_length is empty\n");
-            return false;
-        }
-
-        if ((length == 0) || (length >= length_buffer))
-        {
-            if (_bus->read(data, length_buffer) == false)
-            {
-                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
-                return false;
-            }
-        }
-        else if (length < length_buffer)
-        {
-            if (_bus->read(data, length) == false)
-            {
-                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
-                return false;
-            }
-        }
-
-        return length_buffer;
-    }
-
-    size_t L76k::get_rx_buffer_length(void)
-    {
-        return _bus->get_rx_buffer_length();
-    }
-
-    bool L76k::clear_rx_buffer_data(void)
-    {
-        return _bus->clear_rx_buffer_data();
-    }
-
-    bool L76k::get_info_data(std::unique_ptr<uint8_t[]> &data, uint32_t *length, uint32_t max_length, uint8_t timeout_count)
-    {
-        uint8_t buffer_timeout_count = 0;
-
-        while (1)
-        {
-            Chip_Uart_Guide::delay_ms(_update_freq);
-
-            uint32_t buffer_lenght = get_rx_buffer_length();
-            if (buffer_lenght > max_length)
-            {
-                buffer_lenght = max_length;
-            }
-
-            if (buffer_lenght > 0)
-            {
-                data = std::make_unique<uint8_t[]>(buffer_lenght);
-                if (data == nullptr)
-                {
-                    Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "data std::make_unique fail\n");
-                    data = nullptr;
-                    *length = 0;
-                    return false;
-                }
-
-                buffer_lenght = _bus->read(data.get(), buffer_lenght);
-                if (buffer_lenght == false)
-                {
-                    Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read fail\n");
-                    data = nullptr;
-                    *length = 0;
-                    return false;
-                }
-
-                Chip_Uart_Guide::assert_log(Log_Level::DEBUG, __FILE__, __LINE__, "get_info_data lenght: %d\n", buffer_lenght);
-                *length = buffer_lenght;
-                break;
-            }
-
-            buffer_timeout_count++;
-            if (buffer_timeout_count > timeout_count) // 超时
-            {
-                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "read timeout\n");
-                data = nullptr;
-                *length = 0;
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool L76k::set_update_frequency(Update_Freq freq)
-    {
-        const char *buffer = nullptr;
-
-        switch (freq)
-        {
-        case Update_Freq::FREQ_1HZ:
-            buffer = "$PCAS02,1000*2E\r\n";
-            _update_freq = 1000;
-            break;
-        case Update_Freq::FREQ_2HZ:
-            buffer = "$PCAS02,500*1A\r\n";
-            _update_freq = 500;
-            break;
-        case Update_Freq::FREQ_5HZ:
-            buffer = "$PCAS02,200*1D\r\n";
-            _update_freq = 200;
-            break;
-        default:
-            break;
-        }
-
-        if (_bus->write(buffer, strlen(buffer)) == false)
-        {
-            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
-            return false;
-        }
-
-        return true;
-    }
-
-    bool L76k::set_baud_rate(Baud_Rate baud_rate)
-    {
-        const char *buffer = nullptr;
-
-        switch (baud_rate)
-        {
-        case Baud_Rate::BR_4800_BPS:
-            buffer = "$PCAS01,0*1C\r\n";
-            break;
-        case Baud_Rate::BR_9600_BPS:
-            buffer = "$PCAS01,1*1D\r\n";
-            break;
-        case Baud_Rate::BR_19200_BPS:
-            buffer = "$PCAS01,2*1E\r\n";
-            break;
-        case Baud_Rate::BR_38400_BPS:
-            buffer = "$PCAS01,3*1F\r\n";
-            break;
-        case Baud_Rate::BR_57600_BPS:
-            buffer = "$PCAS01,4*18\r\n";
-            break;
-        case Baud_Rate::BR_115200_BPS:
-            buffer = "$PCAS01,5*19\r\n";
-            break;
-
-        default:
-            break;
-        }
-
-        if (_bus->write(buffer, strlen(buffer)) == false)
-        {
-            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
-            return false;
-        }
-        // 只有设置波特率时候需要延时
-        //  因为没有忙总线所以这里写入数据需要在模块未发送数据空闲的时候写，所以要延时，延时时间为更新频率的一半
-        Chip_Uart_Guide::delay_ms(_update_freq / 2);
-        if (_bus->write(buffer, strlen(buffer)) == false)
-        {
-            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
-            return false;
-        }
-
-        switch (baud_rate)
-        {
-        case Baud_Rate::BR_4800_BPS:
-            if (_bus->set_baud_rate(4800) == false)
-            {
-                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
-                return false;
-            }
-            break;
-        case Baud_Rate::BR_9600_BPS:
-            if (_bus->set_baud_rate(9600) == false)
-            {
-                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
-                return false;
-            }
-            break;
-        case Baud_Rate::BR_19200_BPS:
-            if (_bus->set_baud_rate(19200) == false)
-            {
-                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
-                return false;
-            }
-            break;
-        case Baud_Rate::BR_38400_BPS:
-            if (_bus->set_baud_rate(38400) == false)
-            {
-                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
-                return false;
-            }
-            break;
-        case Baud_Rate::BR_57600_BPS:
-            if (_bus->set_baud_rate(57600) == false)
-            {
-                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
-                return false;
-            }
-            break;
-        case Baud_Rate::BR_115200_BPS:
-            if (_bus->set_baud_rate(115200) == false)
-            {
-                Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "set_baud_rate fail\n");
-                return false;
-            }
-            break;
-
-        default:
-            break;
-        }
-
-        return true;
-    }
-
-    uint32_t L76k::get_baud_rate(void)
-    {
-        return _bus->get_baud_rate();
-    }
-
-    bool L76k::set_restart_mode(Restart_Mode mode)
-    {
-        const char *buffer = nullptr;
-
-        switch (mode)
-        {
-        case Restart_Mode::HOT_START:
-            buffer = "$PCAS10,0*1C\r\n";
-            break;
-        case Restart_Mode::WARM_START:
-            buffer = "$PCAS10,1*1D\r\n";
-            break;
-        case Restart_Mode::COLD_START:
-            buffer = "$PCAS10,2*1E\r\n";
-            break;
-        case Restart_Mode::COLD_START_FACTORY_RESET:
-            buffer = "$PCAS10,3*1F\r\n";
-            break;
-        default:
-            break;
-        }
-
-        if (_bus->write(buffer, strlen(buffer)) == false)
-        {
-            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
-            return false;
-        }
-
-        return true;
-    }
-
-    bool L76k::set_gnss_constellation(Gnss_Constellation constellation)
-    {
-        const char *buffer = nullptr;
-
-        switch (constellation)
-        {
-        case Gnss_Constellation::GPS:
-            buffer = "$PCAS04,1*18\r\n";
-            break;
-        case Gnss_Constellation::BEIDOU:
-            buffer = "$PCAS04,2*1B\r\n";
-            break;
-        case Gnss_Constellation::GPS_BEIDOU:
-            buffer = "$PCAS04,3*1A\r\n";
-            break;
-        case Gnss_Constellation::GLONASS:
-            buffer = "$PCAS04,4*1D\r\n";
-            break;
-        case Gnss_Constellation::GPS_GLONASS:
-            buffer = "$PCAS04,5*1C\r\n";
-            break;
-        case Gnss_Constellation::BEIDOU_GLONASS:
-            buffer = "$PCAS04,6*1F\r\n";
-            break;
-        case Gnss_Constellation::GPS_BEIDOU_GLONASS:
-            buffer = "$PCAS04,7*1E\r\n";
-            break;
-        default:
-            break;
-        }
-
-        if (_bus->write(buffer, strlen(buffer)) == false)
-        {
-            Chip_Uart_Guide::assert_log(Log_Level::CHIP, __FILE__, __LINE__, "write fail\n");
-            return false;
-        }
-
-        return true;
-    }
-
+  return true;
 }
+
+bool L76k::GetDeviceId(size_t* search_index) {
+  std::unique_ptr<uint8_t[]> buffer;
+  uint32_t buffer_lenght = 0;
+
+  if (!GetInfoData(buffer, &buffer_lenght)) {
+    ChipUartGuide::LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "GetInfoData failed\n");
+    return false;
+  }
+
+  const char* buffer_cmd = "\r\n$G";
+  if (!ChipUartGuide::Search(buffer.get(), buffer_lenght, buffer_cmd,
+          std::strlen(buffer_cmd), search_index)) {
+    return false;
+  }
+
+  return true;
+}
+
+bool L76k::Sleep(bool enable) {
+  if (wake_up_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    if (!ChipUartGuide::PinWrite(wake_up_, !enable)) {
+      ChipUartGuide::LogMessage(
+          LogLevel::kChip, __FILE__, __LINE__, "PinWrite failed\n");
+      return false;
+    }
+  } else if (wake_up_callback_ != nullptr) {
+    if (!wake_up_callback_(!enable)) {
+      ChipUartGuide::LogMessage(
+          LogLevel::kChip, __FILE__, __LINE__, "wake_up_callback_ failed\n");
+      return false;
+    }
+  } else {
+    ChipUartGuide::LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "Sleep failed\n");
+    return false;
+  }
+
+  return true;
+}
+
+uint32_t L76k::ReadData(uint8_t* data, uint32_t length) {
+  uint32_t length_buffer = bus_->GetRxBufferLength();
+  if (length_buffer == 0) {
+    return false;
+  }
+
+  if ((length == 0) || (length >= length_buffer)) {
+    if (!bus_->Read(data, length_buffer)) {
+      ChipUartGuide::LogMessage(
+          LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+      return false;
+    }
+  } else if (length < length_buffer) {
+    if (!bus_->Read(data, length)) {
+      ChipUartGuide::LogMessage(
+          LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+      return false;
+    }
+  }
+
+  return length_buffer;
+}
+
+size_t L76k::GetRxBufferLength() { return bus_->GetRxBufferLength(); }
+
+bool L76k::ClearRxBufferData() { return bus_->ClearRxBufferData(); }
+
+bool L76k::GetInfoData(std::unique_ptr<uint8_t[]>& data, uint32_t* length,
+    uint32_t max_length, uint8_t timeout_count) {
+  uint8_t buffer_timeout_count = 0;
+
+  while (1) {
+    ChipUartGuide::DelayMs(update_freq_);
+
+    uint32_t buffer_lenght = GetRxBufferLength();
+    if (buffer_lenght > max_length) {
+      buffer_lenght = max_length;
+    }
+
+    if (buffer_lenght > 0) {
+      data = std::make_unique<uint8_t[]>(buffer_lenght);
+      if (data == nullptr) {
+        ChipUartGuide::LogMessage(
+            LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+        data = nullptr;
+        *length = 0;
+        return false;
+      }
+
+      buffer_lenght = bus_->Read(data.get(), buffer_lenght);
+      if (!buffer_lenght) {
+        ChipUartGuide::LogMessage(
+            LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+        data = nullptr;
+        *length = 0;
+        return false;
+      }
+
+      ChipUartGuide::LogMessage(LogLevel::kDebug, __FILE__, __LINE__,
+          "GetInfoData length: %d\n", buffer_lenght);
+      *length = buffer_lenght;
+      break;
+    }
+
+    buffer_timeout_count++;
+    if (buffer_timeout_count > timeout_count)  // 超时
+    {
+      ChipUartGuide::LogMessage(
+          LogLevel::kChip, __FILE__, __LINE__, "Read timeout\n");
+      data = nullptr;
+      *length = 0;
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool L76k::SetUpdateFrequency(UpdateFreq freq) {
+  const char* buffer = nullptr;
+
+  switch (freq) {
+    case UpdateFreq::kFreq1Hz:
+      buffer = "$PCAS02,1000*2E\r\n";
+      update_freq_ = 1000;
+      break;
+    case UpdateFreq::kFreq2Hz:
+      buffer = "$PCAS02,500*1A\r\n";
+      update_freq_ = 500;
+      break;
+    case UpdateFreq::kFreq5Hz:
+      buffer = "$PCAS02,200*1D\r\n";
+      update_freq_ = 200;
+      break;
+    default:
+      break;
+  }
+
+  if (!bus_->Write(buffer, strlen(buffer))) {
+    ChipUartGuide::LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    return false;
+  }
+
+  return true;
+}
+
+bool L76k::SetBaudRate(BaudRate baud_rate) {
+  const char* buffer = nullptr;
+
+  switch (baud_rate) {
+    case BaudRate::kBr4800Bps:
+      buffer = "$PCAS01,0*1C\r\n";
+      break;
+    case BaudRate::kBr9600Bps:
+      buffer = "$PCAS01,1*1D\r\n";
+      break;
+    case BaudRate::kBr19200Bps:
+      buffer = "$PCAS01,2*1E\r\n";
+      break;
+    case BaudRate::kBr38400Bps:
+      buffer = "$PCAS01,3*1F\r\n";
+      break;
+    case BaudRate::kBr57600Bps:
+      buffer = "$PCAS01,4*18\r\n";
+      break;
+    case BaudRate::kBr115200Bps:
+      buffer = "$PCAS01,5*19\r\n";
+      break;
+
+    default:
+      break;
+  }
+
+  if (!bus_->Write(buffer, strlen(buffer))) {
+    ChipUartGuide::LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    return false;
+  }
+  // 只有设置波特率时候需要延时
+  //  因为没有忙总线所以这里写入数据需要在模块未发送数据空闲的时候写，所以要延时，延时时间为更新频率的一半
+  ChipUartGuide::DelayMs(update_freq_ / 2);
+  if (!bus_->Write(buffer, strlen(buffer))) {
+    ChipUartGuide::LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    return false;
+  }
+
+  switch (baud_rate) {
+    case BaudRate::kBr4800Bps:
+      if (!bus_->SetBaudRate(4800)) {
+        ChipUartGuide::LogMessage(
+            LogLevel::kChip, __FILE__, __LINE__, "SetBaudRate failed\n");
+        return false;
+      }
+      break;
+    case BaudRate::kBr9600Bps:
+      if (!bus_->SetBaudRate(9600)) {
+        ChipUartGuide::LogMessage(
+            LogLevel::kChip, __FILE__, __LINE__, "SetBaudRate failed\n");
+        return false;
+      }
+      break;
+    case BaudRate::kBr19200Bps:
+      if (!bus_->SetBaudRate(19200)) {
+        ChipUartGuide::LogMessage(
+            LogLevel::kChip, __FILE__, __LINE__, "SetBaudRate failed\n");
+        return false;
+      }
+      break;
+    case BaudRate::kBr38400Bps:
+      if (!bus_->SetBaudRate(38400)) {
+        ChipUartGuide::LogMessage(
+            LogLevel::kChip, __FILE__, __LINE__, "SetBaudRate failed\n");
+        return false;
+      }
+      break;
+    case BaudRate::kBr57600Bps:
+      if (!bus_->SetBaudRate(57600)) {
+        ChipUartGuide::LogMessage(
+            LogLevel::kChip, __FILE__, __LINE__, "SetBaudRate failed\n");
+        return false;
+      }
+      break;
+    case BaudRate::kBr115200Bps:
+      if (!bus_->SetBaudRate(115200)) {
+        ChipUartGuide::LogMessage(
+            LogLevel::kChip, __FILE__, __LINE__, "SetBaudRate failed\n");
+        return false;
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  return true;
+}
+
+uint32_t L76k::GetBaudRate() { return bus_->GetBaudRate(); }
+
+bool L76k::SetRestartMode(RestartMode mode) {
+  const char* buffer = nullptr;
+
+  switch (mode) {
+    case RestartMode::kHotStart:
+      buffer = "$PCAS10,0*1C\r\n";
+      break;
+    case RestartMode::kWarmStart:
+      buffer = "$PCAS10,1*1D\r\n";
+      break;
+    case RestartMode::kColdStart:
+      buffer = "$PCAS10,2*1E\r\n";
+      break;
+    case RestartMode::kColdStartFactoryReset:
+      buffer = "$PCAS10,3*1F\r\n";
+      break;
+    default:
+      break;
+  }
+
+  if (!bus_->Write(buffer, strlen(buffer))) {
+    ChipUartGuide::LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    return false;
+  }
+
+  return true;
+}
+
+bool L76k::SetGnssConstellation(GnssConstellation constellation) {
+  const char* buffer = nullptr;
+
+  switch (constellation) {
+    case GnssConstellation::kGps:
+      buffer = "$PCAS04,1*18\r\n";
+      break;
+    case GnssConstellation::kBeidou:
+      buffer = "$PCAS04,2*1B\r\n";
+      break;
+    case GnssConstellation::kGpsBeidou:
+      buffer = "$PCAS04,3*1A\r\n";
+      break;
+    case GnssConstellation::kGlonass:
+      buffer = "$PCAS04,4*1D\r\n";
+      break;
+    case GnssConstellation::kGpsGlonass:
+      buffer = "$PCAS04,5*1C\r\n";
+      break;
+    case GnssConstellation::kBeidouGlonass:
+      buffer = "$PCAS04,6*1F\r\n";
+      break;
+    case GnssConstellation::kGpsBeidouGlonass:
+      buffer = "$PCAS04,7*1E\r\n";
+      break;
+    default:
+      break;
+  }
+
+  if (!bus_->Write(buffer, strlen(buffer))) {
+    ChipUartGuide::LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace cpp_bus_driver

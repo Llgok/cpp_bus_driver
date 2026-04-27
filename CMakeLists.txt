@@ -3,22 +3,20 @@ set(
         "./src"
 
         "./src/bus"
-        "./src/bus/iic"
+        "./src/bus/i2c"
         "./src/bus/spi"
         "./src/bus/uart"
-        "./src/bus/iis"
+        "./src/bus/i2s"
         "./src/bus/sdio"
         "./src/bus/mipi"
 
         "./src/chip"
-        "./src/chip/iic"
+        "./src/chip/i2c"
         "./src/chip/spi"
         "./src/chip/uart"
-        "./src/chip/iic_iis"
+        "./src/chip/i2c_i2s"
         "./src/chip/sdio"
         "./src/chip/mipi"
-
-        "./src/resources"
 )
     
 idf_component_register(

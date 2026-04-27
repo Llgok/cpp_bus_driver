@@ -1,168 +1,147 @@
+
 /*
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-04-13 17:14:27
+ * @LastEditTime: 2026-04-21 11:48:31
  * @License: GPL 3.0
  */
 #pragma once
 
 #include "../bus/bus_guide.h"
 
-namespace Cpp_Bus_Driver
-{
-    class Chip_Iic_Guide : public Tool
-    {
-    protected:
-        std::shared_ptr<Bus_Iic_Guide> _bus;
+namespace cpp_bus_driver {
+class ChipI2cGuide : public Tool {
+ public:
+  ChipI2cGuide(std::shared_ptr<BusI2cGuide> bus, int16_t address)
+      : bus_(bus), address_(address) {}
 
-    private:
-        int16_t _address;
+  virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  virtual bool Deinit();
 
-    public:
-        Chip_Iic_Guide(std::shared_ptr<Bus_Iic_Guide> bus, int16_t address)
-            : _bus(bus), _address(address)
-        {
-        }
+  bool InitSequence(const uint8_t* sequence, size_t length);
+  bool InitSequence(const uint16_t* sequence, size_t length);
 
-        virtual bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
-        virtual bool end(void);
+ protected:
+  std::shared_ptr<BusI2cGuide> bus_;
 
-        bool init_list(const uint8_t *list, size_t length);
-        bool init_list(const uint16_t *list, size_t length);
-    };
+ private:
+  int16_t address_;
+};
 
-    class Chip_Spi_Guide : public Tool
-    {
-    protected:
-        std::shared_ptr<Bus_Spi_Guide> _bus;
+class ChipSpiGuide : public Tool {
+ public:
+  ChipSpiGuide(std::shared_ptr<BusSpiGuide> bus,
+      int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      : bus_(bus), cs_(cs) {}
 
-        int32_t _cs;
+  virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
 
-    public:
-        Chip_Spi_Guide(std::shared_ptr<Bus_Spi_Guide> bus, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : _bus(bus), _cs(cs)
-        {
-        }
+  bool InitSequence(const uint8_t* sequence, size_t length);
 
-        virtual bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
+ protected:
+  std::shared_ptr<BusSpiGuide> bus_;
 
-        bool init_list(const uint8_t *list, size_t length);
-    };
+  int32_t cs_;
+};
 
-    class Chip_Qspi_Guide : public Tool
-    {
-    protected:
+class ChipQspiGuide : public Tool {
+ public:
+  ChipQspiGuide(std::shared_ptr<BusQspiGuide> bus,
+      int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      : bus_(bus), cs_(cs) {}
+
+  virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
+
+  bool InitSequence(const uint32_t* sequence, size_t length);
+
+ protected:
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
-        enum class Spi_Trans
-        {
-            MODE_DIO = SPI_TRANS_MODE_DIO,
-            MODE_QIO = SPI_TRANS_MODE_QIO,
-            USE_RXDATA = SPI_TRANS_USE_RXDATA,
-            USE_TXDATA = SPI_TRANS_USE_TXDATA,
-            MODE_DIOQIO_ADDR = SPI_TRANS_MODE_DIOQIO_ADDR,
-            MULTILINE_ADDR = SPI_TRANS_MULTILINE_ADDR,
-            VARIABLE_CMD = SPI_TRANS_VARIABLE_CMD,
-            VARIABLE_ADDR = SPI_TRANS_VARIABLE_ADDR,
-            VARIABLE_DUMMY = SPI_TRANS_VARIABLE_DUMMY,
-            CS_KEEP_ACTIVE = SPI_TRANS_CS_KEEP_ACTIVE,
-            MULTILINE_CMD = SPI_TRANS_MULTILINE_CMD,
-            MODE_OCT = SPI_TRANS_MODE_OCT,
-        };
+  enum class SpiTrans {
+    kModeDio = SPI_TRANS_MODE_DIO,
+    kModeQio = SPI_TRANS_MODE_QIO,
+    kUseRxdata = SPI_TRANS_USE_RXDATA,
+    kUseTxdata = SPI_TRANS_USE_TXDATA,
+    kModeDioqioAddr = SPI_TRANS_MODE_DIOQIO_ADDR,
+    kMultilineAddr = SPI_TRANS_MULTILINE_ADDR,
+    kVariableCmd = SPI_TRANS_VARIABLE_CMD,
+    kVariableAddr = SPI_TRANS_VARIABLE_ADDR,
+    kVariableDummy = SPI_TRANS_VARIABLE_DUMMY,
+    kCsKeepActive = SPI_TRANS_CS_KEEP_ACTIVE,
+    kMultilineCmd = SPI_TRANS_MULTILINE_CMD,
+    kModeOct = SPI_TRANS_MODE_OCT,
+  };
 #else
-        enum class Spi_Trans
-        {
-            MODE_DIO,
-            MODE_QIO,
-            USE_RXDATA,
-            USE_TXDATA,
-            MODE_DIOQIO_ADDR,
-            MULTILINE_ADDR,
-            VARIABLE_CMD,
-            VARIABLE_ADDR,
-            VARIABLE_DUMMY,
-            CS_KEEP_ACTIVE,
-            MULTILINE_CMD,
-            MODE_OCT,
-        };
+  enum class SpiTrans {
+    kModeDio,
+    kModeQio,
+    kUseRxdata,
+    kUseTxdata,
+    kModeDioqioAddr,
+    kMultilineAddr,
+    kVariableCmd,
+    kVariableAddr,
+    kVariableDummy,
+    kCsKeepActive,
+    kMultilineCmd,
+    kModeOct,
+  };
 #endif
 
-        std::shared_ptr<Bus_Qspi_Guide> _bus;
+  std::shared_ptr<BusQspiGuide> bus_;
 
-        int32_t _cs;
+  int32_t cs_;
+};
 
-    public:
-        Chip_Qspi_Guide(std::shared_ptr<Bus_Qspi_Guide> bus, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE)
-            : _bus(bus), _cs(cs)
-        {
-        }
+class ChipUartGuide : public Tool {
+ public:
+  ChipUartGuide(std::shared_ptr<BusUartGuide> bus) : bus_(bus) {}
 
-        virtual bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  virtual bool Init(int32_t baud_rate = CPP_BUS_DRIVER_DEFAULT_VALUE);
 
-        bool init_list(const uint32_t *list, size_t length);
-    };
+ protected:
+  std::shared_ptr<BusUartGuide> bus_;
+};
 
-    class Chip_Uart_Guide : public Tool
-    {
-    protected:
-        std::shared_ptr<Bus_Uart_Guide> _bus;
+class ChipI2sGuide : public Tool {
+ public:
+  ChipI2sGuide(std::shared_ptr<BusI2sGuide> bus) : bus_(bus) {}
 
-    public:
-        Chip_Uart_Guide(std::shared_ptr<Bus_Uart_Guide> bus)
-            : _bus(bus)
-        {
-        }
-
-        virtual bool begin(int32_t baud_rate = CPP_BUS_DRIVER_DEFAULT_VALUE);
-    };
-
-    class Chip_Iis_Guide : public Tool
-    {
-    protected:
-        std::shared_ptr<Bus_Iis_Guide> _bus;
-
-    public:
-        Chip_Iis_Guide(std::shared_ptr<Bus_Iis_Guide> bus)
-            : _bus(bus)
-        {
-        }
-
-        virtual bool begin(uint16_t mclk_multiple, uint32_t sample_rate_hz, uint8_t data_bit_width) = 0;
+  virtual bool Init(uint16_t mclk_multiple, uint32_t sample_rate_hz,
+      uint8_t data_bit_width) = 0;
 
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
-        bool set_clock_reconfig(uint16_t mclk_multiple, uint32_t sample_rate_hz, Bus_Iis_Guide::Data_Mode data_mode = Bus_Iis_Guide::Data_Mode::INPUT_OUTPUT);
+  bool SetClockReconfig(uint16_t mclk_multiple, uint32_t sample_rate_hz,
+      BusI2sGuide::DataMode data_mode = BusI2sGuide::DataMode::kInputOutput);
 #endif
-    };
 
-    class Chip_Sdio_Guide : public Tool
-    {
-    protected:
-        std::shared_ptr<Bus_Sdio_Guide> _bus;
+ protected:
+  std::shared_ptr<BusI2sGuide> bus_;
+};
 
-    public:
-        Chip_Sdio_Guide(std::shared_ptr<Bus_Sdio_Guide> bus)
-            : _bus(bus)
-        {
-        }
+class ChipSdioGuide : public Tool {
+ public:
+  ChipSdioGuide(std::shared_ptr<BusSdioGuide> bus) : bus_(bus) {}
 
-        virtual bool begin(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
-    };
+  virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
 
-    class Chip_Mipi_Guide : public Tool
-    {
-    protected:
-        std::shared_ptr<Bus_Mipi_Guide> _bus;
+ protected:
+  std::shared_ptr<BusSdioGuide> bus_;
+};
 
-        Init_List_Format _init_list_format;
+class ChipMipiGuide : public Tool {
+ public:
+  ChipMipiGuide(std::shared_ptr<BusMipiGuide> bus,
+      InitSequenceFormat init_sequence_format = InitSequenceFormat::kWriteC8D8)
+      : bus_(bus), init_sequence_format_(init_sequence_format) {}
 
-    public:
-        Chip_Mipi_Guide(std::shared_ptr<Bus_Mipi_Guide> bus, Init_List_Format init_list_format = Init_List_Format::WRITE_C8_D8)
-            : _bus(bus), _init_list_format(init_list_format)
-        {
-        }
+  virtual bool Init(float freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE,
+      float lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE);
 
-        virtual bool begin(float freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE, float lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  bool InitSequence(const uint8_t* sequence, size_t length);
 
-        bool init_list(const uint8_t *list, size_t length);
-    };
-}
+ protected:
+  std::shared_ptr<BusMipiGuide> bus_;
+  InitSequenceFormat init_sequence_format_;
+};
+}  // namespace cpp_bus_driver

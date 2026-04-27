@@ -1,4 +1,4 @@
-menu "Cpp_Bus_Driver Configuration"
+menu "cpp_bus_driver configuration"
 
     choice
         prompt "Select log level"

@@ -1,42 +1,41 @@
+
 /*
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-03-04 11:55:49
+ * @LastEditTime: 2026-04-22 15:01:23
  * @License: GPL 3.0
  */
 #pragma once
 
 #include "../bus_guide.h"
 
-namespace Cpp_Bus_Driver
-{
+namespace cpp_bus_driver {
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
-    class Hardware_Uart : public Bus_Uart_Guide
-    {
-    private:
-        static constexpr uint16_t UART_RX_MAX_SIZE = 1024 * 2;
+class HardwareUart final : public BusUartGuide {
+ public:
+  explicit HardwareUart(int32_t tx, int32_t rx,
+      uart_port_t port = uart_port_t::UART_NUM_1,
+      int32_t rts = CPP_BUS_DRIVER_DEFAULT_VALUE,
+      int32_t cts = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      : tx_(tx), rx_(rx), port_(port), rts_(rts), cts_(cts) {}
 
-        int32_t _tx, _rx, _rts, _cts;
-        uart_port_t _port;
-        int32_t _baud_rate;
-        bool _init_flag = false;
+  bool Init(int32_t baud_rate = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  int32_t Read(void* data, uint32_t length) override;
+  int32_t Write(const void* data, size_t length) override;
 
-    public:
-        Hardware_Uart(int32_t tx, int32_t rx, int32_t rts = CPP_BUS_DRIVER_DEFAULT_VALUE, int32_t cts = CPP_BUS_DRIVER_DEFAULT_VALUE,
-                      uart_port_t port = uart_port_t::UART_NUM_1)
-            : _tx(tx), _rx(rx), _rts(rts), _cts(cts), _port(port)
-        {
-        }
+  size_t GetRxBufferLength() override;
+  bool ClearRxBufferData() override;
+  bool SetBaudRate(uint32_t baud_rate) override;
+  uint32_t GetBaudRate() override;
 
-        bool begin(int32_t baud_rate = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
-        int32_t read(void *data, uint32_t length) override;
-        int32_t write(const void *data, size_t length) override;
+ private:
+  static constexpr uint16_t kUartRxMaxSize = 1024 * 2;
 
-        size_t get_rx_buffer_length(void) override;
-        bool clear_rx_buffer_data(void) override;
-        bool set_baud_rate(uint32_t baud_rate) override;
-        uint32_t get_baud_rate(void) override;
-    };
+  int32_t tx_, rx_;
+  uart_port_t port_;
+  int32_t rts_, cts_, baud_rate_;
+  bool init_flag_ = false;
+};
 #endif
-}
+}  // namespace cpp_bus_driver

@@ -2,241 +2,230 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-04-13 14:25:29
+ * @LastEditTime: 2026-04-22 17:36:01
  * @License: GPL 3.0
  */
 #include "hardware_mipi.h"
 
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
 #if defined CPP_BUS_DRIVER_CHIP_ESP32P4
-namespace Cpp_Bus_Driver
-{
-    bool Hardware_Mipi::begin(float freq_mhz, float lane_bit_rate_mbps, Init_List_Format init_list_format)
-    {
-        if (freq_mhz == static_cast<float>(CPP_BUS_DRIVER_DEFAULT_VALUE))
-        {
-            freq_mhz = CPP_BUS_DRIVER_DEFAULT_MIPI_FREQ_MHZ;
+namespace cpp_bus_driver {
+bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
+    InitSequenceFormat init_sequence_format) {
+  if (freq_mhz == static_cast<float>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
+    freq_mhz = CPP_BUS_DRIVER_DEFAULT_MIPI_FREQ_MHZ;
+  }
+
+  if (lane_bit_rate_mbps == static_cast<float>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
+    lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_MIPI_LANE_BIT_RATE_MBPS;
+  }
+
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config freq_mhz: %d\n", freq_mhz);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config lane_bit_rate_mbps: %f\n", lane_bit_rate_mbps);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config init_sequence_format: %d\n", init_sequence_format);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config width_: %d\n", width_);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config height_: %d\n", height_);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config hsync_: %d\n", hsync_);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config hbp_: %d\n", hbp_);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config hfp_: %d\n", hfp_);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config vsync_: %d\n", vsync_);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config vbp_: %d\n", vbp_);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config vfp_: %d\n", vfp_);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config num_data_lane_: %d\n", num_data_lane_);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config color_format_: %d\n", color_format_);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config num_frame_buffer_: %d\n", num_frame_buffer_);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareMipi config port_: %d\n", port_);
+
+  esp_lcd_dsi_bus_config_t bus_config = {
+      .bus_id = port_,
+      .num_data_lanes = num_data_lane_,
+      .phy_clk_src = MIPI_DSI_PHY_CLK_SRC_DEFAULT,
+      .lane_bit_rate_mbps = static_cast<float>(lane_bit_rate_mbps),
+  };
+
+  esp_err_t result = esp_lcd_new_dsi_bus(&bus_config, &bus_handle_);
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "esp_lcd_new_dsi_bus failed (error code: %#X)\n", result);
+    return false;
+  }
+
+  esp_lcd_dbi_io_config_t io_config = {
+      .virtual_channel = 0,
+      .lcd_cmd_bits = [this](InitSequenceFormat format) -> int {
+        switch (format) {
+          case InitSequenceFormat::kWriteC8ByteData:
+            return 8;
+          case InitSequenceFormat::kWriteC8D8:
+            return 8;
+          default:
+            return 8;
         }
-
-        if (lane_bit_rate_mbps == static_cast<float>(CPP_BUS_DRIVER_DEFAULT_VALUE))
-        {
-            lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_MIPI_LANE_BIT_RATE_MBPS;
+      }(init_sequence_format),
+      .lcd_param_bits = [this](InitSequenceFormat format) -> int {
+        switch (format) {
+          case InitSequenceFormat::kWriteC8ByteData:
+            return 8;
+          case InitSequenceFormat::kWriteC8D8:
+            return 8;
+          default:
+            return 8;
         }
+      }(init_sequence_format),
+  };
+  result = esp_lcd_new_panel_io_dbi(bus_handle_, &io_config, &io_handle_);
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "esp_lcd_new_panel_io_dbi failed (error code: %#X)\n", result);
+    return false;
+  }
 
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config freq_mhz: %d\n", freq_mhz);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config lane_bit_rate_mbps: %f\n", lane_bit_rate_mbps);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config init_list_format: %d\n", init_list_format);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _width: %d\n", _width);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _height: %d\n", _height);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _hsync: %d\n", _hsync);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _hbp: %d\n", _hbp);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _hfp: %d\n", _hfp);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _vsync: %d\n", _vsync);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _vbp: %d\n", _vbp);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _vfp: %d\n", _vfp);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _num_data_lane: %d\n", _num_data_lane);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _color_format: %d\n", _color_format);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _num_frame_buffer: %d\n", _num_frame_buffer);
-        assert_log(Log_Level::INFO, __FILE__, __LINE__, "hardware_mipi config _port: %d\n", _port);
-
-        esp_lcd_dsi_bus_config_t bus_config =
-            {
-                .bus_id = _port,
-                .num_data_lanes = _num_data_lane,
-                .phy_clk_src = MIPI_DSI_PHY_CLK_SRC_DEFAULT,
-                .lane_bit_rate_mbps = static_cast<float>(lane_bit_rate_mbps),
-            };
-
-        esp_err_t assert = esp_lcd_new_dsi_bus(&bus_config, &_bus_handle);
-        if (assert != ESP_OK)
-        {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "esp_lcd_new_dsi_bus fail (error code: %#X)\n", assert);
-            return false;
+  esp_lcd_dpi_panel_config_t panel_config = {.virtual_channel = 0,
+      .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,
+      .dpi_clock_freq_mhz = static_cast<float>(freq_mhz),
+      .pixel_format = [](ColorFormat format) -> lcd_color_rgb_pixel_format_t {
+        switch (format) {
+          case ColorFormat::kRgb565:
+            return lcd_color_rgb_pixel_format_t::LCD_COLOR_PIXEL_FORMAT_RGB565;
+          case ColorFormat::kRgb666:
+            return lcd_color_rgb_pixel_format_t::LCD_COLOR_PIXEL_FORMAT_RGB666;
+          case ColorFormat::kRgb888:
+            return lcd_color_rgb_pixel_format_t::LCD_COLOR_PIXEL_FORMAT_RGB888;
+          default:
+            return lcd_color_rgb_pixel_format_t::LCD_COLOR_PIXEL_FORMAT_RGB565;
         }
-
-        esp_lcd_dbi_io_config_t io_config =
-            {
-                .virtual_channel = 0,
-                .lcd_cmd_bits = [this](Init_List_Format format) -> int
-                {
-                    switch (format)
-                    {
-                    case Init_List_Format::WRITE_C8_BYTE_DATA:
-                        return 8;
-                    case Init_List_Format::WRITE_C8_D8:
-                        return 8;
-                    default:
-                        assert_log(Log_Level::CHIP, __FILE__, __LINE__, "setting out of bounds\n");
-                        return 8;
-                    }
-                }(init_list_format),
-                .lcd_param_bits = [this](Init_List_Format format) -> int
-                {
-                    switch (format)
-                    {
-                    case Init_List_Format::WRITE_C8_BYTE_DATA:
-                        return 8;
-                    case Init_List_Format::WRITE_C8_D8:
-                        return 8;
-                    default:
-                        assert_log(Log_Level::CHIP, __FILE__, __LINE__, "setting out of bounds\n");
-                        return 8;
-                    }
-                }(init_list_format),
-            };
-        assert = esp_lcd_new_panel_io_dbi(_bus_handle, &io_config, &_io_handle);
-        if (assert != ESP_OK)
-        {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "esp_lcd_new_panel_io_dbi fail (error code: %#X)\n", assert);
-            return false;
+      }(color_format_),
+      .in_color_format = [](ColorFormat format) -> lcd_color_format_t {
+        switch (format) {
+          case ColorFormat::kRgb565:
+            return lcd_color_format_t::LCD_COLOR_FMT_RGB565;
+          case ColorFormat::kRgb666:
+            return lcd_color_format_t::LCD_COLOR_FMT_RGB666;
+          case ColorFormat::kRgb888:
+            return lcd_color_format_t::LCD_COLOR_FMT_RGB888;
+          case ColorFormat::kYuv422:
+            return lcd_color_format_t::LCD_COLOR_FMT_YUV422;
+          default:
+            return lcd_color_format_t::LCD_COLOR_FMT_RGB565;
         }
-
-        esp_lcd_dpi_panel_config_t panel_config =
-            {
-                .virtual_channel = 0,
-                .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,
-                .dpi_clock_freq_mhz = static_cast<float>(freq_mhz),
-                .pixel_format = [](Color_Format format) -> lcd_color_rgb_pixel_format_t
-                {
-                    switch (format)
-                    {
-                    case Color_Format::RGB565:
-                        return lcd_color_rgb_pixel_format_t::LCD_COLOR_PIXEL_FORMAT_RGB565;
-                    case Color_Format::RGB666:
-                        return lcd_color_rgb_pixel_format_t::LCD_COLOR_PIXEL_FORMAT_RGB666;
-                    case Color_Format::RGB888:
-                        return lcd_color_rgb_pixel_format_t::LCD_COLOR_PIXEL_FORMAT_RGB888;
-                    default:
-                        return lcd_color_rgb_pixel_format_t::LCD_COLOR_PIXEL_FORMAT_RGB565;
-                    }
-                }(_color_format),
-                .in_color_format = [](Color_Format format) -> lcd_color_format_t
-                {
-                    switch (format)
-                    {
-                    case Color_Format::RGB565:
-                        return lcd_color_format_t::LCD_COLOR_FMT_RGB565;
-                    case Color_Format::RGB666:
-                        return lcd_color_format_t::LCD_COLOR_FMT_RGB666;
-                    case Color_Format::RGB888:
-                        return lcd_color_format_t::LCD_COLOR_FMT_RGB888;
-                    case Color_Format::YUV422:
-                        return lcd_color_format_t::LCD_COLOR_FMT_YUV422;
-                    default:
-                        return lcd_color_format_t::LCD_COLOR_FMT_RGB565;
-                    }
-                }(_color_format),
-                .out_color_format = [](Color_Format format) -> lcd_color_format_t
-                {
-                    switch (format)
-                    {
-                    case Color_Format::RGB565:
-                        return lcd_color_format_t::LCD_COLOR_FMT_RGB565;
-                    case Color_Format::RGB666:
-                        return lcd_color_format_t::LCD_COLOR_FMT_RGB666;
-                    case Color_Format::RGB888:
-                        return lcd_color_format_t::LCD_COLOR_FMT_RGB888;
-                    case Color_Format::YUV422:
-                        return lcd_color_format_t::LCD_COLOR_FMT_YUV422;
-                    default:
-                        return lcd_color_format_t::LCD_COLOR_FMT_RGB565;
-                    }
-                }(_color_format),
-                .num_fbs = _num_frame_buffer,
-                .video_timing =
-                    {
-                        .h_size = _width,
-                        .v_size = _height,
-                        .hsync_pulse_width = _hsync,
-                        .hsync_back_porch = _hbp,
-                        .hsync_front_porch = _hfp,
-                        .vsync_pulse_width = _vsync,
-                        .vsync_back_porch = _vbp,
-                        .vsync_front_porch = _vfp,
-                    },
-                .flags =
-                    {
-                        .use_dma2d = true,
-                        .disable_lp = false,
-                    }};
-
-        assert = esp_lcd_new_panel_dpi(_bus_handle, &panel_config, &_device_handle);
-        if (assert != ESP_OK)
-        {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "esp_lcd_new_panel_dpi fail (error code: %#X)\n", assert);
-            return false;
+      }(color_format_),
+      .out_color_format = [](ColorFormat format) -> lcd_color_format_t {
+        switch (format) {
+          case ColorFormat::kRgb565:
+            return lcd_color_format_t::LCD_COLOR_FMT_RGB565;
+          case ColorFormat::kRgb666:
+            return lcd_color_format_t::LCD_COLOR_FMT_RGB666;
+          case ColorFormat::kRgb888:
+            return lcd_color_format_t::LCD_COLOR_FMT_RGB888;
+          case ColorFormat::kYuv422:
+            return lcd_color_format_t::LCD_COLOR_FMT_YUV422;
+          default:
+            return lcd_color_format_t::LCD_COLOR_FMT_RGB565;
         }
+      }(color_format_),
+      .num_fbs = num_frame_buffer_,
+      .video_timing =
+          {
+              .h_size = width_,
+              .v_size = height_,
+              .hsync_pulse_width = hsync_,
+              .hsync_back_porch = hbp_,
+              .hsync_front_porch = hfp_,
+              .vsync_pulse_width = vsync_,
+              .vsync_back_porch = vbp_,
+              .vsync_front_porch = vfp_,
+          },
+      .flags =
+          {
+              .use_dma2d = true,
+              .disable_lp = false,
+          }};
 
-        return true;
-    }
+  result = esp_lcd_new_panel_dpi(bus_handle_, &panel_config, &device_handle_);
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "esp_lcd_new_panel_dpi failed (error code: %#X)\n", result);
+    return false;
+  }
 
-    bool Hardware_Mipi::start_transmit(void)
-    {
-        esp_err_t assert = esp_lcd_panel_init(_device_handle);
-        if (assert != ESP_OK)
-        {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "esp_lcd_panel_init fail (error code: %#X)\n", assert);
-            return false;
-        }
-
-        return true;
-    }
-
-    bool Hardware_Mipi::read(int32_t cmd, void *data, size_t byte)
-    {
-        esp_err_t assert = esp_lcd_panel_io_rx_param(_io_handle, cmd, data, byte);
-        if (assert != ESP_OK)
-        {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "esp_lcd_panel_io_rx_param fail (error code: %#X)\n", assert);
-            return false;
-        }
-
-        return true;
-    }
-
-    bool Hardware_Mipi::write(int32_t cmd, const void *data, size_t byte)
-    {
-        esp_err_t assert = esp_lcd_panel_io_tx_param(_io_handle, cmd, data, byte);
-        if (assert != ESP_OK)
-        {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "esp_lcd_panel_io_tx_param fail (error code: %#X)\n", assert);
-            return false;
-        }
-
-        return true;
-    }
-
-    bool Hardware_Mipi::set_device_handle(esp_lcd_panel_handle_t handle)
-    {
-        if (handle == nullptr)
-        {
-            assert_log(Log_Level::BUS, __FILE__, __LINE__, "set_device_handle fail (handle == nullptr)\n");
-            return false;
-        }
-
-        _device_handle = handle;
-
-        return true;
-    }
-
-    esp_lcd_panel_handle_t Hardware_Mipi::get_device_handle(void)
-    {
-        return _device_handle;
-    }
-
-    bool Hardware_Mipi::write(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, const void *data)
-    {
-        esp_err_t assert = esp_lcd_panel_draw_bitmap(_device_handle, static_cast<int>(x_start), x_end, y_start, y_end, data);
-        if (assert != ESP_OK)
-        {
-            assert_log(Log_Level::CHIP, __FILE__, __LINE__, "esp_lcd_panel_draw_bitmap fail\n");
-            return false;
-        }
-
-        return true;
-    }
-
+  return true;
 }
+
+bool HardwareMipi::StartTransmit() {
+  esp_err_t result = esp_lcd_panel_init(device_handle_);
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "esp_lcd_panel_init failed (error code: %#X)\n", result);
+    return false;
+  }
+
+  return true;
+}
+
+bool HardwareMipi::Read(int32_t cmd, void* data, size_t byte) {
+  esp_err_t result = esp_lcd_panel_io_rx_param(io_handle_, cmd, data, byte);
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        "esp_lcd_panel_io_rx_param failed (error code: %#X)\n", result);
+    return false;
+  }
+
+  return true;
+}
+
+bool HardwareMipi::Write(int32_t cmd, const void* data, size_t byte) {
+  esp_err_t result = esp_lcd_panel_io_tx_param(io_handle_, cmd, data, byte);
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        "esp_lcd_panel_io_tx_param failed (error code: %#X)\n", result);
+    return false;
+  }
+
+  return true;
+}
+
+bool HardwareMipi::set_device_handle(esp_lcd_panel_handle_t handle) {
+  if (handle == nullptr) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
+  device_handle_ = handle;
+
+  return true;
+}
+
+esp_lcd_panel_handle_t HardwareMipi::device_handle() { return device_handle_; }
+
+bool HardwareMipi::Write(uint16_t x_start, uint16_t x_end, uint16_t y_start,
+    uint16_t y_end, const void* data) {
+  esp_err_t result = esp_lcd_panel_draw_bitmap(
+      device_handle_, static_cast<int>(x_start), x_end, y_start, y_end, data);
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "esp_lcd_panel_draw_bitmap failed\n");
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace cpp_bus_driver
 
 #endif
 #endif
