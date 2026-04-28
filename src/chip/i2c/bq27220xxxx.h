@@ -3,7 +3,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-17 14:01:35
+ * @LastEditTime: 2026-04-28 15:50:06
  * @License: GPL 3.0
  */
 #pragma once
@@ -20,43 +20,43 @@ class Bq27220xxxx final : public ChipI2cGuide {
 
   struct BatteryStatus {
     struct {
-      // 检测到完全放电，该标志根据选择的 kSoc Flag Config B 选项进行设置和清除
+      // 检测到完全放电，该标志根据选择的 Soc Flag Config B 选项进行设置和清除
       bool fd = false;
-      // kOcv 测量更新已完成，设置时为真
+      // Ocv 测量更新已完成，设置时为真
       bool ocvcomp = false;
-      // 指示 kOcv 读取因电流而失败的状态位，该位只能在接收到 OCV_CMD()
+      // 指示 Ocv 读取因电流而失败的状态位，该位只能在接收到 OCV_CMD()
       // 后在电池存在的情况下进行设置，设置时为真
       bool ocvfail = false;
-      // 设置时器件在 kSleep 模式下运行，该位将在 kSleep 模式下的 AD
+      // 设置时器件在 Sleep 模式下运行，该位将在 Sleep 模式下的 AD
       // 测量期间暂时清除
       bool sleep = false;
-      //  检测到充电条件下的过热，如果 Operation Config B [kIntOt]  位 = 1，则
-      //  kSocInt 引脚会在 [kOtc] 位被设置时切换一次
+      //  检测到充电条件下的过热，如果 Operation Config B [IntOt]  位 = 1，则
+      //  SocInt 引脚会在 [Otc] 位被设置时切换一次
       bool otc = false;
-      // 检测到放电条件下的过热，设置时为真，如果 Operation Config B [kIntOt] 位
-      // = 1，则 kSocInt 引脚会在 [kOtd] 位被设置时切换一次
+      // 检测到放电条件下的过热，设置时为真，如果 Operation Config B [IntOt] 位
+      // = 1，则 SocInt 引脚会在 [Otd] 位被设置时切换一次
       bool otd = false;
-      // 检测到充满电，该标志根据选择的 kSoc Flag Config A 和 kSoc Flag Config B
+      // 检测到充满电，该标志根据选择的 Soc Flag Config A 和 Soc Flag Config B
       // 选项进行设置和清除
       bool fc = false;
       // 充电禁止：如果设置，则表示不应开始充电，因为 Temperature() 超出范围
       // [Charge Inhibit Temp Low, Charge Inhibit Temp High]，设置时为真
       bool chginh = false;
-      // 终止充电警报，该标志根据选择的 kSoc Flag Config A 选项进行设置和清除
+      // 终止充电警报，该标志根据选择的 Soc Flag Config A 选项进行设置和清除
       bool tca = false;
-      // 进行了良好的 kOcv 测量，设置时为真
+      // 进行了良好的 Ocv 测量，设置时为真
       bool ocvgd = false;
       // 检测插入的电池，设置时为真
       bool auth_gd = false;
       // 检测到电池存在，设置时为真
       bool battpres = false;
-      // 终止放电警报，该标志根据选择的 kSoc Flag Config A 选项进行设置和清除
+      // 终止放电警报，该标志根据选择的 Soc Flag Config A 选项进行设置和清除
       bool tda = false;
-      // 指示系统应关闭的系统关闭位，设置时为真，如果设置，kSocInt
+      // 指示系统应关闭的系统关闭位，设置时为真，如果设置，SocInt
       // 引脚会切换一次
       bool sysdwn = false;
-      // 设置时，器件处于 kDischarge 模式；清除时，器件处于 kCharging 或
-      // kRelaxation 模式
+      // 设置时，器件处于 Discharge 模式；清除时，器件处于 Charging 或
+      // Relaxation 模式
       bool dsg = false;
 
     } flag;
@@ -66,20 +66,20 @@ class Bq27220xxxx final : public ChipI2cGuide {
     // 定义当前安全访问
     uint8_t sec = 0;
     struct {
-      // 电量监测计处于 kConfig kUpdate 模式，电量监测暂停
-      bool cfg_update = false;
-      // 指示已超过 kBtp 阈值的标志
+      // 电量监测计处于 Config Update 模式，电量监测暂停
+      bool config_update = false;
+      // 指示已超过 Btp 阈值的标志
       bool btp_int = false;
       // 指示 RemainingCapacity() 累积当前正在由平滑处理引擎进行调节
       bool smth = false;
       // 指示电量监测计初始化是否完成。该位只能在电池存在时被设置。设置时为真
       bool init_comp = false;
-      // 指示当前的放电周期是符合还是不符合 kFcc 更新的要求。会设置对 kFcc
+      // 指示当前的放电周期是符合还是不符合 Fcc 更新的要求。会设置对 Fcc
       // 更新有效的放电周期
       bool vdq = false;
-      // 指示测量的电池电压是高于还是低于 kEdv2 阈值。设置时表示低于
+      // 指示测量的电池电压是高于还是低于 Edv2 阈值。设置时表示低于
       bool edv2 = false;
-      // 使用 0x2D 命令进行切换，以启用/禁用 kCalibration 模式
+      // 使用 0x2D 命令进行切换，以启用 / 禁用 Calibration 模式
       bool calmd = false;
     } flag;
   };
@@ -115,7 +115,7 @@ class Bq27220xxxx final : public ChipI2cGuide {
   int16_t GetCurrent();
 
   /**
-   * @brief 获取电池剩余容量，当 kCedv Smoothing Config [kSmen]
+   * @brief 获取电池剩余容量，当 Cedv Smoothing Config [Smen]
    * 被设置时，这将是平滑处理引擎的结果，否则，会返回未过滤的剩余容量，单位为
    * mAh
    * @return
@@ -125,7 +125,7 @@ class Bq27220xxxx final : public ChipI2cGuide {
 
   /**
    * @brief 获取充满电的电池的补偿容量，单位为 mAh，FullChargeCapacity() 按照
-   * kCedv 算法的规定定期更新（需要电池充放电才更新）
+   * Cedv 算法的规定定期更新（需要电池充放电才更新）
    * @return
    * @Date 2025-02-26 16:07:12
    */
@@ -134,7 +134,7 @@ class Bq27220xxxx final : public ChipI2cGuide {
   /**
    * @brief 获取放电速率，默认值是 0，AtRate 的值会被 AtRateTimeToEmpty()
    * 函数使用，用于计算剩余运行时间， 如果 AtRate 设置为 0，AtRateTimeToEmpty()
-   * 将返回 65,535，表示无法预测剩余时间（或者剩余时间非常长） 只能在 kNormal
+   * 将返回 65,535，表示无法预测剩余时间（或者剩余时间非常长） 只能在 Normal
    * 模式下使用
    * @return 放电或者充电电流值，负号代表放电
    * @Date 2025-02-26 10:53:31
@@ -144,7 +144,7 @@ class Bq27220xxxx final : public ChipI2cGuide {
   /**
    * @brief 设置放电速率，默认值是 0，AtRate 的值会被 AtRateTimeToEmpty()
    * 函数使用，用于计算剩余运行时间， 如果 AtRate 设置为 0，AtRateTimeToEmpty()
-   * 将返回 65,535，表示无法预测剩余时间（或者剩余时间非常长） 只能在 kNormal
+   * 将返回 65,535，表示无法预测剩余时间（或者剩余时间非常长） 只能在 Normal
    * 模式下使用
    * @param rate 放电或者充电电流值，负号代表放电
    * @return
@@ -157,7 +157,7 @@ class Bq27220xxxx final : public ChipI2cGuide {
    * 在set_at_rate()函数设置的放电电流速度的条件下，预测的剩余电池还能工作的时间（以分钟为单位），在系统设置
    * AtRate() 值后， AtRateTimeToEmpty() 会在 1 秒内更新，此外，燃料计（fuel
    * gauge）会每秒自动更新 AtRateTimeToEmpty()，基于当前的 AtRate()
-   * 值和电池状态， 只能在 kNormal 模式下使用，值 65535 表示 AtRate() = 0
+   * 值和电池状态， 只能在 Normal 模式下使用，值 65535 表示 AtRate() = 0
    * @return 值的范围是 0 到 65534 分钟
    * @Date 2025-02-26 10:56:42
    */
@@ -165,7 +165,7 @@ class Bq27220xxxx final : public ChipI2cGuide {
 
   /**
    * @brief 获取温度，可以获取芯片内部温度或者外部NTC温度，由Operation
-   * Config中的[kWrtemp]和[kTemps]值决定，默认读取芯片内部温度
+   * Config中的[Wrtemp]和[Temps]值决定，默认读取芯片内部温度
    * @return 电量监测计测量的温度的浮点数，以°K为单位
    * @Date 2025-02-26 11:35:54
    */
@@ -173,7 +173,7 @@ class Bq27220xxxx final : public ChipI2cGuide {
 
   /**
    * @brief 获取温度，可以获取芯片内部温度或者外部NTC温度，由Operation
-   * Config中的[kWrtemp]和[kTemps]值决定，默认读取芯片内部温度
+   * Config中的[Wrtemp]和[Temps]值决定，默认读取芯片内部温度
    * @return 电量监测计测量的温度的浮点数，以°C为单位
    * @Date 2025-02-26 11:35:54
    */
@@ -222,7 +222,7 @@ class Bq27220xxxx final : public ChipI2cGuide {
   /**
    * @brief 获取当前电池充电的所需时间，根据 AverageCurrent()
    * 预测电池达到充满电状态的剩余时间（以分钟为单位）， 该计算考虑了基于固定
-   * AverageCurrent() 电荷累积速率的线性 kTtf 计算的收尾电流时间扩展，值 65535
+   * AverageCurrent() 电荷累积速率的线性 Ttf 计算的收尾电流时间扩展，值 65535
    * 表示电池未在充电
    * @return 值的范围是 0 到 65534 分钟
    * @Date 2025-02-26 16:22:42
@@ -245,7 +245,7 @@ class Bq27220xxxx final : public ChipI2cGuide {
   /**
    * @brief
    * 获取待机放电率下预测的剩余电池还能工作的时间（以分钟为单位），该计算使用
-   * NominalAvailableCapacity() (kNac)（未经补偿的剩余容量） 值 65535
+   * NominalAvailableCapacity() (Nac)（未经补偿的剩余容量） 值 65535
    * 表示电池未在放电
    * @return
    * @Date 2025-02-26 16:48:14
@@ -256,7 +256,7 @@ class Bq27220xxxx final : public ChipI2cGuide {
    * @brief 获取最大负载情况下的电流，以 mA 为单位，MaxLoadCurrent()
    * 是自适应测量值，最初报告为在 Initial Max Load Current
    * 中编程的最大负载电流， 如果测量的电流始终大于 Initial Max Load
-   * Current，则只要在前一次放电至 kSoc 低于 50% 后电池充满电，Max Load Current
+   * Current，则只要在前一次放电至 Soc 低于 50% 后电池充满电，Max Load Current
    * () 就会减小至前一个值和 Initial Max Load Current 的平均值，
    * 这可以防止报告的值保持在异常高的水平
    * @return
@@ -276,9 +276,9 @@ class Bq27220xxxx final : public ChipI2cGuide {
   /**
    * @brief
    * 获取在充电/放电期间从电池中转移的库仑量，计数器在放电期间递增，在充电期间递减，充电期间，当
-   * FC 位被设置（表示充满电）时，计数器清零， kIgnoreSd
-   * 位提供忽略自放电的功能，kIgnoreSd =
-   * 0（默认值）（常规放电或自放电期间库仑计递增），kIgnoreSd =
+   * FC 位被设置（表示充满电）时，计数器清零， IgnoreSd
+   * 位提供忽略自放电的功能，IgnoreSd =
+   * 0（默认值）（常规放电或自放电期间库仑计递增），IgnoreSd =
    * 1（库仑计仅在真正放电时才递增）
    * @return
    * @Date 2025-02-26 17:08:21
@@ -313,8 +313,8 @@ class Bq27220xxxx final : public ChipI2cGuide {
   /**
    * @brief 获取活动电池已经历的周期数，其范围为 0 至 65535，当累积放电 ≥
    * 周期阈值时，会产生一个周期， 周期阈值的计算方法为 Cycle Count Percentage
-   * 乘以 FullChargeCapacity()（当CEDV Gauging Configuration [kCct] = 1 时）或
-   * DesignCapacity()（当 [kCct] = 0 时）
+   * 乘以 FullChargeCapacity()（当CEDV Gauging Configuration [Cct] = 1 时）或
+   * DesignCapacity()（当 [Cct] = 0 时）
    * @return
    * @Date 2025-02-26 17:18:35
    */
@@ -405,9 +405,9 @@ class Bq27220xxxx final : public ChipI2cGuide {
   // 凡是写寄存器都需要延时10ms
   enum class ControlStatusReg {
     kRoDeviceId = 0x0001,
-    kWoEnterCfgUpdate = 0x0090,
-    kWoExitCfgUpdateReinit,
-    kWoExitCfgUpdate,
+    kWoEnterConfigUpdate = 0x0090,
+    kWoExitConfigUpdateReinit,
+    kWoExitConfigUpdate,
   };
 
   // 凡是写寄存器都需要延时10ms
@@ -429,13 +429,13 @@ class Bq27220xxxx final : public ChipI2cGuide {
    * @return
    * @Date 2025-02-26 15:33:17
    */
-  bool EnterCgfUpdate();
+  bool EnterConfigUpdate();
   /**
    * @brief 退出配置更新模式
    * @return
    * @Date 2025-02-26 15:33:17
    */
-  bool ExitCfgUpdate();
+  bool ExitConfigUpdate();
 
   int32_t rst_;
 };

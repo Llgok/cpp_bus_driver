@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-04-20 16:05:01
+ * @LastEditTime: 2026-04-28 15:43:31
  * @License: GPL 3.0
  */
 #include "bq27220xxxx.h"
@@ -37,67 +37,67 @@ bool Bq27220xxxx::Init(int32_t freq_hz) {
   return true;
 }
 
-bool Bq27220xxxx::EnterCgfUpdate() {
-  // 发送 kEnterCgfUpdate 子命令 (0x0090)
+bool Bq27220xxxx::EnterConfigUpdate() {
+  // 发送 EnterCfgUpdate 子命令 (0x0090)
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwControlStatusStart),
-          static_cast<uint16_t>(ControlStatusReg::kWoEnterCfgUpdate),
+          static_cast<uint16_t>(ControlStatusReg::kWoEnterConfigUpdate),
           Endian::kLittle)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   DelayMs(10);  // 必须有延时
 
-  // 通过轮询 OperationStatus() 寄存器直到位 2 被设置来确认 kCfgupdate
+  // 通过轮询 OperationStatus() 寄存器直到位 2 被设置来确认 Cfgupdate
   // 模式，可能最多需要 1 秒
   uint8_t timeout_count = 0;
   while (1) {
     OperationStatus os;
     if (GetOperationStatus(os)) {
-      if (os.flag.cfg_update) {
+      if (os.flag.config_update) {
         break;
       }
     }
 
     timeout_count++;
-    if (timeout_count > 200) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-          "Enter config update mode timeout\n");
+    if (timeout_count > 100) {
+      LogMessage(
+          LogLevel::kChip, __FILE__, __LINE__, "EnterConfigUpdate timeout\n");
       return false;
     }
-    DelayMs(5);
+    DelayMs(10);
   }
 
   return true;
 }
 
-bool Bq27220xxxx::ExitCfgUpdate() {
+bool Bq27220xxxx::ExitConfigUpdate() {
   // 通过发送 EXIT_CFG_UPDATE_REINIT (0x0091) 或 EXIT_CFG_UPDATE (0x0092)
-  // 命令退出 kCfgupdate 模式
+  // 命令退出 Cfgupdate 模式
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwControlStatusStart),
-          static_cast<uint16_t>(ControlStatusReg::kWoExitCfgUpdate),
+          static_cast<uint16_t>(ControlStatusReg::kWoExitConfigUpdate),
           Endian::kLittle)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   DelayMs(10);  // 必须有延时
 
-  // 通过轮询 OperationStatus() 寄存器直到位 2 被清除来确认 kCfgupdate 模式
+  // 通过轮询 OperationStatus() 寄存器直到位 2 被清除来确认 Cfgupdate 模式
   uint8_t timeout_count = 0;
   while (1) {
     OperationStatus os;
     if (GetOperationStatus(os)) {
-      if (os.flag.cfg_update) {
+      if (!os.flag.config_update) {
         break;
       }
     }
 
     timeout_count++;
-    if (timeout_count > 200) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-          "Exit config update mode timeout\n");
+    if (timeout_count > 100) {
+      LogMessage(
+          LogLevel::kChip, __FILE__, __LINE__, "ExitConfigUpdate timeout\n");
       return false;
     }
-    DelayMs(5);
+    DelayMs(10);
   }
 
   return true;
@@ -241,8 +241,9 @@ float Bq27220xxxx::GetTemperatureCelsius() {
 }
 
 bool Bq27220xxxx::SetTemperatureMode(TemperatureMode mode) {
-  if (!EnterCgfUpdate()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "EnterCgfUpdate failed\n");
+  if (!EnterConfigUpdate()) {
+    LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "EnterConfigUpdate failed\n");
     return false;
   }
 
@@ -305,8 +306,9 @@ bool Bq27220xxxx::SetTemperatureMode(TemperatureMode mode) {
   }
   DelayMs(10);  // 必须有延时
 
-  if (!ExitCfgUpdate()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "EnterCgfUpdate failed\n");
+  if (!ExitConfigUpdate()) {
+    LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "ExitConfigUpdate failed\n");
     return false;
   }
 
@@ -352,7 +354,7 @@ bool Bq27220xxxx::GetOperationStatus(OperationStatus& status) {
 
   status.sec = (buffer[0] & 0B00000110) >> 1;
 
-  status.flag.cfg_update = (buffer[1] & 0B00000100) >> 2;
+  status.flag.config_update = (buffer[1] & 0B00000100) >> 2;
   status.flag.btp_int = (buffer[0] & 0B10000000) >> 7;
   status.flag.smth = (buffer[0] & 0B01000000) >> 6;
   status.flag.init_comp = (buffer[0] & 0B00100000) >> 5;
@@ -364,8 +366,9 @@ bool Bq27220xxxx::GetOperationStatus(OperationStatus& status) {
 }
 
 bool Bq27220xxxx::SetDesignCapacity(uint16_t capacity) {
-  if (!EnterCgfUpdate()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "EnterCgfUpdate failed\n");
+  if (!EnterConfigUpdate()) {
+    LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "EnterConfigUpdate failed\n");
     return false;
   }
 
@@ -420,8 +423,9 @@ bool Bq27220xxxx::SetDesignCapacity(uint16_t capacity) {
   }
   DelayMs(10);  // 必须有延时
 
-  if (!ExitCfgUpdate()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "EnterCgfUpdate failed\n");
+  if (!ExitConfigUpdate()) {
+    LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "ExitConfigUpdate failed\n");
     return false;
   }
 
@@ -610,8 +614,9 @@ bool Bq27220xxxx::SetSleepCurrentThreshold(uint16_t threshold) {
     threshold = 100;
   }
 
-  if (!EnterCgfUpdate()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "EnterCgfUpdate failed\n");
+  if (!EnterConfigUpdate()) {
+    LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "EnterConfigUpdate failed\n");
     return false;
   }
 
@@ -655,8 +660,9 @@ bool Bq27220xxxx::SetSleepCurrentThreshold(uint16_t threshold) {
   }
   DelayMs(10);  // 必须有延时
 
-  if (!ExitCfgUpdate()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "EnterCgfUpdate failed\n");
+  if (!ExitConfigUpdate()) {
+    LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "ExitConfigUpdate failed\n");
     return false;
   }
 
