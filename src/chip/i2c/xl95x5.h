@@ -63,7 +63,7 @@ class Xl95x5 final : public ChipI2cGuide {
    * @return
    * @Date 2025-03-11 10:44:12
    */
-  bool SetPinMode(Pin pin, Mode mode);
+  bool SetGpioMode(Pin pin, Mode mode);
 
   /**
    * @brief 引脚写数据
@@ -72,7 +72,7 @@ class Xl95x5 final : public ChipI2cGuide {
    * @return
    * @Date 2025-03-11 10:44:53
    */
-  bool PinWrite(Pin pin, Value value);
+  bool GpioWrite(Pin pin, Value value);
 
   /**
    * @brief 引脚读数据
@@ -80,7 +80,7 @@ class Xl95x5 final : public ChipI2cGuide {
    * @return [0]：低电平，[1]：高电平
    * @Date 2025-03-11 10:46:16
    */
-  bool PinRead(Pin pin);
+  bool GpioRead(Pin pin);
 
   /**
    * @brief 清除中断请求

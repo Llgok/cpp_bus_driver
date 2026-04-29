@@ -3,7 +3,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 17:58:03
- * @LastEditTime: 2026-04-24 17:53:42
+ * @LastEditTime: 2026-04-29 10:13:34
  * @License: GPL 3.0
  */
 #pragma once
@@ -30,7 +30,7 @@ class Tool {
     kOnHigh,
   };
 
-  enum class PinMode {
+  enum class GpioMode {
     kDisable,
     kInput,          // input only
     kOutput,         // output only mode
@@ -39,7 +39,7 @@ class Tool {
     kInputOutput,    // output and input mode
   };
 
-  enum class PinStatus {
+  enum class GpioStatus {
     kDisable,
     kPullup,
     kPulldown,
@@ -72,10 +72,10 @@ class Tool {
   bool SafeStof(const std::string& input, float* output);
   bool SafeStod(const std::string& input, double* output);
 
-  bool SetPinMode(
-      uint32_t pin, PinMode mode, PinStatus status = PinStatus::kDisable);
-  bool PinWrite(uint32_t pin, bool value);
-  bool PinRead(uint32_t pin);
+  bool SetGpioMode(
+      uint32_t pin, GpioMode mode, GpioStatus status = GpioStatus::kDisable);
+  bool GpioWrite(uint32_t pin, bool value);
+  bool GpioRead(uint32_t pin);
 
   void DelayMs(uint32_t value);
   void DelayUs(uint32_t value);

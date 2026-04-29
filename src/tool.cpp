@@ -149,27 +149,27 @@ bool Tool::Search(const char* search_library, size_t search_library_length,
   return true;
 }
 
-bool Tool::SetPinMode(uint32_t pin, PinMode mode, PinStatus status) {
+bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
   gpio_config_t config;
   config.pin_bit_mask = BIT64(pin);
   switch (mode) {
-    case PinMode::kDisable:
+    case GpioMode::kDisable:
       config.mode = GPIO_MODE_INPUT;
       break;
-    case PinMode::kInput:
+    case GpioMode::kInput:
       config.mode = GPIO_MODE_INPUT;
       break;
-    case PinMode::kOutput:
+    case GpioMode::kOutput:
       config.mode = GPIO_MODE_OUTPUT;
       break;
-    case PinMode::kOutputOd:
+    case GpioMode::kOutputOd:
       config.mode = GPIO_MODE_OUTPUT_OD;
       break;
-    case PinMode::kInputOutputOd:
+    case GpioMode::kInputOutputOd:
       config.mode = GPIO_MODE_INPUT_OUTPUT_OD;
       break;
-    case PinMode::kInputOutput:
+    case GpioMode::kInputOutput:
       config.mode = GPIO_MODE_INPUT_OUTPUT;
       break;
 
@@ -177,15 +177,15 @@ bool Tool::SetPinMode(uint32_t pin, PinMode mode, PinStatus status) {
       break;
   }
   switch (status) {
-    case PinStatus::kDisable:
+    case GpioStatus::kDisable:
       config.pull_up_en = GPIO_PULLUP_DISABLE;
       config.pull_down_en = GPIO_PULLDOWN_DISABLE;
       break;
-    case PinStatus::kPullup:
+    case GpioStatus::kPullup:
       config.pull_up_en = GPIO_PULLUP_ENABLE;
       config.pull_down_en = GPIO_PULLDOWN_DISABLE;
       break;
-    case PinStatus::kPulldown:
+    case GpioStatus::kPulldown:
       config.pull_up_en = GPIO_PULLUP_DISABLE;
       config.pull_down_en = GPIO_PULLDOWN_ENABLE;
       break;
@@ -208,18 +208,18 @@ bool Tool::SetPinMode(uint32_t pin, PinMode mode, PinStatus status) {
   return true;
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
   switch (mode) {
-    case PinMode::kDisable:
+    case GpioMode::kDisable:
       nrf_gpio_cfg_default(pin);
       break;
-    case PinMode::kInput:
+    case GpioMode::kInput:
       switch (status) {
-        case PinStatus::kDisable:
+        case GpioStatus::kDisable:
           pinMode(pin, 0x0);
           break;
-        case PinStatus::kPullup:
+        case GpioStatus::kPullup:
           pinMode(pin, 0x2);
           break;
-        case PinStatus::kPulldown:
+        case GpioStatus::kPulldown:
           pinMode(pin, 0x3);
           break;
 
@@ -228,7 +228,7 @@ bool Tool::SetPinMode(uint32_t pin, PinMode mode, PinStatus status) {
           break;
       }
       break;
-    case PinMode::kOutput:
+    case GpioMode::kOutput:
       pinMode(pin, 0x1);
       break;
 
@@ -240,12 +240,12 @@ bool Tool::SetPinMode(uint32_t pin, PinMode mode, PinStatus status) {
 
   return true;
 #else
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinMode failed\n");
+  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioMode failed\n");
   return false;
 #endif
 }
 
-bool Tool::PinWrite(uint32_t pin, bool value) {
+bool Tool::GpioWrite(uint32_t pin, bool value) {
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
   esp_err_t result = gpio_set_level(static_cast<gpio_num_t>(pin), value);
   if (result != ESP_OK) {
@@ -263,7 +263,7 @@ bool Tool::PinWrite(uint32_t pin, bool value) {
 #endif
 }
 
-bool Tool::PinRead(uint32_t pin) {
+bool Tool::GpioRead(uint32_t pin) {
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
   return gpio_get_level(static_cast<gpio_num_t>(pin));
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF

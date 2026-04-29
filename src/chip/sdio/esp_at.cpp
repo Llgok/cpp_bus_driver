@@ -14,13 +14,13 @@ bool EspAt::Init(int32_t freq_hz) {
   connect_.receive_total_length_index = 0;
 
   if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    SetPinMode(rst_, PinMode::kOutput, PinStatus::kPullup);
+    SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
-    PinWrite(rst_, 1);
+    GpioWrite(rst_, 1);
     DelayMs(50);
-    PinWrite(rst_, 0);
+    GpioWrite(rst_, 0);
     DelayMs(50);
-    PinWrite(rst_, 1);
+    GpioWrite(rst_, 1);
     DelayMs(1000);
   } else if (rst_callback_ != nullptr) {
     rst_callback_(1);
@@ -59,7 +59,7 @@ bool EspAt::Init(int32_t freq_hz) {
 bool EspAt::SetSleep(SleepMode mode, int16_t timeout_ms) {
   if (mode == SleepMode::kPowerDown) {
     if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-      PinWrite(rst_, 0);
+      GpioWrite(rst_, 0);
     } else if (rst_callback_ != nullptr) {
       rst_callback_(0);
     } else {

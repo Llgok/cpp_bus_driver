@@ -20,7 +20,7 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
 
   if (cs_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
     cs_ = cs;
-    SetPinMode(cs_, PinMode::kOutput, PinStatus ::kPullup);
+    SetGpioMode(cs_, GpioMode::kOutput, GpioStatus ::kPullup);
     SetCs(1);
   }
 
@@ -186,8 +186,8 @@ bool HardwareQspi::Write(
 
 bool HardwareQspi::SetCs(bool value) {
   if (cs_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    if (!PinWrite(cs_, value)) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+    if (!GpioWrite(cs_, value)) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
       return false;
     }
   }

@@ -29,13 +29,13 @@ bool SoftwareI2c::Init(uint32_t freq_hz, uint16_t address) {
       "SoftwareI2c config transmit_delay_us_: %d us\n",
       buffer_transmit_delay_us);
 
-  if (!SetPinMode(sda_, PinMode::kInputOutputOd, PinStatus::kPullup)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinMode failed\n");
+  if (!SetGpioMode(sda_, GpioMode::kInputOutputOd, GpioStatus::kPullup)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioMode failed\n");
     return false;
   }
 
-  if (!SetPinMode(scl_, PinMode::kOutputOd, PinStatus::kPullup)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinMode failed\n");
+  if (!SetGpioMode(scl_, GpioMode::kOutputOd, GpioStatus::kPullup)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioMode failed\n");
     return false;
   }
 
@@ -47,22 +47,22 @@ bool SoftwareI2c::Init(uint32_t freq_hz, uint16_t address) {
 }
 
 bool SoftwareI2c::StartTransmit() {
-  if (!PinWrite(scl_, 1)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+  if (!GpioWrite(scl_, 1)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
-  if (!PinWrite(sda_, 1)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
-    return false;
-  }
-  DelayUs(transmit_delay_us_);
-  if (!PinWrite(sda_, 0)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+  if (!GpioWrite(sda_, 1)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
   DelayUs(transmit_delay_us_);
-  if (!PinWrite(scl_, 0)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+  if (!GpioWrite(sda_, 0)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
+    return false;
+  }
+  DelayUs(transmit_delay_us_);
+  if (!GpioWrite(scl_, 0)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
   DelayUs(transmit_delay_us_);
@@ -193,17 +193,17 @@ bool SoftwareI2c::WriteRead(const uint8_t* write_data, size_t write_length,
 }
 
 bool SoftwareI2c::StopTransmit() {
-  if (!PinWrite(sda_, 0)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+  if (!GpioWrite(sda_, 0)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
-  if (!PinWrite(scl_, 1)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+  if (!GpioWrite(scl_, 1)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
   DelayUs(transmit_delay_us_);
-  if (!PinWrite(sda_, 1)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+  if (!GpioWrite(sda_, 1)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
 
@@ -236,19 +236,19 @@ bool SoftwareI2c::Probe(const uint16_t address) {
 
 bool SoftwareI2c::WriteByte(uint8_t data) {
   for (uint8_t i = 0; i < 8; i++) {
-    if (!PinWrite(sda_, data & 0x80)) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+    if (!GpioWrite(sda_, data & 0x80)) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
       return false;
     }
 
     DelayUs(transmit_delay_us_);
-    if (!PinWrite(scl_, 1)) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+    if (!GpioWrite(scl_, 1)) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
       return false;
     }
     DelayUs(transmit_delay_us_);
-    if (!PinWrite(scl_, 0)) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+    if (!GpioWrite(scl_, 0)) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
       return false;
     }
 
@@ -256,8 +256,8 @@ bool SoftwareI2c::WriteByte(uint8_t data) {
   }
 
   // 释放sda
-  if (!PinWrite(sda_, 1)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+  if (!GpioWrite(sda_, 1)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
 
@@ -265,8 +265,8 @@ bool SoftwareI2c::WriteByte(uint8_t data) {
 }
 
 bool SoftwareI2c::ReadByte(uint8_t* data) {
-  if (!PinWrite(sda_, 1)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+  if (!GpioWrite(sda_, 1)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
 
@@ -274,18 +274,18 @@ bool SoftwareI2c::ReadByte(uint8_t* data) {
   for (uint8_t i = 0; i < 8; i++) {
     buffer_data <<= 1;
 
-    if (!PinWrite(scl_, 1)) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+    if (!GpioWrite(scl_, 1)) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
       return false;
     }
     DelayUs(transmit_delay_us_);
 
-    if (PinRead(sda_) == 1) {
+    if (GpioRead(sda_) == 1) {
       buffer_data |= 0x01;
     }
 
-    if (!PinWrite(scl_, 0)) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+    if (!GpioWrite(scl_, 0)) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
       return false;
     }
     DelayUs(transmit_delay_us_);
@@ -298,17 +298,17 @@ bool SoftwareI2c::ReadByte(uint8_t* data) {
 
 bool SoftwareI2c::WaitAck() {
   DelayUs(transmit_delay_us_);
-  if (!PinWrite(scl_, 1)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+  if (!GpioWrite(scl_, 1)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
   DelayUs(transmit_delay_us_);
 
   // sda应该保持低电平作为应答(ack)
-  bool buffer_ack = !PinRead(sda_);
+  bool buffer_ack = !GpioRead(sda_);
 
-  if (!PinWrite(scl_, 0)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+  if (!GpioWrite(scl_, 0)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
   DelayUs(transmit_delay_us_);
@@ -317,18 +317,18 @@ bool SoftwareI2c::WaitAck() {
 }
 
 bool SoftwareI2c::WriteAck(AckBit ack) {
-  if (!PinWrite(sda_, static_cast<bool>(ack))) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+  if (!GpioWrite(sda_, static_cast<bool>(ack))) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
 
-  if (!PinWrite(scl_, 1)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+  if (!GpioWrite(scl_, 1)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
   DelayUs(transmit_delay_us_);
-  if (!PinWrite(scl_, 0)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "PinWrite failed\n");
+  if (!GpioWrite(scl_, 0)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
   DelayUs(transmit_delay_us_);

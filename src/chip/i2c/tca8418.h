@@ -136,7 +136,7 @@ class Tca8418 final : public ChipI2cGuide {
    * @return
    * @Date 2025-07-31 10:16:03
    */
-  bool SetIrqPinMode(IrqMask mode);
+  bool SetIrqGpioMode(IrqMask mode);
 
   /**
    * @brief 用于解码触摸号数为x、y坐标

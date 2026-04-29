@@ -10,21 +10,21 @@
 namespace cpp_bus_driver {
 bool L76k::Init(int32_t baud_rate) {
   if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    ChipUartGuide::SetPinMode(rst_, PinMode::kOutput, PinStatus::kPullup);
+    ChipUartGuide::SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
-    ChipUartGuide::PinWrite(rst_, 1);
+    ChipUartGuide::GpioWrite(rst_, 1);
     ChipUartGuide::DelayMs(10);
-    ChipUartGuide::PinWrite(rst_, 0);
+    ChipUartGuide::GpioWrite(rst_, 0);
     ChipUartGuide::DelayMs(10);
-    ChipUartGuide::PinWrite(rst_, 1);
+    ChipUartGuide::GpioWrite(rst_, 1);
     ChipUartGuide::DelayMs(10);
   }
 
   if (wake_up_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    if (!ChipUartGuide::SetPinMode(
-            wake_up_, PinMode::kOutput, PinStatus::kPullup)) {
+    if (!ChipUartGuide::SetGpioMode(
+            wake_up_, GpioMode::kOutput, GpioStatus::kPullup)) {
       ChipUartGuide::LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "PinMode failed\n");
+          LogLevel::kChip, __FILE__, __LINE__, "GpioMode failed\n");
     }
   }
 
@@ -73,9 +73,9 @@ bool L76k::GetDeviceId(size_t* search_index) {
 
 bool L76k::Sleep(bool enable) {
   if (wake_up_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    if (!ChipUartGuide::PinWrite(wake_up_, !enable)) {
+    if (!ChipUartGuide::GpioWrite(wake_up_, !enable)) {
       ChipUartGuide::LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "PinWrite failed\n");
+          LogLevel::kChip, __FILE__, __LINE__, "GpioWrite failed\n");
       return false;
     }
   } else if (wake_up_callback_ != nullptr) {

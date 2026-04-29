@@ -10,13 +10,13 @@
 namespace cpp_bus_driver {
 bool Xl95x5::Init(int32_t freq_hz) {
   if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    Tool::SetPinMode(rst_, PinMode::kOutput, PinStatus::kPullup);
+    Tool::SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
-    Tool::PinWrite(rst_, 1);
+    Tool::GpioWrite(rst_, 1);
     DelayMs(10);
-    Tool::PinWrite(rst_, 0);
+    Tool::GpioWrite(rst_, 0);
     DelayMs(10);
-    Tool::PinWrite(rst_, 1);
+    Tool::GpioWrite(rst_, 1);
     DelayMs(10);
   }
 
@@ -49,7 +49,7 @@ uint8_t Xl95x5::GetDeviceId() {
   return buffer;
 }
 
-bool Xl95x5::SetPinMode(Pin pin, Mode mode) {
+bool Xl95x5::SetGpioMode(Pin pin, Mode mode) {
   uint8_t buffer = 0;
 
   if (pin == Pin::kIoPort0) {
@@ -113,7 +113,7 @@ bool Xl95x5::SetPinMode(Pin pin, Mode mode) {
   return true;
 }
 
-bool Xl95x5::PinWrite(Pin pin, Value value) {
+bool Xl95x5::GpioWrite(Pin pin, Value value) {
   uint8_t buffer = 0;
 
   if (pin == Pin::kIoPort0) {
@@ -175,7 +175,7 @@ bool Xl95x5::PinWrite(Pin pin, Value value) {
   return true;
 }
 
-bool Xl95x5::PinRead(Pin pin) {
+bool Xl95x5::GpioRead(Pin pin) {
   uint8_t buffer = 0;
 
   // 写0为低电平，写1为高电平

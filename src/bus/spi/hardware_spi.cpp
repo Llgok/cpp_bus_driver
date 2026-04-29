@@ -125,7 +125,7 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
   spi_handle_ = std::make_unique<SPIClass>(port_, static_cast<uint8_t>(miso_),
       static_cast<uint8_t>(sclk_), static_cast<uint8_t>(mosi_));
-  PinMode(cs, PinMode::kOutput);
+  GpioMode(cs, GpioMode::kOutput);
   spi_settings_ = SPISettings(freq_hz, bit_order_, mode_);
 
   spi_handle_->begin();
@@ -162,9 +162,9 @@ bool HardwareSpi::Write(const void* data, size_t byte) {
 
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
   spi_handle_->beginTransaction(spi_settings_);
-  PinWrite(cs_, 0);
+  GpioWrite(cs_, 0);
   spi_handle_->transfer(const_cast<void*>(data), byte);
-  PinWrite(cs_, 1);
+  GpioWrite(cs_, 1);
   spi_handle_->endTransaction();
 
   return true;
@@ -200,9 +200,9 @@ bool HardwareSpi::Read(void* data, size_t byte) {
   uint8_t buffer[byte] = {0};
 
   spi_handle_->beginTransaction(spi_settings_);
-  PinWrite(cs_, 0);
+  GpioWrite(cs_, 0);
   spi_handle_->transfer(buffer, data, byte);
-  PinWrite(cs_, 1);
+  GpioWrite(cs_, 1);
   spi_handle_->endTransaction();
 
   return true;
@@ -237,9 +237,9 @@ bool HardwareSpi::WriteRead(
   return true;
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
   spi_handle_->beginTransaction(spi_settings_);
-  PinWrite(cs_, 0);
+  GpioWrite(cs_, 0);
   spi_handle_->transfer(write_data, read_data, data_byte);
-  PinWrite(cs_, 1);
+  GpioWrite(cs_, 1);
   spi_handle_->endTransaction();
 
   return true;

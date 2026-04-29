@@ -14,13 +14,13 @@ constexpr const uint8_t Aw21009xxx::kInitSequence[];
 
 bool Aw21009xxx::Init(int32_t freq_hz) {
   if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    SetPinMode(rst_, PinMode::kOutput, PinStatus::kPullup);
+    SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
-    PinWrite(rst_, 1);
+    GpioWrite(rst_, 1);
     DelayMs(10);
-    PinWrite(rst_, 0);
+    GpioWrite(rst_, 0);
     DelayMs(10);
-    PinWrite(rst_, 1);
+    GpioWrite(rst_, 1);
     DelayMs(10);
   }
 

@@ -14,13 +14,13 @@ constexpr const Es8311::ClockCoeff Es8311::kClockCoeffTable_[];
 
 bool Es8311::Init(int32_t freq_hz) {
   if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    ChipI2cGuide::SetPinMode(rst_, PinMode::kOutput, PinStatus::kPullup);
+    ChipI2cGuide::SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
-    ChipI2cGuide::PinWrite(rst_, 1);
+    ChipI2cGuide::GpioWrite(rst_, 1);
     ChipI2cGuide::DelayMs(10);
-    ChipI2cGuide::PinWrite(rst_, 0);
+    ChipI2cGuide::GpioWrite(rst_, 0);
     ChipI2cGuide::DelayMs(10);
-    ChipI2cGuide::PinWrite(rst_, 1);
+    ChipI2cGuide::GpioWrite(rst_, 1);
     ChipI2cGuide::DelayMs(10);
   }
 

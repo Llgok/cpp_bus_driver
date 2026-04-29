@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2026-02-03 15:06:34
- * @LastEditTime: 2026-04-22 17:36:14
+ * @LastEditTime: 2026-04-29 10:21:32
  * @License: GPL 3.0
  */
 #include "axp517.h"
@@ -10,13 +10,13 @@
 namespace cpp_bus_driver {
 bool Axp517::Init(int32_t freq_hz) {
   if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    SetPinMode(rst_, PinMode::kOutput, PinStatus::kPullup);
+    Tool::SetGpioMode(rst_, Tool::GpioMode::kOutput, Tool::GpioStatus::kPullup);
 
-    PinWrite(rst_, 1);
+    Tool::GpioWrite(rst_, 1);
     DelayMs(10);
-    PinWrite(rst_, 0);
+    Tool::GpioWrite(rst_, 0);
     DelayMs(10);
-    PinWrite(rst_, 1);
+    Tool::GpioWrite(rst_, 1);
     DelayMs(10);
   }
 

@@ -1056,7 +1056,7 @@ class Sx126x final : public ChipSpiGuide {
    * @return
    * @Date 2025-03-15 11:48:59
    */
-  bool SetIrqPinMode(IrqMaskFlag dio1_mode,
+  bool SetIrqGpioMode(IrqMaskFlag dio1_mode,
       IrqMaskFlag dio2_mode = IrqMaskFlag::kDisable,
       IrqMaskFlag dio3_mode = IrqMaskFlag::kDisable);
 

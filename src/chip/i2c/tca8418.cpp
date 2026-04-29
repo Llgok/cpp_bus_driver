@@ -14,13 +14,13 @@ constexpr const uint8_t Tca8418::kInitSequence[];
 
 bool Tca8418::Init(int32_t freq_hz) {
   if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    SetPinMode(rst_, PinMode::kOutput, PinStatus::kPullup);
+    SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
-    PinWrite(rst_, 1);
+    GpioWrite(rst_, 1);
     DelayMs(10);
-    PinWrite(rst_, 0);
+    GpioWrite(rst_, 0);
     DelayMs(10);
-    PinWrite(rst_, 1);
+    GpioWrite(rst_, 1);
     DelayMs(10);
   }
 
@@ -198,7 +198,7 @@ uint32_t Tca8418::GetClearGpioIrqFlag() {
          static_cast<uint32_t>(buffer[2]);
 }
 
-bool Tca8418::SetIrqPinMode(IrqMask mode) {
+bool Tca8418::SetIrqGpioMode(IrqMask mode) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwConfiguration), &buffer)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");

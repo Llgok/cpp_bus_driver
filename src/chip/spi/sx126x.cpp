@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-04-25 15:47:22
+ * @LastEditTime: 2026-04-29 10:23:29
  * @License: GPL 3.0
  */
 #include "sx126x.h"
@@ -10,17 +10,17 @@
 namespace cpp_bus_driver {
 bool Sx126x::Init(int32_t freq_hz) {
   if (busy_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    SetPinMode(busy_, PinMode::kInput, PinStatus::kDisable);
+    SetGpioMode(busy_, GpioMode::kInput, GpioStatus::kDisable);
   }
 
   if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    SetPinMode(rst_, PinMode::kOutput, PinStatus::kPullup);
+    SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
-    PinWrite(rst_, 1);
+    GpioWrite(rst_, 1);
     DelayMs(10);
-    PinWrite(rst_, 0);
+    GpioWrite(rst_, 0);
     DelayMs(10);
-    PinWrite(rst_, 1);
+    GpioWrite(rst_, 1);
     DelayMs(10);
   }
 
@@ -87,7 +87,7 @@ bool Sx126x::CheckBusy() {
     uint16_t timeout_count = 0;
     while (1) {
       DelayUs(1);
-      if (PinRead(busy_) == 0) {
+      if (GpioRead(busy_) == 0) {
         break;
       }
       timeout_count++;
@@ -1251,7 +1251,8 @@ bool Sx126x::WriteBuffer(const uint8_t* data, uint8_t length, uint8_t offset) {
   return true;
 }
 
-bool Sx126x::SendData(const uint8_t* data, uint8_t length, uint32_t time_out_us) {
+bool Sx126x::SendData(
+    const uint8_t* data, uint8_t length, uint32_t time_out_us) {
   switch (param_.packet_type) {
     case PacketType::kGfsk:
       if (param_.gfsk.payload_length != length) {
@@ -1739,7 +1740,7 @@ bool Sx126x::SetGfskCrcPacketParams(
   return true;
 }
 
-bool Sx126x::SetIrqPinMode(
+bool Sx126x::SetIrqGpioMode(
     IrqMaskFlag dio1_mode, IrqMaskFlag dio2_mode, IrqMaskFlag dio3_mode) {
   // 设置接收中断标志
   // 默认设置 irq_mask：kRxDone, kTimeout, kCrcErr 和 kHeaderErr
