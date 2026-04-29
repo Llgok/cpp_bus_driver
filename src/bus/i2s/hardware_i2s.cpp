@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-04-22 17:35:58
+ * @LastEditTime: 2026-04-28 18:04:49
  * @License: GPL 3.0
  */
 #include "hardware_i2s.h"
@@ -11,6 +11,20 @@ namespace cpp_bus_driver {
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
 bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
     uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) {
+  if (data_mode_ == DataMode::kInputOutput) {
+    if ((chan_tx_handle_ != nullptr) && (chan_rx_handle_ != nullptr)) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "HardwareI2s has been initialized\n");
+      return true;
+    }
+  } else {
+    if ((chan_tx_handle_ != nullptr) || (chan_rx_handle_ != nullptr)) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "HardwareI2s has been initialized\n");
+      return true;
+    }
+  }
+
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareI2s config port_: %d\n", port_);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,

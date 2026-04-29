@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-04-22 17:36:01
+ * @LastEditTime: 2026-04-29 09:30:51
  * @License: GPL 3.0
  */
 #include "hardware_mipi.h"
@@ -12,6 +12,15 @@
 namespace cpp_bus_driver {
 bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
     InitSequenceFormat init_sequence_format) {
+  if ((bus_handle_ != nullptr) || (io_handle_ != nullptr) ||
+      (device_handle_ != nullptr)) {
+    if (!Deinit()) {
+      LogMessage(
+          LogLevel::kBus, __FILE__, __LINE__, "HardwareMipi deinit failed\n");
+      return false;
+    }
+  }
+
   if (freq_mhz == static_cast<float>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
     freq_mhz = CPP_BUS_DRIVER_DEFAULT_MIPI_FREQ_MHZ;
   }
@@ -175,6 +184,45 @@ bool HardwareMipi::StartTransmit() {
   }
 
   return true;
+}
+
+bool HardwareMipi::Deinit() {
+  bool result = true;
+
+  if (device_handle_ != nullptr) {
+    esp_err_t ret = esp_lcd_panel_del(device_handle_);
+    if (ret != ESP_OK) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "esp_lcd_panel_del failed (error code: %#X)\n", ret);
+      result = false;
+    } else {
+      device_handle_ = nullptr;
+    }
+  }
+
+  if (io_handle_ != nullptr) {
+    esp_err_t ret = esp_lcd_panel_io_del(io_handle_);
+    if (ret != ESP_OK) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "esp_lcd_panel_io_del failed (error code: %#X)\n", ret);
+      result = false;
+    } else {
+      io_handle_ = nullptr;
+    }
+  }
+
+  if (bus_handle_ != nullptr) {
+    esp_err_t ret = esp_lcd_del_dsi_bus(bus_handle_);
+    if (ret != ESP_OK) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "esp_lcd_del_dsi_bus failed (error code: %#X)\n", ret);
+      result = false;
+    } else {
+      bus_handle_ = nullptr;
+    }
+  }
+
+  return result;
 }
 
 bool HardwareMipi::Read(int32_t cmd, void* data, size_t byte) {
