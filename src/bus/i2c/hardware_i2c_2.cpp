@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-04-22 13:56:02
+ * @LastEditTime: 2026-04-29 16:23:28
  * @License: GPL 3.0
  */
 #include "hardware_i2c_2.h"
@@ -62,7 +62,10 @@ bool HardwareI2c2::Init(uint32_t freq_hz, uint16_t address) {
   i2c_handle_->setPins(static_cast<uint8_t>(sda_), static_cast<uint8_t>(scl_));
   i2c_handle_->setClock(freq_hz);
   i2c_handle_->Init();
-
+  
+#else
+  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
+  return false;
 #endif
 
   freq_hz_ = freq_hz;
@@ -71,14 +74,23 @@ bool HardwareI2c2::Init(uint32_t freq_hz, uint16_t address) {
   return true;
 }
 
-bool HardwareI2c2::Deinit() {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+bool HardwareI2c2::Deinit(bool delete_bus) {
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+  esp_err_t result = i2c_driver_delete(port_);
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        "i2c_driver_delete failed (error code: %#X)\n", result);
+    return false;
+  }
+
+  return true;
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 
   i2c_handle_->end();
 
   return true;
 #else
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
+  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
   return false;
 #endif
 }
@@ -212,6 +224,7 @@ bool HardwareI2c2::WriteRead(const uint8_t* write_data, size_t write_length,
   return true;
 
 #else
+  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WriteRead failed\n");
   return false;
 #endif
 }

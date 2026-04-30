@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-04-22 13:54:58
+ * @LastEditTime: 2026-04-29 16:47:20
  * @License: GPL 3.0
  */
 #include "hardware_i2c_1.h"
@@ -85,6 +85,36 @@ bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
   address_ = address;
 
   return true;
+}
+
+bool HardwareI2c1::Deinit(bool delete_bus) {
+  bool result = true;
+
+  if (device_handle_ != nullptr) {
+    esp_err_t ret = i2c_master_bus_rm_device(device_handle_);
+    if (ret != ESP_OK) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "i2c_master_bus_rm_device failed (error code: %#X)\n", ret);
+      result = false;
+    } else {
+      device_handle_ = nullptr;
+    }
+  }
+
+  if (delete_bus && bus_handle_ != nullptr) {
+    esp_err_t ret = i2c_del_master_bus(bus_handle_);
+    if (ret != ESP_OK) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "i2c_del_master_bus failed (error code: %#X)\n", ret);
+      result = false;
+    } else {
+      bus_handle_ = nullptr;
+    }
+  } else {
+    bus_handle_ = nullptr;
+  }
+
+  return result;
 }
 
 bool HardwareI2c1::Read(uint8_t* data, size_t length) {

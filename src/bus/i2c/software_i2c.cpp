@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-04-20 14:28:12
+ * @LastEditTime: 2026-04-29 14:22:26
  * @License: GPL 3.0
  */
 #include "software_i2c.h"
@@ -44,6 +44,15 @@ bool SoftwareI2c::Init(uint32_t freq_hz, uint16_t address) {
   address_ = address;
 
   return true;
+}
+
+bool SoftwareI2c::Deinit(bool delete_bus) {
+  bool result = true;
+
+  result &= SetGpioMode(sda_, GpioMode::kDisable, GpioStatus::kDisable);
+  result &= SetGpioMode(scl_, GpioMode::kDisable, GpioStatus::kDisable);
+
+  return result;
 }
 
 bool SoftwareI2c::StartTransmit() {

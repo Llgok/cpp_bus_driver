@@ -163,5 +163,21 @@ uint32_t HardwareUart::GetBaudRate() {
 
   return buffer;
 }
+
+bool HardwareUart::Deinit() {
+  if (!init_flag_) {
+    return true;
+  }
+
+  esp_err_t result = uart_driver_delete(static_cast<uart_port_t>(port_));
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        "uart_driver_delete failed (error code: %#X)\n", result);
+    return false;
+  }
+
+  init_flag_ = false;
+  return true;
+}
 #endif
 }  // namespace cpp_bus_driver

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-04-20 14:31:29
+ * @LastEditTime: 2026-04-29 16:48:10
  * @License: GPL 3.0
  */
 #include "hardware_spi.h"
@@ -129,12 +129,52 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
   spi_settings_ = SPISettings(freq_hz, bit_order_, mode_);
 
   spi_handle_->begin();
+
+#else
+  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
+  return false;
 #endif
 
   freq_hz_ = freq_hz;
   cs_ = cs;
 
   return true;
+}
+
+bool HardwareSpi::Deinit(bool delete_bus) {
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+  bool result = true;
+
+  if (device_init_flag_) {
+    esp_err_t ret = spi_bus_remove_device(spi_device_);
+    if (ret != ESP_OK) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "spi_bus_remove_device failed (error code: %#X)\n", ret);
+      result = false;
+    } else {
+      spi_device_ = nullptr;
+      device_init_flag_ = false;
+    }
+  }
+
+  if (delete_bus && bus_init_flag_) {
+    esp_err_t ret = spi_bus_free(port_);
+    if (ret != ESP_OK) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "spi_bus_free failed (error code: %#X)\n", ret);
+      result = false;
+    } else {
+      bus_init_flag_ = false;
+    }
+  } else {
+    bus_init_flag_ = false;
+  }
+
+  return result;
+#else
+  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
+  return false;
+#endif
 }
 
 bool HardwareSpi::Write(const void* data, size_t byte) {

@@ -3,7 +3,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-04-17 13:57:02
+ * @LastEditTime: 2026-04-29 16:17:16
  * @License: GPL 3.0
  */
 #pragma once
@@ -73,9 +73,9 @@ class HardwareI2s final : public BusI2sGuide {
   bool SetNextWrite(uint32_t* data) override;
   bool GetReadEventFlag() override;
   bool GetWriteEventFlag() override;
-
-  void Deinit() override;
 #endif
+
+  bool Deinit() override;
 
  private:
   int32_t data_in_, data_out_;

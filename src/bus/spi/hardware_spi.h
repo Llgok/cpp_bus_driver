@@ -3,7 +3,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-04-25 17:23:55
+ * @LastEditTime: 2026-04-29 14:18:54
  * @License: GPL 3.0
  */
 #pragma once
@@ -45,6 +45,7 @@ class HardwareSpi final : public BusSpiGuide {
   bool Read(void* data, size_t byte) override;
   bool WriteRead(
       const void* write_data, void* read_data, size_t data_byte) override;
+  bool Deinit(bool delete_bus = false) override;
 
   void set_bus_init_flag(bool enable) { bus_init_flag_ = enable; }
 
@@ -70,7 +71,7 @@ class HardwareSpi final : public BusSpiGuide {
 #endif
 
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
-  spi_device_handle_t spi_device_;
+  spi_device_handle_t spi_device_ = nullptr;
 #elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
   std::unique_ptr<SPIClass> spi_handle_;
   SPISettings spi_settings_;

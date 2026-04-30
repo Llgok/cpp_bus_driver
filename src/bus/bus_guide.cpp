@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2026-04-22 17:35:53
+ * @LastEditTime: 2026-04-29 14:20:15
  * @License: GPL 3.0
  */
 #include "bus_guide.h"
@@ -55,7 +55,7 @@ bool BusI2cGuide::StopTransmit() {
 
 #endif
 
-bool BusI2cGuide::Deinit() {
+bool BusI2cGuide::Deinit(bool delete_bus) {
   LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
   return false;
 }

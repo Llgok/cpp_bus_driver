@@ -3,7 +3,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-04-17 11:04:14
+ * @LastEditTime: 2026-04-29 14:21:22
  * @License: GPL 3.0
  */
 #pragma once
@@ -23,7 +23,7 @@ class HardwareI2c2 final : public BusI2cGuide {
 
   bool Init(uint32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE,
       uint16_t address = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
-  bool Deinit() override;
+  bool Deinit(bool delete_bus = false) override;
   bool Read(uint8_t* data, size_t length) override;
   bool Write(const uint8_t* data, size_t length) override;
   bool WriteRead(const uint8_t* write_data, size_t write_length,

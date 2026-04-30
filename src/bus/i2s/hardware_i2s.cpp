@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-04-28 18:04:49
+ * @LastEditTime: 2026-04-29 16:26:19
  * @License: GPL 3.0
  */
 #include "hardware_i2s.h"
@@ -1234,7 +1234,51 @@ bool HardwareI2s::GetWriteEventFlag() {
   return nrf_i2s_event_check(NRF_I2S, NRF_I2S_EVENT_TXPTRUPD);
 }
 
-void HardwareI2s::Deinit() {
+#endif
+
+bool HardwareI2s::Deinit() {
+#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+  bool result = true;
+
+  if (chan_tx_handle_ != nullptr) {
+    esp_err_t ret = i2s_channel_disable(chan_tx_handle_);
+    if ((ret != ESP_OK) && (ret != ESP_ERR_INVALID_STATE)) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "i2s_channel_disable failed (error code: %#X)\n", ret);
+      result = false;
+    }
+
+    ret = i2s_del_channel(chan_tx_handle_);
+    if (ret != ESP_OK) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "i2s_del_channel failed (error code: %#X)\n", ret);
+      result = false;
+    } else {
+      chan_tx_handle_ = nullptr;
+    }
+  }
+
+  if (chan_rx_handle_ != nullptr) {
+    esp_err_t ret = i2s_channel_disable(chan_rx_handle_);
+    if ((ret != ESP_OK) && (ret != ESP_ERR_INVALID_STATE)) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "i2s_channel_disable failed (error code: %#X)\n", ret);
+      result = false;
+    }
+
+    ret = i2s_del_channel(chan_rx_handle_);
+    if (ret != ESP_OK) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "i2s_del_channel failed (error code: %#X)\n", ret);
+      result = false;
+    } else {
+      chan_rx_handle_ = nullptr;
+    }
+  }
+
+  return result;
+
+#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
   StopTransmit();
 
   nrf_i2s_pins_set(NRF_I2S, NRF_I2S_PIN_NOT_CONNECTED,
@@ -1246,7 +1290,14 @@ void HardwareI2s::Deinit() {
   nrf_gpio_cfg_default(mclk_);
   nrf_gpio_cfg_default(data_out_);
   nrf_gpio_cfg_default(data_in_);
-}
+
+  return true;
+
+#else
+  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
+  return false;
 
 #endif
+}
+
 }  // namespace cpp_bus_driver

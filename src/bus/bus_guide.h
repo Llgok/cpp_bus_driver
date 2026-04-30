@@ -3,7 +3,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2026-04-17 09:15:10
+ * @LastEditTime: 2026-04-29 16:18:17
  * @License: GPL 3.0
  */
 #pragma once
@@ -22,7 +22,7 @@ class BusI2cGuide : public Tool {
       uint8_t* read_data, size_t read_length) = 0;
   virtual bool Probe(const uint16_t address) = 0;
 
-  virtual bool Deinit();
+  virtual bool Deinit(bool delete_bus = false);
 
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
   virtual i2c_cmd_handle_t CmdLinkCreate();
@@ -135,9 +135,9 @@ class BusI2sGuide : public Tool {
    * @Date 2025-08-29 17:52:43
    */
   virtual bool GetWriteEventFlag() = 0;
-
-  virtual void Deinit() = 0;
 #endif
+
+  virtual bool Deinit() = 0;
 };
 
 class BusSpiGuide : public Tool {
@@ -149,6 +149,7 @@ class BusSpiGuide : public Tool {
   virtual bool Read(void* data, size_t byte) = 0;
   virtual bool WriteRead(
       const void* write_data, void* read_data, size_t data_byte) = 0;
+  virtual bool Deinit(bool delete_bus = false) = 0;
 
   bool Read(const uint8_t write_c8, uint8_t* read_d8);
   bool Read(
@@ -221,6 +222,7 @@ class BusUartGuide : public Tool {
   virtual bool ClearRxBufferData() = 0;
   virtual bool SetBaudRate(uint32_t baud_rate) = 0;
   virtual uint32_t GetBaudRate() = 0;
+  virtual bool Deinit() = 0;
 };
 
 class BusSdioGuide : public Tool {

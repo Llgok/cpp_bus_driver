@@ -28,6 +28,7 @@ class HardwareUart final : public BusUartGuide {
   bool ClearRxBufferData() override;
   bool SetBaudRate(uint32_t baud_rate) override;
   uint32_t GetBaudRate() override;
+  bool Deinit() override;
 
  private:
   static constexpr uint16_t kUartRxMaxSize = 1024 * 2;
