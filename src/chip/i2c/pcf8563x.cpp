@@ -45,6 +45,19 @@ bool Pcf8563x::Init(int32_t freq_hz) {
   return true;
 }
 
+bool Pcf8563x::Deinit(bool delete_bus) {
+  if (!ChipI2cGuide::Deinit(delete_bus)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+  }
+
+  return true;
+}
+
 uint8_t Pcf8563x::GetDeviceId() {
   uint8_t buffer = 0;
 

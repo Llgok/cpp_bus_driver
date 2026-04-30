@@ -28,6 +28,19 @@ bool S023msafjf10111e1::Init(int32_t freq_hz) {
   return true;
 }
 
+bool S023msafjf10111e1::Deinit(bool delete_bus) {
+  if (!ChipI2cGuide::Deinit(delete_bus)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+  }
+
+  return true;
+}
+
 bool S023msafjf10111e1::SetDataFormat(DataFormat format) {
   switch (format) {
     case DataFormat::kRgb888:

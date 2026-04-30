@@ -39,6 +39,19 @@ bool Icn6211::Init(int32_t freq_hz) {
   return true;
 }
 
+bool Icn6211::Deinit(bool delete_bus) {
+  if (!ChipI2cGuide::Deinit(delete_bus)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+  }
+
+  return true;
+}
+
 uint16_t Icn6211::GetDeviceId() {
   uint8_t buffer[2] = {0};
 

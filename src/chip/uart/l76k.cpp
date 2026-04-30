@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-04-22 15:07:08
+ * @LastEditTime: 2026-04-30 14:32:02
  * @License: GPL 3.0
  */
 #include "l76k.h"
@@ -47,6 +47,24 @@ bool L76k::Init(int32_t baud_rate) {
   } else {
     ChipUartGuide::LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "Get l76k id success (index: %d)\n", buffer_index);
+  }
+
+  return true;
+}
+
+bool L76k::Deinit() {
+  if (!ChipUartGuide::Deinit()) {
+    ChipUartGuide::LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (wake_up_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    ChipUartGuide::SetGpioMode(
+        wake_up_, GpioMode::kDisable, GpioStatus::kDisable);
+  }
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    ChipUartGuide::SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
   }
 
   return true;

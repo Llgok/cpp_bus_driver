@@ -1,4 +1,3 @@
-
 /*
  * @Description: None
  * @Author: LILYGO_L
@@ -38,6 +37,7 @@ class Hi8561 final : public ChipMipiGuide {
 
   bool Init(float freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE,
       float lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Deinit() override;
 
   uint16_t GetDeviceId();
 

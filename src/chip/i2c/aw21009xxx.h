@@ -1,9 +1,8 @@
-
 /*
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-17 13:59:55
+ * @LastEditTime: 2026-04-30 13:42:54
  * @License: GPL 3.0
  */
 #pragma once
@@ -34,6 +33,7 @@ class Aw21009xxx final : public ChipI2cGuide {
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Deinit(bool delete_bus = false) override;
 
   uint8_t GetDeviceId();
 

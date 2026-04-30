@@ -56,6 +56,19 @@ bool EspAt::Init(int32_t freq_hz) {
   return true;
 }
 
+bool EspAt::Deinit() {
+  if (!ChipSdioGuide::Deinit()) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+  }
+
+  return true;
+}
+
 bool EspAt::SetSleep(SleepMode mode, int16_t timeout_ms) {
   if (mode == SleepMode::kPowerDown) {
     if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {

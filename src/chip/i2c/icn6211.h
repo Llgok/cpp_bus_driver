@@ -1,9 +1,8 @@
-
 /*
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2026-01-16 11:57:07
- * @LastEditTime: 2026-04-23 17:15:57
+ * @LastEditTime: 2026-04-30 13:43:33
  * @License: GPL 3.0
  */
 #pragma once
@@ -74,6 +73,7 @@ class Icn6211 final : public ChipI2cGuide {
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Deinit(bool delete_bus = false) override;
 
   uint16_t GetDeviceId();
 

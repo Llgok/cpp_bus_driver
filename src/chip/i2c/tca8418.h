@@ -1,9 +1,8 @@
-
 /*
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-17 14:03:15
+ * @LastEditTime: 2026-04-30 13:44:39
  * @License: GPL 3.0
  */
 #pragma once
@@ -71,6 +70,7 @@ class Tca8418 final : public ChipI2cGuide {
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Deinit(bool delete_bus = false) override;
 
   /**
    * @brief 设置键盘扫描模式开窗大小

@@ -1,4 +1,3 @@
-
 /*
  * @Description: None
  * @Author: LILYGO_L
@@ -53,6 +52,7 @@ class EspAt final : public ChipSdioGuide {
       : ChipSdioGuide(bus), rst_callback_(rst_callback) {}
 
   bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Deinit() override;
 
   /**
    * @brief 设置睡眠

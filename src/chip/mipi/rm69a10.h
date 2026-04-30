@@ -1,9 +1,8 @@
-
 /*
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-17 13:37:59
+ * @LastEditTime: 2026-04-30 13:46:44
  * @License: GPL 3.0
  */
 #pragma once
@@ -19,6 +18,7 @@ class Rm69a10 final : public ChipMipiGuide {
 
   bool Init(float freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE,
       float lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Deinit() override;
 
   uint8_t GetDeviceId();
 

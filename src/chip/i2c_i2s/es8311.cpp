@@ -76,6 +76,27 @@ bool Es8311::Init(int32_t freq_hz) {
   return true;
 }
 
+bool Es8311::Deinit(bool delete_bus) {
+  if (!ChipI2cGuide::Deinit(delete_bus)) {
+    ChipI2cGuide::LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (!ChipI2sGuide::Deinit()) {
+    ChipI2cGuide::LogMessage(
+        LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    ChipI2cGuide::SetGpioMode(
+        rst_, GpioMode::kDisable, GpioStatus::kDisable);
+  }
+
+  return true;
+}
+
 bool Es8311::Init(
     uint16_t mclk_multiple, uint32_t sample_rate_hz, uint8_t data_bit_width) {
   if (!SetClockCoeff(mclk_multiple, sample_rate_hz)) {

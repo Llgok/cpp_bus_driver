@@ -69,6 +69,22 @@ bool Sx126x::Init(int32_t freq_hz) {
   return true;
 }
 
+bool Sx126x::Deinit(bool delete_bus) {
+  if (!ChipSpiGuide::Deinit(delete_bus)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (busy_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    SetGpioMode(busy_, GpioMode::kDisable, GpioStatus::kDisable);
+  }
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+  }
+
+  return true;
+}
+
 std::string Sx126x::GetDeviceId() {
   uint8_t buffer[7] = {0};
 

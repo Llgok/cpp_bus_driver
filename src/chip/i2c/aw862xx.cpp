@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-26 11:13:26
- * @LastEditTime: 2026-04-22 16:40:43
+ * @LastEditTime: 2026-04-30 14:22:59
  * @License: GPL 3.0
  */
 #include "aw862xx.h"
@@ -35,6 +35,18 @@ bool Aw862xx::Init(int32_t freq_hz) {
         "Get aw862xx id success (id: %#X)\n", buffer);
   }
 
+  return true;
+}
+
+bool Aw862xx::Deinit(bool delete_bus) {
+  if (!ChipI2cGuide::Deinit(delete_bus)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+  }
   return true;
 }
 

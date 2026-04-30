@@ -1,9 +1,8 @@
-
 /*
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-04-21 11:48:31
+ * @LastEditTime: 2026-04-30 13:47:25
  * @License: GPL 3.0
  */
 #pragma once
@@ -17,7 +16,7 @@ class ChipI2cGuide : public Tool {
       : bus_(bus), address_(address) {}
 
   virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
-  virtual bool Deinit();
+  virtual bool Deinit(bool delete_bus = false);
 
   bool InitSequence(const uint8_t* sequence, size_t length);
   bool InitSequence(const uint16_t* sequence, size_t length);
@@ -36,6 +35,7 @@ class ChipSpiGuide : public Tool {
       : bus_(bus), cs_(cs) {}
 
   virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  virtual bool Deinit(bool delete_bus = false);
 
   bool InitSequence(const uint8_t* sequence, size_t length);
 
@@ -52,6 +52,7 @@ class ChipQspiGuide : public Tool {
       : bus_(bus), cs_(cs) {}
 
   virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  virtual bool Deinit();
 
   bool InitSequence(const uint32_t* sequence, size_t length);
 
@@ -98,6 +99,7 @@ class ChipUartGuide : public Tool {
   ChipUartGuide(std::shared_ptr<BusUartGuide> bus) : bus_(bus) {}
 
   virtual bool Init(int32_t baud_rate = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  virtual bool Deinit();
 
  protected:
   std::shared_ptr<BusUartGuide> bus_;
@@ -109,6 +111,7 @@ class ChipI2sGuide : public Tool {
 
   virtual bool Init(uint16_t mclk_multiple, uint32_t sample_rate_hz,
       uint8_t data_bit_width) = 0;
+  virtual bool Deinit();
 
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
   bool SetClockReconfig(uint16_t mclk_multiple, uint32_t sample_rate_hz,
@@ -124,6 +127,7 @@ class ChipSdioGuide : public Tool {
   ChipSdioGuide(std::shared_ptr<BusSdioGuide> bus) : bus_(bus) {}
 
   virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  virtual bool Deinit();
 
  protected:
   std::shared_ptr<BusSdioGuide> bus_;
@@ -137,6 +141,7 @@ class ChipMipiGuide : public Tool {
 
   virtual bool Init(float freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE,
       float lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  virtual bool Deinit();
 
   bool InitSequence(const uint8_t* sequence, size_t length);
 

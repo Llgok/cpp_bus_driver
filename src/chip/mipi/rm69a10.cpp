@@ -48,6 +48,19 @@ bool Rm69a10::Init(float freq_mhz, float lane_bit_rate_mbps) {
   return true;
 }
 
+bool Rm69a10::Deinit() {
+  if (!ChipMipiGuide::Deinit()) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+  }
+
+  return true;
+}
+
 uint8_t Rm69a10::GetDeviceId() {
   uint8_t buffer = 0;
 

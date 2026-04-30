@@ -43,10 +43,15 @@ bool Axp517::Init(int32_t freq_hz) {
   return true;
 }
 
-bool Axp517::Deinit() {
-  if (!ChipI2cGuide::Deinit()) {
+bool Axp517::Deinit(bool delete_bus) {
+  if (!ChipI2cGuide::Deinit(delete_bus)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
     return false;
+  }
+
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    Tool::SetGpioMode(
+        rst_, Tool::GpioMode::kDisable, Tool::GpioStatus::kDisable);
   }
 
   return true;

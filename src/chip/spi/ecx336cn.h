@@ -1,9 +1,8 @@
-
 /*
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-22 10:59:25
+ * @LastEditTime: 2026-04-30 13:46:54
  * @License: GPL 3.0
  */
 #pragma once
@@ -19,6 +18,7 @@ class Ecx336cn final : public ChipSpiGuide {
       : ChipSpiGuide(bus, cs), rst_(rst) {}
 
   bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Deinit(bool delete_bus = false) override;
 
   /**
    * @brief 设置使能省电模式

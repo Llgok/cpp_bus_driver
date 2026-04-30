@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2026-02-03 15:06:34
- * @LastEditTime: 2026-04-17 14:01:16
+ * @LastEditTime: 2026-04-30 11:04:20
  * @License: GPL 3.0
  */
 #pragma once
@@ -150,12 +150,11 @@ class Axp517 final : public ChipI2cGuide {
 
   explicit Axp517(std::shared_ptr<BusI2cGuide> bus,
       int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      int32_t irq = CPP_BUS_DRIVER_DEFAULT_VALUE)
-      : ChipI2cGuide(bus, address), rst_(rst), irq_(irq) {}
+      int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
-  bool Deinit() override;
+  bool Deinit(bool delete_bus = false) override;
 
   uint8_t GetDeviceId();
 
@@ -573,6 +572,6 @@ class Axp517 final : public ChipI2cGuide {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Cmd::kRwIccSetting), 0B00001000};
 
-  int32_t rst_, irq_;
+  int32_t rst_;
 };
 }  // namespace cpp_bus_driver

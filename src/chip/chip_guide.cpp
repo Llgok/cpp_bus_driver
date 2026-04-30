@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-04-20 17:49:24
+ * @LastEditTime: 2026-04-30 13:37:40
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -23,8 +23,8 @@ bool ChipI2cGuide::Init(int32_t freq_hz) {
   return true;
 }
 
-bool ChipI2cGuide::Deinit() {
-  if (!bus_->Deinit()) {
+bool ChipI2cGuide::Deinit(bool delete_bus) {
+  if (!bus_->Deinit(delete_bus)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
     return false;
   }
@@ -107,6 +107,15 @@ bool ChipSpiGuide::Init(int32_t freq_hz) {
   return true;
 }
 
+bool ChipSpiGuide::Deinit(bool delete_bus) {
+  if (!bus_->Deinit(delete_bus)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  return true;
+}
+
 bool ChipSpiGuide::InitSequence(const uint8_t* sequence, size_t length) {
   size_t index = 0;
   while (index < length) {
@@ -145,6 +154,8 @@ bool ChipQspiGuide::Init(int32_t freq_hz) {
 
   return true;
 }
+
+bool ChipQspiGuide::Deinit() { return true; }
 
 bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
   size_t index = 0;
@@ -207,6 +218,15 @@ bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
 bool ChipUartGuide::Init(int32_t baud_rate) {
   if (!bus_->Init(baud_rate)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
+    return false;
+  }
+
+  return true;
+}
+
+bool ChipUartGuide::Deinit() {
+  if (!bus_->Deinit()) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
     return false;
   }
 
@@ -315,6 +335,15 @@ bool ChipI2sGuide::Init(
 #endif
 }
 
+bool ChipI2sGuide::Deinit() {
+  if (!bus_->Deinit()) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  return true;
+}
+
 #if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
 bool ChipI2sGuide::SetClockReconfig(uint16_t mclk_multiple,
     uint32_t sample_rate_hz, BusI2sGuide::DataMode data_mode) {
@@ -362,9 +391,20 @@ bool ChipSdioGuide::Init(int32_t freq_hz) {
   return true;
 }
 
+bool ChipSdioGuide::Deinit() { return true; }
+
 bool ChipMipiGuide::Init(float freq_mhz, float lane_bit_rate_mbps) {
   if (!bus_->Init(freq_mhz, lane_bit_rate_mbps, init_sequence_format_)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
+    return false;
+  }
+
+  return true;
+}
+
+bool ChipMipiGuide::Deinit() {
+  if (!bus_->Deinit()) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
     return false;
   }
 

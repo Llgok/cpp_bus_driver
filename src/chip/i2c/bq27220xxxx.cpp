@@ -37,6 +37,19 @@ bool Bq27220xxxx::Init(int32_t freq_hz) {
   return true;
 }
 
+bool Bq27220xxxx::Deinit(bool delete_bus) {
+  if (!ChipI2cGuide::Deinit(delete_bus)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+  }
+
+  return true;
+}
+
 bool Bq27220xxxx::EnterConfigUpdate() {
   // 发送 EnterCfgUpdate 子命令 (0x0090)
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwControlStatusStart),

@@ -47,10 +47,14 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
   return true;
 }
 
-bool Sgm41562xx::Deinit() {
-  if (!ChipI2cGuide::Deinit()) {
+bool Sgm41562xx::Deinit(bool delete_bus) {
+  if (!ChipI2cGuide::Deinit(delete_bus)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
     return false;
+  }
+
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
   }
 
   return true;

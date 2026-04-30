@@ -40,6 +40,19 @@ bool Ecx336cn::Init(int32_t freq_hz) {
   return true;
 }
 
+bool Ecx336cn::Deinit(bool delete_bus) {
+  if (!ChipSpiGuide::Deinit(delete_bus)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+  }
+
+  return true;
+}
+
 bool Ecx336cn::SetPowerSaveMode(bool enable) {
   if (enable) {
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kWoPowerSaveMode), 0x0E)) {

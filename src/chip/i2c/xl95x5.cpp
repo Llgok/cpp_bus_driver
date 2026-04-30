@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-04-21 11:40:10
+ * @LastEditTime: 2026-04-30 13:41:05
  * @License: GPL 3.0
  */
 #include "xl95x5.h"
@@ -33,6 +33,19 @@ bool Xl95x5::Init(int32_t freq_hz) {
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "Get xl95x5 id success (id: %#X)\n", buffer);
+  }
+
+  return true;
+}
+
+bool Xl95x5::Deinit(bool delete_bus) {
+  if (!ChipI2cGuide::Deinit(delete_bus)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    Tool::SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
   }
 
   return true;

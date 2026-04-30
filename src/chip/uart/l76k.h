@@ -1,9 +1,8 @@
-
 /*
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-22 10:52:32
+ * @LastEditTime: 2026-04-30 13:47:17
  * @License: GPL 3.0
  */
 #pragma once
@@ -59,6 +58,7 @@ class L76k final : public ChipUartGuide, public Gnss {
       : ChipUartGuide(bus), wake_up_callback_(wake_up_callback), rst_(rst) {}
 
   bool Init(int32_t baud_rate = 9600) override;
+  bool Deinit() override;
 
   bool GetDeviceId(size_t* search_index = nullptr);
 

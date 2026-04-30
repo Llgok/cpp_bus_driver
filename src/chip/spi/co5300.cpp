@@ -41,6 +41,19 @@ bool Co5300::Init(int32_t freq_hz) {
   return true;
 }
 
+bool Co5300::Deinit() {
+  if (!ChipQspiGuide::Deinit()) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+  }
+
+  return true;
+}
+
 bool Co5300::SetRenderWindow(
     uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end) {
   x_start += x_offset_;

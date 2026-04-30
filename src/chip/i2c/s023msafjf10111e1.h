@@ -1,9 +1,8 @@
-
 /*
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2026-03-14 11:11:19
- * @LastEditTime: 2026-04-17 13:35:07
+ * @LastEditTime: 2026-04-30 13:44:20
  * @License: GPL 3.0
  */
 #pragma once
@@ -40,6 +39,7 @@ class S023msafjf10111e1 final : public ChipI2cGuide {
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Deinit(bool delete_bus = false) override;
 
   /**
    * @brief 设置数据模式

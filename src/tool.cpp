@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2026-04-24 17:53:48
+ * @LastEditTime: 2026-04-30 15:17:45
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -201,7 +201,7 @@ bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
   esp_err_t result = gpio_config(&config);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
-        "gpio_config failed (error code: %#X)\n", result);
+        "gpio_config failed (error gpio pin: %u, error code: %#X)\n", pin, result);
     return false;
   }
 
@@ -250,7 +250,8 @@ bool Tool::GpioWrite(uint32_t pin, bool value) {
   esp_err_t result = gpio_set_level(static_cast<gpio_num_t>(pin), value);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
-        "gpio_set_level failed (error code: %#X)\n", result);
+        "gpio_set_level failed (error gpio pin: %u, error code: %#X)\n", pin,
+        result);
     return false;
   }
 

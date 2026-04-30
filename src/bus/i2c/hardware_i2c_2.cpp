@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-04-29 16:23:28
+ * @LastEditTime: 2026-04-30 13:40:49
  * @License: GPL 3.0
  */
 #include "hardware_i2c_2.h"
@@ -62,7 +62,7 @@ bool HardwareI2c2::Init(uint32_t freq_hz, uint16_t address) {
   i2c_handle_->setPins(static_cast<uint8_t>(sda_), static_cast<uint8_t>(scl_));
   i2c_handle_->setClock(freq_hz);
   i2c_handle_->Init();
-  
+
 #else
   LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
   return false;
