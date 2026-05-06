@@ -10,7 +10,7 @@
 #include "../bus_guide.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 class HardwareI2c1 final : public BusI2cGuide {
  public:
   explicit HardwareI2c1(int32_t sda, int32_t scl, i2c_port_t port = I2C_NUM_0)

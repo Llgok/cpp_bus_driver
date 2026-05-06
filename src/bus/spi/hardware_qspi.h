@@ -10,7 +10,7 @@
 #include "../bus_guide.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 class HardwareQspi final : public BusQspiGuide {
  public:
   explicit HardwareQspi(int32_t data0, int32_t data1, int32_t data2,

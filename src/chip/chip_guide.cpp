@@ -235,7 +235,7 @@ bool ChipUartGuide::Deinit() {
 
 bool ChipI2sGuide::Init(
     uint16_t mclk_multiple, uint32_t sample_rate_hz, uint8_t data_bit_width) {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   if (!bus_->Init(
           [this](uint16_t mm) -> i2s_mclk_multiple_t {
             if (mm <= 128) {
@@ -283,7 +283,7 @@ bool ChipI2sGuide::Init(
   }
 
   return true;
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   if (!bus_->Init(
           [this](uint16_t ratio) -> nrf_i2s_ratio_t {
             if (ratio <= 32) {
@@ -344,7 +344,7 @@ bool ChipI2sGuide::Deinit() {
   return true;
 }
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool ChipI2sGuide::SetClockReconfig(uint16_t mclk_multiple,
     uint32_t sample_rate_hz, BusI2sGuide::DataMode data_mode) {
   if (!bus_->SetClockReconfig(

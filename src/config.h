@@ -20,10 +20,10 @@
 #include <string>
 #include <vector>
 
-#if defined CONFIG_IDF_INIT_VERSION
+#if defined(CONFIG_IDF_INIT_VERSION)
 #define CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
 
-#if defined CONFIG_IDF_TARGET_ESP32P4
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
 #define CPP_BUS_DRIVER_CHIP_ESP32P4
 #endif
 
@@ -39,18 +39,18 @@
 #include "esp_attr.h"
 #include "esp_timer.h"
 #include "sdmmc_cmd.h"
-#if defined CPP_BUS_DRIVER_CHIP_ESP32P4
+#if defined(CPP_BUS_DRIVER_CHIP_ESP32P4)
 #include "esp_lcd_mipi_dsi.h"
 #endif
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
 
-#elif defined ARDUINO
+#elif defined(ARDUINO)
 #include "Arduino.h"
 #include "SPI.h"
 #include "Wire.h"
 
-#if defined NRF52840_XXAA
+#if defined(NRF52840_XXAA)
 
 #define CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
 #define CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
@@ -66,19 +66,19 @@
 
 #include "tool.h"
 
-#if defined CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_DEBUG
+#if defined(CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_DEBUG)
 #define CPP_BUS_DRIVER_LOG_LEVEL_DEBUG
 #define CPP_BUS_DRIVER_LOG_LEVEL_INFO
 #define CPP_BUS_DRIVER_LOG_LEVEL_BUS
 #define CPP_BUS_DRIVER_LOG_LEVEL_CHIP
-#elif defined CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_INFO
+#elif defined(CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_INFO)
 #define CPP_BUS_DRIVER_LOG_LEVEL_INFO
 #define CPP_BUS_DRIVER_LOG_LEVEL_BUS
 #define CPP_BUS_DRIVER_LOG_LEVEL_CHIP
-#elif defined CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_ERROR
+#elif defined(CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_ERROR)
 #define CPP_BUS_DRIVER_LOG_LEVEL_BUS
 #define CPP_BUS_DRIVER_LOG_LEVEL_CHIP
-#elif defined CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_NONE
+#elif defined(CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_NONE)
 #else
 #define CPP_BUS_DRIVER_LOG_LEVEL_INFO
 #define CPP_BUS_DRIVER_LOG_LEVEL_BUS
@@ -103,13 +103,13 @@
 #define CPP_BUS_DRIVER_DEFAULT_MIPI_FREQ_MHZ 60
 #define CPP_BUS_DRIVER_DEFAULT_MIPI_LANE_BIT_RATE_MBPS 1000
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 #define CPP_BUS_DRIVER_DEFAULT_SDIO_FREQ_HZ SDMMC_FREQ_DEFAULT
 #endif
 
-#if defined CPP_BUS_DRIVER_CUSTOM_TEMPLATE_MAKE_UNIQUE
+#if defined(CPP_BUS_DRIVER_CUSTOM_TEMPLATE_MAKE_UNIQUE)
 namespace std {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT)
 // C++ 11
 //  通用模板（非数组类型）
 template <typename T, typename... Args,
@@ -125,7 +125,7 @@ std::unique_ptr<T> make_unique(size_t size) {
   using U = typename std::remove_extent<T>::type;  // 获取数组元素类型
   return std::unique_ptr<T>(new U[size]());        // Value initialization
 }
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_CPP14_SUPPORT
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_CPP14_SUPPORT)
 // C++ 14
 // 通用模板（非数组类型）
 template <typename T, typename... Args,

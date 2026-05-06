@@ -8,7 +8,7 @@
 #include "sgm41562xx.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
 constexpr const uint8_t Sgm41562xx::kInitSequence[];
 #endif
 

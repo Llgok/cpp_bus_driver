@@ -15,7 +15,7 @@ bool HardwareI2c2::Init(uint32_t freq_hz, uint16_t address) {
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareI2c2 config address: %#X\n", address);
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareI2c2 config port_: %d\n", port_);
 #endif
@@ -30,7 +30,7 @@ bool HardwareI2c2::Init(uint32_t freq_hz, uint16_t address) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "address is null\n");
   }
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   const i2c_config_t i2c_config = {
       .mode = I2C_MODE_MASTER,
       .sda_io_num = static_cast<gpio_num_t>(sda_),
@@ -57,7 +57,7 @@ bool HardwareI2c2::Init(uint32_t freq_hz, uint16_t address) {
         "i2c_driver_install failed (error code: %#X)\n", result);
   }
 
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
 
   i2c_handle_->setPins(static_cast<uint8_t>(sda_), static_cast<uint8_t>(scl_));
   i2c_handle_->setClock(freq_hz);
@@ -75,7 +75,7 @@ bool HardwareI2c2::Init(uint32_t freq_hz, uint16_t address) {
 }
 
 bool HardwareI2c2::Deinit(bool delete_bus) {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   esp_err_t result = i2c_driver_delete(port_);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
@@ -84,7 +84,7 @@ bool HardwareI2c2::Deinit(bool delete_bus) {
   }
 
   return true;
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
 
   i2c_handle_->end();
 
@@ -96,7 +96,7 @@ bool HardwareI2c2::Deinit(bool delete_bus) {
 }
 
 bool HardwareI2c2::Read(uint8_t* data, size_t length) {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   esp_err_t result = i2c_master_read_from_device(port_, address_, data, length,
       pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS));
   if (result != ESP_OK) {
@@ -107,7 +107,7 @@ bool HardwareI2c2::Read(uint8_t* data, size_t length) {
 
   return true;
 
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   if (!i2c_handle_->requestFrom(address_, length)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "requestFrom failed\n");
     return false;
@@ -122,7 +122,7 @@ bool HardwareI2c2::Read(uint8_t* data, size_t length) {
 }
 
 bool HardwareI2c2::Write(const uint8_t* data, size_t length) {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   esp_err_t result = i2c_master_write_to_device(port_, address_, data, length,
       pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS));
   if (result != ESP_OK) {
@@ -132,7 +132,7 @@ bool HardwareI2c2::Write(const uint8_t* data, size_t length) {
   }
 
   return true;
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   i2c_handle_->beginTransmission(address_);
 
   size_t result = i2c_handle_->write(data, length);
@@ -173,7 +173,7 @@ bool HardwareI2c2::Write(const uint8_t* data, size_t length) {
 
 bool HardwareI2c2::WriteRead(const uint8_t* write_data, size_t write_length,
     uint8_t* read_data, size_t read_length) {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   esp_err_t result = i2c_master_write_read_device(port_, address_, write_data,
       write_length, read_data, read_length,
       pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS));
@@ -185,7 +185,7 @@ bool HardwareI2c2::WriteRead(const uint8_t* write_data, size_t write_length,
 
   return true;
 
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   i2c_handle_->beginTransmission(address_);
 
   size_t result = i2c_handle_->Write(write_data, write_length);
@@ -230,7 +230,7 @@ bool HardwareI2c2::WriteRead(const uint8_t* write_data, size_t write_length,
 }
 
 bool HardwareI2c2::Probe(const uint16_t address) {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   uint8_t buffer = 0;
   esp_err_t result = i2c_master_read_from_device(port_, address, &buffer, 1,
       pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS));
@@ -240,7 +240,7 @@ bool HardwareI2c2::Probe(const uint16_t address) {
 
   return true;
 
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
 
   i2c_handle_->beginTransmission(address);
   uint8_t result = i2c_handle_->endTransmission();
@@ -271,7 +271,7 @@ bool HardwareI2c2::Probe(const uint16_t address) {
 #endif
 }
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 i2c_cmd_handle_t HardwareI2c2::CmdLinkCreate() { return i2c_cmd_link_create(); }
 
 bool HardwareI2c2::StartTransmit(

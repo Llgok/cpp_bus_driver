@@ -12,7 +12,7 @@
 namespace cpp_bus_driver {
 class HardwareI2s final : public BusI2sGuide {
  public:
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   enum class I2sMode {
     kStd,  // 标准模式
     kPdm,  // pdm模式
@@ -50,7 +50,7 @@ class HardwareI2s final : public BusI2sGuide {
   bool SetChannelEnable(
       bool enable, DataMode data_mode = DataMode::kInputOutput) override;
 
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   // 配置输入和输出设备
   HardwareI2s(int32_t data_in, int32_t data_out, int32_t ws_lrck, int32_t bclk,
       int32_t mclk,
@@ -80,7 +80,7 @@ class HardwareI2s final : public BusI2sGuide {
   int32_t data_in_, data_out_;
   int32_t ws_lrck_, bclk_, mclk_;
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   i2s_port_t port_;
   i2s_chan_handle_t chan_tx_handle_ = nullptr;
   i2s_chan_handle_t chan_rx_handle_ = nullptr;
@@ -90,13 +90,13 @@ class HardwareI2s final : public BusI2sGuide {
   uint32_t sample_rate_hz_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
   uint8_t data_bit_width_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   DataMode data_mode_;
   I2sMode i2s_mode_;
   i2s_clock_src_t clock_source_;
   i2s_slot_mode_t slot_mode_in_;
   i2s_slot_mode_t slot_mode_out_;
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   nrf_i2s_channels_t channel_;
 #endif
 };

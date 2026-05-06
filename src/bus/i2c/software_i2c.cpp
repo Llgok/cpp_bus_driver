@@ -8,7 +8,7 @@
 #include "software_i2c.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool SoftwareI2c::Init(uint32_t freq_hz, uint16_t address) {
   if (freq_hz == CPP_BUS_DRIVER_DEFAULT_VALUE) {
     freq_hz = CPP_BUS_DRIVER_DEFAULT_I2C_FREQ_HZ;

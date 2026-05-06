@@ -79,7 +79,7 @@ class Tool {
   void DelayMs(uint32_t value);
   void DelayUs(uint32_t value);
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   int64_t GetSystemTimeUs();
   int64_t GetSystemTimeMs();
 
@@ -108,7 +108,7 @@ class Tool {
   static constexpr uint16_t kMaxLogBufferSize = 1024;
 };
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 class Pwm : public Tool {
  public:
   explicit Pwm(int32_t pin) : pin_(pin) {}

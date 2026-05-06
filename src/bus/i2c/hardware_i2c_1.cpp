@@ -8,7 +8,7 @@
 #include "hardware_i2c_1.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
   if ((bus_handle_ != nullptr) && (device_handle_ != nullptr)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,

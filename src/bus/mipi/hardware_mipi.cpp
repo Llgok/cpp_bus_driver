@@ -7,8 +7,8 @@
  */
 #include "hardware_mipi.h"
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
-#if defined CPP_BUS_DRIVER_CHIP_ESP32P4
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if defined(CPP_BUS_DRIVER_CHIP_ESP32P4)
 namespace cpp_bus_driver {
 bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
     InitSequenceFormat init_sequence_format) {

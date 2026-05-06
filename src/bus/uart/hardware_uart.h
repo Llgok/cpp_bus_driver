@@ -10,7 +10,7 @@
 #include "../bus_guide.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 class HardwareUart final : public BusUartGuide {
  public:
   explicit HardwareUart(int32_t tx, int32_t rx,

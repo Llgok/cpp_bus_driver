@@ -10,13 +10,13 @@
 namespace cpp_bus_driver {
 void Tool::LogMessage(LogLevel level, const char* file_name, size_t line_number,
     const char* format, ...) {
-#if defined CPP_BUS_DRIVER_LOG_LEVEL_BUS ||  \
-    defined CPP_BUS_DRIVER_LOG_LEVEL_CHIP || \
-    defined CPP_BUS_DRIVER_LOG_LEVEL_INFO || \
-    defined CPP_BUS_DRIVER_LOG_LEVEL_DEBUG
+#if defined(CPP_BUS_DRIVER_LOG_LEVEL_BUS) ||  \
+    defined(CPP_BUS_DRIVER_LOG_LEVEL_CHIP) || \
+    defined(CPP_BUS_DRIVER_LOG_LEVEL_INFO) || \
+    defined(CPP_BUS_DRIVER_LOG_LEVEL_DEBUG)
 
   switch (level) {
-#if defined CPP_BUS_DRIVER_LOG_LEVEL_DEBUG
+#if defined(CPP_BUS_DRIVER_LOG_LEVEL_DEBUG)
     case LogLevel::kDebug: {
       va_list args;
       va_start(args, format);
@@ -30,7 +30,7 @@ void Tool::LogMessage(LogLevel level, const char* file_name, size_t line_number,
       break;
     }
 #endif
-#if defined CPP_BUS_DRIVER_LOG_LEVEL_INFO
+#if defined(CPP_BUS_DRIVER_LOG_LEVEL_INFO)
     case LogLevel::kInfo: {
       va_list args;
       va_start(args, format);
@@ -44,7 +44,7 @@ void Tool::LogMessage(LogLevel level, const char* file_name, size_t line_number,
       break;
     }
 #endif
-#if defined CPP_BUS_DRIVER_LOG_LEVEL_BUS
+#if defined(CPP_BUS_DRIVER_LOG_LEVEL_BUS)
     case LogLevel::kBus: {
       va_list args;
       va_start(args, format);
@@ -58,7 +58,7 @@ void Tool::LogMessage(LogLevel level, const char* file_name, size_t line_number,
       break;
     }
 #endif
-#if defined CPP_BUS_DRIVER_LOG_LEVEL_CHIP
+#if defined(CPP_BUS_DRIVER_LOG_LEVEL_CHIP)
     case LogLevel::kChip: {
       va_list args;
       va_start(args, format);
@@ -150,7 +150,7 @@ bool Tool::Search(const char* search_library, size_t search_library_length,
 }
 
 bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   gpio_config_t config;
   config.pin_bit_mask = BIT64(pin);
   switch (mode) {
@@ -206,7 +206,7 @@ bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
   }
 
   return true;
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   switch (mode) {
     case GpioMode::kDisable:
       nrf_gpio_cfg_default(pin);
@@ -246,7 +246,7 @@ bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
 }
 
 bool Tool::GpioWrite(uint32_t pin, bool value) {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   esp_err_t result = gpio_set_level(static_cast<gpio_num_t>(pin), value);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
@@ -265,9 +265,9 @@ bool Tool::GpioWrite(uint32_t pin, bool value) {
 }
 
 bool Tool::GpioRead(uint32_t pin) {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   return gpio_get_level(static_cast<gpio_num_t>(pin));
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   return digitalRead(pin);
 #else
   return false;
@@ -275,24 +275,24 @@ bool Tool::GpioRead(uint32_t pin) {
 }
 
 void Tool::DelayMs(uint32_t value) {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   // 默认状态下vTaskDelay在小于10ms延时的时候不精确
   // vTaskDelay(pdMS_TO_TICKS(value));
   usleep(value * 1000);
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   delay(value);
 #endif
 }
 
 void Tool::DelayUs(uint32_t value) {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   usleep(value);
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   delayMicroseconds(value);
 #endif
 }
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 
 int64_t Tool::GetSystemTimeUs() { return esp_timer_get_time(); }
 

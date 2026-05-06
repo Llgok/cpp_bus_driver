@@ -10,7 +10,7 @@
 #include "../bus_guide.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 class SoftwareI2c final : public BusI2cGuide {
  public:
   // i2c通信中，应答(ack)是低电平(0)，非应答(nack)是高电平(1)

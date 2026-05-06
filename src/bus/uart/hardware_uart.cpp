@@ -8,7 +8,7 @@
 #include "hardware_uart.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool HardwareUart::Init(int32_t baud_rate) {
   if (init_flag_) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,

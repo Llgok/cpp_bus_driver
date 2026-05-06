@@ -57,7 +57,7 @@ class ChipQspiGuide : public Tool {
   bool InitSequence(const uint32_t* sequence, size_t length);
 
  protected:
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   enum class SpiTrans {
     kModeDio = SPI_TRANS_MODE_DIO,
     kModeQio = SPI_TRANS_MODE_QIO,
@@ -113,7 +113,7 @@ class ChipI2sGuide : public Tool {
       uint8_t data_bit_width) = 0;
   virtual bool Deinit();
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   bool SetClockReconfig(uint16_t mclk_multiple, uint32_t sample_rate_hz,
       BusI2sGuide::DataMode data_mode = BusI2sGuide::DataMode::kInputOutput);
 #endif

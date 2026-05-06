@@ -8,7 +8,7 @@
 #include "aw21009xxx.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
 constexpr const uint8_t Aw21009xxx::kInitSequence[];
 #endif
 

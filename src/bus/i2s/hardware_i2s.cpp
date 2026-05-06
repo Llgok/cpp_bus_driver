@@ -8,7 +8,7 @@
 #include "hardware_i2s.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
     uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) {
   if (data_mode_ == DataMode::kInputOutput) {
@@ -899,7 +899,7 @@ bool HardwareI2s::SetChannelEnable(bool enable, DataMode data_mode) {
   return true;
 }
 
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
 bool HardwareI2s::Init(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz,
     nrf_i2s_swidth_t data_bit_width) {
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
@@ -1237,7 +1237,7 @@ bool HardwareI2s::GetWriteEventFlag() {
 #endif
 
 bool HardwareI2s::Deinit() {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   bool result = true;
 
   if (chan_tx_handle_ != nullptr) {
@@ -1278,7 +1278,7 @@ bool HardwareI2s::Deinit() {
 
   return result;
 
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   StopTransmit();
 
   nrf_i2s_pins_set(NRF_I2S, NRF_I2S_PIN_NOT_CONNECTED,

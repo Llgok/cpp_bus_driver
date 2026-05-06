@@ -8,7 +8,7 @@
 #include "bus_guide.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 i2c_cmd_handle_t BusI2cGuide::CmdLinkCreate() {
   LogMessage(LogLevel::kBus, __FILE__, __LINE__, "CmdLinkCreate failed\n");
   return nullptr;

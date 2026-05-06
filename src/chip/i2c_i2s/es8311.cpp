@@ -8,7 +8,7 @@
 #include "es8311.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
 constexpr const Es8311::ClockCoeff Es8311::kClockCoeffTable_[];
 #endif
 
@@ -680,7 +680,7 @@ bool Es8311::SetDacEqualizer(bool enable) {
   return true;
 }
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 size_t Es8311::ReadI2s(void* data, size_t byte) {
   size_t buffer = ChipI2sGuide::bus_->Read(data, byte);
 
@@ -730,7 +730,7 @@ bool Es8311::SetI2sChannelEnable(bool enable) {
 
   return true;
 }
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
 
 bool Es8311::StartTransmitI2s(
     uint32_t* write_buffer, uint32_t* read_buffer, size_t max_buffer_length) {

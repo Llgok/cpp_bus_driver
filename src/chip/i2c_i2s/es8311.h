@@ -294,7 +294,7 @@ class Es8311 final : public ChipI2cGuide, ChipI2sGuide {
    */
   bool SetDacEqualizer(bool enable);
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   /**
    * @brief 读取I2s数据
    * @param *data 数据指针
@@ -329,7 +329,7 @@ class Es8311 final : public ChipI2cGuide, ChipI2sGuide {
    * @Date 2026-04-13 16:07:26
    */
   bool SetI2sChannelEnable(bool enable);
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
 
   /**
    * @brief I2s数据流传输开始

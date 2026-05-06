@@ -12,10 +12,10 @@
 namespace cpp_bus_driver {
 class HardwareI2c2 final : public BusI2cGuide {
  public:
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   explicit HardwareI2c2(int32_t sda, int32_t scl, i2c_port_t port = I2C_NUM_0)
       : sda_(sda), scl_(scl), port_(port) {}
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   explicit HardwareI2c2(int32_t sda, int32_t scl, TwoWire* i2c_handle = &Wire)
       : sda_(sda), scl_(scl), i2c_handle_(i2c_handle) {}
 #endif
@@ -30,7 +30,7 @@ class HardwareI2c2 final : public BusI2cGuide {
 
   bool Probe(const uint16_t address) override;
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   i2c_cmd_handle_t CmdLinkCreate() override;
   bool StartTransmit(
       i2c_cmd_handle_t cmd_handle, i2c_rw_t rw, bool ack_en = true) override;
@@ -46,9 +46,9 @@ class HardwareI2c2 final : public BusI2cGuide {
  private:
   int32_t sda_, scl_;
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   i2c_port_t port_;
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   TwoWire* i2c_handle_;
 #endif
 

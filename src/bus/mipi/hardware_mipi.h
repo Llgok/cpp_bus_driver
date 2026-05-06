@@ -9,8 +9,8 @@
 
 #include "../bus_guide.h"
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
-#if defined CPP_BUS_DRIVER_CHIP_ESP32P4
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if defined(CPP_BUS_DRIVER_CHIP_ESP32P4)
 namespace cpp_bus_driver {
 class HardwareMipi final : public BusMipiGuide {
  public:

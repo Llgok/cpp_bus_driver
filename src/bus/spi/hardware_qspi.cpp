@@ -8,7 +8,7 @@
 #include "hardware_qspi.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
   if (freq_hz == CPP_BUS_DRIVER_DEFAULT_VALUE) {
     freq_hz = CPP_BUS_DRIVER_DEFAULT_QSPI_FREQ_HZ;

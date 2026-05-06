@@ -12,7 +12,7 @@
 namespace cpp_bus_driver {
 class HardwareSpi final : public BusSpiGuide {
  public:
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   explicit HardwareSpi(int32_t mosi, int32_t sclk,
       int32_t miso = CPP_BUS_DRIVER_DEFAULT_VALUE,
       spi_host_device_t port = SPI2_HOST, uint8_t mode = 0,
@@ -25,7 +25,7 @@ class HardwareSpi final : public BusSpiGuide {
         mode_(mode),
         flags_(flags),
         clock_source_(clock_source) {}
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   HardwareSpi(int32_t mosi, int32_t sclk,
       int32_t miso = CPP_BUS_DRIVER_DEFAULT_VALUE,
       NRF_SPIM_Type* port = NRF_SPIM_3, uint8_t mode = 0,
@@ -51,27 +51,27 @@ class HardwareSpi final : public BusSpiGuide {
  private:
   int32_t mosi_, sclk_, miso_, cs_, freq_hz_;
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   spi_host_device_t port_;
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   NRF_SPIM_Type* port_;
 #endif
 
   uint8_t mode_;
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   uint32_t flags_;
   spi_clock_source_t clock_source_;
 
   bool bus_init_flag_ = false;
   bool device_init_flag_ = false;
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   BitOrder bit_order_;
 #endif
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   spi_device_handle_t spi_device_ = nullptr;
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   std::unique_ptr<SPIClass> spi_handle_;
   SPISettings spi_settings_;
 #endif

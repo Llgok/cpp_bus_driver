@@ -23,7 +23,7 @@ class BusI2cGuide : public Tool {
 
   virtual bool Deinit(bool delete_bus = false);
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   virtual i2c_cmd_handle_t CmdLinkCreate();
   virtual bool StartTransmit(
       i2c_cmd_handle_t cmd_handle, i2c_rw_t rw, bool ack_en = true);
@@ -59,7 +59,7 @@ class BusI2cGuide : public Tool {
 
 class BusI2sGuide : public Tool {
  public:
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   enum class DataMode {
     kInput,   // 输入模式
     kOutput,  // 输出模式
@@ -70,7 +70,7 @@ class BusI2sGuide : public Tool {
 
   BusI2sGuide() = default;
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   virtual bool Init(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz,
       i2s_data_bit_width_t data_bit_width) = 0;
 
@@ -81,7 +81,7 @@ class BusI2sGuide : public Tool {
       uint32_t sample_rate_hz, DataMode data_mode = DataMode::kInputOutput) = 0;
   virtual bool SetChannelEnable(
       bool enable, DataMode data_mode = DataMode::kInputOutput) = 0;
-#elif defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   virtual bool Init(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz,
       nrf_i2s_swidth_t data_bit_width) = 0;
 

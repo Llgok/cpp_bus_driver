@@ -8,7 +8,7 @@
 #include "hardware_sdio.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool HardwareSdio::Init(int32_t freq_hz) {
   if (freq_hz == CPP_BUS_DRIVER_DEFAULT_VALUE) {
     freq_hz = CPP_BUS_DRIVER_DEFAULT_SDIO_FREQ_HZ;

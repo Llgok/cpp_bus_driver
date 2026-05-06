@@ -8,7 +8,7 @@
 #include "tca8418.h"
 
 namespace cpp_bus_driver {
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
 constexpr const uint8_t Tca8418::kInitSequence[];
 #endif
 
@@ -129,7 +129,7 @@ bool Tca8418::GetMultipleTouchPoint(TouchPoint& tp) {
 
   uint8_t buffer[buffer_finger_count] = {0};
 
-#if defined CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   // 地址不能自动偏移
   for (size_t i = 0; i < buffer_finger_count; i++) {
     if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoKeyEvent), &buffer[i])) {
