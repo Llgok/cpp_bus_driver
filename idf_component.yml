@@ -1,7 +1,7 @@
 version: "2.0.0"
 license: "GPL-3.0"
 description: "This is a microcontroller peripheral driver library written based on C++11 and later versions."
-url: "https://github.com/Llgok/cpp_bus_driver.git"
+url: https://github.com/Llgok/cpp_bus_driver
 
 dependencies:
   idf: '>=5.5.3'
