@@ -19,7 +19,7 @@
 #include "./chip/i2c/aw21009xxx.h"
 #include "./chip/i2c/aw862xx.h"
 #include "./chip/i2c/axp517.h"
-#include "./chip/i2c/bq27220xxxx.h"
+#include "./chip/i2c/bq27220.h"
 #include "./chip/i2c/cst2xxse.h"
 #include "./chip/i2c/ft3x68.h"
 #include "./chip/i2c/gt9895.h"
