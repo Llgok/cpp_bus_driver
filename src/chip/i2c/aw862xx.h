@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-30 13:42:47
+ * @LastEditTime: 2026-05-12 15:02:32
  * @License: GPL 3.0
  */
 #pragma once
@@ -48,6 +48,19 @@ class Aw862xx final : public ChipI2cGuide {
     kGain40,
   };
 
+  enum class RamWaveformLibrary {
+    kRamTest = 0,
+    kRam12k101635_130,
+    kRam12k0809_170,
+    kRam12k0815_170,
+    kRam12k9595_170,
+    kRam12k0832_205,
+    kRam12k0832_235,
+    kRam12k041230_235,
+    kRam12k041235_240,
+    kRam12k0832_260,
+  };
+
   enum class ForceMode {
     kActive,   // 激活模式
     kStandby,  // 待机模式
@@ -63,6 +76,21 @@ class Aw862xx final : public ChipI2cGuide {
   };
 
 #include "aw862xx_haptic_waveform_table.h"
+
+  struct RamWaveformInfo {
+    const char* name = nullptr;
+    const uint8_t* data = nullptr;
+    size_t length = 0;
+    SampleRate sample_rate = SampleRate::kRate12Khz;
+    uint16_t rated_f0_hz = 0;
+    uint8_t waveform_count = 0;
+  };
+
+  struct RamWaveformSelection {
+    uint32_t detected_f0_0p1_hz = 0;
+    RamWaveformLibrary library = RamWaveformLibrary::kRam12k0809_170;
+    RamWaveformInfo info;
+  };
 
   explicit Aw862xx(std::shared_ptr<BusI2cGuide> bus,
       int16_t address = kDeviceI2cAddressDefault,
@@ -127,6 +155,14 @@ class Aw862xx final : public ChipI2cGuide {
    * @Date 2025-03-07 17:50:35
    */
   bool SetWaveformDataSampleRate(SampleRate rate);
+
+  /**
+   * @brief 获取内置RAM波形库信息
+   * @param library 使用RamWaveformLibrary配置
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  static RamWaveformInfo GetRamWaveformInfo(RamWaveformLibrary library);
 
   /**
    * @brief 设置在播放的时候改变增益
@@ -236,6 +272,37 @@ class Aw862xx final : public ChipI2cGuide {
   uint32_t GetF0Detection();
 
   /**
+   * @brief 设置F0校准参考值，单位为0.1Hz
+   * @param f0_0p1_hz F0参考值，例如1700表示170.0Hz
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  bool SetF0Preset(uint32_t f0_0p1_hz);
+
+  /**
+   * @brief 获取当前F0校准参考值，单位为0.1Hz
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  uint32_t GetF0Preset() const { return f0_value_; }
+
+  /**
+   * @brief 根据检测到的F0选择最接近的内置RAM波形库
+   * @param f0_0p1_hz GetF0Detection()获取的F0值，单位为0.1Hz
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  static RamWaveformLibrary FindClosestRamWaveformLibrary(uint32_t f0_0p1_hz);
+
+  /**
+   * @brief 检测F0并选择最接近的内置RAM波形库
+   * @param selection 返回检测F0、波形库枚举和波形库信息
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  bool SelectRamWaveformByF0(RamWaveformSelection& selection);
+
+  /**
    * @brief 输入f0的值开始进行f0校准
    * @param f0_value GetF0Detection()函数获取的f0的值
    * @return
@@ -260,6 +327,14 @@ class Aw862xx final : public ChipI2cGuide {
   bool SetClock(bool enable);
 
   /**
+   * @brief 设置RAM初始化模式
+   * @param enable [true]：进入RAM初始化模式，[false]：退出RAM初始化模式
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  bool SetRamInit(bool enable);
+
+  /**
    * @brief 设置在RTP、kRam、TRIG模式下的增益
    * @param gain 值范围0~255
    * @return
@@ -277,6 +352,32 @@ class Aw862xx final : public ChipI2cGuide {
   bool InitRamMode(const uint8_t* waveform_data, size_t length);
 
   /**
+   * @brief 初始化内置RAM波形库
+   * @param library 使用RamWaveformLibrary配置
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  bool InitRamMode(RamWaveformLibrary library);
+
+  /**
+   * @brief 检测F0、选择最接近的内置RAM波形库并初始化RAM模式
+   * @param selection 返回检测F0、波形库枚举和波形库信息
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  bool InitRamModeByF0(RamWaveformSelection& selection);
+
+  /**
+   * @brief 获取RAM波形数据中的sequence数量
+   * @param *waveform_data RAM波形数据指针
+   * @param length RAM波形数据长度
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  static uint8_t GetRamWaveformCount(
+      const uint8_t* waveform_data, size_t length);
+
+  /**
    * @brief 设置RAM模式播放waveform数据
    * @param waveform_sequence_number
    * 值范围0~127，波形的序列号（该序列号为波形数据库里的序列号）
@@ -292,6 +393,49 @@ class Aw862xx final : public ChipI2cGuide {
   bool RunRamPlaybackWaveform(uint8_t waveform_sequence_number,
       uint8_t waveform_playback_count, uint8_t gain = 127,
       bool auto_brake = true, bool gain_bypass = true);
+
+  /**
+   * @brief 播放RAM波形，loop_count为实际播放次数
+   * @param waveform_sequence_number RAM波形sequence编号
+   * @param loop_count 播放次数，范围1~16
+   * @param gain 增益，范围0~255
+   * @param auto_brake [true]：启用自动制动，[false]：关闭自动制动
+   * @param gain_bypass [true]：播放时允许改变增益，[false]：播放时不改变增益
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  bool PlayRamWaveform(uint8_t waveform_sequence_number, uint8_t loop_count = 1,
+      uint8_t gain = 255, bool auto_brake = false, bool gain_bypass = true);
+
+  /**
+   * @brief 无限循环播放RAM波形
+   * @param waveform_sequence_number RAM波形sequence编号
+   * @param gain 增益，范围0~255
+   * @param auto_brake [true]：启用自动制动，[false]：关闭自动制动
+   * @param gain_bypass [true]：播放时允许改变增益，[false]：播放时不改变增益
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  bool PlayRamLoopWaveform(uint8_t waveform_sequence_number, uint8_t gain = 255,
+      bool auto_brake = true, bool gain_bypass = true);
+
+  /**
+   * @brief 设置RAM播放sequence槽位
+   * @param slot 槽位编号，范围0~7
+   * @param waveform_sequence_number RAM波形sequence编号
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  bool SetRamWaveformSequence(uint8_t slot, uint8_t waveform_sequence_number);
+
+  /**
+   * @brief 设置RAM播放sequence槽位循环次数寄存器值
+   * @param slot 槽位编号，范围0~7
+   * @param loop_count 寄存器循环值，范围0~15，15为无限循环
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  bool SetRamWaveformLoop(uint8_t slot, uint8_t loop_count);
 
   /**
    * @brief 设置停止标志位，设置该标志将停止当前的振动模式
@@ -380,6 +524,10 @@ class Aw862xx final : public ChipI2cGuide {
     kRwRamadata,
     kRwSysctrl1,
     kRwSysctrl2,
+    kRwSysctrl3,
+    kRwSysctrl4,
+    kRwSysctrl5,
+    kRwSysctrl6,
 
     kRwSysctrl7 = 0x49,
     kRwPwmcfg1 = 0x4C,
@@ -401,5 +549,41 @@ class Aw862xx final : public ChipI2cGuide {
 
   int32_t rst_;
   uint32_t f0_value_ = 1700;
+
+  /**
+   * @brief 解析RAM波形头，获取base地址和sequence数量
+   * @param *waveform_data RAM波形数据指针
+   * @param length RAM波形数据长度
+   * @param base_addr 返回RAM base地址
+   * @param waveform_count 返回sequence数量
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  static bool ParseRamHeader(const uint8_t* waveform_data, size_t length,
+      uint16_t& base_addr, uint8_t& waveform_count);
+
+  /**
+   * @brief 设置RAM base地址
+   * @param base_addr RAM base地址
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  bool SetRamBaseAddress(uint16_t base_addr);
+
+  /**
+   * @brief 设置RAM/RTP FIFO almost empty和almost full阈值
+   * @param base_addr RAM base地址
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  bool SetRamFifoThreshold(uint16_t base_addr);
+
+  /**
+   * @brief 设置RAM读写地址
+   * @param ram_addr RAM读写地址
+   * @return
+   * @Date 2026-05-12 15:18:00
+   */
+  bool SetRamAddress(uint16_t ram_addr);
 };
 }  // namespace cpp_bus_driver
