@@ -102,71 +102,69 @@ class Bq27220 final : public ChipI2cGuide {
 
   struct BatteryStatus {
     struct {
-      bool dsg = false;
-      bool sysdwn = false;
-      bool tda = false;
-      bool battpres = false;
-      bool auth_gd = false;
-      bool ocvgd = false;
-      bool tca = false;
-      bool chginh = false;
-      bool fc = false;
-      bool otd = false;
-      bool otc = false;
-      bool sleep = false;
-      bool ocvfail = false;
-      bool ocvcomp = false;
-      bool fd = false;
+      bool discharging = false;                    // 放电状态，DSG
+      bool system_down = false;                    // 系统下电状态，SYSDWN
+      bool terminate_discharge_alarm = false;      // 终止放电告警，TDA
+      bool battery_present = false;                // 电池存在状态，BATTPRES
+      bool authentication_good = false;            // 认证通过状态，AUTH_GD
+      bool open_circuit_voltage_good = false;      // 开路电压有效状态，OCVGD
+      bool terminate_charge_alarm = false;         // 终止充电告警，TCA
+      bool charge_inhibit = false;                 // 禁止充电状态，CHGINH
+      bool full_charged = false;                   // 满充状态，FC
+      bool over_temperature_discharge = false;     // 放电过温状态，OTD
+      bool over_temperature_charge = false;        // 充电过温状态，OTC
+      bool sleep_mode = false;                     // 睡眠模式状态，SLEEP
+      bool open_circuit_voltage_failed = false;    // 开路电压检测失败，OCVFAIL
+      bool open_circuit_voltage_complete = false;  // 开路电压检测完成，OCVCOMP
+      bool full_discharged = false;                // 满放状态，FD
     } flag;
-    uint16_t value = 0;
   };
 
   struct OperationStatus {
-    uint8_t sec = 0;
-    SecurityMode security = SecurityMode::kUnknown;
+    uint8_t security_mode_bits = 0;  // 安全模式原始位，SEC
+    SecurityMode security = SecurityMode::kUnknown;  // 解析后的安全模式
     struct {
-      bool calmd = false;
-      bool edv2 = false;
-      bool vdq = false;
-      bool init_comp = false;
-      bool smth = false;
-      bool btp_int = false;
-      bool config_update = false;
+      bool calibration_mode = false;               // 校准模式状态，CALMD
+      bool edv2_reached = false;                   // EDV2 阈值到达状态，EDV2
+      bool valid_discharge_qualified = false;      // 有效放电合格状态，VDQ
+      bool initialization_complete = false;        // 初始化完成状态，INITCOMP
+      bool smoothing_active = false;               // 平滑算法激活状态，SMTH
+      bool battery_trip_point_interrupt = false;   // 电池阈值中断状态，BTP_INT
+      bool config_update_mode = false;             // 配置更新模式状态，CFGUPDATE
     } flag;
-    uint16_t value = 0;
   };
 
   struct GaugingConfig {
-    uint16_t value = 0x0D11;
+    uint16_t raw_value = 0x0D11;  // Gauging Configuration 原始配置值
   };
 
   struct CedvProfile {
-    uint16_t full_charge_capacity = 650;
-    uint16_t design_capacity = 650;
-    uint16_t reserve_capacity = 0;
-    uint16_t near_full = 200;
-    uint8_t self_discharge_rate = 20;
-    uint16_t edv0 = 3490;
-    uint16_t edv1 = 3511;
-    uint16_t edv2 = 3535;
-    uint16_t emf = 3670;
-    uint16_t c0 = 115;
-    uint16_t r0 = 968;
-    uint16_t t0 = 4547;
-    uint16_t r1 = 4764;
-    uint8_t tc = 11;
-    uint8_t c1 = 0;
-    uint16_t dod0 = 4147;
-    uint16_t dod10 = 4002;
-    uint16_t dod20 = 3969;
-    uint16_t dod30 = 3938;
-    uint16_t dod40 = 3880;
-    uint16_t dod50 = 3824;
-    uint16_t dod60 = 3794;
-    uint16_t dod70 = 3753;
-    uint16_t dod80 = 3677;
-    uint16_t dod90 = 3574;
-    uint16_t dod100 = 3490;
+    uint16_t full_charge_capacity = 650;  // 满充容量，mAh
+    uint16_t design_capacity = 650;       // 设计容量，mAh
+    uint16_t reserve_capacity = 0;        // 保留容量，mAh
+    uint16_t near_full = 200;             // 接近满充判断阈值
+    uint8_t self_discharge_rate = 20;     // 自放电率
+    uint16_t edv0 = 3490;                 // 固定 EDV0 电压，mV
+    uint16_t edv1 = 3511;                 // 固定 EDV1 电压，mV
+    uint16_t edv2 = 3535;                 // 固定 EDV2 电压，mV
+    uint16_t emf = 3670;                  // CEDV EMF 模型参数
+    uint16_t c0 = 115;                    // CEDV C0 模型参数
+    uint16_t r0 = 968;                    // CEDV R0 模型参数
+    uint16_t t0 = 4547;                   // CEDV T0 模型参数
+    uint16_t r1 = 4764;                   // CEDV R1 模型参数
+    uint8_t tc = 11;                      // CEDV TC 模型参数
+    uint8_t c1 = 0;                       // CEDV C1 模型参数
+    uint16_t dod0 = 4147;                 // DOD 0% 对应电压，mV
+    uint16_t dod10 = 4002;                // DOD 10% 对应电压，mV
+    uint16_t dod20 = 3969;                // DOD 20% 对应电压，mV
+    uint16_t dod30 = 3938;                // DOD 30% 对应电压，mV
+    uint16_t dod40 = 3880;                // DOD 40% 对应电压，mV
+    uint16_t dod50 = 3824;                // DOD 50% 对应电压，mV
+    uint16_t dod60 = 3794;                // DOD 60% 对应电压，mV
+    uint16_t dod70 = 3753;                // DOD 70% 对应电压，mV
+    uint16_t dod80 = 3677;                // DOD 80% 对应电压，mV
+    uint16_t dod90 = 3574;                // DOD 90% 对应电压，mV
+    uint16_t dod100 = 3490;               // DOD 100% 对应电压，mV
   };
 
   /**

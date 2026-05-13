@@ -163,22 +163,21 @@ bool Bq27220::GetBatteryStatus(BatteryStatus& status) {
   if (!ReadU16(Cmd::kBatteryStatus, &value)) {
     return false;
   }
-  status.value = value;
-  status.flag.dsg = value & (1U << 0);
-  status.flag.sysdwn = value & (1U << 1);
-  status.flag.tda = value & (1U << 2);
-  status.flag.battpres = value & (1U << 3);
-  status.flag.auth_gd = value & (1U << 4);
-  status.flag.ocvgd = value & (1U << 5);
-  status.flag.tca = value & (1U << 6);
-  status.flag.chginh = value & (1U << 8);
-  status.flag.fc = value & (1U << 9);
-  status.flag.otd = value & (1U << 10);
-  status.flag.otc = value & (1U << 11);
-  status.flag.sleep = value & (1U << 12);
-  status.flag.ocvfail = value & (1U << 13);
-  status.flag.ocvcomp = value & (1U << 14);
-  status.flag.fd = value & (1U << 15);
+  status.flag.discharging = value & (1U << 0);
+  status.flag.system_down = value & (1U << 1);
+  status.flag.terminate_discharge_alarm = value & (1U << 2);
+  status.flag.battery_present = value & (1U << 3);
+  status.flag.authentication_good = value & (1U << 4);
+  status.flag.open_circuit_voltage_good = value & (1U << 5);
+  status.flag.terminate_charge_alarm = value & (1U << 6);
+  status.flag.charge_inhibit = value & (1U << 8);
+  status.flag.full_charged = value & (1U << 9);
+  status.flag.over_temperature_discharge = value & (1U << 10);
+  status.flag.over_temperature_charge = value & (1U << 11);
+  status.flag.sleep_mode = value & (1U << 12);
+  status.flag.open_circuit_voltage_failed = value & (1U << 13);
+  status.flag.open_circuit_voltage_complete = value & (1U << 14);
+  status.flag.full_discharged = value & (1U << 15);
   return true;
 }
 
@@ -187,16 +186,15 @@ bool Bq27220::GetOperationStatus(OperationStatus& status) {
   if (!ReadU16(Cmd::kOperationStatus, &value)) {
     return false;
   }
-  status.value = value;
-  status.flag.calmd = value & (1U << 0);
-  status.sec = (value >> 1) & 0x03;
-  status.security = static_cast<SecurityMode>(status.sec);
-  status.flag.edv2 = value & (1U << 3);
-  status.flag.vdq = value & (1U << 4);
-  status.flag.init_comp = value & (1U << 5);
-  status.flag.smth = value & (1U << 6);
-  status.flag.btp_int = value & (1U << 7);
-  status.flag.config_update = value & (1U << 10);
+  status.flag.calibration_mode = value & (1U << 0);
+  status.security_mode_bits = (value >> 1) & 0x03;
+  status.security = static_cast<SecurityMode>(status.security_mode_bits);
+  status.flag.edv2_reached = value & (1U << 3);
+  status.flag.valid_discharge_qualified = value & (1U << 4);
+  status.flag.initialization_complete = value & (1U << 5);
+  status.flag.smoothing_active = value & (1U << 6);
+  status.flag.battery_trip_point_interrupt = value & (1U << 7);
+  status.flag.config_update_mode = value & (1U << 10);
   return true;
 }
 
@@ -508,7 +506,8 @@ bool Bq27220::ApplyBatteryProfile(
 
   bool result = true;
   result &=
-      WriteDataMemory(DataMemoryAddress::kGaugingConfiguration, config.value);
+      WriteDataMemory(DataMemoryAddress::kGaugingConfiguration,
+          config.raw_value);
   result &= WriteDataMemory(
       DataMemoryAddress::kFullChargeCapacity, profile.full_charge_capacity);
   result &= WriteDataMemory(
@@ -599,7 +598,8 @@ bool Bq27220::WaitConfigUpdate(bool enabled, uint32_t timeout_ms) {
   uint32_t elapsed_ms = 0;
   while (elapsed_ms <= timeout_ms) {
     OperationStatus status;
-    if (GetOperationStatus(status) && status.flag.config_update == enabled) {
+    if (GetOperationStatus(status) &&
+        status.flag.config_update_mode == enabled) {
       return true;
     }
     DelayMs(10);
@@ -655,7 +655,7 @@ bool Bq27220::WriteDataMemoryBytes(
   if (!GetOperationStatus(status)) {
     return false;
   }
-  if (!status.flag.config_update) {
+  if (!status.flag.config_update_mode) {
     if (!EnterConfigUpdate()) {
       return false;
     }
