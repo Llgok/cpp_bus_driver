@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2026-04-30 15:17:45
+ * @LastEditTime: 2026-05-14 21:57:58
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -256,7 +256,7 @@ bool Tool::GpioWrite(uint32_t pin, bool value) {
   }
 
   return true;
-#elif define CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   digitalWrite(pin, value);
   return true;
 #else
