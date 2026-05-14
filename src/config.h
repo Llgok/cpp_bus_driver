@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2026-04-15 10:18:31
+ * @LastEditTime: 2026-05-14 18:30:53
  * @License: GPL 3.0
  */
 #pragma once
@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <functional>
 #include <iostream>
