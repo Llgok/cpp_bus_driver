@@ -8,75 +8,74 @@
 #include "tool.h"
 
 namespace cpp_bus_driver {
-void Tool::LogMessage(LogLevel level, const char* file_name, size_t line_number,
-    const char* format, ...) {
-#if defined(CPP_BUS_DRIVER_LOG_LEVEL_BUS) ||  \
-    defined(CPP_BUS_DRIVER_LOG_LEVEL_CHIP) || \
-    defined(CPP_BUS_DRIVER_LOG_LEVEL_INFO) || \
-    defined(CPP_BUS_DRIVER_LOG_LEVEL_DEBUG)
+namespace {
 
+/**
+ * @brief 获取日志等级名称
+ * @param level 日志等级
+ * @return 日志等级名称
+ * @Date 2026-05-15 14:40:00
+ */
+const char* LogLevelName(Tool::LogLevel level) {
+  switch (level) {
+    case Tool::LogLevel::kDebug:
+      return "Debug";
+    case Tool::LogLevel::kInfo:
+      return "Info";
+    case Tool::LogLevel::kBus:
+      return "Bus";
+    case Tool::LogLevel::kChip:
+      return "Chip";
+    default:
+      return "Unknown";
+  }
+}
+
+/**
+ * @brief 判断指定日志等级是否允许输出
+ * @param level 日志等级
+ * @return 允许输出返回 true，否则返回 false
+ * @Date 2026-05-15 14:40:00
+ */
+bool IsLogLevelEnabled(Tool::LogLevel level) {
   switch (level) {
 #if defined(CPP_BUS_DRIVER_LOG_LEVEL_DEBUG)
-    case LogLevel::kDebug: {
-      va_list args;
-      va_start(args, format);
-      auto buffer = std::make_unique<char[]>(kMaxLogBufferSize);
-      snprintf(buffer.get(), kMaxLogBufferSize,
-          "[cpp_bus_driver log][Debug]->[%s][%u line]: %s", file_name,
-          line_number, format);
-      vprintf(buffer.get(), args);
-      va_end(args);
-
-      break;
-    }
+    case Tool::LogLevel::kDebug:
+      return true;
 #endif
 #if defined(CPP_BUS_DRIVER_LOG_LEVEL_INFO)
-    case LogLevel::kInfo: {
-      va_list args;
-      va_start(args, format);
-      auto buffer = std::make_unique<char[]>(kMaxLogBufferSize);
-      snprintf(buffer.get(), kMaxLogBufferSize,
-          "[cpp_bus_driver log][Info]->[%s][%u line]: %s", file_name,
-          line_number, format);
-      vprintf(buffer.get(), args);
-      va_end(args);
-
-      break;
-    }
+    case Tool::LogLevel::kInfo:
+      return true;
 #endif
 #if defined(CPP_BUS_DRIVER_LOG_LEVEL_BUS)
-    case LogLevel::kBus: {
-      va_list args;
-      va_start(args, format);
-      auto buffer = std::make_unique<char[]>(kMaxLogBufferSize);
-      snprintf(buffer.get(), kMaxLogBufferSize,
-          "[cpp_bus_driver log][Bus]->[%s][%u line]: %s", file_name,
-          line_number, format);
-      vprintf(buffer.get(), args);
-      va_end(args);
-
-      break;
-    }
+    case Tool::LogLevel::kBus:
+      return true;
 #endif
 #if defined(CPP_BUS_DRIVER_LOG_LEVEL_CHIP)
-    case LogLevel::kChip: {
-      va_list args;
-      va_start(args, format);
-      auto buffer = std::make_unique<char[]>(kMaxLogBufferSize);
-      snprintf(buffer.get(), kMaxLogBufferSize,
-          "[cpp_bus_driver log][Chip]->[%s][%u line]: %s", file_name,
-          line_number, format);
-      vprintf(buffer.get(), args);
-      va_end(args);
-
-      break;
-    }
+    case Tool::LogLevel::kChip:
+      return true;
 #endif
     default:
-      break;
+      return false;
+  }
+}
+
+}  // namespace
+
+void Tool::LogMessage(LogLevel level, const char* file_name, size_t line_number,
+    const char* format, ...) {
+  if (!IsLogLevelEnabled(level)) {
+    return;
   }
 
-#endif
+  va_list args;
+  va_start(args, format);
+  auto buffer = std::make_unique<char[]>(kMaxLogBufferSize);
+  snprintf(buffer.get(), kMaxLogBufferSize,
+      "[cpp_bus_driver log][%s]->[%s][%u line]: %s", LogLevelName(level),
+      file_name, static_cast<unsigned int>(line_number), format);
+  vprintf(buffer.get(), args);
+  va_end(args);
 }
 
 bool Tool::Search(const uint8_t* search_library, size_t search_library_length,
@@ -201,7 +200,8 @@ bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
   esp_err_t result = gpio_config(&config);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
-        "gpio_config failed (error gpio pin: %u, error code: %#X)\n", pin, result);
+        "gpio_config failed (error gpio pin: %u, error code: %#X)\n", pin,
+        result);
     return false;
   }
 
