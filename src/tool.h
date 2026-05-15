@@ -10,6 +10,34 @@
 #include "config.h"
 
 namespace cpp_bus_driver {
+namespace safe_convert {
+
+/**
+ * @brief 安全地将字符串转换为整数
+ * @param input 输入字符串
+ * @param output 输出转换后的整数
+ * @return 转换成功返回 true
+ */
+bool SafeStringToLong(const std::string& input, long* output);
+
+/**
+ * @brief 安全地将字符串转换为浮点数
+ * @param input 输入字符串
+ * @param output 输出转换后的浮点数
+ * @return 转换成功返回 true
+ */
+bool SafeStringToFloat(const std::string& input, float* output);
+
+/**
+ * @brief 安全地将字符串转换为双精度浮点数
+ * @param input 输入字符串
+ * @param output 输出转换后的双精度浮点数
+ * @return 转换成功返回 true
+ */
+bool SafeStringToDouble(const std::string& input, double* output);
+
+}  // namespace safe_convert
+
 class Tool {
  public:
   enum class LogLevel {
@@ -66,10 +94,6 @@ class Tool {
   bool Search(const char* search_library, size_t search_library_length,
       const char* search_sample, size_t sample_length,
       size_t* search_index = nullptr);
-
-  bool SafeStoi(const std::string& input, long* output);
-  bool SafeStof(const std::string& input, float* output);
-  bool SafeStod(const std::string& input, double* output);
 
   bool SetGpioMode(
       uint32_t pin, GpioMode mode, GpioStatus status = GpioStatus::kDisable);
@@ -166,102 +190,65 @@ class Pwm : public Tool {
 
 #endif
 
-class Gnss : public Tool {
+class GnssParser : public Tool {
  public:
-  struct Rmc {
-    struct {
-      uint8_t hour = -1;    // 小时
-      uint8_t minute = -1;  // 分钟
-      float second = -1;    // 秒
+  // UTC 时间
+  struct Utc {
+    uint8_t hour = -1;
+    uint8_t minute = -1;
+    float second = -1;
+    bool update_flag = false;
+  };
 
-      bool update_flag = false;
-    } utc;
+  // UTC 日期
+  struct Date {
+    uint8_t day = -1;
+    uint8_t month = -1;
+    uint16_t year = -1;
+    bool update_flag = false;
+  };
+
+  // 经纬度坐标，degrees_minutes 为十进制度
+  struct Coordinate {
+    uint8_t degrees = -1;
+    float minutes = -1;
+    double degrees_minutes = -1;
+    std::string direction;
+    bool update_flag = false;
+    bool direction_update_flag = false;
+  };
+
+  // 纬度和经度组合
+  struct Location {
+    Coordinate lat;
+    Coordinate lon;
+  };
+
+  struct Rmc {
+    Utc utc;
 
     // 定位系统状态。
     // A = 数据有效
     // V = 无效
     // D = 差分
     std::string location_status;
+    bool location_status_update_flag = false;
 
-    struct {
-      struct {
-        uint8_t degrees = -1;         // 度
-        float minutes = -1;           // 分
-        double degrees_minutes = -1;  // 带小数的度分转度
+    Location location;
 
-        // 纬度方向
-        // N = 北
-        // S = 南
-        std::string direction;
+    float speed_over_ground_knots = -1;
+    float course_over_ground_degree = -1;
+    float magnetic_variation = -1;
+    std::string magnetic_variation_direction;
+    std::string mode_indicator;
+    std::string navigational_status;
 
-        bool update_flag = false;            // 度分更新标志
-        bool direction_update_flag = false;  // 方向更新标志
-      } lat;
-
-      struct {
-        uint8_t degrees = -1;
-        float minutes = -1;
-        double degrees_minutes = -1;
-
-        // 经度方向
-        // E = 东
-        // W = 西
-        std::string direction;
-
-        bool update_flag = false;
-        bool direction_update_flag = false;
-      } lon;
-
-    } location;
-
-    struct {
-      uint8_t day = -1;    // 日
-      uint8_t month = -1;  // 月
-      uint8_t year = -1;   // 年
-
-      bool update_flag = false;
-    } data;
+    Date data;
   };
 
   struct Gga {
-    struct {
-      uint8_t hour = -1;    // 小时
-      uint8_t minute = -1;  // 分钟
-      float second = -1;    // 秒
-
-      bool update_flag = false;
-    } utc;
-
-    struct {
-      struct {
-        uint8_t degrees = -1;         // 度
-        float minutes = -1;           // 分
-        double degrees_minutes = -1;  // 带小数的度分转度
-
-        // 纬度方向
-        // N = 北
-        // S = 南
-        std::string direction;
-
-        bool update_flag = false;            // 度分更新标志
-        bool direction_update_flag = false;  // 方向更新标志
-      } lat;
-
-      struct {
-        uint8_t degrees = -1;
-        float minutes = -1;
-        double degrees_minutes = -1;
-
-        // 经度方向
-        // E = 东
-        // W = 西
-        std::string direction;
-
-        bool update_flag = false;
-        bool direction_update_flag = false;
-      } lon;
-
-    } location;
+    Utc utc;
+    Location location;
 
     // kGps 定位模式/状态指示
     // 0 = 定位不可用或无效
@@ -272,9 +259,100 @@ class Gnss : public Tool {
     uint8_t online_satellite_count = -1;  // 在线的卫星数量
 
     float hdop = -1;
+    float altitude = -1;
+    std::string altitude_unit;
+    float geoid_separation = -1;
+    std::string geoid_separation_unit;
+    float differential_age = -1;
+    std::string differential_station_id;
   };
 
-  Gnss() = default;
+  struct Gsv {
+    // GSV 中单颗可见卫星的信息
+    struct Satellite {
+      uint16_t id = -1;
+      int16_t elevation = -1;
+      int16_t azimuth = -1;
+      int16_t cn0 = -1;
+      uint8_t signal_id = -1;
+      std::string talker_id;
+    };
+
+    uint8_t total_sentence_count = -1;
+    uint8_t sentence_number = -1;
+    uint8_t total_satellite_count = -1;
+    uint8_t signal_id = -1;
+    std::string talker_id;
+    std::vector<Satellite> satellites;
+    bool update_flag = false;
+  };
+
+  struct Gsa {
+    // 单条 GSA 语句信息，不同星系可能输出多条
+    struct Sentence {
+      std::string talker_id;
+      std::string selection_mode;
+      uint8_t fix_mode = -1;
+      std::vector<uint16_t> satellite_ids;
+      float pdop = -1;
+      float hdop = -1;
+      float vdop = -1;
+      uint8_t system_id = -1;
+    };
+
+    std::vector<Sentence> sentences;
+    bool update_flag = false;
+  };
+
+  struct Vtg {
+    float course_true_degree = -1;
+    float course_magnetic_degree = -1;
+    float speed_knots = -1;
+    float speed_kmh = -1;
+    std::string mode_indicator;
+    bool update_flag = false;
+  };
+
+  struct Gll {
+    Location location;
+    Utc utc;
+    std::string location_status;
+    std::string mode_indicator;
+    bool update_flag = false;
+  };
+
+  struct Txt {
+    struct Sentence {
+      uint8_t total_sentence_count = -1;
+      uint8_t sentence_number = -1;
+      uint8_t text_id = -1;
+      std::string text;
+    };
+
+    std::vector<Sentence> sentences;
+    bool update_flag = false;
+  };
+
+  struct Zda {
+    Utc utc;
+    Date date;
+    int8_t local_hour = -1;
+    int8_t local_minute = -1;
+    bool update_flag = false;
+  };
+
+  struct Info {
+    Rmc rmc;
+    Gga gga;
+    Gsv gsv;
+    Gsa gsa;
+    Vtg vtg;
+    Gll gll;
+    Txt txt;
+    Zda zda;
+  };
+
+  GnssParser() = default;
 
   /**
    * @brief 解析rmc信息
@@ -295,6 +373,69 @@ class Gnss : public Tool {
    * @Date 2025-02-18 11:54:34
    */
   bool ParseGgaInfo(const uint8_t* data, size_t length, Gga& gga);
+
+  /**
+   * @brief 解析 GSV 可见卫星信息
+   * @param data 要解析的 NMEA 数据
+   * @param length 数据长度
+   * @param gsv 返回解析后的可见卫星信息
+   * @return 成功解析到至少一个字段返回 true
+   */
+  bool ParseGsvInfo(const uint8_t* data, size_t length, Gsv& gsv);
+
+  /**
+   * @brief 解析 GSA DOP 和参与定位的卫星信息
+   * @param data 要解析的 NMEA 数据
+   * @param length 数据长度
+   * @param gsa 返回解析后的 GSA 信息
+   * @return 成功解析到至少一个字段返回 true
+   */
+  bool ParseGsaInfo(const uint8_t* data, size_t length, Gsa& gsa);
+
+  /**
+   * @brief 解析 VTG 地面航向和速度信息
+   * @param data 要解析的 NMEA 数据
+   * @param length 数据长度
+   * @param vtg 返回解析后的 VTG 信息
+   * @return 成功解析到至少一个字段返回 true
+   */
+  bool ParseVtgInfo(const uint8_t* data, size_t length, Vtg& vtg);
+
+  /**
+   * @brief 解析 GLL 经纬度、UTC 和定位状态信息
+   * @param data 要解析的 NMEA 数据
+   * @param length 数据长度
+   * @param gll 返回解析后的 GLL 信息
+   * @return 成功解析到至少一个字段返回 true
+   */
+  bool ParseGllInfo(const uint8_t* data, size_t length, Gll& gll);
+
+  /**
+   * @brief 解析 TXT 文本消息
+   * @param data 要解析的 NMEA 数据
+   * @param length 数据长度
+   * @param txt 返回解析后的文本消息集合
+   * @return 成功解析到至少一个字段返回 true
+   */
+  bool ParseTxtInfo(const uint8_t* data, size_t length, Txt& txt);
+
+  /**
+   * @brief 解析 ZDA UTC 日期时间信息
+   * @param data 要解析的 NMEA 数据
+   * @param length 数据长度
+   * @param zda 返回解析后的 ZDA 信息
+   * @return 成功解析到至少一个字段返回 true
+   */
+  bool ParseZdaInfo(const uint8_t* data, size_t length, Zda& zda);
+
+  /**
+   * @brief 一次解析 RMC、GGA、GSV、GSA、VTG、GLL、TXT 和 ZDA 信息
+   * @param data 要解析的 NMEA 数据
+   * @param length 数据长度
+   * @param info 返回解析后的完整 GNSS 信息
+   * @return 成功解析到任意一种信息返回 true
+   */
+  bool ParseInfo(const uint8_t* data, size_t length, Info& info);
 };
 
 }  // namespace cpp_bus_driver

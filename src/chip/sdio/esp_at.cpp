@@ -1111,7 +1111,12 @@ bool EspAt::GetRealTime(RealTime& time, int16_t timeout_ms) {
           std::strlen(buffer_cmd), &buffer_index)) {
     std::string buffer(buffer_data.begin() + buffer_Index_used,
         buffer_data.begin() + buffer_Index_used + buffer_index);
-    time.day = std::stoi(buffer.c_str());
+    long buffer_value = 0;
+    if (!safe_convert::SafeStringToLong(buffer, &buffer_value) ||
+        buffer_value < 0 || buffer_value > 0xFF) {
+      return false;
+    }
+    time.day = buffer_value;
   }
   buffer_Index_used =
       buffer_Index_used + buffer_index + std::strlen(buffer_cmd);
@@ -1140,7 +1145,12 @@ bool EspAt::GetRealTime(RealTime& time, int16_t timeout_ms) {
           std::strlen(buffer_cmd), &buffer_index)) {
     std::string buffer(buffer_data.begin() + buffer_Index_used,
         buffer_data.begin() + buffer_Index_used + buffer_index);
-    time.year = std::stoi(buffer.c_str());
+    long buffer_value = 0;
+    if (!safe_convert::SafeStringToLong(buffer, &buffer_value) ||
+        buffer_value < 0 || buffer_value > 0xFFFF) {
+      return false;
+    }
+    time.year = buffer_value;
   }
   buffer_Index_used =
       buffer_Index_used + buffer_index + std::strlen(buffer_cmd);
@@ -1151,7 +1161,12 @@ bool EspAt::GetRealTime(RealTime& time, int16_t timeout_ms) {
           std::strlen(buffer_cmd), &buffer_index)) {
     std::string buffer(buffer_data.begin() + buffer_Index_used,
         buffer_data.begin() + buffer_Index_used + buffer_index);
-    time.hour = std::stoi(buffer.c_str());
+    long buffer_value = 0;
+    if (!safe_convert::SafeStringToLong(buffer, &buffer_value) ||
+        buffer_value < 0 || buffer_value > 0xFF) {
+      return false;
+    }
+    time.hour = buffer_value;
   }
   buffer_Index_used =
       buffer_Index_used + buffer_index + std::strlen(buffer_cmd);
@@ -1161,7 +1176,12 @@ bool EspAt::GetRealTime(RealTime& time, int16_t timeout_ms) {
           std::strlen(buffer_cmd), &buffer_index)) {
     std::string buffer(buffer_data.begin() + buffer_Index_used,
         buffer_data.begin() + buffer_Index_used + buffer_index);
-    time.minute = std::stoi(buffer.c_str());
+    long buffer_value = 0;
+    if (!safe_convert::SafeStringToLong(buffer, &buffer_value) ||
+        buffer_value < 0 || buffer_value > 0xFF) {
+      return false;
+    }
+    time.minute = buffer_value;
   }
   buffer_Index_used =
       buffer_Index_used + buffer_index + std::strlen(buffer_cmd);
@@ -1172,7 +1192,12 @@ bool EspAt::GetRealTime(RealTime& time, int16_t timeout_ms) {
           std::strlen(buffer_cmd), &buffer_index)) {
     std::string buffer(buffer_data.begin() + buffer_Index_used,
         buffer_data.begin() + buffer_Index_used + buffer_index);
-    time.second = std::stoi(buffer.c_str());
+    long buffer_value = 0;
+    if (!safe_convert::SafeStringToLong(buffer, &buffer_value) ||
+        buffer_value < 0 || buffer_value > 0xFF) {
+      return false;
+    }
+    time.second = buffer_value;
   }
   buffer_Index_used =
       buffer_Index_used + buffer_index + std::strlen(buffer_cmd);
