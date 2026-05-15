@@ -47,8 +47,8 @@ class HardwareMipi final : public BusMipiGuide {
 
   bool Read(int32_t cmd, void* data, size_t byte) override;
   bool Write(int32_t cmd, const void* data, size_t byte) override;
-  bool Write(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end,
-      const void* data) override;
+  bool Write(
+      int x_start, int y_start, int x_end, int y_end, const void* data) override;
   bool Deinit() override;
 
   bool set_device_handle(esp_lcd_panel_handle_t handle);

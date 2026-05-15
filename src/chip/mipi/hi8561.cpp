@@ -169,9 +169,9 @@ bool Hi8561::SetCabcMode(CabcMode mode) {
   return true;
 }
 
-bool Hi8561::SendColorStreamCoordinate(uint16_t x_start, uint16_t x_end,
-    uint16_t y_start, uint16_t y_end, const void* data) {
-  if (!bus_->Write(x_start, x_end, y_start, y_end, data)) {
+bool Hi8561::SendColorStreamCoordinate(
+    int x_start, int y_start, int x_end, int y_end, const void* data) {
+  if (!bus_->Write(x_start, y_start, x_end, y_end, data)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

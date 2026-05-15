@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-04-22 17:36:46
+ * @LastEditTime: 2026-05-15 09:41:59
  * @License: GPL 3.0
  */
 #include "co5300.h"
@@ -54,11 +54,10 @@ bool Co5300::Deinit() {
   return true;
 }
 
-bool Co5300::SetRenderWindow(
-    uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end) {
+bool Co5300::SetRenderWindow(int x_start, int y_start, int x_end, int y_end) {
   x_start += x_offset_;
-  x_end += x_offset_;
   y_start += y_offset_;
+  x_end += x_offset_;
   y_end += y_offset_;
 
   uint8_t buffer[] = {
@@ -140,7 +139,7 @@ bool Co5300::SendColorStream(
   // y_end 是最后一个像素的坐标 例如： 如果 x=10, w=5，那么像素列是 10, 11, 12,
   // 13, 14，所以 x_end 应该是 14（即 x + w - 1） 如果不 -1，x_end 会是
   // 15，可能超出实际范围或导致多写一个像素
-  if (!SetRenderWindow(x, x + w - 1, y, y + h - 1)) {
+  if (!SetRenderWindow(x, y, x + w - 1, y + h - 1)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRenderWindow failed\n");
     return false;
   }

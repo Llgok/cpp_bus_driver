@@ -57,15 +57,15 @@ class Rm69a10 final : public ChipMipiGuide {
   /**
    * @brief 发送色彩流以坐标的形式
    * @param x_start x坐标开始点
-   * @param x_end x坐标结束点
    * @param y_start y坐标开始点
-   * @param y_end x坐标结束点
+   * @param x_end x坐标结束点
+   * @param y_end y坐标结束点
    * @param *data 颜色数据
    * @return
    * @Date 2026-01-24 17:06:45
    */
-  bool SendColorStreamCoordinate(uint16_t x_start, uint16_t x_end,
-      uint16_t y_start, uint16_t y_end, const void* data);
+  bool SendColorStreamCoordinate(
+      int x_start, int y_start, int x_end, int y_end, const void* data);
 
  private:
   enum class Cmd {

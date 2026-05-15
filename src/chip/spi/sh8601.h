@@ -55,14 +55,14 @@ class Sh8601 final : public ChipQspiGuide {
   /**
    * @brief 设置需要渲染的窗口
    * @param x_start x坐标开始点
-   * @param x_end x坐标结束点
    * @param y_start y坐标开始点
-   * @param y_end x坐标结束点
+   * @param x_end x坐标结束点
+   * @param y_end y坐标结束点
    * @return
    * @Date 2025-06-30 11:10:12
    */
   bool SetRenderWindow(
-      uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end);
+      int x_start, int y_start, int x_end, int y_end);
 
   /**
    * @brief 设置写入流的模式

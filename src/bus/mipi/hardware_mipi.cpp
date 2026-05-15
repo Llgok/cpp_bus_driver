@@ -260,10 +260,10 @@ bool HardwareMipi::set_device_handle(esp_lcd_panel_handle_t handle) {
 
 esp_lcd_panel_handle_t HardwareMipi::device_handle() { return device_handle_; }
 
-bool HardwareMipi::Write(uint16_t x_start, uint16_t x_end, uint16_t y_start,
-    uint16_t y_end, const void* data) {
+bool HardwareMipi::Write(
+    int x_start, int y_start, int x_end, int y_end, const void* data) {
   esp_err_t result = esp_lcd_panel_draw_bitmap(
-      device_handle_, static_cast<int>(x_start), x_end, y_start, y_end, data);
+      device_handle_, x_start, y_start, x_end, y_end, data);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__,
         "esp_lcd_panel_draw_bitmap failed\n");
