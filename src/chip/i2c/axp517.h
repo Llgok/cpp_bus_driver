@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2026-02-03 15:06:34
- * @LastEditTime: 2026-04-30 11:04:20
+ * @LastEditTime: 2026-05-16 09:49:10
  * @License: GPL 3.0
  */
 #pragma once
@@ -44,50 +44,46 @@ class Axp517 final : public ChipI2cGuide {
     kDcp = 3,  // 专用充电端口
   };
 
-  // struct IrqStatus0
-  // {
-  //     bool vbus_fault_flag = false;
-  //     bool vbus_over_voltage_flag = false;
-  //     bool boost_over_voltage_flag = false;
-  //     bool charge_to_normal_flag = false;
-  //     bool gauge_new_soc_flag = false;
-  //     bool soc_drop_to_shutdown_level_flag = false;
-  //     bool soc_drop_to_warning_level_flag = false;
-  // };
+  struct IrqStatus0 {
+    bool vbus_fault_flag = false;
+    bool vbus_over_voltage_flag = false;
+    bool boost_over_voltage_flag = false;
+    bool charge_to_normal_flag = false;
+    bool gauge_new_soc_flag = false;
+    bool soc_drop_to_shutdown_level_flag = false;
+    bool soc_drop_to_warning_level_flag = false;
+  };
 
-  // struct IrqStatus1
-  // {
-  //     bool pwr_on_positive_edge_flag = false;
-  //     bool pwr_on_negative_edge_flag = false;
-  //     bool pwr_on_long_press_flag = false;
-  //     bool pwr_on_short_press_flag = false;
-  //     bool battery_remove_flag = false;
-  //     bool battery_insert_flag = false;
-  //     bool vbus_remove_flag = false;
-  //     bool vbus_insert_flag = false;
-  // };
+  struct IrqStatus1 {
+    bool pwr_on_positive_edge_flag = false;
+    bool pwr_on_negative_edge_flag = false;
+    bool pwr_on_long_press_flag = false;
+    bool pwr_on_short_press_flag = false;
+    bool battery_remove_flag = false;
+    bool battery_insert_flag = false;
+    bool vbus_remove_flag = false;
+    bool vbus_insert_flag = false;
+  };
 
-  // struct IrqStatus2
-  // {
-  //     bool battery_over_voltage_flag = false;
-  //     bool charger_safety_timer_expire_flag = false;
-  //     bool die_over_temperature_level1_flag = false;
-  //     bool charger_start_flag = false;
-  //     bool battery_charge_done_flag = false;
-  //     bool batfet_over_current_flag = false;
-  //     bool watchdog_expire_flag = false;
-  // };
+  struct IrqStatus2 {
+    bool battery_over_voltage_flag = false;
+    bool charger_safety_timer_expire_flag = false;
+    bool die_over_temperature_level1_flag = false;
+    bool charger_start_flag = false;
+    bool battery_charge_done_flag = false;
+    bool batfet_over_current_flag = false;
+    bool watchdog_expire_flag = false;
+  };
 
-  // struct IrqStatus3
-  // {
-  //     bool battery_under_temperature_work_flag = false;
-  //     bool battery_over_temperature_work_flag = false;
-  //     bool battery_under_temperature_charge_flag = false;
-  //     bool battery_over_temperature_charge_flag = false;
-  //     bool battery_over_temperature_quit_flag = false;
-  //     bool bc1_2_detect_result_change_flag = false;
-  //     bool bc1_2_detect_finished_flag = false;
-  // };
+  struct IrqStatus3 {
+    bool battery_under_temperature_work_flag = false;
+    bool battery_over_temperature_work_flag = false;
+    bool battery_under_temperature_charge_flag = false;
+    bool battery_over_temperature_charge_flag = false;
+    bool battery_over_temperature_quit_flag = false;
+    bool bc1_2_detect_result_change_flag = false;
+    bool bc1_2_detect_finished_flag = false;
+  };
 
   enum class AdcData {
     kChipTemperatureCelsius = 0,
@@ -174,24 +170,24 @@ class Axp517 final : public ChipI2cGuide {
    */
   bool GetChipStatus1(ChipStatus1& status);
 
-  // /**
-  //  * @brief 获取所有中断状态
-  //  * @param &status0 中断状态0
-  //  * @param &status1 中断状态1
-  //  * @param &status2 中断状态2
-  //  * @param &status3 中断状态3
-  //  * @return
-  //  * @Date 2026-02-03 15:06:34
-  //  */
-  // bool GetIrqStatus(IrqStatus0& status0, IrqStatus1& status1,
-  //                   IrqStatus2& status2, IrqStatus3& status3);
+  /**
+   * @brief 获取所有中断状态
+   * @param &status0 中断状态0
+   * @param &status1 中断状态1
+   * @param &status2 中断状态2
+   * @param &status3 中断状态3
+   * @return
+   * @Date 2026-02-03 15:06:34
+   */
+  bool GetIrqStatus(IrqStatus0& status0, IrqStatus1& status1,
+      IrqStatus2& status2, IrqStatus3& status3);
 
-  // /**
-  //  * @brief 清除所有中断标志
-  //  * @return
-  //  * @Date 2026-02-03 15:06:34
-  //  */
-  // bool ClearAllIrq(void);
+  /**
+   * @brief 清除所有中断标志
+   * @return
+   * @Date 2026-02-03 15:06:34
+   */
+  bool ClearAllIrq(void);
 
   /**
    * @brief 设置充电使能
@@ -407,66 +403,66 @@ class Axp517 final : public ChipI2cGuide {
    */
   bool SetForceRbfetEnable(bool enable);
 
-  // /**
-  //  * @brief 设置Boost输出电压
-  //  * @param voltage_mv 输出电压(mV)，范围4550-5510mV，64mV/步进
-  //  * @return
-  //  * @Date 2026-02-03 15:06:34
-  //  */
-  // bool SetBoostVoltage(uint16_t voltage_mv);
+  /**
+   * @brief 设置Boost输出电压
+   * @param voltage_mv 输出电压(mV)，范围4550-5510mV，64mV/步进
+   * @return
+   * @Date 2026-02-03 15:06:34
+   */
+  bool SetBoostVoltage(uint16_t voltage_mv);
 
-  // /**
-  //  * @brief 设置看门狗
-  //  * @param enable [true]：开启看门狗 [false]：关闭看门狗
-  //  * @param timeout_s 超时时间(秒)，支持1,2,4,8,16,32,64,128秒
-  //  * @return
-  //  * @Date 2026-02-03 15:06:34
-  //  */
-  // bool SetWatchdog(bool enable, uint8_t timeout_s);
+  /**
+   * @brief 设置看门狗
+   * @param enable [true]：开启看门狗 [false]：关闭看门狗
+   * @param timeout_s 超时时间(秒)，支持1,2,4,8,16,32,64,128秒
+   * @return
+   * @Date 2026-02-03 15:06:34
+   */
+  bool SetWatchdog(bool enable, uint8_t timeout_s);
 
-  // /**
-  //  * @brief 喂狗
-  //  * @return
-  //  * @Date 2026-02-03 15:06:34
-  //  */
-  // bool FeedWatchdog();
+  /**
+   * @brief 喂狗
+   * @return
+   * @Date 2026-02-03 15:06:34
+   */
+  bool FeedWatchdog();
 
-  // /**
-  //  * @brief 设置JEITA标准使能
-  //  * @param enable [true]：开启JEITA标准 [false]：关闭JEITA标准
-  //  * @return
-  //  * @Date 2026-02-03 15:06:34
-  //  */
-  // bool SetJeitaEnable(bool enable);
+  /**
+   * @brief 设置JEITA标准使能
+   * @param enable [true]：开启JEITA标准 [false]：关闭JEITA标准
+   * @return
+   * @Date 2026-02-03 15:06:34
+   */
+  bool SetJeitaEnable(bool enable);
 
-  // /**
-  //  * @brief 设置BC1.2检测使能
-  //  * @param enable [true]：开启BC1.2检测 [false]：关闭BC1.2检测
-  //  * @return
-  //  * @Date 2026-02-03 15:06:34
-  //  */
-  // bool SetBc12DetectEnable(bool enable);
+  /**
+   * @brief 设置BC1.2检测使能
+   * @param enable [true]：开启BC1.2检测 [false]：关闭BC1.2检测
+   * @return
+   * @Date 2026-02-03 15:06:34
+   */
+  bool SetBc12DetectEnable(bool enable);
 
-  // /**
-  //  * @brief 获取BC1.2检测结果
-  //  * @param &result BC检测结果
-  //  * @return
-  //  * @Date 2026-02-03 15:06:34
-  //  */
-  // bool GetBc12DetectResult(BcDetectResult& result);
+  /**
+   * @brief 获取BC1.2检测结果
+   * @param &result BC检测结果
+   * @return
+   * @Date 2026-02-03 15:06:34
+   */
+  bool GetBc12DetectResult(BcDetectResult& result);
 
-  // /**
-  //  * @brief 设置PD角色
-  //  * @param is_source [true]：源模式 [false]：汇模式
-  //  * @param is_drp [true]：双角色模式 [false]：固定角色
-  //  * @return
-  //  * @Date 2026-02-03 15:06:34
-  //  */
-  // bool SetPdRole(bool is_source, bool is_drp);
+  /**
+   * @brief 设置PD角色
+   * @param is_source [true]：源模式 [false]：汇模式
+   * @param is_drp [true]：双角色模式 [false]：固定角色
+   * @return
+   * @Date 2026-02-03 15:06:34
+   */
+  bool SetPdRole(bool is_source, bool is_drp);
 
  private:
   enum class Cmd {
-    kRoDeviceId = 0xCE,
+    kRwMessageHeaderInfo = 0xCE,
 
     // 状态寄存器
     kRoBmuStatus0 = 0x00,  // BMU状态0
@@ -557,7 +553,7 @@ class Axp517 final : public ChipI2cGuide {
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x34;
-  static constexpr uint8_t kDeviceId = 0x02;
+  static constexpr uint8_t kDefaultMessageHeaderInfo = 0x02;
   static constexpr uint8_t kInitSequence[] = {
 
       // 输入电流限制修改为最大
