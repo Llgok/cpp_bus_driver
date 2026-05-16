@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-05-14 18:31:29
+ * @LastEditTime: 2026-05-16 09:52:59
  * @License: GPL 3.0
  */
 #include "sx126x.h"
@@ -11,436 +11,6 @@ namespace cpp_bus_driver {
 namespace {
 constexpr uint8_t kNop = 0x00;
 }  // namespace
-
-bool Sx126x::WriteCommand(Cmd command, const uint8_t* data, size_t length) {
-  if ((length > 0) && (data == nullptr)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
-    return false;
-  }
-  if ((length + 1) > kMaxSpiFrameSize) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-    return false;
-  }
-
-  std::array<uint8_t, kMaxSpiFrameSize> buffer = {};
-  buffer[0] = static_cast<uint8_t>(command);
-  if (length > 0) {
-    std::memcpy(&buffer[1], data, length);
-  }
-
-  if (!CheckBusy()) {
-    return false;
-  }
-  if (!bus_->Write(buffer.data(), length + 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
-
-  return true;
-}
-
-bool Sx126x::ReadCommand(Cmd command, uint8_t* data, size_t length) {
-  if ((length > 0) && (data == nullptr)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
-    return false;
-  }
-  if ((length + 2) > kMaxSpiFrameSize) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-    return false;
-  }
-
-  std::array<uint8_t, kMaxSpiFrameSize> write_buffer = {};
-  std::array<uint8_t, kMaxSpiFrameSize> read_buffer = {};
-  write_buffer[0] = static_cast<uint8_t>(command);
-  write_buffer[1] = kNop;
-
-  if (!CheckBusy()) {
-    return false;
-  }
-  if (!bus_->WriteRead(write_buffer.data(), read_buffer.data(), length + 2)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
-    return false;
-  }
-
-  if (length > 0) {
-    std::memcpy(data, &read_buffer[2], length);
-  }
-
-  return true;
-}
-
-bool Sx126x::WriteRegister(
-    uint16_t address, const uint8_t* data, size_t length) {
-  if ((length > 0) && (data == nullptr)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
-    return false;
-  }
-  if ((length + 3) > kMaxSpiFrameSize) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-    return false;
-  }
-
-  std::array<uint8_t, kMaxSpiFrameSize> buffer = {};
-  buffer[0] = static_cast<uint8_t>(Cmd::kWoWriteRegister);
-  buffer[1] = static_cast<uint8_t>(address >> 8);
-  buffer[2] = static_cast<uint8_t>(address);
-  if (length > 0) {
-    std::memcpy(&buffer[3], data, length);
-  }
-
-  if (!CheckBusy()) {
-    return false;
-  }
-  if (!bus_->Write(buffer.data(), length + 3)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
-
-  return true;
-}
-
-bool Sx126x::ReadRegister(uint16_t address, uint8_t* data, size_t length) {
-  if ((length > 0) && (data == nullptr)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
-    return false;
-  }
-  if ((length + 4) > kMaxSpiFrameSize) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-    return false;
-  }
-
-  std::array<uint8_t, kMaxSpiFrameSize> write_buffer = {};
-  std::array<uint8_t, kMaxSpiFrameSize> read_buffer = {};
-  write_buffer[0] = static_cast<uint8_t>(Cmd::kWoReadRegister);
-  write_buffer[1] = static_cast<uint8_t>(address >> 8);
-  write_buffer[2] = static_cast<uint8_t>(address);
-  write_buffer[3] = kNop;
-
-  if (!CheckBusy()) {
-    return false;
-  }
-  if (!bus_->WriteRead(write_buffer.data(), read_buffer.data(), length + 4)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
-    return false;
-  }
-
-  if (length > 0) {
-    std::memcpy(data, &read_buffer[4], length);
-  }
-
-  return true;
-}
-
-bool Sx126x::WriteBufferRaw(
-    uint8_t offset, const uint8_t* data, size_t length) {
-  if ((length > 0) && (data == nullptr)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
-    return false;
-  }
-  if ((length + 2) > kMaxSpiFrameSize) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-    return false;
-  }
-
-  std::array<uint8_t, kMaxSpiFrameSize> buffer = {};
-  buffer[0] = static_cast<uint8_t>(Cmd::kWoWriteBuffer);
-  buffer[1] = offset;
-  if (length > 0) {
-    std::memcpy(&buffer[2], data, length);
-  }
-
-  if (!CheckBusy()) {
-    return false;
-  }
-  if (!bus_->Write(buffer.data(), length + 2)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
-
-  return true;
-}
-
-bool Sx126x::ReadBufferRaw(uint8_t offset, uint8_t* data, size_t length) {
-  if ((length > 0) && (data == nullptr)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
-    return false;
-  }
-  if ((length + 3) > kMaxSpiFrameSize) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-    return false;
-  }
-
-  std::array<uint8_t, kMaxSpiFrameSize> write_buffer = {};
-  std::array<uint8_t, kMaxSpiFrameSize> read_buffer = {};
-  write_buffer[0] = static_cast<uint8_t>(Cmd::kRoReadBuffer);
-  write_buffer[1] = offset;
-  write_buffer[2] = kNop;
-
-  if (!CheckBusy()) {
-    return false;
-  }
-  if (!bus_->WriteRead(write_buffer.data(), read_buffer.data(), length + 3)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
-    return false;
-  }
-
-  if (length > 0) {
-    std::memcpy(data, &read_buffer[3], length);
-  }
-
-  return true;
-}
-
-uint32_t Sx126x::MicrosecondsToRtcStep(uint32_t time_us) const {
-  constexpr uint32_t kRtcStepNumerator = 64;
-  constexpr uint32_t kRtcStepDenominator = 1000;
-  const uint64_t steps = (static_cast<uint64_t>(time_us) * kRtcStepNumerator +
-                             kRtcStepDenominator - 1) /
-                         kRtcStepDenominator;
-  return static_cast<uint32_t>(std::min<uint64_t>(steps, kTimeoutContinuous));
-}
-
-uint32_t Sx126x::TimeoutMicrosecondsToRtcStep(uint32_t time_us) const {
-  if ((time_us == kTimeoutDisabled) || (time_us == kTimeoutContinuous)) {
-    return time_us;
-  }
-  return MicrosecondsToRtcStep(time_us);
-}
-
-float Sx126x::GetLoraBandwidthHz(LoraBw bw) const {
-  switch (bw) {
-    case LoraBw::kBw7810Hz:
-      return 7810.0f;
-    case LoraBw::kBw10420Hz:
-      return 10420.0f;
-    case LoraBw::kBw15630Hz:
-      return 15630.0f;
-    case LoraBw::kBw20830Hz:
-      return 20830.0f;
-    case LoraBw::kBw31250Hz:
-      return 31250.0f;
-    case LoraBw::kBw41670Hz:
-      return 41670.0f;
-    case LoraBw::kBw62500Hz:
-      return 62500.0f;
-    case LoraBw::kBw125000Hz:
-      return 125000.0f;
-    case LoraBw::kBw250000Hz:
-      return 250000.0f;
-    case LoraBw::kBw500000Hz:
-      return 500000.0f;
-    default:
-      return 0.0f;
-  }
-}
-
-Sx126x::Ldro Sx126x::GetLoraLowDataRateOptimize(Sf sf, LoraBw bw) const {
-  switch (bw) {
-    case LoraBw::kBw7810Hz:
-    case LoraBw::kBw10420Hz:
-    case LoraBw::kBw15630Hz:
-    case LoraBw::kBw20830Hz:
-    case LoraBw::kBw31250Hz:
-      return Ldro::kLdroOn;
-
-    case LoraBw::kBw41670Hz:
-      return (sf >= Sf::kSf9) ? Ldro::kLdroOn : Ldro::kLdroOff;
-
-    case LoraBw::kBw62500Hz:
-      return (sf >= Sf::kSf10) ? Ldro::kLdroOn : Ldro::kLdroOff;
-
-    case LoraBw::kBw125000Hz:
-      return (sf >= Sf::kSf11) ? Ldro::kLdroOn : Ldro::kLdroOff;
-
-    case LoraBw::kBw250000Hz:
-      return (sf == Sf::kSf12) ? Ldro::kLdroOn : Ldro::kLdroOff;
-
-    case LoraBw::kBw500000Hz:
-    default:
-      return Ldro::kLdroOff;
-  }
-}
-
-void Sx126x::GetLoraCadParams(Sf sf, CadSymbolNum& symbol_num,
-    uint8_t& cad_det_peak, uint8_t& cad_det_min) const {
-  cad_det_min = 10;
-
-  switch (sf) {
-    case Sf::kSf7:
-    case Sf::kSf8:
-      symbol_num = CadSymbolNum::kOn2Symb;
-      cad_det_peak = 22;
-      break;
-    case Sf::kSf9:
-      symbol_num = CadSymbolNum::kOn4Symb;
-      cad_det_peak = 23;
-      break;
-    case Sf::kSf10:
-      symbol_num = CadSymbolNum::kOn4Symb;
-      cad_det_peak = 24;
-      break;
-    case Sf::kSf11:
-      symbol_num = CadSymbolNum::kOn4Symb;
-      cad_det_peak = 25;
-      break;
-    default:
-      symbol_num = CadSymbolNum::kOn8Symb;
-      cad_det_peak = static_cast<uint8_t>(sf) + 13;
-      if (cad_det_peak < 22) {
-        cad_det_peak = 22;
-      } else if (cad_det_peak > 25) {
-        cad_det_peak = 25;
-      }
-      break;
-  }
-}
-
-Sx126x::PreambleDetector Sx126x::GetGfskMaxPreambleDetector(
-    uint16_t preamble_length) const {
-  if (preamble_length >= 32) {
-    return PreambleDetector::kLength32bit;
-  }
-  if (preamble_length >= 24) {
-    return PreambleDetector::kLength24bit;
-  }
-  if (preamble_length >= 16) {
-    return PreambleDetector::kLength16bit;
-  }
-  if (preamble_length >= 8) {
-    return PreambleDetector::kLength8bit;
-  }
-  return PreambleDetector::kLengthOff;
-}
-
-bool Sx126x::AddRegistersToRetentionList(
-    const uint16_t* register_address, size_t register_count) {
-  constexpr size_t kRetentionListSize = 9;
-  constexpr uint8_t kMaxRetentionRegisterCount = 4;
-
-  if (((register_count > 0) && (register_address == nullptr)) ||
-      (register_count > kMaxRetentionRegisterCount)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
-    return false;
-  }
-
-  std::array<uint8_t, kRetentionListSize> buffer = {};
-  if (!ReadRegister(static_cast<uint16_t>(Reg::kRwRetentionListBaseAddress),
-          buffer.data(), buffer.size())) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
-    return false;
-  }
-
-  const uint8_t initial_count = buffer[0];
-  if (initial_count > kMaxRetentionRegisterCount) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-    return false;
-  }
-
-  uint8_t* list = &buffer[1];
-  for (size_t i = 0; i < register_count; ++i) {
-    bool should_add = true;
-    for (uint8_t j = 0; j < buffer[0]; ++j) {
-      const uint16_t current_register =
-          (static_cast<uint16_t>(list[2 * j]) << 8) | list[(2 * j) + 1];
-      if (current_register == register_address[i]) {
-        should_add = false;
-        break;
-      }
-    }
-
-    if (should_add) {
-      if (buffer[0] >= kMaxRetentionRegisterCount) {
-        LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-        return false;
-      }
-      list[2 * buffer[0]] = static_cast<uint8_t>(register_address[i] >> 8);
-      list[(2 * buffer[0]) + 1] = static_cast<uint8_t>(register_address[i]);
-      ++buffer[0];
-    }
-  }
-
-  if (buffer[0] == initial_count) {
-    return true;
-  }
-
-  if (!WriteRegister(static_cast<uint16_t>(Reg::kRwRetentionListBaseAddress),
-          buffer.data(), buffer.size())) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
-
-  return true;
-}
-
-bool Sx126x::InitRetentionList() {
-  const uint16_t register_list[] = {
-      static_cast<uint16_t>(Reg::kRwRxGain),
-      static_cast<uint16_t>(Reg::kRwTxModulation),
-      static_cast<uint16_t>(Reg::kRwIqPolaritySetup),
-  };
-
-  return AddRegistersToRetentionList(
-      register_list, sizeof(register_list) / sizeof(register_list[0]));
-}
-
-bool Sx126x::ApplyWorkaroundsAfterWakeup() {
-  if (config_.enable_tx_clamp_workaround && !FixTxClamp(true)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "FixTxClamp failed\n");
-    return false;
-  }
-
-  if (param_.packet_type == PacketType::kLora) {
-    if (!FixLoraInvertedIq(param_.lora.invert_iq)) {
-      LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "FixLoraInvertedIq failed\n");
-      return false;
-    }
-    if (!FixBw500KhzSensitivity(
-            param_.lora.band_width == LoraBw::kBw500000Hz)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-          "FixBw500KhzSensitivity failed\n");
-      return false;
-    }
-  } else {
-    if (!FixBw500KhzSensitivity(false)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-          "FixBw500KhzSensitivity failed\n");
-      return false;
-    }
-  }
-
-  if (param_.rx_boosted && !SetRxBoosted(true)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRxBoosted failed\n");
-    return false;
-  }
-
-  return true;
-}
-
-bool Sx126x::StopRxTimeoutTimer() {
-  uint8_t reg_value = 0;
-
-  if (!WriteRegister(
-          static_cast<uint16_t>(Reg::kRwRtcControl), &reg_value, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
-
-  if (!ReadRegister(static_cast<uint16_t>(Reg::kRwEventClear), &reg_value, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
-    return false;
-  }
-
-  static constexpr uint8_t kTimeoutEventClearMask = 0x02;
-  reg_value |= kTimeoutEventClearMask;
-  if (!WriteRegister(
-          static_cast<uint16_t>(Reg::kRwEventClear), &reg_value, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
-
-  return true;
-}
 
 bool Sx126x::Init(int32_t freq_hz) {
   if (busy_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
@@ -2504,6 +2074,436 @@ bool Sx126x::Wakeup() {
   if (!ApplyWorkaroundsAfterWakeup()) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__,
         "ApplyWorkaroundsAfterWakeup failed\n");
+    return false;
+  }
+
+  return true;
+}
+
+bool Sx126x::WriteCommand(Cmd command, const uint8_t* data, size_t length) {
+  if ((length > 0) && (data == nullptr)) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+  if ((length + 1) > kMaxSpiFrameSize) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    return false;
+  }
+
+  std::array<uint8_t, kMaxSpiFrameSize> buffer = {};
+  buffer[0] = static_cast<uint8_t>(command);
+  if (length > 0) {
+    std::memcpy(&buffer[1], data, length);
+  }
+
+  if (!CheckBusy()) {
+    return false;
+  }
+  if (!bus_->Write(buffer.data(), length + 1)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    return false;
+  }
+
+  return true;
+}
+
+bool Sx126x::ReadCommand(Cmd command, uint8_t* data, size_t length) {
+  if ((length > 0) && (data == nullptr)) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+  if ((length + 2) > kMaxSpiFrameSize) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    return false;
+  }
+
+  std::array<uint8_t, kMaxSpiFrameSize> write_buffer = {};
+  std::array<uint8_t, kMaxSpiFrameSize> read_buffer = {};
+  write_buffer[0] = static_cast<uint8_t>(command);
+  write_buffer[1] = kNop;
+
+  if (!CheckBusy()) {
+    return false;
+  }
+  if (!bus_->WriteRead(write_buffer.data(), read_buffer.data(), length + 2)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
+    return false;
+  }
+
+  if (length > 0) {
+    std::memcpy(data, &read_buffer[2], length);
+  }
+
+  return true;
+}
+
+bool Sx126x::WriteRegister(
+    uint16_t address, const uint8_t* data, size_t length) {
+  if ((length > 0) && (data == nullptr)) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+  if ((length + 3) > kMaxSpiFrameSize) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    return false;
+  }
+
+  std::array<uint8_t, kMaxSpiFrameSize> buffer = {};
+  buffer[0] = static_cast<uint8_t>(Cmd::kWoWriteRegister);
+  buffer[1] = static_cast<uint8_t>(address >> 8);
+  buffer[2] = static_cast<uint8_t>(address);
+  if (length > 0) {
+    std::memcpy(&buffer[3], data, length);
+  }
+
+  if (!CheckBusy()) {
+    return false;
+  }
+  if (!bus_->Write(buffer.data(), length + 3)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    return false;
+  }
+
+  return true;
+}
+
+bool Sx126x::ReadRegister(uint16_t address, uint8_t* data, size_t length) {
+  if ((length > 0) && (data == nullptr)) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+  if ((length + 4) > kMaxSpiFrameSize) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    return false;
+  }
+
+  std::array<uint8_t, kMaxSpiFrameSize> write_buffer = {};
+  std::array<uint8_t, kMaxSpiFrameSize> read_buffer = {};
+  write_buffer[0] = static_cast<uint8_t>(Cmd::kWoReadRegister);
+  write_buffer[1] = static_cast<uint8_t>(address >> 8);
+  write_buffer[2] = static_cast<uint8_t>(address);
+  write_buffer[3] = kNop;
+
+  if (!CheckBusy()) {
+    return false;
+  }
+  if (!bus_->WriteRead(write_buffer.data(), read_buffer.data(), length + 4)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
+    return false;
+  }
+
+  if (length > 0) {
+    std::memcpy(data, &read_buffer[4], length);
+  }
+
+  return true;
+}
+
+bool Sx126x::WriteBufferRaw(
+    uint8_t offset, const uint8_t* data, size_t length) {
+  if ((length > 0) && (data == nullptr)) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+  if ((length + 2) > kMaxSpiFrameSize) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    return false;
+  }
+
+  std::array<uint8_t, kMaxSpiFrameSize> buffer = {};
+  buffer[0] = static_cast<uint8_t>(Cmd::kWoWriteBuffer);
+  buffer[1] = offset;
+  if (length > 0) {
+    std::memcpy(&buffer[2], data, length);
+  }
+
+  if (!CheckBusy()) {
+    return false;
+  }
+  if (!bus_->Write(buffer.data(), length + 2)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    return false;
+  }
+
+  return true;
+}
+
+bool Sx126x::ReadBufferRaw(uint8_t offset, uint8_t* data, size_t length) {
+  if ((length > 0) && (data == nullptr)) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+  if ((length + 3) > kMaxSpiFrameSize) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    return false;
+  }
+
+  std::array<uint8_t, kMaxSpiFrameSize> write_buffer = {};
+  std::array<uint8_t, kMaxSpiFrameSize> read_buffer = {};
+  write_buffer[0] = static_cast<uint8_t>(Cmd::kRoReadBuffer);
+  write_buffer[1] = offset;
+  write_buffer[2] = kNop;
+
+  if (!CheckBusy()) {
+    return false;
+  }
+  if (!bus_->WriteRead(write_buffer.data(), read_buffer.data(), length + 3)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
+    return false;
+  }
+
+  if (length > 0) {
+    std::memcpy(data, &read_buffer[3], length);
+  }
+
+  return true;
+}
+
+uint32_t Sx126x::MicrosecondsToRtcStep(uint32_t time_us) const {
+  constexpr uint32_t kRtcStepNumerator = 64;
+  constexpr uint32_t kRtcStepDenominator = 1000;
+  const uint64_t steps = (static_cast<uint64_t>(time_us) * kRtcStepNumerator +
+                             kRtcStepDenominator - 1) /
+                         kRtcStepDenominator;
+  return static_cast<uint32_t>(std::min<uint64_t>(steps, kTimeoutContinuous));
+}
+
+uint32_t Sx126x::TimeoutMicrosecondsToRtcStep(uint32_t time_us) const {
+  if ((time_us == kTimeoutDisabled) || (time_us == kTimeoutContinuous)) {
+    return time_us;
+  }
+  return MicrosecondsToRtcStep(time_us);
+}
+
+float Sx126x::GetLoraBandwidthHz(LoraBw bw) const {
+  switch (bw) {
+    case LoraBw::kBw7810Hz:
+      return 7810.0f;
+    case LoraBw::kBw10420Hz:
+      return 10420.0f;
+    case LoraBw::kBw15630Hz:
+      return 15630.0f;
+    case LoraBw::kBw20830Hz:
+      return 20830.0f;
+    case LoraBw::kBw31250Hz:
+      return 31250.0f;
+    case LoraBw::kBw41670Hz:
+      return 41670.0f;
+    case LoraBw::kBw62500Hz:
+      return 62500.0f;
+    case LoraBw::kBw125000Hz:
+      return 125000.0f;
+    case LoraBw::kBw250000Hz:
+      return 250000.0f;
+    case LoraBw::kBw500000Hz:
+      return 500000.0f;
+    default:
+      return 0.0f;
+  }
+}
+
+Sx126x::Ldro Sx126x::GetLoraLowDataRateOptimize(Sf sf, LoraBw bw) const {
+  switch (bw) {
+    case LoraBw::kBw7810Hz:
+    case LoraBw::kBw10420Hz:
+    case LoraBw::kBw15630Hz:
+    case LoraBw::kBw20830Hz:
+    case LoraBw::kBw31250Hz:
+      return Ldro::kLdroOn;
+
+    case LoraBw::kBw41670Hz:
+      return (sf >= Sf::kSf9) ? Ldro::kLdroOn : Ldro::kLdroOff;
+
+    case LoraBw::kBw62500Hz:
+      return (sf >= Sf::kSf10) ? Ldro::kLdroOn : Ldro::kLdroOff;
+
+    case LoraBw::kBw125000Hz:
+      return (sf >= Sf::kSf11) ? Ldro::kLdroOn : Ldro::kLdroOff;
+
+    case LoraBw::kBw250000Hz:
+      return (sf == Sf::kSf12) ? Ldro::kLdroOn : Ldro::kLdroOff;
+
+    case LoraBw::kBw500000Hz:
+    default:
+      return Ldro::kLdroOff;
+  }
+}
+
+void Sx126x::GetLoraCadParams(Sf sf, CadSymbolNum& symbol_num,
+    uint8_t& cad_det_peak, uint8_t& cad_det_min) const {
+  cad_det_min = 10;
+
+  switch (sf) {
+    case Sf::kSf7:
+    case Sf::kSf8:
+      symbol_num = CadSymbolNum::kOn2Symb;
+      cad_det_peak = 22;
+      break;
+    case Sf::kSf9:
+      symbol_num = CadSymbolNum::kOn4Symb;
+      cad_det_peak = 23;
+      break;
+    case Sf::kSf10:
+      symbol_num = CadSymbolNum::kOn4Symb;
+      cad_det_peak = 24;
+      break;
+    case Sf::kSf11:
+      symbol_num = CadSymbolNum::kOn4Symb;
+      cad_det_peak = 25;
+      break;
+    default:
+      symbol_num = CadSymbolNum::kOn8Symb;
+      cad_det_peak = static_cast<uint8_t>(sf) + 13;
+      if (cad_det_peak < 22) {
+        cad_det_peak = 22;
+      } else if (cad_det_peak > 25) {
+        cad_det_peak = 25;
+      }
+      break;
+  }
+}
+
+Sx126x::PreambleDetector Sx126x::GetGfskMaxPreambleDetector(
+    uint16_t preamble_length) const {
+  if (preamble_length >= 32) {
+    return PreambleDetector::kLength32bit;
+  }
+  if (preamble_length >= 24) {
+    return PreambleDetector::kLength24bit;
+  }
+  if (preamble_length >= 16) {
+    return PreambleDetector::kLength16bit;
+  }
+  if (preamble_length >= 8) {
+    return PreambleDetector::kLength8bit;
+  }
+  return PreambleDetector::kLengthOff;
+}
+
+bool Sx126x::AddRegistersToRetentionList(
+    const uint16_t* register_address, size_t register_count) {
+  constexpr size_t kRetentionListSize = 9;
+  constexpr uint8_t kMaxRetentionRegisterCount = 4;
+
+  if (((register_count > 0) && (register_address == nullptr)) ||
+      (register_count > kMaxRetentionRegisterCount)) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
+  std::array<uint8_t, kRetentionListSize> buffer = {};
+  if (!ReadRegister(static_cast<uint16_t>(Reg::kRwRetentionListBaseAddress),
+          buffer.data(), buffer.size())) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    return false;
+  }
+
+  const uint8_t initial_count = buffer[0];
+  if (initial_count > kMaxRetentionRegisterCount) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    return false;
+  }
+
+  uint8_t* list = &buffer[1];
+  for (size_t i = 0; i < register_count; ++i) {
+    bool should_add = true;
+    for (uint8_t j = 0; j < buffer[0]; ++j) {
+      const uint16_t current_register =
+          (static_cast<uint16_t>(list[2 * j]) << 8) | list[(2 * j) + 1];
+      if (current_register == register_address[i]) {
+        should_add = false;
+        break;
+      }
+    }
+
+    if (should_add) {
+      if (buffer[0] >= kMaxRetentionRegisterCount) {
+        LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+        return false;
+      }
+      list[2 * buffer[0]] = static_cast<uint8_t>(register_address[i] >> 8);
+      list[(2 * buffer[0]) + 1] = static_cast<uint8_t>(register_address[i]);
+      ++buffer[0];
+    }
+  }
+
+  if (buffer[0] == initial_count) {
+    return true;
+  }
+
+  if (!WriteRegister(static_cast<uint16_t>(Reg::kRwRetentionListBaseAddress),
+          buffer.data(), buffer.size())) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    return false;
+  }
+
+  return true;
+}
+
+bool Sx126x::InitRetentionList() {
+  const uint16_t register_list[] = {
+      static_cast<uint16_t>(Reg::kRwRxGain),
+      static_cast<uint16_t>(Reg::kRwTxModulation),
+      static_cast<uint16_t>(Reg::kRwIqPolaritySetup),
+  };
+
+  return AddRegistersToRetentionList(
+      register_list, sizeof(register_list) / sizeof(register_list[0]));
+}
+
+bool Sx126x::ApplyWorkaroundsAfterWakeup() {
+  if (config_.enable_tx_clamp_workaround && !FixTxClamp(true)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "FixTxClamp failed\n");
+    return false;
+  }
+
+  if (param_.packet_type == PacketType::kLora) {
+    if (!FixLoraInvertedIq(param_.lora.invert_iq)) {
+      LogMessage(
+          LogLevel::kChip, __FILE__, __LINE__, "FixLoraInvertedIq failed\n");
+      return false;
+    }
+    if (!FixBw500KhzSensitivity(
+            param_.lora.band_width == LoraBw::kBw500000Hz)) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+          "FixBw500KhzSensitivity failed\n");
+      return false;
+    }
+  } else {
+    if (!FixBw500KhzSensitivity(false)) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+          "FixBw500KhzSensitivity failed\n");
+      return false;
+    }
+  }
+
+  if (param_.rx_boosted && !SetRxBoosted(true)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRxBoosted failed\n");
+    return false;
+  }
+
+  return true;
+}
+
+bool Sx126x::StopRxTimeoutTimer() {
+  uint8_t reg_value = 0;
+
+  if (!WriteRegister(
+          static_cast<uint16_t>(Reg::kRwRtcControl), &reg_value, 1)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    return false;
+  }
+
+  if (!ReadRegister(static_cast<uint16_t>(Reg::kRwEventClear), &reg_value, 1)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    return false;
+  }
+
+  static constexpr uint8_t kTimeoutEventClearMask = 0x02;
+  reg_value |= kTimeoutEventClearMask;
+  if (!WriteRegister(
+          static_cast<uint16_t>(Reg::kRwEventClear), &reg_value, 1)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
