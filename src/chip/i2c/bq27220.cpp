@@ -53,77 +53,108 @@ bool Bq27220::Deinit(bool delete_bus) {
 
 uint16_t Bq27220::GetDeviceId() {
   uint16_t value = 0;
-  ReadControlSubcommand(ControlSubcommand::kDeviceNumber, &value);
+  if (!ReadControlSubcommand(ControlSubcommand::kDeviceNumber, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "ReadControlSubcommand failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetFirmwareVersion() {
   uint16_t value = 0;
-  ReadControlSubcommand(ControlSubcommand::kFirmwareVersion, &value);
+  if (!ReadControlSubcommand(ControlSubcommand::kFirmwareVersion, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "ReadControlSubcommand failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetHardwareVersion() {
   uint16_t value = 0;
-  ReadControlSubcommand(ControlSubcommand::kHardwareVersion, &value);
+  if (!ReadControlSubcommand(ControlSubcommand::kHardwareVersion, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "ReadControlSubcommand failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetDesignCapacity() {
   uint16_t value = 0;
-  ReadU16(Cmd::kDesignCapacity, &value);
+  if (!ReadU16(Cmd::kDesignCapacity, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetVoltage() {
   uint16_t value = 0;
-  ReadU16(Cmd::kVoltage, &value);
+  if (!ReadU16(Cmd::kVoltage, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 int16_t Bq27220::GetCurrent() {
   int16_t value = 0;
-  ReadS16(Cmd::kCurrent, &value);
+  if (!ReadS16(Cmd::kCurrent, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadS16 failed\n");
+  }
   return value;
 }
 
 int16_t Bq27220::GetAverageCurrent() {
   int16_t value = 0;
-  ReadS16(Cmd::kAverageCurrent, &value);
+  if (!ReadS16(Cmd::kAverageCurrent, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadS16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetRemainingCapacity() {
   uint16_t value = 0;
-  ReadU16(Cmd::kRemainingCapacity, &value);
+  if (!ReadU16(Cmd::kRemainingCapacity, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetFullChargeCapacity() {
   uint16_t value = 0;
-  ReadU16(Cmd::kFullChargeCapacity, &value);
+  if (!ReadU16(Cmd::kFullChargeCapacity, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 int16_t Bq27220::GetAtRate() {
   int16_t value = 0;
-  ReadS16(Cmd::kAtRate, &value);
+  if (!ReadS16(Cmd::kAtRate, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadS16 failed\n");
+  }
   return value;
 }
 
 bool Bq27220::SetAtRate(int16_t rate) {
-  return WriteU16(Cmd::kAtRate, static_cast<uint16_t>(rate));
+  if (!WriteU16(Cmd::kAtRate, static_cast<uint16_t>(rate))) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteU16 failed\n");
+    return false;
+  }
+  return true;
 }
 
 uint16_t Bq27220::GetAtRateTimeToEmpty() {
   uint16_t value = 0;
-  ReadU16(Cmd::kAtRateTimeToEmpty, &value);
+  if (!ReadU16(Cmd::kAtRateTimeToEmpty, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetTemperatureRaw() {
   uint16_t value = 0;
-  ReadU16(Cmd::kTemperature, &value);
+  if (!ReadU16(Cmd::kTemperature, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
@@ -135,12 +166,15 @@ float Bq27220::GetTemperatureCelsius() {
 
 bool Bq27220::SetTemperatureMode(TemperatureMode mode) {
   if (!Unseal()) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Unseal failed\n");
     return false;
   }
 
   uint16_t operation_config = 0;
   if (!ReadDataMemory(
           DataMemoryAddress::kOperationConfigA, &operation_config)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "ReadDataMemory failed\n");
     return false;
   }
 
@@ -154,13 +188,19 @@ bool Bq27220::SetTemperatureMode(TemperatureMode mode) {
       break;
   }
 
-  return WriteDataMemory(
-      DataMemoryAddress::kOperationConfigA, operation_config);
+  if (!WriteDataMemory(
+          DataMemoryAddress::kOperationConfigA, operation_config)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "WriteDataMemory failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::GetBatteryStatus(BatteryStatus& status) {
   uint16_t value = 0;
   if (!ReadU16(Cmd::kBatteryStatus, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
     return false;
   }
   status.flag.discharging = value & (1U << 0);
@@ -184,6 +224,7 @@ bool Bq27220::GetBatteryStatus(BatteryStatus& status) {
 bool Bq27220::GetOperationStatus(OperationStatus& status) {
   uint16_t value = 0;
   if (!ReadU16(Cmd::kOperationStatus, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
     return false;
   }
   status.flag.calibration_mode = value & (1U << 0);
@@ -199,60 +240,83 @@ bool Bq27220::GetOperationStatus(OperationStatus& status) {
 }
 
 bool Bq27220::SetDesignCapacity(uint16_t capacity) {
-  return WriteDataMemory(DataMemoryAddress::kDesignCapacity, capacity);
+  if (!WriteDataMemory(DataMemoryAddress::kDesignCapacity, capacity)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "WriteDataMemory failed\n");
+    return false;
+  }
+  return true;
 }
 
 uint16_t Bq27220::GetTimeToEmpty() {
   uint16_t value = 0;
-  ReadU16(Cmd::kTimeToEmpty, &value);
+  if (!ReadU16(Cmd::kTimeToEmpty, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetTimeToFull() {
   uint16_t value = 0;
-  ReadU16(Cmd::kTimeToFull, &value);
+  if (!ReadU16(Cmd::kTimeToFull, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 int16_t Bq27220::GetStandbyCurrent() {
   int16_t value = 0;
-  ReadS16(Cmd::kStandbyCurrent, &value);
+  if (!ReadS16(Cmd::kStandbyCurrent, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadS16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetStandbyTimeToEmpty() {
   uint16_t value = 0;
-  ReadU16(Cmd::kStandbyTimeToEmpty, &value);
+  if (!ReadU16(Cmd::kStandbyTimeToEmpty, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 int16_t Bq27220::GetMaxLoadCurrent() {
   int16_t value = 0;
-  ReadS16(Cmd::kMaxLoadCurrent, &value);
+  if (!ReadS16(Cmd::kMaxLoadCurrent, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadS16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetMaxLoadTimeToEmpty() {
   uint16_t value = 0;
-  ReadU16(Cmd::kMaxLoadTimeToEmpty, &value);
+  if (!ReadU16(Cmd::kMaxLoadTimeToEmpty, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 int16_t Bq27220::GetRawCoulombCount() {
   int16_t value = 0;
-  ReadS16(Cmd::kRawCoulombCount, &value);
+  if (!ReadS16(Cmd::kRawCoulombCount, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadS16 failed\n");
+  }
   return value;
 }
 
 int16_t Bq27220::GetAveragePower() {
   int16_t value = 0;
-  ReadS16(Cmd::kAveragePower, &value);
+  if (!ReadS16(Cmd::kAveragePower, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadS16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetChipTemperatureRaw() {
   uint16_t value = 0;
-  ReadU16(Cmd::kInternalTemperature, &value);
+  if (!ReadU16(Cmd::kInternalTemperature, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
@@ -266,63 +330,89 @@ float Bq27220::GetChipTemperatureCelsius() {
 
 uint16_t Bq27220::GetCycleCount() {
   uint16_t value = 0;
-  ReadU16(Cmd::kCycleCount, &value);
+  if (!ReadU16(Cmd::kCycleCount, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetStatusOfCharge() {
   uint16_t value = 0;
-  ReadU16(Cmd::kStatusOfCharge, &value);
+  if (!ReadU16(Cmd::kStatusOfCharge, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetStatusOfHealth() {
   uint16_t value = 0;
-  ReadU16(Cmd::kStatusOfHealth, &value);
+  if (!ReadU16(Cmd::kStatusOfHealth, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetChargingVoltage() {
   uint16_t value = 0;
-  ReadU16(Cmd::kChargingVoltage, &value);
+  if (!ReadU16(Cmd::kChargingVoltage, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetChargingCurrent() {
   uint16_t value = 0;
-  ReadU16(Cmd::kChargingCurrent, &value);
+  if (!ReadU16(Cmd::kChargingCurrent, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 bool Bq27220::SetBtpDischargeThreshold(uint16_t threshold_mah) {
-  return WriteU16(Cmd::kBtpDischargeSet, threshold_mah);
+  if (!WriteU16(Cmd::kBtpDischargeSet, threshold_mah)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteU16 failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::SetBtpChargeThreshold(uint16_t threshold_mah) {
-  return WriteU16(Cmd::kBtpChargeSet, threshold_mah);
+  if (!WriteU16(Cmd::kBtpChargeSet, threshold_mah)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteU16 failed\n");
+    return false;
+  }
+  return true;
 }
 
 uint16_t Bq27220::GetAnalogCount() {
   uint16_t value = 0;
-  ReadU16(Cmd::kAnalogCount, &value);
+  if (!ReadU16(Cmd::kAnalogCount, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 int16_t Bq27220::GetRawCurrent() {
   int16_t value = 0;
-  ReadS16(Cmd::kRawCurrent, &value);
+  if (!ReadS16(Cmd::kRawCurrent, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadS16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetRawVoltage() {
   uint16_t value = 0;
-  ReadU16(Cmd::kRawVoltage, &value);
+  if (!ReadU16(Cmd::kRawVoltage, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
 uint16_t Bq27220::GetRawInternalTemperature() {
   uint16_t value = 0;
-  ReadU16(Cmd::kRawInternalTemperature, &value);
+  if (!ReadU16(Cmd::kRawInternalTemperature, &value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+  }
   return value;
 }
 
@@ -333,33 +423,60 @@ bool Bq27220::SetSleepCurrentThreshold(uint16_t threshold) {
     threshold = 100;
   }
 
-  return WriteDataMemory(DataMemoryAddress::kSleepCurrent, threshold);
+  if (!WriteDataMemory(DataMemoryAddress::kSleepCurrent, threshold)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "WriteDataMemory failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::SendControlSubcommand(ControlSubcommand subcommand) {
-  return WriteU16(Cmd::kControl, static_cast<uint16_t>(subcommand));
+  if (!WriteU16(Cmd::kControl, static_cast<uint16_t>(subcommand))) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteU16 failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::ReadControlSubcommand(
     ControlSubcommand subcommand, uint16_t* value) {
   if (value == nullptr) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
   if (!SendControlSubcommand(subcommand)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "SendControlSubcommand failed\n");
     return false;
   }
   DelayMs(15);
-  return ReadU16(Cmd::kMacData, value);
+  if (!ReadU16(Cmd::kMacData, value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::Seal() {
   if (!SendControlSubcommand(ControlSubcommand::kSeal)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "SendControlSubcommand failed\n");
     return false;
   }
   DelayMs(10);
 
   OperationStatus status;
-  return GetOperationStatus(status) && status.security == SecurityMode::kSealed;
+  if (!GetOperationStatus(status)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "GetOperationStatus failed\n");
+    return false;
+  }
+  if (status.security != SecurityMode::kSealed) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Seal failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::Unseal() {
@@ -371,17 +488,27 @@ bool Bq27220::Unseal() {
   }
 
   if (!WriteU16(Cmd::kControl, kUnsealKey1)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteU16 failed\n");
     return false;
   }
   DelayMs(10);
   if (!WriteU16(Cmd::kControl, kUnsealKey2)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteU16 failed\n");
     return false;
   }
   DelayMs(10);
 
-  return GetOperationStatus(status) &&
-         (status.security == SecurityMode::kUnsealed ||
-             status.security == SecurityMode::kFullAccess);
+  if (!GetOperationStatus(status)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "GetOperationStatus failed\n");
+    return false;
+  }
+  if (status.security != SecurityMode::kUnsealed &&
+      status.security != SecurityMode::kFullAccess) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Unseal failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::FullAccess() {
@@ -392,32 +519,54 @@ bool Bq27220::FullAccess() {
   }
 
   if (!Unseal()) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Unseal failed\n");
     return false;
   }
   if (!WriteU16(Cmd::kControl, kFullAccessKey)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteU16 failed\n");
     return false;
   }
   DelayMs(10);
   if (!WriteU16(Cmd::kControl, kFullAccessKey)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteU16 failed\n");
     return false;
   }
   DelayMs(10);
 
-  return GetOperationStatus(status) &&
-         status.security == SecurityMode::kFullAccess;
+  if (!GetOperationStatus(status)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "GetOperationStatus failed\n");
+    return false;
+  }
+  if (status.security != SecurityMode::kFullAccess) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "FullAccess failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::Reset() {
   if (!SendControlSubcommand(ControlSubcommand::kReset)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "SendControlSubcommand failed\n");
     return false;
   }
   DelayMs(100);
-  return GetDeviceId() == kDeviceId;
+  if (GetDeviceId() != kDeviceId) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Reset failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::SetBatteryInserted(bool inserted) {
-  return SendControlSubcommand(inserted ? ControlSubcommand::kBatteryInsert
-                                        : ControlSubcommand::kBatteryRemove);
+  if (!SendControlSubcommand(inserted ? ControlSubcommand::kBatteryInsert
+                                      : ControlSubcommand::kBatteryRemove)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "SendControlSubcommand failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::SetBatteryProfile(uint8_t profile) {
@@ -435,36 +584,69 @@ bool Bq27220::SetBatteryProfile(uint8_t profile) {
       ControlSubcommand::kSetProfile5,
       ControlSubcommand::kSetProfile6,
   };
-  return SendControlSubcommand(subcommands[profile - 1]);
+  if (!SendControlSubcommand(subcommands[profile - 1])) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "SendControlSubcommand failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::EnterCalibration() {
-  return SendControlSubcommand(ControlSubcommand::kEnterCalibration);
+  if (!SendControlSubcommand(ControlSubcommand::kEnterCalibration)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "SendControlSubcommand failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::ExitCalibration() {
-  return SendControlSubcommand(ControlSubcommand::kExitCalibration);
+  if (!SendControlSubcommand(ControlSubcommand::kExitCalibration)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "SendControlSubcommand failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::ToggleCalibration() {
-  return SendControlSubcommand(ControlSubcommand::kCalibrationToggle);
+  if (!SendControlSubcommand(ControlSubcommand::kCalibrationToggle)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "SendControlSubcommand failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::ReadDataMemory(DataMemoryAddress address, uint16_t* value) {
-  return ReadDataMemory(static_cast<uint16_t>(address), value);
+  if (!ReadDataMemory(static_cast<uint16_t>(address), value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "ReadDataMemory failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::ReadDataMemory(DataMemoryAddress address, uint8_t* value) {
-  return ReadDataMemory(static_cast<uint16_t>(address), value);
+  if (!ReadDataMemory(static_cast<uint16_t>(address), value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "ReadDataMemory failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::ReadDataMemory(uint16_t address, uint16_t* value) {
   if (value == nullptr) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   uint8_t data[2] = {};
   if (!ReadDataMemoryBytes(address, data, 2)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "ReadDataMemoryBytes failed\n");
     return false;
   }
   *value = (static_cast<uint16_t>(data[0]) << 8) | data[1];
@@ -473,17 +655,33 @@ bool Bq27220::ReadDataMemory(uint16_t address, uint16_t* value) {
 
 bool Bq27220::ReadDataMemory(uint16_t address, uint8_t* value) {
   if (value == nullptr) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
-  return ReadDataMemoryBytes(address, value, 1);
+  if (!ReadDataMemoryBytes(address, value, 1)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "ReadDataMemoryBytes failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::WriteDataMemory(DataMemoryAddress address, uint16_t value) {
-  return WriteDataMemory(static_cast<uint16_t>(address), value);
+  if (!WriteDataMemory(static_cast<uint16_t>(address), value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "WriteDataMemory failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::WriteDataMemory(DataMemoryAddress address, uint8_t value) {
-  return WriteDataMemory(static_cast<uint16_t>(address), value);
+  if (!WriteDataMemory(static_cast<uint16_t>(address), value)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "WriteDataMemory failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::WriteDataMemory(uint16_t address, uint16_t value) {
@@ -491,16 +689,28 @@ bool Bq27220::WriteDataMemory(uint16_t address, uint16_t value) {
       static_cast<uint8_t>(value >> 8),
       static_cast<uint8_t>(value),
   };
-  return WriteDataMemoryBytes(address, data, 2);
+  if (!WriteDataMemoryBytes(address, data, 2)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "WriteDataMemoryBytes failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::WriteDataMemory(uint16_t address, uint8_t value) {
-  return WriteDataMemoryBytes(address, &value, 1);
+  if (!WriteDataMemoryBytes(address, &value, 1)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "WriteDataMemoryBytes failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::ApplyBatteryProfile(
     const CedvProfile& profile, const GaugingConfig& config) {
   if (!EnterConfigUpdate()) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "EnterConfigUpdate failed\n");
     return false;
   }
 
@@ -550,6 +760,7 @@ bool Bq27220::ApplyBatteryProfile(
 bool Bq27220::ApplyBatteryProfileIfNeeded(
     const CedvProfile& profile, const GaugingConfig& config) {
   if (!Unseal()) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Unseal failed\n");
     return false;
   }
 
@@ -569,7 +780,12 @@ bool Bq27220::ApplyBatteryProfileIfNeeded(
     return true;
   }
 
-  return ApplyBatteryProfile(profile, config);
+  if (!ApplyBatteryProfile(profile, config)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "ApplyBatteryProfile failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::EnterConfigUpdate() {
@@ -579,19 +795,33 @@ bool Bq27220::EnterConfigUpdate() {
   }
 
   if (!SendControlSubcommand(ControlSubcommand::kEnterConfigUpdate)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "SendControlSubcommand failed\n");
     return false;
   }
   DelayMs(10);
-  return WaitConfigUpdate(true);
+  if (!WaitConfigUpdate(true)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "WaitConfigUpdate failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::ExitConfigUpdate(bool reinit) {
   if (!SendControlSubcommand(reinit ? ControlSubcommand::kExitConfigUpdateReinit
                                     : ControlSubcommand::kExitConfigUpdate)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "SendControlSubcommand failed\n");
     return false;
   }
   DelayMs(10);
-  return WaitConfigUpdate(false);
+  if (!WaitConfigUpdate(false)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "WaitConfigUpdate failed\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq27220::WaitConfigUpdate(bool enabled, uint32_t timeout_ms) {
@@ -612,6 +842,7 @@ bool Bq27220::WaitConfigUpdate(bool enabled, uint32_t timeout_ms) {
 
 bool Bq27220::ReadU16(Cmd cmd, uint16_t* value) {
   if (value == nullptr) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -636,6 +867,7 @@ bool Bq27220::WriteU16(Cmd cmd, uint16_t value) {
 bool Bq27220::ReadS16(Cmd cmd, int16_t* value) {
   uint16_t raw = 0;
   if (!ReadU16(cmd, &raw)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadU16 failed\n");
     return false;
   }
   *value = static_cast<int16_t>(raw);
@@ -653,10 +885,14 @@ bool Bq27220::WriteDataMemoryBytes(
   bool entered_config_update = false;
   OperationStatus status;
   if (!GetOperationStatus(status)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "GetOperationStatus failed\n");
     return false;
   }
   if (!status.flag.config_update_mode) {
     if (!EnterConfigUpdate()) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+          "EnterConfigUpdate failed\n");
       return false;
     }
     entered_config_update = true;
@@ -694,6 +930,8 @@ bool Bq27220::WriteDataMemoryBytes(
   DelayMs(10);
 
   if (entered_config_update && !ExitConfigUpdate(true)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "ExitConfigUpdate failed\n");
     return false;
   }
   return true;
@@ -707,6 +945,7 @@ bool Bq27220::ReadDataMemoryBytes(
     return false;
   }
   if (!Unseal()) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Unseal failed\n");
     return false;
   }
 
