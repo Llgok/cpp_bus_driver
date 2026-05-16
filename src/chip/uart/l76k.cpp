@@ -238,7 +238,7 @@ bool L76k::GetInfoData(std::unique_ptr<uint8_t[]>& data, uint32_t* length,
   uint8_t buffer_timeout_count = 0;
 
   while (true) {
-    ChipUartGuide::DelayMs(update_freq_);
+    ChipUartGuide::DelayMs(update_interval_ms_);
 
     uint32_t buffer_length = GetRxBufferLength();
     if (buffer_length > max_length) {
@@ -307,7 +307,7 @@ bool L76k::SetUpdateFrequency(UpdateFreq freq) {
     return false;
   }
 
-  update_freq_ = interval_ms;
+  update_interval_ms_ = interval_ms;
   return true;
 }
 
@@ -327,8 +327,8 @@ bool L76k::SetBaudRate(BaudRate baud_rate) {
 
   // 只有设置波特率时需要延时
   // 因为没有忙总线，所以这里写入数据需要在模块未发送数据空闲的时候写。
-  // 延时时间为更新频率的一半。
-  ChipUartGuide::DelayMs(update_freq_ / 2);
+  // 延时时间为更新间隔的一半。
+  ChipUartGuide::DelayMs(update_interval_ms_ / 2);
   if (!WritePcasCommand(body)) {
     return false;
   }
@@ -514,7 +514,7 @@ bool L76k::SetCasicBaudRate(BaudRate baud_rate) {
     return false;
   }
 
-  ChipUartGuide::DelayMs(update_freq_ / 2);
+  ChipUartGuide::DelayMs(update_interval_ms_ / 2);
   if (!bus_->SetBaudRate(baud_rate_value)) {
     ChipUartGuide::LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "SetBaudRate failed\n");
@@ -580,7 +580,7 @@ bool L76k::SetCasicUpdateInterval(uint16_t interval_ms) {
     return false;
   }
 
-  update_freq_ = interval_ms;
+  update_interval_ms_ = interval_ms;
   return true;
 }
 

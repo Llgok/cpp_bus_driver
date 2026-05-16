@@ -147,6 +147,13 @@ class L76k final : public ChipUartGuide, public GnssParser {
       uint8_t timeout_count = kGetInformationTimeoutCount);
 
   /**
+   * @brief 获取当前定位更新时间间隔
+   * @return 定位更新时间间隔，单位为毫秒
+   * @Date 2026-05-16 11:20:00
+   */
+  uint16_t update_interval_ms() const { return update_interval_ms_; }
+
+  /**
    * @brief 设置定位频率
    * @param freq 使用 UpdateFreq::配置，频率设定
    * @return
@@ -285,6 +292,6 @@ class L76k final : public ChipUartGuide, public GnssParser {
   int32_t wake_up_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
   std::function<bool(bool)> wake_up_callback_ = nullptr;
   int32_t rst_;
-  uint16_t update_freq_ = 1000;  // 默认更新频率为 1000ms（1Hz）
+  uint16_t update_interval_ms_ = 1000;  // 默认更新间隔为 1000ms（1Hz）
 };
 }  // namespace cpp_bus_driver
