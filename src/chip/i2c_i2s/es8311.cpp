@@ -90,8 +90,7 @@ bool Es8311::Deinit(bool delete_bus) {
   }
 
   if (rst_ != kDefaultValue) {
-    ChipI2cGuide::SetGpioMode(
-        rst_, GpioMode::kDisable, GpioStatus::kDisable);
+    ChipI2cGuide::ResetGpio(rst_);
   }
 
   return true;

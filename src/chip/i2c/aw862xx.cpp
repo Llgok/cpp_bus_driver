@@ -174,7 +174,7 @@ bool Aw862xx::Deinit(bool delete_bus) {
   }
 
   if (rst_ != kDefaultValue) {
-    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+    ResetGpio(rst_);
   }
   return true;
 }

@@ -45,7 +45,7 @@ bool Xl95x5::Deinit(bool delete_bus) {
   }
 
   if (rst_ != kDefaultValue) {
-    Tool::SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+    Tool::ResetGpio(rst_);
   }
 
   return true;

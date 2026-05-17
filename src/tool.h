@@ -99,6 +99,7 @@ class Tool {
       uint32_t pin, GpioMode mode, GpioStatus status = GpioStatus::kDisable);
   bool GpioWrite(uint32_t pin, bool value);
   bool GpioRead(uint32_t pin);
+  bool ResetGpio(int32_t pin);
 
   void DelayMs(uint32_t value);
   void DelayUs(uint32_t value);

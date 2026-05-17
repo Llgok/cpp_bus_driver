@@ -55,7 +55,7 @@ bool Hi8561::Deinit() {
   }
 
   if (rst_ != kDefaultValue) {
-    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+    ResetGpio(rst_);
   }
 
   return true;

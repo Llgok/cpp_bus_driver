@@ -1285,6 +1285,14 @@ bool HardwareI2s::Deinit() {
     }
   }
 
+  if ((chan_tx_handle_ == nullptr) && (chan_rx_handle_ == nullptr)) {
+    result &= ResetGpio(data_in_);
+    result &= ResetGpio(data_out_);
+    result &= ResetGpio(ws_lrck_);
+    result &= ResetGpio(bclk_);
+    result &= ResetGpio(mclk_);
+  }
+
   return result;
 
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)

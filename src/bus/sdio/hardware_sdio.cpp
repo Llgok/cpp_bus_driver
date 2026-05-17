@@ -156,6 +156,16 @@ bool HardwareSdio::Deinit() {
       result = false;
     } else {
       host_init_flag_ = false;
+      result &= ResetGpio(clk_);
+      result &= ResetGpio(cmd_);
+      result &= ResetGpio(d0_);
+      result &= ResetGpio(d1_);
+      result &= ResetGpio(d2_);
+      result &= ResetGpio(d3_);
+      result &= ResetGpio(d4_);
+      result &= ResetGpio(d5_);
+      result &= ResetGpio(d6_);
+      result &= ResetGpio(d7_);
     }
   }
 

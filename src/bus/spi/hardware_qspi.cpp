@@ -150,11 +150,16 @@ bool HardwareQspi::Deinit(bool delete_bus) {
       result = false;
     } else {
       bus_init_flag_ = false;
+      result &= ResetGpio(data0_);
+      result &= ResetGpio(data1_);
+      result &= ResetGpio(data2_);
+      result &= ResetGpio(data3_);
+      result &= ResetGpio(sclk_);
     }
   }
 
   if (cs_ != kDefaultValue) {
-    if (!SetGpioMode(cs_, GpioMode::kDisable, GpioStatus::kDisable)) {
+    if (!ResetGpio(cs_)) {
       result = false;
     }
     cs_ = kDefaultValue;

@@ -180,7 +180,14 @@ bool HardwareUart::Deinit() {
   }
 
   init_flag_ = false;
-  return true;
+
+  bool gpio_result = true;
+  gpio_result &= ResetGpio(tx_);
+  gpio_result &= ResetGpio(rx_);
+  gpio_result &= ResetGpio(rts_);
+  gpio_result &= ResetGpio(cts_);
+
+  return gpio_result;
 }
 #endif
 }  // namespace cpp_bus_driver

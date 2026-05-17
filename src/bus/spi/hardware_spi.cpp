@@ -203,6 +203,8 @@ bool HardwareSpi::Deinit(bool delete_bus) {
     } else {
       spi_device_ = nullptr;
       device_init_flag_ = false;
+      result &= ResetGpio(cs_);
+      cs_ = kDefaultValue;
     }
   }
 
@@ -221,6 +223,9 @@ bool HardwareSpi::Deinit(bool delete_bus) {
     } else {
       bus_init_state_.store(BusInitState::kNotStarted);
       delete_bus_on_deinit_ = false;
+      result &= ResetGpio(mosi_);
+      result &= ResetGpio(miso_);
+      result &= ResetGpio(sclk_);
     }
   }
 

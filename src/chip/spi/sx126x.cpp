@@ -98,14 +98,15 @@ bool Sx126x::Deinit(bool delete_bus) {
     return false;
   }
 
+  bool result = true;
   if (busy_ != kDefaultValue) {
-    SetGpioMode(busy_, GpioMode::kDisable, GpioStatus::kDisable);
+    result &= ResetGpio(busy_);
   }
   if (rst_ != kDefaultValue) {
-    SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
+    result &= ResetGpio(rst_);
   }
 
-  return true;
+  return result;
 }
 
 std::string Sx126x::GetDeviceId() {

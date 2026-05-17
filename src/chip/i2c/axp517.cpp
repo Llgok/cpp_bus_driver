@@ -54,8 +54,7 @@ bool Axp517::Deinit(bool delete_bus) {
   }
 
   if (rst_ != kDefaultValue) {
-    Tool::SetGpioMode(
-        rst_, Tool::GpioMode::kDisable, Tool::GpioStatus::kDisable);
+    Tool::ResetGpio(rst_);
   }
 
   return true;

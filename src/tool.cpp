@@ -363,6 +363,56 @@ bool Tool::GpioRead(uint32_t pin) {
 #endif
 }
 
+bool Tool::ResetGpio(int32_t pin) {
+  if (pin == kDefaultValue) {
+    return true;
+  }
+
+  if (pin < 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+        "Value out of range (gpio pin: %d)\n", pin);
+    return false;
+  }
+
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+  if (pin >= static_cast<int32_t>(GPIO_NUM_MAX)) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+        "Value out of range (gpio pin: %d)\n", pin);
+    return false;
+  }
+
+  const gpio_num_t gpio = static_cast<gpio_num_t>(pin);
+  esp_err_t result = gpio_sleep_sel_dis(gpio);
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        "gpio_sleep_sel_dis failed (error code: %#X)\n", result);
+    return false;
+  }
+
+  result = gpio_hold_dis(gpio);
+  if ((result != ESP_OK) && (result != ESP_ERR_NOT_SUPPORTED)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        "gpio_hold_dis failed (error code: %#X)\n", result);
+    return false;
+  }
+
+  result = gpio_reset_pin(gpio);
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        "gpio_reset_pin failed (error code: %#X)\n", result);
+    return false;
+  }
+
+  return true;
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+  nrf_gpio_cfg_default(pin);
+  return true;
+#else
+  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "ResetGpio failed\n");
+  return false;
+#endif
+}
+
 void Tool::DelayMs(uint32_t value) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   // 默认状态下 vTaskDelay 在小于 10ms 延时时不精确

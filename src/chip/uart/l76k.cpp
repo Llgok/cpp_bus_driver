@@ -134,15 +134,11 @@ bool L76k::Deinit() {
     return false;
   }
 
-  if (wake_up_ != kDefaultValue) {
-    ChipUartGuide::SetGpioMode(
-        wake_up_, GpioMode::kDisable, GpioStatus::kDisable);
-  }
-  if (rst_ != kDefaultValue) {
-    ChipUartGuide::SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
-  }
+  bool result = true;
+  result &= ChipUartGuide::ResetGpio(wake_up_);
+  result &= ChipUartGuide::ResetGpio(rst_);
 
-  return true;
+  return result;
 }
 
 bool L76k::GetDeviceId(size_t* search_index) {

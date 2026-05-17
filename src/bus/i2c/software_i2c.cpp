@@ -49,8 +49,8 @@ bool SoftwareI2c::Init(uint32_t freq_hz, uint16_t address) {
 bool SoftwareI2c::Deinit(bool delete_bus) {
   bool result = true;
 
-  result &= SetGpioMode(sda_, GpioMode::kDisable, GpioStatus::kDisable);
-  result &= SetGpioMode(scl_, GpioMode::kDisable, GpioStatus::kDisable);
+  result &= ResetGpio(sda_);
+  result &= ResetGpio(scl_);
 
   return result;
 }
