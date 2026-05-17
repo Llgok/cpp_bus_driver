@@ -105,8 +105,7 @@ class L76k final : public ChipUartGuide, public GnssParser {
   /**
    * @brief 启动睡眠
    * @param enable [true]：进入睡眠，[false]：退出睡眠
-   * @return
-   * @Date 2025-02-14 16:18:00
+   * @return 成功返回 true，失败返回 false
    */
   bool Sleep(bool enable);
 
@@ -115,21 +114,18 @@ class L76k final : public ChipUartGuide, public GnssParser {
    * @param *data 读取数据的指针
    * @param length 要读取数据的长度
    * @return 接收的数据长度，如果接收错误或者接收长度为0都返回0
-   * @Date 2025-02-13 18:04:11
    */
   uint32_t ReadData(uint8_t* data, uint32_t length = 0);
 
   /**
    * @brief 获取接收缓存数据的长度
-   * @return
-   * @Date 2025-02-13 18:22:46
+   * @return 返回数据长度或数量
    */
   size_t GetRxBufferLength();
 
   /**
    * @brief 清除接收缓存中的所有数据
-   * @return
-   * @Date 2025-02-13 18:22:46
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ClearRxBufferData();
 
@@ -139,8 +135,7 @@ class L76k final : public ChipUartGuide, public GnssParser {
    * @param *length 获取长度的指针
    * @param max_length 获取数据的最大长度
    * @param timeout_count 超时计数
-   * @return
-   * @Date 2025-03-24 10:03:31
+   * @return 读取成功返回 true，失败返回 false
    */
   bool GetInfoData(std::unique_ptr<uint8_t[]>& data, uint32_t* length,
       uint32_t max_length = kMaxReceiveSize,
@@ -149,53 +144,47 @@ class L76k final : public ChipUartGuide, public GnssParser {
   /**
    * @brief 获取当前定位更新时间间隔
    * @return 定位更新时间间隔，单位为毫秒
-   * @Date 2026-05-16 11:20:00
    */
   uint16_t update_interval_ms() const { return update_interval_ms_; }
 
   /**
    * @brief 设置定位频率
    * @param freq 使用 UpdateFreq::配置，频率设定
-   * @return
-   * @Date 2025-02-14 18:18:57
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetUpdateFrequency(UpdateFreq freq);
 
   /**
    * @brief 设置模块和系统的波特率
    * @param baud_rate 使用 BaudRate::配置，波特率设定
-   * @return
-   * @Date 2025-02-17 13:45:17
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetBaudRate(BaudRate baud_rate);
 
   /**
    * @brief 获取系统的波特率
    * @return 波特率数据
-   * @Date 2025-02-17 13:45:58
    */
   uint32_t GetBaudRate();
 
   /**
    * @brief 设置重启模式
    * @param mode 使用 RestartMode::配置
-   * @return
-   * @Date 2025-02-17 14:27:01
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetRestartMode(RestartMode mode);
 
   /**
    * @brief 设置GNSS的星系
    * @param constellation 使用 GnssConstellation::配置
-   * @return
-   * @Date 2025-02-17 14:45:15
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetGnssConstellation(GnssConstellation constellation);
 
   /**
    * @brief 通过 PCAS03 配置各类 NMEA 语句输出频率
    * @param config 输出频率配置，0 关闭，1~9 每 N 次定位输出一次，-1 保持原配置
-   * @return
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetNmeaOutputConfig(const NmeaOutputConfig& config);
 
@@ -203,7 +192,7 @@ class L76k final : public ChipUartGuide, public GnssParser {
    * @brief 通过 CASIC CFG-MSG 配置单个 NMEA 语句输出频率
    * @param sentence NMEA 语句类型
    * @param rate 0 关闭，1~9 每 N 次定位输出一次，0xFFFF 立即查询输出一次
-   * @return
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetNmeaSentenceOutput(NmeaSentence sentence, uint16_t rate);
 
@@ -216,7 +205,7 @@ class L76k final : public ChipUartGuide, public GnssParser {
   /**
    * @brief 通过 CASIC CFG-PRT 配置串口协议掩码、工作模式和波特率
    * @param config 串口配置
-   * @return
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetCasicPortConfig(const CasicPortConfig& config);
 
@@ -238,7 +227,7 @@ class L76k final : public ChipUartGuide, public GnssParser {
    * @param start_mode 启动模式
    * @param nav_bbr_mask 需要清理的备份 RAM 掩码，默认不清理
    * @param reset_mode 复位方式
-   * @return
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetCasicRestartMode(RestartMode start_mode, uint16_t nav_bbr_mask = 0,
       CasicResetMode reset_mode = CasicResetMode::kImmediateHardwareReset);
@@ -246,13 +235,13 @@ class L76k final : public ChipUartGuide, public GnssParser {
   /**
    * @brief 通过 CASIC CFG-RATE 设置定位时间间隔
    * @param interval_ms 定位间隔，只支持 200、500、1000 ms
-   * @return
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetCasicUpdateInterval(uint16_t interval_ms);
 
   /**
    * @brief 通过 CASIC CFG-RATE 查询当前定位时间间隔
-   * @return
+   * @return 成功返回 true，失败返回 false
    */
   bool QueryCasicUpdateInterval();
 

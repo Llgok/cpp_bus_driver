@@ -41,8 +41,7 @@ class SoftwareI2c final : public BusI2cGuide {
   /**
    * @brief 写应答
    * @param ack 使用Ack_Bit::进行配置
-   * @return
-   * @Date 2025-08-22 15:44:49
+   * @return 写入成功返回 true，失败返回 false
    */
   bool WriteAck(AckBit ack);
 

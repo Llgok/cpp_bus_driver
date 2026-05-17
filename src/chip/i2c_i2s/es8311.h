@@ -146,16 +146,14 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * @brief 软件复位
    * ，在编解码器准备好待机或睡眠时，将所有复位位设置为“1”，并将CSM_ON清除为“0”，以最大限度地降低功耗
    * @param enalbe [true]：启动，[false]：关闭
-   * @return
-   * @Date 2025-03-11 17:42:32
+   * @return 成功返回 true，失败返回 false
    */
   bool SoftwareReset(bool enable);
 
   /**
    * @brief 设置主时钟源
    * @param clock 使用Clock_Source::配置
-   * @return
-   * @Date 2025-03-12 09:12:58
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetMasterClockSource(ClockSource clock);
 
@@ -164,16 +162,14 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * @param clock 使用Clock_Source::配置，时钟源
    * @param enalbe [true]：启动，[false]：关闭
    * @param invert [true]：反转，[false]：不反转
-   * @return
-   * @Date 2025-03-12 09:14:23
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetClock(ClockSource clock, bool enalbe, bool invert = false);
 
   /**
    * @brief 设置DAC的音量
    * @param volume 值范围0~255，增益范围 -95.5dB 到 +32dB，步进0.5dB，0dB为191
-   * @return
-   * @Date 2025-03-12 10:16:50
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetDacVolume(uint8_t volume);
 
@@ -181,32 +177,28 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * @brief
    * 设置ADC的音量，如果开启了自动音量控制（调用函数set_adc_auto_volume_control()）那么此设置音量函数无效
    * @param volume 值范围0~255，增益范围 -95.5dB 到 +32dB，步进0.5dB，0dB为191
-   * @return
-   * @Date 2025-03-12 10:16:50
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcVolume(uint8_t volume);
 
   /**
    * @brief 设置ADC自动控制音量
    * @param enable [true]：启动，[false]：关闭
-   * @return
-   * @Date 2025-03-12 10:26:52
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcAutoVolumeControl(bool enable);
 
   /**
    * @brief 设置MIC1P引脚的麦克风使用类型
    * @param type 使用Mic_Type::配置
-   * @return
-   * @Date 2025-03-12 10:32:55
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetMic(MicType type, MicInput input);
 
   /**
    * @brief 设置电源状态
    * @param status 使用 PowerStatus 结构体配置
-   * @return
-   * @Date 2025-03-12 10:52:49
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetPowerStatus(PowerStatus status);
 
@@ -214,8 +206,7 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * @brief
    * 设置低功耗电压状态，在正常模式下，如果设置了低功率控制，功耗将显著降低，音频性能，例如THD+N和信噪比，将略有下降
    * @param status 使用 LowPowerStatus 结构体配置
-   * @return
-   * @Date 2025-03-12 11:02:38
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetLowPowerStatus(LowPowerStatus status);
 
@@ -224,8 +215,7 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * 通过所输入的mclk_multiple和sample_rate_hz参数查找kClockCoeffTable_列表里的最佳系数值来设置时钟系数
    * @param mclk_multiple mclk倍速
    * @param sample_rate_hz 采样率
-   * @return
-   * @Date 2025-03-12 16:58:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetClockCoeff(uint16_t mclk_multiple, uint32_t sample_rate_hz);
 
@@ -233,64 +223,56 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * @brief 设置SDP字节长度
    * @param dsp 使用Sdp::配置
    * @param length 使用Bits_Per_Sample::配置
-   * @return
-   * @Date 2025-03-13 11:42:42
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetSdpDataBitLength(Sdp sdp, BitsPerSample length);
 
   /**
    * @brief 设置PGA电源
    * @param enable [true]：启动，[false]：关闭
-   * @return
-   * @Date 2025-03-13 11:47:36
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetPgaPower(bool enable);
 
   /**
    * @brief 设置ADC电源
    * @param enable [true]：启动，[false]：关闭
-   * @return
-   * @Date 2025-03-13 11:47:36
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcPower(bool enable);
 
   /**
    * @brief 设置DAC电源
    * @param enable
-   * @return
-   * @Date 2025-03-13 11:58:38
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetDacPower(bool enable);
 
   /**
    * @brief 设置输出到HP驱动器
    * @param enable [true]：启动，[false]：关闭
-   * @return
-   * @Date 2025-03-13 12:04:13
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetOutputToHpDrive(bool enable);
 
   /**
    * @brief 设置ADC处理信号中的直流偏置和高频噪声的模式
    * @param offset_freeze 使用Adc_Offset_Freeze::配置
-   * @return
-   * @Date 2025-03-13 12:12:17
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcOffsetFreeze(AdcOffsetFreeze offset_freeze);
 
   /**
    * @brief 设置ADC的HPF第二系数
    * @param coeff 值范围0~31
-   * @return
-   * @Date 2025-03-13 13:33:08
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcHpfStage2Coeff(uint8_t coeff);
 
   /**
    * @brief 设置DAC的均衡器（EQ）
    * @param enable [true]：启动，[false]：关闭
-   * @return
-   * @Date 2025-03-13 13:38:17
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetDacEqualizer(bool enable);
 
@@ -300,7 +282,6 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * @param *data 数据指针
    * @param byte 字节长度
    * @return size_t 实际读取到的字节数
-   * @Date 2025-03-13 14:02:47
    */
   size_t ReadI2s(void* data, size_t byte);
 
@@ -309,7 +290,6 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * @param *data 数据指针
    * @param byte 字节长度
    * @return size_t 实际写入的字节数
-   * @Date 2025-03-13 14:02:47
    */
   size_t WriteI2s(const void* data, size_t byte);
 
@@ -317,16 +297,14 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * @brief 重新配置时钟信息
    * @param mclk_multiple mclk倍速
    * @param sample_rate_hz 采样率
-   * @return
-   * @Date 2026-04-13 15:26:05
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetClockReconfig(uint16_t mclk_multiple, uint32_t sample_rate_hz);
 
   /**
    * @brief 设置i2s通道使能
    * @param enable [true]：启用i2s，[false]：关闭i2s
-   * @return
-   * @Date 2026-04-13 16:07:26
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetI2sChannelEnable(bool enable);
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
@@ -338,46 +316,39 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * @param *read_buffer
    * 读数据流缓存指针，如果为nullptr表示不读取数据，*read_buffer需要使用ram分配的内存
    * @param max_buffer_length 数据流缓存最大长度
-   * @return
-   * @Date 2025-08-29 17:49:07
+   * @return 操作成功返回 true，失败返回 false
    */
   bool StartTransmitI2s(
       uint32_t* write_buffer, uint32_t* read_buffer, size_t max_buffer_length);
 
   /**
    * @brief 停止I2s数据流传输
-   * @return
-   * @Date 2025-08-29 17:51:03
    */
   void StopTransmitI2s();
 
   /**
    * @brief 设置下一个读取的I2s指针
    * @param *data 数据指针
-   * @return
-   * @Date 2025-08-29 17:52:08
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetNextReadI2s(uint32_t* data);
 
   /**
    * @brief 设置下一个写入的I2s指针
    * @param *data 数据指针
-   * @return
-   * @Date 2025-08-29 17:52:08
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetNextWriteI2s(uint32_t* data);
 
   /**
    * @brief 获取读取I2s事件标志
    * @return [true]：有数据可读，[false]：无数据可读
-   * @Date 2025-08-29 17:52:43
    */
   bool GetReadI2sEventFlag();
 
   /**
    * @brief 获取写入I2s事件标志
    * @return [true]：可以继续写入数据，[false]：不能写入数据
-   * @Date 2025-08-29 17:52:43
    */
   bool GetWriteI2sEventFlag();
 
@@ -386,40 +357,35 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
   /**
    * @brief ADC增益
    * @param gain 使用Adc_Gain::配置
-   * @return
-   * @Date 2025-03-13 16:53:47
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcGain(AdcGain gain);
 
   /**
    * @brief 设置ADC数据全部输出到DAC上
    * @param enable [true]：启动，[false]：关闭
-   * @return
-   * @Date 2025-03-13 16:58:44
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcDataToDac(bool enable);
 
   /**
    * @brief ADC的PGA增益
    * @param gain 使用Adc_Pga_Gain::配置
-   * @return
-   * @Date 2025-03-14 11:03:35
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcPgaGain(AdcPgaGain gain);
 
   /**
    * @brief 设置串行模式
    * @param mode 使用Serial_Port_Mode::配置
-   * @return
-   * @Date 2025-03-29 16:13:18
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetSerialPortMode(SerialPortMode mode);
 
   /**
    * @brief 设置ADC数据传输格式，用于回声消除
    * @param format 使用Adc_Data_Format::配置
-   * @return
-   * @Date 2026-01-19 15:47:14
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcDataFormat(AdcDataFormat format);
 
@@ -602,8 +568,7 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * @param *library 需要查找的库，使用Clock_Coeff类型的库写入
    * @param library_length 查找的库的长度
    * @param search_index 搜索引索
-   * @return
-   * @Date 2025-03-13 10:56:10
+   * @return 成功返回 true，失败返回 false
    */
   bool SearchClockCoeff(uint16_t mclk_multiple, uint32_t sample_rate_hz,
       const ClockCoeff* library, size_t library_length,

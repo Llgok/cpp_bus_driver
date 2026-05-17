@@ -149,7 +149,6 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 将 IrqMaskFlag 转换为可组合的IRQ掩码
    * @param flag 使用 IrqMaskFlag:: 配置
    * @return IRQ掩码
-   * @Date 2026-05-13
    */
   static constexpr uint16_t IrqMask(IrqMaskFlag flag) {
     return static_cast<uint16_t>(flag);
@@ -498,14 +497,12 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 检查设备忙
    * @return 如果返回 [true] 代表忙检查成功设备可以接收数据了，如果返回 [false]
    * 代表满检测超过设定的忙等待最大阈值
-   * @Date 2025-02-14 16:12:30
    */
   bool CheckBusy();
 
   /**
    * @brief 返回设备的状态，主机可以直接获取芯片状态
    * @return 状态数据，读取错误返回(-1)
-   * @Date 2025-01-18 17:04:10
    */
   uint8_t GetStatus();
 
@@ -513,7 +510,6 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 命令解析，详细请参考SX126x手册 13-76: Status Bytes Definition
    * @param parse_status 解析状态字节，由 GetStatus() 函数获取
    * @return CmdStatus 命令状态
-   * @Date 2025-02-12 14:41:21
    */
   CmdStatus ParseCmdStatus(uint8_t parse_status);
 
@@ -521,7 +517,6 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 芯片模式解析，详细请参考SX126x手册 13-76: Status Bytes Definition
    * @param parse_status 解析状态字节，由 GetStatus() 函数获取
    * @return ChipModeStatus 芯片模式状态
-   * @Date 2025-02-13 13:52:33
    */
   ChipModeStatus ParseChipModeStatus(uint8_t parse_status);
 
@@ -529,8 +524,7 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 中断解析，详细请参考SX126x手册 13-29: IRQ registers
    * @param irq_flag IRQ状态字，由 GetIrqFlag() 函数获取
    * @param status 使用 IrqStatus 结构体保存解析后的IRQ状态
-   * @return
-   * @Date 2025-02-13 13:33:15
+   * @return 解析成功返回 true，失败返回 false
    */
   bool ParseIrqStatus(uint16_t irq_flag, IrqStatus& status);
 
@@ -539,8 +533,7 @@ class Sx126x final : public ChipSpiGuide {
    * 模式，使用 kStdbyXosc 前， 需要在 kStdbyRc 模式配置 SetRegulatorMode() 为
    * kLdoAndDcdc 模式再切换到 kStdbyXosc 模式
    * @param config 使用 StdbyConfig:: 配置
-   * @return
-   * @Date 2025-01-17 16:49:59
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetStandby(StdbyConfig config);
 
@@ -548,16 +541,14 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 配置由DIO3控制的外部TCXO参考电压
    * @param voltage 使用 Dio3TcxoVoltage:: 配置
    * @param time_out_us TCXO启动等待时间，单位us，内部转换为15.625us RTC步进
-   * @return
-   * @Date 2025-01-22 12:04:01
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetDio3AsTcxoCtrl(Dio3TcxoVoltage voltage, uint32_t time_out_us);
 
   /**
    * @brief 优化功率放大器（PA）的钳位阈值（SX126x手册第15.2节）
    * @param enable [true]：开启修复，[false]：关闭修复
-   * @return
-   * @Date 2025-01-17 16:58:01
+   * @return 成功返回 true，失败返回 false
    */
   bool FixTxClamp(bool enable);
 
@@ -565,24 +556,21 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 设置SX126x FIFO数据缓冲区的TX/RX基地址
    * @param tx_base_address tx 基地址
    * @param rx_base_address rx 基地址
-   * @return
-   * @Date 2025-01-17 17:08:57
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetBufferBaseAddress(uint8_t tx_base_address, uint8_t rx_base_address);
 
   /**
    * @brief 设置传输数据包类型
    * @param type 使用 PacketType:: 配置
-   * @return
-   * @Date 2025-01-17 17:29:17
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetPacketType(PacketType type);
 
   /**
    * @brief 芯片在成功发送数据包或成功接收数据包后进入的模式
    * @param mode 使用 FallbackMode:: 配置
-   * @return
-   * @Date 2025-01-17 17:34:32
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetRxTxFallbackMode(FallbackMode mode);
 
@@ -599,8 +587,7 @@ class Sx126x final : public ChipSpiGuide {
    * kCad（信道活动检测）操作完成后要执行的操作。此参数是可选的
    * @param time_out_us
    * 仅在 exit_mode = kRx 或 kLbt 时使用，单位us，内部转换为15.625us RTC步进
-   * @return
-   * @Date 2025-01-17 18:07:39
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetCadParams(CadSymbolNum num, uint8_t cad_det_peak, uint8_t cad_det_min,
       CadExitMode exit_mode, uint32_t time_out_us);
@@ -608,16 +595,14 @@ class Sx126x final : public ChipSpiGuide {
   /**
    * @brief 清除一个IRQ标志
    * @param flag 使用 IrqMaskFlag:: 配置，需要清除的IRQ标志，写1清除对应标志位
-   * @return
-   * @Date 2025-01-18 09:27:58
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ClearIrqFlag(IrqMaskFlag flag);
 
   /**
    * @brief 清除一个或多个IRQ标志，可通过 IrqMask() 组合多个 IrqMaskFlag
    * @param flags 需要清除的IRQ标志位，设置为1的位会被清除
-   * @return
-   * @Date 2026-05-13
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ClearIrqFlag(uint16_t flags);
 
@@ -644,8 +629,7 @@ class Sx126x final : public ChipSpiGuide {
    * 并且DIO3Mask的第0位也被设置为1，那么IRQ源TxDone的上升沿将被记录在IRQ寄存器中，
    * 并同时出现在DIO3上，一个IRQ可以映射到所有DIO，
    * 一个DIO也可以映射到所有IRQ（进行“或”操作），但某些IRQ源仅在特定的操作模式和帧中可用
-   * @return
-   * @Date 2025-01-18 09:48:15
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetDioIrqParams(uint16_t irq_mask, uint16_t dio1_mask,
       uint16_t dio2_mask, uint16_t dio3_mask);
@@ -656,15 +640,13 @@ class Sx126x final : public ChipSpiGuide {
    * 校准功能会启动由calibParam定义的模块的校准，如果所有模块都进行校准，总校准时间为3.5毫秒，校准必须在STDBY_RC模式下启动，
    * 并且在校准过程中BUSY引脚将保持高电平，BUSY引脚的下降沿表示校准过程结束
    * @param calib_param 需要校准的参数设置
-   * @return
-   * @Date 2025-01-18 13:59:03
+   * @return 操作成功返回 true，失败返回 false
    */
   bool Calibrate(uint8_t calib_param);
 
   /**
    * @brief 获取当前使用的数据包类型
    * @return PacketType 包类型
-   * @Date 2025-01-21 16:28:58
    */
   PacketType GetPacketType();
 
@@ -673,31 +655,27 @@ class Sx126x final : public ChipSpiGuide {
    * 默认情况下，只使用LDO（低压差线性稳压器），这在成本敏感的应用中非常有用，因为DC-DC转换器所需的额外元件会增加成本，
    * 仅使用线性稳压器意味着接收或发送电流几乎会加倍，此功能允许指定是使用DC-DC还是LDO来进行电源调节
    * @param mode 使用 RegulatorMode:: 配置
-   * @return
-   * @Date 2025-01-22 13:44:23
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetRegulatorMode(RegulatorMode mode);
 
   /**
    * @brief 设置电流限制
    * @param current （0mA ~ 140mA）步长为2.5mA，有越界校正
-   * @return
-   * @Date 2025-01-22 14:09:23
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetCurrentLimit(float current);
 
   /**
    * @brief 获取电流限制
-   * @return
-   * @Date 2025-01-22 14:45:10
+   * @return 返回读取到的数值
    */
   uint8_t GetCurrentLimit();
 
   /**
    * @brief 配置DIO2的模式功能，IRQ或者控制外部RF开关
    * @param mode 使用 Dio2Mode:: 配置
-   * @return
-   * @Date 2025-01-22 14:47:07
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetDio2AsRfSwitchCtrl(Dio2Mode mode);
 
@@ -712,8 +690,7 @@ class Sx126x final : public ChipSpiGuide {
    * 没有影响，通过减小 hpMax 的值可以降低最大输出功率，有效范围在 0x00 到 0x07
    * 之间， 0x07 是 kSx1262 实现 +22 dBm 输出功率的最大支持值，将 hpMax 增加到
    * 0x07 以上可能会导致设备过早老化， 或在极端温度下使用时可能损坏设备
-   * @return
-   * @Date 2025-01-22 16:26:38
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetPaConfig(uint8_t pa_duty_cycle, uint8_t hp_max);
 
@@ -726,8 +703,7 @@ class Sx126x final : public ChipSpiGuide {
    * 通过 SetPaConfig() 的 device_sel 参数来选择高功率 PA 或低功率
    * PA，默认情况下，设置为低功率 PA 和 +14 dBm
    * @param ramp_time 使用 RampTime:: 配置
-   * @return
-   * @Date 2025-01-22 16:46:55
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetTxParams(int8_t power, RampTime ramp_time);
 
@@ -740,23 +716,20 @@ class Sx126x final : public ChipSpiGuide {
    * 为公共网络），也支持直接写入寄存器的 16-bit 同步字（0x1424
    * 为专用网络，0x3444 为公共网络）。其他值可能无法与SX126x系列等
    * LoRa设备互操作，或者降低接收灵敏度。
-   * @return
-   * @Date 2025-01-22 09:15:24
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetLoraSyncWord(uint16_t sync_word);
 
   /**
    * @brief 获取当前设置的同步字
-   * @return
-   * @Date 2025-01-22 09:30:25
+   * @return 返回读取到的数值
    */
   uint16_t GetLoraSyncWord();
 
   /**
    * @brief 修复LoRa模式反转 IQ 配置 （SX126x手册第15.4节）
    * @param iq 使用 InvertIq:: 配置
-   * @return
-   * @Date 2025-01-22 09:58:32
+   * @return 成功返回 true，失败返回 false
    */
   bool FixLoraInvertedIq(InvertIq iq);
 
@@ -771,8 +744,7 @@ class Sx126x final : public ChipSpiGuide {
    * 在进行数据传输时，发送端会设置这个长度，而接收端则根据这个长度来解析接收到的数据包
    * @param crc_type 使用 LoraCrcType:: 配置
    * @param iq 使用 InvertIq:: 配置
-   * @return
-   * @Date 2025-01-22 11:44:47
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetLoraPacketParams(uint16_t preamble_length, LoraHeaderType header_type,
       uint8_t payload_length, LoraCrcType crc_type, InvertIq iq);
@@ -786,24 +758,21 @@ class Sx126x final : public ChipSpiGuide {
    * 配置，LoRa有效载荷使用前向纠错机制，该机制有多个编码级别
    * @param ldro 使用 Ldro::
    * 配置，低数据速率优化，通常由 ConfigLoraParams() 按Semtech官方示例表自动计算
-   * @return
-   * @Date 2025-01-21 16:47:47
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetLoraModulationParams(Sf sf, LoraBw bw, Cr cr, Ldro ldro);
 
   /**
    * @brief 设置输出功率
    * @param power SX1262为（-9 ~ 22），SX1261为（-17 ~ 14），有越界校正
-   * @return
-   * @Date 2025-02-06 17:42:39
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetOutputPower(int8_t power);
 
   /**
    * @brief 校准设备在其工作频段内的镜像抑制
    * @param freq_mhz 使用 ImgCalFreq:: 配置，需要校准的频率范围
-   * @return
-   * @Date 2025-02-06 18:00:12
+   * @return 操作成功返回 true，失败返回 false
    */
   bool CalibrateImage(ImgCalFreq freq_mhz);
 
@@ -811,31 +780,27 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 校准设备在指定频率范围内的镜像抑制
    * @param start_freq_mhz 校准范围的起始频率，单位 MHz
    * @param end_freq_mhz 校准范围的结束频率，单位 MHz
-   * @return
-   * @Date 2026-05-14
+   * @return 操作成功返回 true，失败返回 false
    */
   bool CalibrateImage(uint16_t start_freq_mhz, uint16_t end_freq_mhz);
 
   /**
    * @brief 设置射频频率模式的频率
    * @param freq_mhz （150 ~ 960）RF的频率设置
-   * @return
-   * @Date 2025-02-07 09:43:33
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetRfFrequency(double freq_mhz);
 
   /**
    * @brief 设置传输频率
    * @param freq_mhz （150 ~ 960）频率设置
-   * @return
-   * @Date 2025-02-07 09:44:36
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetFrequency(double freq_mhz);
 
   /**
    * @brief 将芯片切换到频率合成器模式
-   * @return
-   * @Date 2026-05-13
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetFs();
 
@@ -853,8 +818,7 @@ class Sx126x final : public ChipSpiGuide {
    * 支持官方示例的8-bit同步字（0x12专用网络，0x34公共网络），也支持直接写入寄存器的16-bit同步字
    * （0x1424专用网络，0x3444公共网络）
    * @param preamble_length 前导长度，表示无线电将发送的LoRa符号数量
-   * @return
-   * @Date 2025-02-07 09:55:00
+   * @return 成功返回 true，失败返回 false
    */
   bool ConfigLoraParams(double freq_mhz, LoraBw bw, float current_limit,
       int8_t power, Sf sf = Sf::kSf7, Cr cr = Cr::kCr45,
@@ -865,16 +829,14 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 设置接收占空比模式
    * @param rx_time_us 接收窗口时间，单位为us，芯片内部会转换为 15.625us 步进
    * @param sleep_time_us 休眠窗口时间，单位为us，芯片内部会转换为 15.625us 步进
-   * @return
-   * @Date 2026-05-13
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetRxDutyCycle(uint32_t rx_time_us, uint32_t sleep_time_us);
 
   /**
    * @brief 设置是否在检测到前导码后停止接收超时计时器
    * @param enable [true]：检测到前导码后停止计时器，[false]：计时器继续运行
-   * @return
-   * @Date 2026-05-13
+   * @return 操作成功返回 true，失败返回 false
    */
   bool StopTimerOnPreamble(bool enable);
 
@@ -883,8 +845,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param time_out_us
    * RX超时时间，单位us，内部转换为15.625us
    * RTC步进；0x000000和0xFFFFFF按芯片手册特殊值保留
-   * @return
-   * @Date 2025-02-07 11:31:43
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetRx(uint32_t time_out_us);
 
@@ -897,8 +858,7 @@ class Sx126x final : public ChipSpiGuide {
    * TX/RX超时时间，单位us，内部转换为15.625us
    * RTC步进；0x000000和0xFFFFFF按芯片手册特殊值保留
    * @param preamble_length 前导长度，表示无线电将发送的LoRa符号数量
-   * @return
-   * @Date 2025-02-07 11:44:43
+   * @return 操作成功返回 true，失败返回 false
    */
   bool StartLora(ChipMode chip_mode, uint32_t time_out_us = 0xFFFFFF,
       FallbackMode fallback_mode = FallbackMode::kStdbyRc,
@@ -906,45 +866,39 @@ class Sx126x final : public ChipSpiGuide {
 
   /**
    * @brief 启动LoRa信道活动检测
-   * @return
-   * @Date 2026-05-13
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetCad();
 
   /**
    * @brief 发送无限长前导码，常用于射频链路测试
-   * @return
-   * @Date 2026-05-13
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetTxInfinitePreamble();
 
   /**
    * @brief 设置LoRa接收符号超时时间
    * @param symbol_count 符号数量，写入芯片的 SetLoRaSymbNumTimeout 参数
-   * @return
-   * @Date 2026-05-13
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetLoraSymbolTimeout(uint8_t symbol_count);
 
   /**
    * @brief 获取中断请求状态
    * @return 中断状态，读取错误返回(-1)
-   * @Date 2025-02-07 13:57:28
    */
   uint16_t GetIrqFlag();
 
   /**
    * @brief 获取接收缓冲区状态
    * @param status 使用 RxBufferStatus 结构体保存有效载荷长度和FIFO起始地址
-   * @return
-   * @Date 2026-05-13
+   * @return 读取成功返回 true，失败返回 false
    */
   bool GetRxBufferStatus(RxBufferStatus& status);
 
   /**
    * @brief 获取接收到的数据长度
    * @return 接收的数据长度，如果接收错误或者接收长度为0都返回0
-   * @Date 2025-02-07 14:39:31
    */
   uint8_t GetRxBufferLength();
 
@@ -953,8 +907,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param data 读取数据的指针
    * @param length 要读取数据的长度，最大255
    * @param offset 数据偏移量
-   * @return
-   * @Date 2025-02-07 14:55:09
+   * @return 读取成功返回 true，失败返回 false
    */
   bool ReadBuffer(uint8_t* data, uint8_t length, uint8_t offset = 0);
 
@@ -963,8 +916,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param status 使用 ReceiveStatus 结构体保存IRQ、GFSK包状态和RX FIFO状态
    * @note 该函数会在RxDone后按Semtech官方流程停止RX超时计时器；
    * 该函数不清除IRQ，ReceiveData() 会在处理完成后清除已处理的IRQ标志
-   * @return
-   * @Date 2026-05-14
+   * @return 读取成功返回 true，失败返回 false
    */
   bool GetReceiveStatus(ReceiveStatus& status);
 
@@ -976,7 +928,6 @@ class Sx126x final : public ChipSpiGuide {
    * @param status
    * 可选的接收状态输出指针；为 nullptr 时只接收数据，不输出状态
    * @return 接收的数据长度，如果接收错误或者接收长度为0都返回0
-   * @Date 2025-02-12 11:17:14
    */
   uint8_t ReceiveData(
       uint8_t* data, uint8_t length = 0, ReceiveStatus* status = nullptr);
@@ -984,53 +935,46 @@ class Sx126x final : public ChipSpiGuide {
   /**
    * @brief 获取LoRa模式的包的指标信息
    * @param metrics 使用 PacketMetrics 结构体保存包指标信息
-   * @return
-   * @Date 2025-02-12 17:02:03
+   * @return 读取成功返回 true，失败返回 false
    */
   bool GetLoraPacketMetrics(PacketMetrics& metrics);
 
   /**
    * @brief 获取当前瞬时RSSI
    * @param rssi_dbm 输出RSSI值，单位为dBm
-   * @return
-   * @Date 2026-05-13
+   * @return 读取成功返回 true，失败返回 false
    */
   bool GetRssiInst(float& rssi_dbm);
 
   /**
    * @brief 获取芯片内部的数据包统计信息
    * @param stats 使用 PacketStats 结构体保存接收包数量和错误计数
-   * @return
-   * @Date 2026-05-13
+   * @return 读取成功返回 true，失败返回 false
    */
   bool GetPacketStats(PacketStats& stats);
 
   /**
    * @brief 清空芯片内部的数据包统计计数器
-   * @return
-   * @Date 2026-05-13
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ResetStats();
 
   /**
    * @brief 获取芯片内部设备错误状态
    * @return 设备错误状态位，读取失败返回0xFFFF
-   * @Date 2026-05-13
    */
   uint16_t GetDeviceErrors();
 
   /**
    * @brief 清除芯片内部设备错误状态
-   * @return
-   * @Date 2026-05-13
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ClearDeviceErrors();
 
   /**
    * @brief 设置接收增益增强模式
    * @param enable [true]：开启接收增益增强，[false]：关闭接收增益增强
-   * @return
-   * @Date 2026-05-13
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetRxBoosted(bool enable);
 
@@ -1040,8 +984,7 @@ class Sx126x final : public ChipSpiGuide {
    * 传输前置位（SX126x手册第15.1节）
    * @param enable
    * [true]：LoRa 500kHz 传输前清除对应位，[false]：其他 LoRa/GFSK 传输前置位
-   * @return
-   * @Date 2025-02-12 18:20:23
+   * @return 成功返回 true，失败返回 false
    */
   bool FixBw500KhzSensitivity(bool enable);
 
@@ -1050,8 +993,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param time_out_us
    * TX超时时间，单位us，内部转换为15.625us
    * RTC步进；0x000000和0xFFFFFF按芯片手册特殊值保留
-   * @return
-   * @Date 2025-02-12 18:27:27
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetTx(uint32_t time_out_us);
 
@@ -1060,8 +1002,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param data 写入数据的指针
    * @param length 要写入数据的长度，最大255
    * @param offset 写入偏移量
-   * @return
-   * @Date 2025-02-13 09:51:03
+   * @return 写入成功返回 true，失败返回 false
    */
   bool WriteBuffer(const uint8_t* data, uint8_t length, uint8_t offset = 0);
 
@@ -1070,8 +1011,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param status 使用 SendStatus 结构体保存发送完成或超时状态
    * @note
    * 该函数只读取状态，不清除IRQ；调用方确认TxDone或Timeout后再清除对应IRQ标志
-   * @return
-   * @Date 2026-05-14
+   * @return 读取成功返回 true，失败返回 false
    */
   bool GetSendStatus(SendStatus& status);
 
@@ -1082,16 +1022,14 @@ class Sx126x final : public ChipSpiGuide {
    * @param time_out_us
    * TX超时时间，单位us，内部转换为15.625us
    * RTC步进；0x000000和0xFFFFFF按芯片手册特殊值保留
-   * @return
-   * @Date 2025-02-13 09:08:52
+   * @return 操作成功返回 true，失败返回 false
    */
   bool SendData(const uint8_t* data, uint8_t length, uint32_t time_out_us = 0);
 
   /**
    * @brief 设置LoRa模式的CRC
    * @param crc_type 使用 LoraCrcType:: 配置，Crc校验
-   * @return
-   * @Date 2025-02-21 15:36:16
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetLoraCrcPacketParams(LoraCrcType crc_type);
 
@@ -1099,8 +1037,7 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 设置GFSK同步字寄存器；改变有效同步字长度时还需要同步更新GFSK包参数
    * @param sync_word 同步字数据，最大8个字节
    * @param length 同步字数据长度，单位Byte，范围1~8
-   * @return
-   * @Date 2025-02-18 16:24:14
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetGfskSyncWord(const uint8_t* sync_word, uint8_t length);
 
@@ -1108,8 +1045,7 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 设置GFSK地址过滤使用的节点地址和广播地址
    * @param node_address 节点地址
    * @param broadcast_address 广播地址
-   * @return
-   * @Date 2026-05-13
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetGfskPacketAddress(uint8_t node_address, uint8_t broadcast_address);
 
@@ -1117,16 +1053,14 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 设置GFSK CRC seed和polynomial；改变CRC类型时还需要同步更新GFSK包参数
    * @param initial 参数1，官方示例宏为0x01234567，芯片写入低16位0x4567
    * @param polynomial 参数2，官方示例宏为0x01234567，芯片写入低16位0x4567
-   * @return
-   * @Date 2025-02-19 09:33:11
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetGfskCrc(uint16_t initial, uint16_t polynomial);
 
   /**
    * @brief 设置GFSK数据白化初始种子
    * @param seed 白化种子，官方示例默认值为 0x0123
-   * @return
-   * @Date 2026-05-13
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetGfskWhiteningSeed(uint16_t seed);
 
@@ -1148,8 +1082,7 @@ class Sx126x final : public ChipSpiGuide {
    * 在进行数据传输时，发送端会设置这个长度，而接收端则根据这个长度来解析接收到的数据包
    * @param crc_type 使用 GfskCrcType:: 配置
    * @param whitening 使用 Whitening:: 配置
-   * @return
-   * @Date 2025-02-18 17:29:22
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetGfskPacketParams(uint16_t preamble_length,
       PreambleDetector preamble_detector_length, uint8_t sync_word_bit_length,
@@ -1163,8 +1096,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param ps 使用 PulseShape:: 配置，高斯滤波器的滚降因子
    * @param bw 使用 GfskBw:: 配置，带宽
    * @param freq_deviation_khz （0.6 ~ 200）频率偏移
-   * @return
-   * @Date 2025-02-19 09:17:55
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetGfskModulationParams(
       double br, PulseShape ps, GfskBw bw, double freq_deviation_khz);
@@ -1196,8 +1128,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param preamble_detector
    * 前导检测门限，和 preamble_length
    * 不是同一个配置；默认kLength16bit对齐官方示例
-   * @return
-   * @Date 2025-02-19 09:17:55
+   * @return 配置成功返回 true，失败返回 false
    */
   bool ConfigGfskParams(double freq_mhz, double br, GfskBw bw,
       float current_limit, int8_t power, double freq_deviation_khz = 25.0,
@@ -1223,8 +1154,7 @@ class Sx126x final : public ChipSpiGuide {
    * RTC步进；0x000000和0xFFFFFF按芯片手册特殊值保留
    * @param preamble_length
    * 实际发送/接收的GFSK前导长度，单位Bit；前导检测门限使用当前配置，必要时仅按此前导长度压到合法范围
-   * @return
-   * @Date 2025-02-19 09:17:55
+   * @return 操作成功返回 true，失败返回 false
    */
   bool StartGfsk(ChipMode chip_mode, uint32_t time_out_us = 0xFFFFFF,
       FallbackMode fallback_mode = FallbackMode::kStdbyRc,
@@ -1234,7 +1164,6 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 获取GFSK模式包的状态
    * @return uint32_t 值的排序为
    * [未使用(8bit)|RxStatus(8bit)|RssiSync(8bit)|RssiAvg(8bit)]
-   * @Date 2025-02-28 16:34:18
    */
   uint32_t GetGfskPacketStatus();
 
@@ -1244,8 +1173,7 @@ class Sx126x final : public ChipSpiGuide {
    * 需要解析的状态数据，使用 GetGfskPacketStatus() 函数的返回值配置
    * （[RxStatus(8bit)]数据）
    * @param status 由 GfskPacketStatus 结构体保存包状态
-   * @return
-   * @Date 2025-02-21 15:17:05
+   * @return 解析成功返回 true，失败返回 false
    */
   bool ParseGfskPacketStatus(uint32_t parse_status, GfskPacketStatus& status);
 
@@ -1255,8 +1183,7 @@ class Sx126x final : public ChipSpiGuide {
    * 需要解析的指标数据，使用 GetGfskPacketStatus() 函数的返回值配置
    * （[RssiSync(8bit)|RssiAvg(8bit)]数据）
    * @param metrics 使用 PacketMetrics 结构体保存包指标信息
-   * @return
-   * @Date 2025-02-21 15:17:53
+   * @return 解析成功返回 true，失败返回 false
    */
   bool ParseGfskPacketMetrics(uint32_t parse_metrics, PacketMetrics& metrics);
 
@@ -1264,8 +1191,7 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 设置GFSK同步字寄存器，并同步更新GFSK包参数中的同步字有效长度
    * @param sync_word 设置同步字数据指针
    * @param sync_word_length 同步字有效长度，单位Byte，范围1~8
-   * @return
-   * @Date 2025-02-21 15:36:16
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetGfskSyncWordPacketParams(
       const uint8_t* sync_word, uint8_t sync_word_length);
@@ -1276,8 +1202,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param crc_initial CRC参数1，官方示例宏为0x01234567，芯片写入低16位0x4567
    * @param crc_polynomial
    * CRC参数2，官方示例宏为0x01234567，芯片写入低16位0x4567
-   * @return
-   * @Date 2025-02-21 15:36:16
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetGfskCrcPacketParams(
       GfskCrcType crc_type, uint16_t crc_initial, uint16_t crc_polynomial);
@@ -1288,8 +1213,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param dio2_mode 使用 IrqMaskFlag:: 配置，DIO2需要配置的芯片中断模式
    * @param dio3_mode 使用 IrqMaskFlag:: 配置，DIO3需要配置的芯片中断模式
    * @param irq_mask SX126x内部启用的IRQ总掩码，为0时默认使用DIO1/2/3掩码合集
-   * @return
-   * @Date 2025-03-15 11:48:59
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetIrqGpioMode(IrqMaskFlag dio1_mode,
       IrqMaskFlag dio2_mode = IrqMaskFlag::kDisable,
@@ -1301,16 +1225,14 @@ class Sx126x final : public ChipSpiGuide {
    * @param dio2_mask DIO2需要映射的IRQ掩码
    * @param dio3_mask DIO3需要映射的IRQ掩码
    * @param irq_mask SX126x内部启用的IRQ总掩码，为0时默认使用DIO1/2/3掩码合集
-   * @return
-   * @Date 2026-05-13
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetIrqGpioMode(uint16_t dio1_mask, uint16_t dio2_mask = 0,
       uint16_t dio3_mask = 0, uint16_t irq_mask = 0);
 
   /**
    * @brief 清空buffer缓冲区所有数据
-   * @return
-   * @Date 2025-03-15 15:06:48
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ClearBuffer();
 
@@ -1322,8 +1244,7 @@ class Sx126x final : public ChipSpiGuide {
    * 信号） 设备会保持在 kTx
    * 连续波模式，直到主机发送模式配置命令。虽然此命令在实际应用中没有真正的用例，
    * 但它可以为开发者提供有价值的帮助，以检查和监控无线电在 Tx 模式下的性能
-   * @return
-   * @Date 2025-03-28 17:53:52
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetTxContinuousWave();
 
@@ -1336,15 +1257,13 @@ class Sx126x final : public ChipSpiGuide {
    * 线的下降沿从主机处理器唤醒设备，
    * 也可以使用 SetStandby() 函数进行唤醒或者使用RTC唤醒
    * @param mode 使用 SleepMode:: 进行配置
-   * @return
-   * @Date 2025-05-08 17:27:59
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetSleep(SleepMode mode = SleepMode::kWarmStart);
 
   /**
    * @brief 通过NSS下降沿唤醒睡眠中的SX126x，并重新应用必要的手册勘误配置
-   * @return
-   * @Date 2026-05-13
+   * @return 成功返回 true，失败返回 false
    */
   bool Wakeup();
 
@@ -1486,8 +1405,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param command 使用 Cmd:: 配置，需要写入的命令
    * @param data 命令参数数据指针，没有参数时为 nullptr
    * @param length 命令参数长度
-   * @return
-   * @Date 2026-05-13
+   * @return 写入成功返回 true，失败返回 false
    */
   bool WriteCommand(
       Cmd command, const uint8_t* data = nullptr, size_t length = 0);
@@ -1497,8 +1415,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param command 使用 Cmd:: 配置，需要读取的命令
    * @param data 读取数据保存指针
    * @param length 读取数据长度
-   * @return
-   * @Date 2026-05-13
+   * @return 读取成功返回 true，失败返回 false
    */
   bool ReadCommand(Cmd command, uint8_t* data, size_t length);
 
@@ -1507,8 +1424,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param address 寄存器地址
    * @param data 写入数据指针
    * @param length 写入数据长度
-   * @return
-   * @Date 2026-05-13
+   * @return 写入成功返回 true，失败返回 false
    */
   bool WriteRegister(uint16_t address, const uint8_t* data, size_t length);
 
@@ -1517,8 +1433,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param address 寄存器地址
    * @param data 读取数据保存指针
    * @param length 读取数据长度
-   * @return
-   * @Date 2026-05-13
+   * @return 读取成功返回 true，失败返回 false
    */
   bool ReadRegister(uint16_t address, uint8_t* data, size_t length);
 
@@ -1527,8 +1442,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param offset FIFO写入偏移地址
    * @param data 写入数据指针
    * @param length 写入数据长度
-   * @return
-   * @Date 2026-05-13
+   * @return 写入成功返回 true，失败返回 false
    */
   bool WriteBufferRaw(uint8_t offset, const uint8_t* data, size_t length);
 
@@ -1537,8 +1451,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param offset FIFO读取偏移地址
    * @param data 读取数据保存指针
    * @param length 读取数据长度
-   * @return
-   * @Date 2026-05-13
+   * @return 读取成功返回 true，失败返回 false
    */
   bool ReadBufferRaw(uint8_t offset, uint8_t* data, size_t length);
 
@@ -1546,7 +1459,6 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 将微秒转换为SX126x RTC 15.625us步进
    * @param time_us 微秒时间
    * @return RTC步进值
-   * @Date 2026-05-13
    */
   uint32_t MicrosecondsToRtcStep(uint32_t time_us) const;
 
@@ -1554,7 +1466,6 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 将超时时间转换为SX126x RTC步进，并保留特殊超时值
    * @param time_us 微秒超时时间，0和0xFFFFFF会按芯片特殊值保留
    * @return RTC步进值
-   * @Date 2026-05-13
    */
   uint32_t TimeoutMicrosecondsToRtcStep(uint32_t time_us) const;
 
@@ -1562,7 +1473,6 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 获取LoRa带宽对应的Hz数值
    * @param bw 使用 LoraBw:: 配置
    * @return LoRa带宽Hz数值
-   * @Date 2026-05-13
    */
   float GetLoraBandwidthHz(LoraBw bw) const;
 
@@ -1571,7 +1481,6 @@ class Sx126x final : public ChipSpiGuide {
    * @param sf 使用 Sf:: 配置
    * @param bw 使用 LoraBw:: 配置
    * @return 使用 Ldro:: 配置
-   * @Date 2026-05-13
    */
   Ldro GetLoraLowDataRateOptimize(Sf sf, LoraBw bw) const;
 
@@ -1581,7 +1490,6 @@ class Sx126x final : public ChipSpiGuide {
    * @param symbol_num CAD检测使用的LoRa符号数量
    * @param cad_det_peak CAD峰值检测门限
    * @param cad_det_min CAD最小峰值门限
-   * @Date 2026-05-14
    */
   void GetLoraCadParams(Sf sf, CadSymbolNum& symbol_num, uint8_t& cad_det_peak,
       uint8_t& cad_det_min) const;
@@ -1590,7 +1498,6 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 根据GFSK实际前导长度获取最大合法前导检测器配置
    * @param preamble_length 实际发送/接收的GFSK前导长度，单位Bit
    * @return 使用 PreambleDetector:: 配置
-   * @Date 2026-05-13
    */
   PreambleDetector GetGfskMaxPreambleDetector(uint16_t preamble_length) const;
 
@@ -1598,30 +1505,26 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 将手册勘误相关寄存器加入Sleep warm start保留列表
    * @param register_address 需要保留的寄存器地址列表
    * @param register_count 寄存器数量
-   * @return
-   * @Date 2026-05-13
+   * @return 成功返回 true，失败返回 false
    */
   bool AddRegistersToRetentionList(
       const uint16_t* register_address, size_t register_count);
 
   /**
    * @brief 初始化Sleep warm start保留列表
-   * @return
-   * @Date 2026-05-13
+   * @return 初始化成功返回 true，失败返回 false
    */
   bool InitRetentionList();
 
   /**
    * @brief 从Sleep唤醒后重新应用必要的手册勘误配置
-   * @return
-   * @Date 2026-05-13
+   * @return 成功返回 true，失败返回 false
    */
   bool ApplyWorkaroundsAfterWakeup();
 
   /**
    * @brief 停止RxDone后的RX超时计时器，对齐Semtech官方 sx126x_handle_rx_done()
-   * @return
-   * @Date 2026-05-14
+   * @return 操作成功返回 true，失败返回 false
    */
   bool StopRxTimeoutTimer();
 

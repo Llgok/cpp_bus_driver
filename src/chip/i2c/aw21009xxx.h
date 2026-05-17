@@ -40,16 +40,14 @@ class Aw21009xxx final : public ChipI2cGuide {
   /**
    * @brief 设置自动省电模式
    * @param enable [true]：开启自动省电模式  [false]：关闭自动省电模式
-   * @return
-   * @Date 2025-09-24 11:24:55
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetAutoPowerSave(bool enable);
 
   /**
    * @brief 设置芯片使能
    * @param enable [true]：开启芯片  [false]：关闭芯片
-   * @return
-   * @Date 2025-09-24 11:38:38
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetChipEnable(bool enable);
 
@@ -57,8 +55,7 @@ class Aw21009xxx final : public ChipI2cGuide {
    * @brief 设置亮度
    * @param channel 使用Led_Channel::配置
    * @param value 值范围：0~4095
-   * @return
-   * @Date 2025-09-24 11:39:18
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetBrightness(LedChannel channel, uint16_t value);
 
@@ -66,16 +63,14 @@ class Aw21009xxx final : public ChipI2cGuide {
    * @brief 设置亮度
    * @param channel 使用Led_Channel::配置
    * @param value 值范围：0~255
-   * @return
-   * @Date 2025-09-24 11:39:18
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetCurrentLimit(LedChannel channel, uint8_t value);
 
   /**
    * @brief 设置全局电流限制
    * @param value 值范围：0~255
-   * @return
-   * @Date 2025-09-24 13:37:12
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetGlobalCurrentLimit(uint8_t value);
 

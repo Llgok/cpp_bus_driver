@@ -59,8 +59,7 @@ class Sgm41562xx final : public ChipI2cGuide {
 
   /**
    * @brief 获取中断标志
-   * @return
-   * @Date 2025-07-17 13:49:36
+   * @return 返回读取到的数值
    */
   uint8_t GetIrqFlag();
 
@@ -68,23 +67,20 @@ class Sgm41562xx final : public ChipI2cGuide {
    * @brief 中断解析，详细请参考SGM41562手册 Table 13. kReg09 Register Details
    * @param irq_flag 解析状态语句，由get_irq_flag()函数获取
    * @param &status 使用Irq_Status结构体配置，相应位自动置位
-   * @return
-   * @Date 2025-07-17 13:59:38
+   * @return 解析成功返回 true，失败返回 false
    */
   bool ParseIrqStatus(uint8_t irq_flag, IrqStatus& status);
 
   /**
    * @brief 设置充电使能
    * @param enable [true]：打开充电 [false]：关闭充电
-   * @return
-   * @Date 2025-07-17 14:49:29
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetChargeEnable(bool enable);
 
   /**
    * @brief 获取芯片状态
-   * @return
-   * @Date 2025-07-17 15:05:29
+   * @return 返回读取到的数值
    */
   uint8_t GetChipStatus();
 
@@ -93,24 +89,21 @@ class Sgm41562xx final : public ChipI2cGuide {
    * Details
    * @param chip_flag 解析状态语句，由get_chip_status()函数获取
    * @param &status 使用Chip_Status结构体配置，相应位自动置位
-   * @return
-   * @Date 2025-07-17 15:03:59
+   * @return 解析成功返回 true，失败返回 false
    */
   bool ParseChipStatus(uint8_t chip_flag, ChipStatus& status);
 
   /**
    * @brief 设置开启运输模式
    * @param enable [true]：开启运输模式 [false]：关闭运输模式
-   * @return
-   * @Date 2025-07-19 16:14:57
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetShippingModeEnable(bool enable);
 
   /**
    * @brief 设置进入运输模式的时间
    * @param time 使用Enter_Shipping_Time::进行配置
-   * @return
-   * @Date 2025-11-08 14:29:54
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetEnterShippingTime(EnterShippingTime time);
 

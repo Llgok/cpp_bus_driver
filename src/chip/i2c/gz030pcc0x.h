@@ -46,39 +46,34 @@ class Gz030pcc0x final : public ChipI2cGuide {
   /**
    * @brief 获取温度
    * @return 以°C为单位
-   * @Date 2025-08-15 11:41:42
    */
   float GetTemperatureCelsius();
 
   /**
    * @brief 设置数据模式
    * @param format 使用Data_Format::配置
-   * @return
-   * @Date 2025-08-15 13:50:37
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetDataFormat(DataFormat format);
 
   /**
    * @brief 内部测试模式
    * @param mode 使用Internal_Test_Mode::配置
-   * @return
-   * @Date 2025-08-15 14:05:28
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetInternalTestMode(InternalTestMode mode);
 
   /**
    * @brief 设置显示方向
    * @param direction 使用Show_Direction::配置
-   * @return
-   * @Date 2025-09-18 10:52:45
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetShowDirection(ShowDirection direction);
 
   /**
    * @brief 设置亮度
    * @param value 值范围：0~255
-   * @return
-   * @Date 2025-09-18 11:05:59
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetBrightness(uint8_t value);
 

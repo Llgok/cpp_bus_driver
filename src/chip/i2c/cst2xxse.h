@@ -37,8 +37,7 @@ class Cst2xxse final : public ChipI2cGuide {
 
   /**
    * @brief 获取触摸总数
-   * @return
-   * @Date 2025-04-23 11:42:45
+   * @return 返回读取到的数值
    */
   uint8_t GetFingerCount();
 
@@ -48,7 +47,6 @@ class Cst2xxse final : public ChipI2cGuide {
    * @param finger_num 要获取的触摸点
    * @return [true]：获取的触摸点和finger_num相同
    * [false]：获取错误或者获取的触摸点和finger_num不相同
-   * @Date 2025-04-23 11:53:37
    */
   bool GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num = 1);
 
@@ -56,14 +54,12 @@ class Cst2xxse final : public ChipI2cGuide {
    * @brief 获取多个触控的触摸点信息
    * @param &tp 使用结构体Touch_Point::配置触摸点结构体
    * @return  [true]：获取的手指数大于0 [false]：获取错误或者获取的手指数为0
-   * @Date 2025-04-23 15:05:49
    */
   bool GetMultipleTouchPoint(TouchPoint& tp);
 
   /**
    * @brief 获取home按键检测
    * @return  [true]：屏幕home按键检测触发 [false]：屏幕home按键检测未触发
-   * @Date 2025-04-23 15:33:06
    */
   bool GetHomeTouch();
 

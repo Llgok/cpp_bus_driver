@@ -60,8 +60,7 @@ class Xl95x5 final : public ChipI2cGuide {
    * @brief 设置引脚模式
    * @param pin 使用Pin::配置，引脚号
    * @param mode 使用Mode::配置，模式
-   * @return
-   * @Date 2025-03-11 10:44:12
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetGpioMode(Pin pin, Mode mode);
 
@@ -69,8 +68,7 @@ class Xl95x5 final : public ChipI2cGuide {
    * @brief 引脚写数据
    * @param pin 使用Pin::配置，引脚号
    * @param value [0]：低电平，[1]：高电平
-   * @return
-   * @Date 2025-03-11 10:44:53
+   * @return 成功返回 true，失败返回 false
    */
   bool GpioWrite(Pin pin, Value value);
 
@@ -78,14 +76,12 @@ class Xl95x5 final : public ChipI2cGuide {
    * @brief 引脚读数据
    * @param pin 使用Pin::配置，引脚号
    * @return [0]：低电平，[1]：高电平
-   * @Date 2025-03-11 10:46:16
    */
   bool GpioRead(Pin pin);
 
   /**
    * @brief 清除中断请求
-   * @return
-   * @Date 2025-03-11 10:48:11
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ClearIrqFlag();
 

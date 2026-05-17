@@ -78,15 +78,13 @@ class Tca8418 final : public ChipI2cGuide {
    * @param y 开窗点y坐标，值范围（0~7）
    * @param w 开窗长度，值范围（0~9）
    * @param h 开窗高度，值范围（0~7）
-   * @return
-   * @Date 2025-07-30 13:42:08
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetKeypadScanWindow(uint8_t x, uint8_t y, uint8_t w, uint8_t h);
 
   /**
    * @brief 获取触摸总数
-   * @return
-   * @Date 2025-07-30 15:23:03
+   * @return 返回读取到的数值
    */
   uint8_t GetFingerCount();
 
@@ -94,14 +92,12 @@ class Tca8418 final : public ChipI2cGuide {
    * @brief 获取多个触控的触摸点信息
    * @param &tp 使用结构体Touch_Point::配置触摸点结构体
    * @return  [true]：获取的手指数大于0 [false]：获取错误或者获取的手指数为0
-   * @Date 2025-07-30 16:16:10
    */
   bool GetMultipleTouchPoint(TouchPoint& tp);
 
   /**
    * @brief 获取中断标志
-   * @return
-   * @Date 2025-07-30 16:39:43
+   * @return 返回读取到的数值
    */
   uint8_t GetIrqFlag();
 
@@ -110,31 +106,27 @@ class Tca8418 final : public ChipI2cGuide {
    * INT_STAT (Address 0x02)
    * @param irq_flag 解析状态语句，由get_irq_flag()函数获取
    * @param &status 使用Irq_Status结构体配置，相应位自动置位
-   * @return
-   * @Date 2025-07-30 16:39:56
+   * @return 解析成功返回 true，失败返回 false
    */
   bool ParseIrqStatus(uint8_t irq_flag, IrqStatus& status);
 
   /**
    * @brief 清除中断标志位
    * @param flag 使用Irq_Flag::配置，需要清除的标志，设置1为清除标志
-   * @return
-   * @Date 2025-07-30 16:55:59
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ClearIrqFlag(IrqFlag flag);
 
   /**
    * @brief 获取gpio中断同时清除gpio中断标志
-   * @return
-   * @Date 2025-07-31 09:05:05
+   * @return 返回读取到的数值
    */
   uint32_t GetClearGpioIrqFlag();
 
   /**
    * @brief 设置中断引脚模式
    * @param mode 由Irq_Mask::配置，选择需要开启的中断引脚位
-   * @return
-   * @Date 2025-07-31 10:16:03
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetIrqGpioMode(IrqMask mode);
 
@@ -142,8 +134,7 @@ class Tca8418 final : public ChipI2cGuide {
    * @brief 用于解码触摸号数为x、y坐标
    * @param num 结构体Touch_Info中的num值，解码前需要先获取该值
    * @param &position 使用Touch_Position::配置，解码后的坐标信息
-   * @return
-   * @Date 2025-07-31 13:39:08
+   * @return 解析成功返回 true，失败返回 false
    */
   bool ParseTouchNum(uint8_t num, TouchPosition& position);
 

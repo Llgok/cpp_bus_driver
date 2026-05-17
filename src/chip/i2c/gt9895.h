@@ -42,8 +42,7 @@ class Gt9895 final : public ChipI2cGuide {
 
   /**
    * @brief 获取触摸总数
-   * @return
-   * @Date 2025-07-09 09:15:31
+   * @return 返回读取到的数值
    */
   uint8_t GetFingerCount();
 
@@ -53,7 +52,6 @@ class Gt9895 final : public ChipI2cGuide {
    * @param finger_num 要获取的触摸点
    * @return [true]：获取的触摸点和finger_num相同
    * [false]：获取错误或者获取的触摸点和finger_num不相同
-   * @Date 2025-07-09 09:15:31
    */
   bool GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num = 1);
 
@@ -61,21 +59,18 @@ class Gt9895 final : public ChipI2cGuide {
    * @brief 获取多个触控的触摸点信息
    * @param &tp 使用结构体Touch_Point::配置触摸点结构体
    * @return  [true]：获取的手指数大于0 [false]：获取错误或者获取的手指数为0
-   * @Date 2025-07-09 09:15:31
    */
   bool GetMultipleTouchPoint(TouchPoint& tp);
 
   /**
    * @brief 获取边缘检测
    * @return  [true]：屏幕边缘检测触发 [false]：屏幕边缘检测未触发
-   * @Date 2025-07-09 09:15:31
    */
   bool GetEdgeTouch();
 
   /**
    * @brief 设置睡眠
-   * @return
-   * @Date 2025-07-11 10:07:49
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetSleep();
 

@@ -81,16 +81,14 @@ class Icn6211 final : public ChipI2cGuide {
    * @brief 检查接口参数是否正确
    * @param &params
    * 输入Interface_Params配置的接口参数，超出范围自动修改为极限值并返回false
-   * @return
-   * @Date 2026-01-16 17:34:46
+   * @return 操作成功返回 true，失败返回 false
    */
   bool CheckInterfaceParamsOutOfRange(InterfaceParams& params);
 
   /**
    * @brief 配置接口参数
    * @param params 使用Interface_Params::配置
-   * @return
-   * @Date 2026-01-16 17:34:29
+   * @return 成功返回 true，失败返回 false
    */
   bool ConfigInterfaceParams(InterfaceParams params);
 
@@ -99,16 +97,14 @@ class Icn6211 final : public ChipI2cGuide {
    * @param de de 信号极性
    * @param vsync vsync 信号极性
    * @param hsync hsync 信号极性
-   * @return
-   * @Date 2026-01-16 13:57:13
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetPolarityEnable(bool de, bool vsync, bool hsync);
 
   /**
    * @brief 设置mipi总线lane个数
    * @param lane 值范围：1~4
-   * @return
-   * @Date 2026-01-16 17:33:55
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetMipiLane(uint8_t lane);
 
@@ -117,8 +113,7 @@ class Icn6211 final : public ChipI2cGuide {
    * @param format 使用Rgb_Format::配置
    * @param order 使用Rgb_Order::配置
    * @param rfc_enable [true]：开启，[false]：关闭
-   * @return
-   * @Date 2026-01-16 17:33:14
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetRgbOutputFormat(
       RgbFormat format, RgbOrder order, bool rfc_enable = false);
@@ -126,16 +121,14 @@ class Icn6211 final : public ChipI2cGuide {
   /**
    * @brief 设置测试模式
    * @param mode 使用Test_Mode::配置
-   * @return
-   * @Date 2026-01-16 17:32:50
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetTestMode(TestMode mode);
 
   /**
    * @brief 设置芯片使能
    * @param enable [true]：开启，[false]：关闭
-   * @return
-   * @Date 2026-01-16 16:09:57
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetChipEnable(bool enable);
 

@@ -80,30 +80,26 @@ class Pcf8563x final : public ChipI2cGuide {
   /**
    * @brief 设置CLKOUT引脚输出频率
    * @param freq_hz 使用Clock_Frequency::配置
-   * @return
-   * @Date 2025-02-27 15:46:00
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetClockFrequencyOutput(OutFreq freq_hz);
 
   /**
    * @brief 设置时钟启动
    *  @param enable [true]：启动，[false]：关闭
-   * @return
-   * @Date 2025-02-27 15:50:50
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetClock(bool enalbe);
 
   /**
    * @brief 检查时钟数据完整性
    * @return [0]：不保证时钟信息的完整 [1]：保证时钟完整
-   * @Date 2025-02-27 15:35:07
    */
   bool CheckClockIntegrityFlag();
 
   /**
    * @brief 清除时钟数据完整性标志，设置0为时钟完整
-   * @return
-   * @Date 2025-02-27 15:36:50
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ClearClockIntegrityFlag();
 
@@ -127,8 +123,7 @@ class Pcf8563x final : public ChipI2cGuide {
 
   /**
    * @brief 停止定时器
-   * @return
-   * @Date 2025-02-27 16:02:39
+   * @return 操作成功返回 true，失败返回 false
    */
   bool StopTimer();
 
@@ -137,51 +132,44 @@ class Pcf8563x final : public ChipI2cGuide {
    * @param n_value 定时器值，与freq搭配使用（定时的值 （单位：秒） = n_value /
    * freq（单位：赫兹））
    * @param freq_hz 使用Timer_Freq::配置，选择的频率越高定时的时间越精准
-   * @return
-   * @Date 2025-02-27 16:12:48
+   * @return 操作成功返回 true，失败返回 false
    */
   bool RunTimer(uint8_t n_value, TimerFreq freq_hz);
 
   /**
    * @brief 检查定时器标志和中断
-   * @return
-   * @Date 2025-02-27 16:53:51
+   * @return 操作成功返回 true，失败返回 false
    */
   bool CheckTimerFlag();
 
   /**
    * @brief 清除定时器标志和中断
-   * @return
-   * @Date 2025-02-27 16:54:04
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ClearTimerFlag();
 
   /**
    * @brief 停止预定时间报警
-   * @return
-   * @Date 2025-02-27 17:30:19
+   * @return 操作成功返回 true，失败返回 false
    */
   bool StopScheduledAlarm();
 
   /**
    * @brief 开启预定时间报警
    * @param alarm 使用Time_Alarm::配置
-   * @return
-   * @Date 2025-02-27 17:31:35
+   * @return 操作成功返回 true，失败返回 false
    */
   bool RunScheduledAlarm(TimeAlarm alarm);
 
   /**
    * @brief 检查预定时间报警标志和中断
-   * @return
-   * @Date 2025-02-27 17:55:50
+   * @return 操作成功返回 true，失败返回 false
    */
   bool CheckScheduledAlarmFlag();
 
   /**
    * @brief 清除预定时间报警标志和中断
-   * @return
-   * @Date 2025-02-27 17:56:56
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ClearScheduledAlarmFlag();
 

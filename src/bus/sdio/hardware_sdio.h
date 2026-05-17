@@ -50,8 +50,7 @@ class HardwareSdio final : public BusSdioGuide {
    * @param write_c32 读取的命令或地址
    * @param *data 读取的数据
    * @param byte 读取的数据长度，数据长度必须小于512个字节，且每4位内存要对齐
-   * @return
-   * @Date 2025-03-21 15:08:14
+   * @return 读取成功返回 true，失败返回 false
    */
   bool Read(
       uint32_t function, uint32_t write_c32, void* data, size_t byte) override;
@@ -61,8 +60,7 @@ class HardwareSdio final : public BusSdioGuide {
    * @param function 作用号
    * @param write_c32 读取的命令或地址
    * @param *data 读取的数据
-   * @return
-   * @Date 2025-03-21 15:08:14
+   * @return 读取成功返回 true，失败返回 false
    */
   bool Read(uint32_t function, uint32_t write_c32, uint8_t* data) override;
 
@@ -72,8 +70,7 @@ class HardwareSdio final : public BusSdioGuide {
    * @param write_c32 读取的命令或地址
    * @param *data 读取的块数据
    * @param byte 读取的块数据长度，目前支持以最大512个字节每块数据传输
-   * @return
-   * @Date 2025-03-21 15:09:53
+   * @return 读取成功返回 true，失败返回 false
    */
   bool ReadBlock(
       uint32_t function, uint32_t write_c32, void* data, size_t byte) override;
@@ -84,8 +81,7 @@ class HardwareSdio final : public BusSdioGuide {
    * @param write_c32 写入的命令或地址
    * @param *data 写入的数据
    * @param byte 写入的数据长度，数据长度必须小于512个字节，且每4位内存要对齐
-   * @return
-   * @Date 2025-03-21 15:08:14
+   * @return 写入成功返回 true，失败返回 false
    */
   bool Write(uint32_t function, uint32_t write_c32, const void* data,
       size_t byte) override;
@@ -96,8 +92,7 @@ class HardwareSdio final : public BusSdioGuide {
    * @param write_c32 写入的命令或地址
    * @param *data 写入的数据
    * @param *read_d8_verify 用于校验的再次读取的数据，填NULL为禁用
-   * @return
-   * @Date 2025-03-21 15:08:14
+   * @return 写入成功返回 true，失败返回 false
    */
   bool Write(uint32_t function, uint32_t write_c32, uint8_t data,
       uint8_t* read_d8_verify = nullptr) override;
@@ -108,8 +103,7 @@ class HardwareSdio final : public BusSdioGuide {
    * @param write_c32 写入的命令或地址
    * @param *data 写入的块数据
    * @param byte 写入的块数据长度，目前支持以最大512个字节每块数据传输
-   * @return
-   * @Date 2025-03-21 15:09:53
+   * @return 写入成功返回 true，失败返回 false
    */
   bool WriteBlock(uint32_t function, uint32_t write_c32, const void* data,
       size_t byte) override;

@@ -44,32 +44,28 @@ class S023msafjf10111e1 final : public ChipI2cGuide {
   /**
    * @brief 设置数据模式
    * @param format 使用Data_Format::配置
-   * @return
-   * @Date 2026-03-16 10:52:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetDataFormat(DataFormat format);
 
   /**
    * @brief 内部测试模式
    * @param mode 使用Internal_Test_Mode::配置
-   * @return
-   * @Date 2026-03-16 10:52:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetInternalTestMode(InternalTestMode mode);
 
   /**
    * @brief 设置显示方向
    * @param direction 使用Show_Direction::配置
-   * @return
-   * @Date 2026-03-16 10:52:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetShowDirection(ShowDirection direction);
 
   /**
    * @brief 设置亮度
    * @param value 值范围：0~511
-   * @return
-   * @Date 2026-03-16 10:52:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetBrightness(uint16_t value);
 

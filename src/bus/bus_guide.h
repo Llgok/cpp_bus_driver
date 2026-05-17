@@ -91,46 +91,39 @@ class BusI2sGuide : public virtual Tool {
    * @param *read_data
    * 读数据流缓存指针，如果为nullptr表示不读取数据，*read_data需要使用ram分配的内存
    * @param max_data_length 数据流缓存最大长度
-   * @return
-   * @Date 2025-08-29 17:49:07
+   * @return 操作成功返回 true，失败返回 false
    */
   virtual bool StartTransmit(
       uint32_t* write_data, uint32_t* read_data, size_t max_data_length) = 0;
 
   /**
    * @brief 停止数据流传输
-   * @return
-   * @Date 2025-08-29 17:51:03
    */
   virtual void StopTransmit() = 0;
 
   /**
    * @brief 设置下一个读取的指针
    * @param *data 数据指针
-   * @return
-   * @Date 2025-08-29 17:52:08
+   * @return 设置成功返回 true，失败返回 false
    */
   virtual bool SetNextRead(uint32_t* data) = 0;
 
   /**
    * @brief 设置下一个写入的指针
    * @param *data 数据指针
-   * @return
-   * @Date 2025-08-29 17:52:08
+   * @return 设置成功返回 true，失败返回 false
    */
   virtual bool SetNextWrite(uint32_t* data) = 0;
 
   /**
    * @brief 获取读取事件标志
    * @return [true]：有数据可读，[false]：无数据可读
-   * @Date 2025-08-29 17:52:43
    */
   virtual bool GetReadEventFlag() = 0;
 
   /**
    * @brief 获取写入事件标志
    * @return [true]：可以继续写入数据，[false]：不能写入数据
-   * @Date 2025-08-29 17:52:43
    */
   virtual bool GetWriteEventFlag() = 0;
 #endif
@@ -165,8 +158,7 @@ class BusSpiGuide : public virtual Tool {
    * @param write_c16 一般为寄存器地址位
    * @param *read_data 要读出数据的指针
    * @param read_data_length 要读出的数据长度
-   * @return
-   * @Date 2025-01-17 13:53:33
+   * @return 读取成功返回 true，失败返回 false
    */
   bool Read(const uint8_t write_c8, const uint16_t write_c16,
       uint8_t* read_data, size_t read_data_length);
@@ -184,8 +176,7 @@ class BusSpiGuide : public virtual Tool {
    * @param write_c16 一般为寄存器地址位
    * @param *write_data 要写入数据的指针
    * @param write_data_length 要写入的数据长度
-   * @return
-   * @Date 2025-01-17 13:48:09
+   * @return 写入成功返回 true，失败返回 false
    */
   bool Write(const uint8_t write_c8, const uint16_t write_c16,
       const uint8_t* write_data, size_t write_data_length);

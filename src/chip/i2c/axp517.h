@@ -157,16 +157,14 @@ class Axp517 final : public ChipI2cGuide {
   /**
    * @brief 获取芯片状态0
    * @param &status 使用Chip_Status_0::配置
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 读取成功返回 true，失败返回 false
    */
   bool GetChipStatus0(ChipStatus0& status);
 
   /**
    * @brief 获取芯片状态1
    * @param &status 使用Chip_Status_1::配置
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 读取成功返回 true，失败返回 false
    */
   bool GetChipStatus1(ChipStatus1& status);
 
@@ -176,32 +174,28 @@ class Axp517 final : public ChipI2cGuide {
    * @param &status1 中断状态1
    * @param &status2 中断状态2
    * @param &status3 中断状态3
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 读取成功返回 true，失败返回 false
    */
   bool GetIrqStatus(IrqStatus0& status0, IrqStatus1& status1,
       IrqStatus2& status2, IrqStatus3& status3);
 
   /**
    * @brief 清除所有中断标志
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ClearAllIrq(void);
 
   /**
    * @brief 设置充电使能
    * @param enable [true]：开启充电 [false]：关闭充电
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetChargeEnable(bool enable);
 
   /**
    * @brief 设置充电电流
    * @param current_ma 充电电流值(mA)，范围0-5120mA，64mA/步进
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetChargeCurrent(uint16_t current_ma);
 
@@ -209,102 +203,88 @@ class Axp517 final : public ChipI2cGuide {
    * @brief 设置充电电压
    * @param voltage_mv 充电电压值(mV)，支持4000, 4100, 4200, 4350, 4400, 3800,
    * 3600, 5000mV
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetChargeVoltage(uint16_t voltage_mv);
 
   /**
    * @brief 设置输入电流限制
    * @param limit_ma 输入电流限制值(mA)，范围100-3250mA，50mA/步进
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetInputCurrentLimit(uint16_t limit_ma);
 
   /**
    * @brief 设置输入电压限制
    * @param limit_mv 输入电压限制值(mV)，范围3600-16200mV，100mV/步进
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetInputVoltageLimit(uint16_t limit_mv);
 
   /**
    * @brief 获取电池电量百分比
    * @return 电池电量百分比(0-100)
-   * @Date 2026-02-03 15:06:34
    */
   uint8_t GetBatteryLevel();
 
   /**
    * @brief 获取电池健康度
    * @return 电池健康度(0-100)int16_t
-   * @Date 2026-02-03 15:06:34
    */
   uint8_t GetBatteryHealth();
 
   /**
    * @brief 获取电池温度，使用前需要开启对应ADC通道（REG 90H）
    * @return 电池温度(℃)
-   * @Date 2026-02-03 15:06:34
    */
   int8_t GetBatteryTemperatureCelsius();
 
   /**
    * @brief 设置ADC通道
    * @param channel 使用Adc_Channel::配置
-   * @return
-   * @Date 2026-02-04 10:16:10
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcChannel(AdcChannel channel);
 
   /**
    * @brief 获取电池电压，使用前需要开启对应ADC通道（REG 90H）
    * @return 电池电压(mV)
-   * @Date 2026-02-03 15:06:34
    */
   uint16_t GetBatteryVoltage();
 
   /**
    * @brief 获取电池电流，使用前需要开启对应ADC通道（REG 90H）
    * @return 电池电流(mA)，正值为充电，负值为放电，读取失败返回-32768
-   * @Date 2026-02-03 15:06:34
    */
   float GetBatteryCurrent();
 
   /**
    * @brief 获取TS引脚电压值，使用前需要开启对应ADC通道（REG 90H）
    * @return TS引脚电压值(mV)
-   * @Date 2026-02-03 15:06:34
    */
   float GetTsVoltage();
 
   /**
    * @brief 获取VBUS电流，使用前需要开启对应ADC通道（REG 90H）
    * @return VBUS电压(mA)
-   * @Date 2026-02-03 15:06:34
    */
   uint16_t GetVbusCurrent();
 
   /**
    * @brief 获取VBUS电压，使用前需要开启对应ADC通道（REG 90H）
    * @return VBUS电压(mV)
-   * @Date 2026-02-03 15:06:34
    */
   uint16_t GetVbusVoltage();
 
   /**
    * @brief 设置adc数据输出选择
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcDataSelect(AdcData data_select);
 
   /**
    * @brief 获取ADC数据值
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 返回读取到的数值
    */
   uint16_t GetAdcData();
 
@@ -312,7 +292,6 @@ class Axp517 final : public ChipI2cGuide {
    * @brief 获取芯片结温温度，使用前需要开启ADC数据选择（REG
    * 9BH）中的Tdie和对应ADC通道（REG 90H）
    * @return 芯片结温温度(℃)
-   * @Date 2026-02-03 15:06:34
    */
   float GetChipDieJunctionTemperatureCelsius();
 
@@ -320,7 +299,6 @@ class Axp517 final : public ChipI2cGuide {
    * @brief 获取系统电压，使用前需要开启ADC数据选择（REG
    * 9BH）中的Vsys和对应ADC通道（REG 90H）
    * @return 系统电压(mV)
-   * @Date 2026-02-03 15:06:34
    */
   uint16_t GetSystemVoltage();
 
@@ -328,7 +306,6 @@ class Axp517 final : public ChipI2cGuide {
    * @brief 获取充电电流，使用前需要开启ADC数据选择（REG
    * 9BH）中的Ichg和对应ADC通道（REG 90H）
    * @return 充电电流(mV)
-   * @Date 2026-02-03 15:06:34
    */
   float GetChargingCurrent();
 
@@ -336,78 +313,68 @@ class Axp517 final : public ChipI2cGuide {
    * @brief 获取放电电流，使用前需要开启ADC数据选择（REG
    * 9BH）中的Idischg和对应ADC通道（REG 90H）
    * @return 放电电流(mV)
-   * @Date 2026-02-03 15:06:34
    */
   float GetDischargingCurrent();
 
   /**
    * @brief 设置Boost模式使能
    * @param enable [true]：开启Boost模式 [false]：关闭Boost模式
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetBoostEnable(bool enable);
 
   /**
    * @brief 设置GPIO输出源选择
    * @param source 使用Gpio_Source::配置
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetGpioSource(GpioSource source);
 
   /**
    * @brief 设置GPIO模式
    * @param mode 使用Gpio_Mode::配置
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetGpioMode(GpioMode mode);
 
   /**
    * @brief 写GPIO状态
    * @param config 使用Gpio_Status::配置
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 成功返回 true，失败返回 false
    */
   bool GpioWrite(GpioStatus status);
 
   /**
    * @brief 读取GPIO状态
    * @return 使用Gpio_Status::配置
-   * @Date 2026-02-03 15:06:34
    */
   GpioStatus GpioRead();
 
   /**
    * @brief 设置开启运输模式
    * @param enable [true]：开启运输模式 [false]：关闭运输模式
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetShippingModeEnable(bool enable);
 
   /**
    * @brief 强制设置batfet（电池开关）启动或者关闭
    * @param mode 使用Force_Batfet::配置
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetForceBatfetMode(ForceBatfet mode);
 
   /**
    * @brief 强制设置rbfet（vbus反向供电开关）启动或者关闭
    * @param enable enable [true]：强制开启 [false]：强制关闭
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetForceRbfetEnable(bool enable);
 
   /**
    * @brief 设置Boost输出电压
    * @param voltage_mv 输出电压(mV)，范围4550-5510mV，64mV/步进
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetBoostVoltage(uint16_t voltage_mv);
 
@@ -415,39 +382,34 @@ class Axp517 final : public ChipI2cGuide {
    * @brief 设置看门狗
    * @param enable [true]：开启看门狗 [false]：关闭看门狗
    * @param timeout_s 超时时间(秒)，支持1,2,4,8,16,32,64,128秒
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetWatchdog(bool enable, uint8_t timeout_s);
 
   /**
    * @brief 喂狗
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 成功返回 true，失败返回 false
    */
   bool FeedWatchdog();
 
   /**
    * @brief 设置JEITA标准使能
    * @param enable [true]：开启JEITA标准 [false]：关闭JEITA标准
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetJeitaEnable(bool enable);
 
   /**
    * @brief 设置BC1.2检测使能
    * @param enable [true]：开启BC1.2检测 [false]：关闭BC1.2检测
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetBc12DetectEnable(bool enable);
 
   /**
    * @brief 获取BC1.2检测结果
    * @param &result BC检测结果
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 读取成功返回 true，失败返回 false
    */
   bool GetBc12DetectResult(BcDetectResult& result);
 
@@ -455,8 +417,7 @@ class Axp517 final : public ChipI2cGuide {
    * @brief 设置PD角色
    * @param is_source [true]：源模式 [false]：汇模式
    * @param is_drp [true]：双角色模式 [false]：固定角色
-   * @return
-   * @Date 2026-02-03 15:06:34
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetPdRole(bool is_source, bool is_drp);
 

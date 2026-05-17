@@ -58,8 +58,7 @@ class EspAt final : public ChipSdioGuide {
    * @brief 设置睡眠
    * @param mode 使用Sleep_Mode::配置，睡眠模式
    * @param timeout_ms 超时时间，单位ms
-   * @return
-   * @Date 2025-05-29 18:36:08
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetSleep(SleepMode mode, int16_t timeout_ms = 100);
 
@@ -67,22 +66,19 @@ class EspAt final : public ChipSdioGuide {
    * @brief 设置深度睡眠
    * @param sleep_time_ms 深度睡眠时间，单位ms
    * @param timeout_ms 超时时间，单位ms
-   * @return
-   * @Date 2026-04-15 16:52:23
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetDeepSleep(uint32_t sleep_time_ms, int16_t timeout_ms = 100);
 
   /**
    * @brief 初始化序列
-   * @return
-   * @Date 2025-05-09 18:03:26
+   * @return 初始化成功返回 true，失败返回 false
    */
   bool InitSequence();
 
   /**
    * @brief 初次连接会返回准备完成信号
-   * @return
-   * @Date 2025-05-09 18:03:36
+   * @return 初始化成功返回 true，失败返回 false
    */
   bool InitConnect();
 
@@ -90,38 +86,32 @@ class EspAt final : public ChipSdioGuide {
 
   /**
    * @brief 重新连接
-   * @return
-   * @Date 2025-05-09 18:04:09
+   * @return 成功返回 true，失败返回 false
    */
   bool Reconnect();
 
   /**
    * @brief 获取连接状态
-   * @return
-   * @Date 2025-05-09 18:04:22
+   * @return 条件满足返回 true，否则返回 false
    */
   bool GetConnectStatus();
 
   /**
    * @brief 设置连接错误计数
    * @param count 错误计数的数字可以为正或者负
-   * @return
-   * @Date 2025-05-09 18:04:30
    */
   void SetConnectCount(int8_t count);
 
   /**
    * @brief 获取中断
-   * @return
-   * @Date 2025-03-21 17:11:27
+   * @return 返回读取到的数值
    */
   uint32_t GetIrqFlag();
 
   /**
    * @brief 清除中断
    * @param irq_mask 要清除的中断请求位
-   * @return
-   * @Date 2025-03-21 17:11:35
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ClearIrqFlag(uint32_t irq_mask);
 
@@ -129,22 +119,19 @@ class EspAt final : public ChipSdioGuide {
    * @brief 解析接收到新包标志
    * @param flag 使用函数get_irq_flag()写入
    * @return [true]: 有接收到新的数据包，[false]: 没有接收到新的数据包
-   * @Date 2025-03-21 17:21:59
    */
   bool ParseRxNewPacketFlag(uint32_t flag);
 
   /**
    * @brief 获取接收数据的长度
-   * @return
-   * @Date 2025-03-21 17:30:57
+   * @return 返回读取到的数值
    */
   uint32_t GetRxDataLength();
 
   /**
    * @brief 接收包（只能进行小容量数据读取）
    * @param *data 包的数据容器
-   * @return
-   * @Date 2025-03-21 17:51:33
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ReceivePacket(std::vector<uint8_t>& data);
 
@@ -152,8 +139,7 @@ class EspAt final : public ChipSdioGuide {
    * @brief 接收包（配合heap_caps_malloc使用可以进行大容量数据读取）
    * @param *data 获取的数据指针
    * @param *byte 获取的数据长度
-   * @return
-   * @Date 2025-03-25 14:38:15
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ReceivePacket(uint8_t* data, size_t* byte);
 
@@ -161,15 +147,13 @@ class EspAt final : public ChipSdioGuide {
    * @brief 接收包（只能进行小容量数据读取）
    * @param &data 获取的数据指针
    * @param *byte 获取的数据长度
-   * @return
-   * @Date 2025-03-25 14:38:15
+   * @return 操作成功返回 true，失败返回 false
    */
   bool ReceivePacket(std::unique_ptr<uint8_t[]>& data, size_t* byte);
 
   /**
    * @brief 获取发送block数据缓冲区的长度
-   * @return
-   * @Date 2025-03-24 10:38:54
+   * @return 返回读取到的数值
    */
   uint32_t GetTxBlockBufferLength();
 
@@ -177,16 +161,14 @@ class EspAt final : public ChipSdioGuide {
    * @brief 发送包
    * @param *data 数据指针
    * @param byte 数据字节长度
-   * @return
-   * @Date 2025-03-24 10:47:22
+   * @return 操作成功返回 true，失败返回 false
    */
   bool SendPacket(const char* data, size_t byte);
 
   /**
    * @brief 发送包
    * @param data 需要发送的数据字符串
-   * @return
-   * @Date 2025-03-27 09:38:47
+   * @return 操作成功返回 true，失败返回 false
    */
   bool SendPacket(const std::string& data);
 
@@ -194,8 +176,7 @@ class EspAt final : public ChipSdioGuide {
    * @brief 设置wifi模式
    * @param mode 使用Wifi_Mode::配置
    * @param timeout_ms 超时时间，单位ms
-   * @return
-   * @Date 2025-03-26 14:03:40
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetWifiMode(WifiMode mode, int16_t timeout_ms = 100);
 
@@ -204,15 +185,13 @@ class EspAt final : public ChipSdioGuide {
    * wifi扫描，使用之前需要调用函数set_wifi_mode()先将wifi模式设置为STATION模式
    * @param &data wifi_scan值的数据指针
    * @param timeout_ms 超时时间，单位ms
-   * @return
-   * @Date 2025-03-26 16:26:38
+   * @return 成功返回 true，失败返回 false
    */
   bool WifiScan(std::vector<uint8_t>& data, int16_t timeout_ms = 5000);
 
   /**
    * @brief 等待SDIO总线中断（使用前需要线开启SDIO总线中断）
-   * @return
-   * @Date 2025-03-27 09:00:05
+   * @return 等待成功返回 true，失败返回 false
    */
   bool WaitInterrupt(uint32_t timeout_ms);
 
@@ -220,8 +199,7 @@ class EspAt final : public ChipSdioGuide {
    * @brief 设置保存到flash中
    * @param enable [true]：开启保存到falsh中 [false]：关闭保存到falsh中
    * @param timeout_ms 超时时间，单位ms
-   * @return
-   * @Date 2025-03-27 10:16:06
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetFlashSave(bool enable, int16_t timeout_ms = 100);
 
@@ -230,8 +208,7 @@ class EspAt final : public ChipSdioGuide {
    * @param ssid wifi名字
    * @param password wifi密码
    * @param timeout_ms 超时时间，单位ms
-   * @return
-   * @Date 2025-03-27 10:17:09
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetWifiConnect(
       std::string ssid, std::string password = "", int16_t timeout_ms = 5000);
@@ -240,8 +217,7 @@ class EspAt final : public ChipSdioGuide {
    * @brief 获取实时时间
    * @param &time 使用Real_Time结构体配置
    * @param timeout_ms 超时时间
-   * @return
-   * @Date 2025-05-06 16:07:50
+   * @return 读取成功返回 true，失败返回 false
    */
   bool GetRealTime(RealTime& time, int16_t timeout_ms = 3000);
 

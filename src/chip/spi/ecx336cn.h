@@ -23,8 +23,7 @@ class Ecx336cn final : public ChipSpiGuide {
   /**
    * @brief 设置使能省电模式
    * @param enable  [true]：启动，[false]：关闭
-   * @return
-   * @Date 2026-01-15 14:49:07
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetPowerSaveMode(bool enable);
 

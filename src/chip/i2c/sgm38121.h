@@ -38,8 +38,7 @@ class Sgm38121 final : public ChipI2cGuide {
    * @brief 设置输出电压
    * @param channel 使用Channel::配置
    * @param voltage DVDD_1和DVDD_2取值528~1504，AVDD_1和AVDD_2取值1504~3424
-   * @return
-   * @Date 2025-07-17 10:27:58
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetOutputVoltage(Channel channel, uint16_t voltage);
 
@@ -47,8 +46,7 @@ class Sgm38121 final : public ChipI2cGuide {
    * @brief 设置通道状态
    * @param channel 使用Channel::配置
    * @param status 使用Status::配置
-   * @return
-   * @Date 2025-07-17 10:29:45
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetChannelStatus(Channel channel, Status status);
 

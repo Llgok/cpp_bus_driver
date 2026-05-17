@@ -85,8 +85,7 @@ class Tool {
    * @param *search_sample 需要搜索的样本
    * @param sample_length 需要搜索的样本长度
    * @param *search_index 搜索成功的的样本中第一个搜索成功字符位置的引索
-   * @return
-   * @Date 2025-03-26 16:41:35
+   * @return 成功返回 true，失败返回 false
    */
   bool Search(const uint8_t* search_library, size_t search_library_length,
       const char* search_sample, size_t sample_length,
@@ -148,16 +147,14 @@ class Pwm : public virtual Tool {
   /**
    * @brief 设置pwm占空比
    * @param duty 值范围 0~100
-   * @return
-   * @Date 2025-03-19 10:02:18
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetDuty(uint8_t duty);
 
   /**
    * @brief 设置pwm频率
    * @param freq_hz pwm频率
-   * @return
-   * @Date 2026-04-16 10:58:15
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetFrequency(uint32_t freq_hz);
 
@@ -165,16 +162,14 @@ class Pwm : public virtual Tool {
    * @brief 设置渐变占空比
    * @param target_duty 值范围 0~100
    * @param time_ms 渐变花费时间
-   * @return
-   * @Date 2025-03-19 10:03:07
+   * @return 操作成功返回 true，失败返回 false
    */
   bool StartGradientTime(uint8_t target_duty, int32_t time_ms);
 
   /**
    * @brief 停止pwm
    * @param idle_level pwm停止后空闲状态下pwm的输出电平
-   * @return
-   * @Date 2026-04-16 11:05:24
+   * @return 操作成功返回 true，失败返回 false
    */
   bool Stop(uint32_t idle_level = 0);
 
@@ -360,8 +355,7 @@ class GnssParser : public virtual Tool {
    * @param data 要解析的数据
    * @param length 要解析的数据长度
    * @param &rmc 返回的解析结构体
-   * @return
-   * @Date 2025-02-18 11:54:34
+   * @return 解析成功返回 true，失败返回 false
    */
   bool ParseRmcInfo(const uint8_t* data, size_t length, Rmc& rmc);
 
@@ -370,8 +364,7 @@ class GnssParser : public virtual Tool {
    * @param data 要解析的数据
    * @param length 要解析的数据长度
    * @param &gga 返回的解析结构体
-   * @return
-   * @Date 2025-02-18 11:54:34
+   * @return 解析成功返回 true，失败返回 false
    */
   bool ParseGgaInfo(const uint8_t* data, size_t length, Gga& gga);
 

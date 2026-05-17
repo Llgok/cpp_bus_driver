@@ -209,8 +209,6 @@ static constexpr uint8_t kHapticWaveformRam12k101635_130[] = {0x55, 0x08, 0x11,
  * 波形的序列号2: 慢速振动（类似电动理发器）
  * 波形的序列号3: 快速振动（发出尖刺的声音）
  * 波形的序列号4: 急速振动（发出尖刺的声音，比波形的序列号3速度更快）
- * @return
- * @Date 2025-03-10 17:09:06
  */
 static constexpr uint8_t kHapticWaveformRam12k0809_170[] = {0x55, 0x08, 0x11,
     0x08, 0x8D, 0x08, 0x8E, 0x09, 0x3D, 0x09, 0x3E, 0x09, 0x8D, 0x09, 0x8E,

@@ -172,7 +172,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param bus I2C 总线对象
    * @param address BQ27220 7bit I2C 地址
    * @param rst 可选复位引脚，不使用时保持 kDefaultValue
-   * @Date 2026-05-12 18:35:00
    */
   explicit Bq27220(std::shared_ptr<BusI2cGuide> bus,
       int16_t address = kDeviceI2cAddressDefault,
@@ -183,7 +182,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 初始化 BQ27220 并校验 Device ID
    * @param freq_hz I2C 工作频率，默认使用总线默认配置
    * @return 初始化成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool Init(int32_t freq_hz = kDefaultValue) override;
 
@@ -191,77 +189,66 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 反初始化 BQ27220 驱动
    * @param delete_bus 是否同时删除底层 I2C 总线
    * @return 反初始化成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool Deinit(bool delete_bus = true) override;
 
   /**
    * @brief 读取芯片 Device ID
    * @return Device ID，BQ27220 正常应为 0x0220
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetDeviceId();
 
   /**
    * @brief 读取芯片固件版本
    * @return Firmware version 原始值
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetFirmwareVersion();
 
   /**
    * @brief 读取芯片硬件版本
    * @return Hardware version 原始值
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetHardwareVersion();
 
   /**
    * @brief 读取设计容量
    * @return 设计容量(mAh)
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetDesignCapacity();
 
   /**
    * @brief 读取电池端电压
    * @return 电压(mV)
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetVoltage();
 
   /**
    * @brief 读取瞬时电流
    * @return 电流(mA)，放电通常为正值
-   * @Date 2026-05-12 18:35:00
    */
   int16_t GetCurrent();
 
   /**
    * @brief 读取平均电流
    * @return 平均电流(mA)，放电通常为正值
-   * @Date 2026-05-12 18:35:00
    */
   int16_t GetAverageCurrent();
 
   /**
    * @brief 读取剩余容量
    * @return 剩余容量(mAh)
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetRemainingCapacity();
 
   /**
    * @brief 读取满充容量估算值
    * @return 满充容量(mAh)
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetFullChargeCapacity();
 
   /**
    * @brief 读取 AtRate 电流
    * @return AtRate 电流(mA)
-   * @Date 2026-05-12 18:35:00
    */
   int16_t GetAtRate();
 
@@ -269,35 +256,30 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 设置 AtRate 电流用于 AtRateTimeToEmpty 估算
    * @param rate AtRate 电流(mA)
    * @return 写入成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool SetAtRate(int16_t rate);
 
   /**
    * @brief 读取按 AtRate 估算的剩余时间
    * @return 剩余时间(min)，0xFFFF 表示不可用
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetAtRateTimeToEmpty();
 
   /**
    * @brief 读取电池温度原始值
    * @return 温度原始值(0.1K)
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetTemperatureRaw();
 
   /**
    * @brief 读取电池温度
    * @return 温度(K)
-   * @Date 2026-05-12 18:35:00
    */
   float GetTemperatureKelvin();
 
   /**
    * @brief 读取电池温度
    * @return 温度(摄氏度)
-   * @Date 2026-05-12 18:35:00
    */
   float GetTemperatureCelsius();
 
@@ -305,7 +287,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 设置温度采样模式
    * @param mode 使用芯片内部温度或外部 NTC
    * @return 设置成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool SetTemperatureMode(TemperatureMode mode);
 
@@ -313,7 +294,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 读取并解析 BatteryStatus 标志位
    * @param status 输出 BatteryStatus 解析结果
    * @return 读取成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool GetBatteryStatus(BatteryStatus& status);
 
@@ -321,7 +301,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 读取并解析 OperationStatus 标志位
    * @param status 输出 OperationStatus 解析结果
    * @return 读取成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool GetOperationStatus(OperationStatus& status);
 
@@ -329,119 +308,102 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 写入设计容量到 Data Memory
    * @param capacity 设计容量(mAh)
    * @return 写入成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool SetDesignCapacity(uint16_t capacity);
 
   /**
    * @brief 读取预计放空时间
    * @return 放空时间(min)，0xFFFF 表示不可用
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetTimeToEmpty();
 
   /**
    * @brief 读取预计充满时间
    * @return 充满时间(min)，0xFFFF 表示不可用
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetTimeToFull();
 
   /**
    * @brief 读取待机电流估算值
    * @return 待机电流(mA)
-   * @Date 2026-05-12 18:35:00
    */
   int16_t GetStandbyCurrent();
 
   /**
    * @brief 读取按待机电流估算的放空时间
    * @return 放空时间(min)
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetStandbyTimeToEmpty();
 
   /**
    * @brief 读取最大负载电流估算值
    * @return 最大负载电流(mA)
-   * @Date 2026-05-12 18:35:00
    */
   int16_t GetMaxLoadCurrent();
 
   /**
    * @brief 读取按最大负载电流估算的放空时间
    * @return 放空时间(min)
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetMaxLoadTimeToEmpty();
 
   /**
    * @brief 读取库仑计原始累计值
    * @return 原始累计值，有符号 16bit
-   * @Date 2026-05-12 18:35:00
    */
   int16_t GetRawCoulombCount();
 
   /**
    * @brief 读取平均功率
    * @return 平均功率(mW)
-   * @Date 2026-05-12 18:35:00
    */
   int16_t GetAveragePower();
 
   /**
    * @brief 读取芯片内部温度原始值
    * @return 温度原始值(0.1K)
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetChipTemperatureRaw();
 
   /**
    * @brief 读取芯片内部温度
    * @return 温度(K)
-   * @Date 2026-05-12 18:35:00
    */
   float GetChipTemperatureKelvin();
 
   /**
    * @brief 读取芯片内部温度
    * @return 温度(摄氏度)
-   * @Date 2026-05-12 18:35:00
    */
   float GetChipTemperatureCelsius();
 
   /**
    * @brief 读取循环次数
    * @return CycleCount 原始值
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetCycleCount();
 
   /**
    * @brief 读取电量百分比
-   * @return SOC(%)
-   * @Date 2026-05-12 18:35:00
+   * @return 电量百分比 SOC(%)
    */
   uint16_t GetStatusOfCharge();
 
   /**
    * @brief 读取健康度
-   * @return SOH(%)
-   * @Date 2026-05-12 18:35:00
+   * @return 健康度百分比 SOH(%)
    */
   uint16_t GetStatusOfHealth();
 
   /**
    * @brief 读取充电电压请求值
    * @return 充电电压(mV)
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetChargingVoltage();
 
   /**
    * @brief 读取充电电流请求值
    * @return 充电电流(mA)
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetChargingCurrent();
 
@@ -449,7 +411,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 设置放电方向 BTP 阈值
    * @param threshold_mah 阈值容量(mAh)
    * @return 设置成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool SetBtpDischargeThreshold(uint16_t threshold_mah);
 
@@ -457,35 +418,30 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 设置充电方向 BTP 阈值
    * @param threshold_mah 阈值容量(mAh)
    * @return 设置成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool SetBtpChargeThreshold(uint16_t threshold_mah);
 
   /**
    * @brief 读取 ADC 计数原始值
    * @return ADC count 原始值
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetAnalogCount();
 
   /**
    * @brief 读取原始电流
    * @return 原始电流(mA)
-   * @Date 2026-05-12 18:35:00
    */
   int16_t GetRawCurrent();
 
   /**
    * @brief 读取原始电压
    * @return 原始电压(mV)
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetRawVoltage();
 
   /**
    * @brief 读取内部温度原始命令值
    * @return 温度原始值(0.1K)
-   * @Date 2026-05-12 18:35:00
    */
   uint16_t GetRawInternalTemperature();
 
@@ -493,7 +449,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 设置进入 Sleep 的电流阈值
    * @param threshold 电流阈值(mA)，芯片支持范围通常为 0-100
    * @return 设置成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool SetSleepCurrentThreshold(uint16_t threshold);
 
@@ -501,7 +456,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 发送 Control() 子命令
    * @param subcommand Control 子命令
    * @return 发送成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool SendControlSubcommand(ControlSubcommand subcommand);
 
@@ -510,35 +464,30 @@ class Bq27220 final : public ChipI2cGuide {
    * @param subcommand Control 子命令
    * @param value 输出返回值
    * @return 读取成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool ReadControlSubcommand(ControlSubcommand subcommand, uint16_t* value);
 
   /**
    * @brief 封存芯片，禁止普通 Data Memory 写入
    * @return 封存成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool Seal();
 
   /**
    * @brief 解封芯片到 Unsealed 模式
    * @return 解封成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool Unseal();
 
   /**
    * @brief 进入 Full Access 模式
    * @return 进入成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool FullAccess();
 
   /**
    * @brief 软复位 BQ27220
    * @return 复位后 Device ID 校验成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool Reset();
 
@@ -546,7 +495,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 设置电池插入或移除状态
    * @param inserted true 表示电池插入，false 表示电池移除
    * @return 设置成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool SetBatteryInserted(bool inserted);
 
@@ -554,28 +502,24 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 选择芯片内部 Profile 编号
    * @param profile Profile 编号，有效范围 1-6
    * @return 设置成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool SetBatteryProfile(uint8_t profile);
 
   /**
    * @brief 进入校准模式
    * @return 进入命令发送成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool EnterCalibration();
 
   /**
    * @brief 退出校准模式
    * @return 退出命令发送成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool ExitCalibration();
 
   /**
    * @brief 切换校准模式
    * @return 命令发送成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool ToggleCalibration();
 
@@ -584,7 +528,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param address Data Memory 地址枚举
    * @param value 输出数据
    * @return 读取成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool ReadDataMemory(DataMemoryAddress address, uint16_t* value);
 
@@ -593,7 +536,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param address Data Memory 地址枚举
    * @param value 输出数据
    * @return 读取成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool ReadDataMemory(DataMemoryAddress address, uint8_t* value);
 
@@ -602,7 +544,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param address Data Memory 绝对地址
    * @param value 输出数据
    * @return 读取成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool ReadDataMemory(uint16_t address, uint16_t* value);
 
@@ -611,7 +552,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param address Data Memory 绝对地址
    * @param value 输出数据
    * @return 读取成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool ReadDataMemory(uint16_t address, uint8_t* value);
 
@@ -620,7 +560,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param address Data Memory 地址枚举
    * @param value 写入数据
    * @return 写入成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool WriteDataMemory(DataMemoryAddress address, uint16_t value);
 
@@ -629,7 +568,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param address Data Memory 地址枚举
    * @param value 写入数据
    * @return 写入成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool WriteDataMemory(DataMemoryAddress address, uint8_t value);
 
@@ -638,7 +576,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param address Data Memory 绝对地址
    * @param value 写入数据
    * @return 写入成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool WriteDataMemory(uint16_t address, uint16_t value);
 
@@ -647,7 +584,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param address Data Memory 绝对地址
    * @param value 写入数据
    * @return 写入成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool WriteDataMemory(uint16_t address, uint8_t value);
 
@@ -656,7 +592,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param profile CEDV 电池模型参数
    * @param config Gauging Configuration 配置
    * @return 写入并退出 Config Update 成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool ApplyBatteryProfile(
       const CedvProfile& profile, const GaugingConfig& config);
@@ -666,7 +601,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param profile CEDV 电池模型参数
    * @param config Gauging Configuration 配置
    * @return 参数已匹配或写入成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool ApplyBatteryProfileIfNeeded(
       const CedvProfile& profile, const GaugingConfig& config);
@@ -720,7 +654,6 @@ class Bq27220 final : public ChipI2cGuide {
   /**
    * @brief 进入 Config Update 模式
    * @return 进入成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool EnterConfigUpdate();
 
@@ -728,7 +661,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 退出 Config Update 模式
    * @param reinit true 表示退出后重新初始化 gauge
    * @return 退出成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool ExitConfigUpdate(bool reinit = true);
 
@@ -737,7 +669,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param enabled 期望的 Config Update 状态
    * @param timeout_ms 超时时间(ms)
    * @return 等到目标状态返回 true，超时或读取失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool WaitConfigUpdate(bool enabled, uint32_t timeout_ms = 2000);
 
@@ -746,7 +677,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param cmd 标准命令地址
    * @param value 输出数据
    * @return 读取成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool ReadU16(Cmd cmd, uint16_t* value);
 
@@ -755,7 +685,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param cmd 标准命令地址
    * @param value 写入数据
    * @return 写入成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool WriteU16(Cmd cmd, uint16_t value);
 
@@ -764,7 +693,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param cmd 标准命令地址
    * @param value 输出数据
    * @return 读取成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool ReadS16(Cmd cmd, int16_t* value);
 
@@ -774,7 +702,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param data 写入数据指针
    * @param length 写入长度，最大 32 字节
    * @return 写入成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool WriteDataMemoryBytes(
       uint16_t address, const uint8_t* data, size_t length);
@@ -785,7 +712,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param data 输出数据指针
    * @param length 读取长度，最大 32 字节
    * @return 读取成功返回 true，失败返回 false
-   * @Date 2026-05-12 18:35:00
    */
   bool ReadDataMemoryBytes(uint16_t address, uint8_t* data, size_t length);
 
@@ -794,7 +720,6 @@ class Bq27220 final : public ChipI2cGuide {
    * @param data 数据指针
    * @param length 数据长度
    * @return checksum 值
-   * @Date 2026-05-12 18:35:00
    */
   uint8_t CalcChecksum(const uint8_t* data, size_t length);
 

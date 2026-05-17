@@ -35,8 +35,7 @@ class Ft3x68 final : public ChipI2cGuide {
 
   /**
    * @brief 获取触摸总数
-   * @return
-   * @Date 2025-06-24 15:01:52
+   * @return 返回读取到的数值
    */
   uint8_t GetFingerCount();
 
@@ -46,8 +45,7 @@ class Ft3x68 final : public ChipI2cGuide {
    * @param finger_num 要获取的触摸点
    * @return [true]：获取的触摸点和finger_num相同
    * [false]：获取错误或者获取的触摸点和finger_num不相同
-   * @return
-   * @Date 2025-06-24 15:47:40
+   * @return 读取成功返回 true，失败返回 false
    */
   bool GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num = 1);
 
@@ -55,7 +53,6 @@ class Ft3x68 final : public ChipI2cGuide {
    * @brief 获取多个触控的触摸点信息
    * @param &tp 使用结构体TouchPoint::配置触摸点结构体
    * @return  [true]：获取的手指数大于0 [false]：获取错误或者获取的手指数为0
-   * @Date 2025-06-24 15:12:00
    */
   bool GetMultipleTouchPoint(TouchPoint& tp);
 

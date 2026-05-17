@@ -58,8 +58,7 @@ class Sh8601 final : public ChipQspiGuide {
    * @param y_start y坐标开始点
    * @param x_end x坐标结束点
    * @param y_end y坐标结束点
-   * @return
-   * @Date 2025-06-30 11:10:12
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetRenderWindow(
       int x_start, int y_start, int x_end, int y_end);
@@ -67,8 +66,7 @@ class Sh8601 final : public ChipQspiGuide {
   /**
    * @brief 设置写入流的模式
    * @param mode 使用Write_Stream_Mode::配置
-   * @return
-   * @Date 2025-07-11 09:04:02
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetWriteStreamMode(WriteStreamMode mode);
 
@@ -79,8 +77,7 @@ class Sh8601 final : public ChipQspiGuide {
    * @param w 绘制长度
    * @param h 绘制高度
    * @param *data 颜色数据
-   * @return
-   * @Date 2025-07-03 10:27:58
+   * @return 操作成功返回 true，失败返回 false
    */
   bool SendColorStream(
       uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t* data);
@@ -88,40 +85,35 @@ class Sh8601 final : public ChipQspiGuide {
   /**
    * @brief 设置亮度
    * @param value 值范围：0~255
-   * @return
-   * @Date 2025-07-11 09:42:35
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetBrightness(uint8_t value);
 
   /**
    * @brief 设置睡眠
    * @param status [true]：进入睡眠 [false]：退出睡眠
-   * @return
-   * @Date 2025-07-11 11:52:48
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetSleep(bool status);
 
   /**
    * @brief 设置屏幕关闭
    * @param enable [true]：关闭屏幕 [false]：开启屏幕
-   * @return
-   * @Date 2025-07-11 11:52:48
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetScreenOff(bool enable);
 
   /**
    * @brief 设置颜色增强模式
    * @param enable 使用Color_Enhance::配置
-   * @return
-   * @Date 2025-07-11 13:48:16
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetColorEnhance(ColorEnhance enable);
 
   /**
    * @brief 设置颜色格式
    * @param format 使用Color_Format::配置
-   * @return
-   * @Date 2025-07-14 09:25:25
+   * @return 设置成功返回 true，失败返回 false
    */
   bool SetColorFormat(ColorFormat format);
 
