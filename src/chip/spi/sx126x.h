@@ -490,7 +490,7 @@ class Sx126x final : public ChipSpiGuide {
         busy_wait_callback_(busy_wait_callback) {}
 
   bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
-  bool Deinit(bool delete_bus = false) override;
+  bool Deinit(bool delete_bus = true) override;
 
   std::string GetDeviceId();
 

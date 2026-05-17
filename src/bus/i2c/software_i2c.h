@@ -23,7 +23,7 @@ class SoftwareI2c final : public BusI2cGuide {
 
   bool Init(uint32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE,
       uint16_t address = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
-  bool Deinit(bool delete_bus = false) override;
+  bool Deinit(bool delete_bus = true) override;
 
   bool StartTransmit() override;
   bool Read(uint8_t* data, size_t length) override;

@@ -8,9 +8,82 @@
 #include "hardware_spi.h"
 
 namespace cpp_bus_driver {
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+bool HardwareSpi::InitBus() {
+  if (shared_bus_provider_ != nullptr) {
+    if (!shared_bus_provider_->InitBus()) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "Init shared spi bus failed\n");
+      return false;
+    }
+    bus_init_state_.store(BusInitState::kReady);
+    delete_bus_on_deinit_ = false;
+    return true;
+  }
+
+  if (bus_init_state_.load() == BusInitState::kReady) {
+    return true;
+  }
+
+  BusInitState expected = BusInitState::kNotStarted;
+  if (!bus_init_state_.compare_exchange_strong(
+          expected, BusInitState::kInitializing)) {
+    const int64_t start_time_ms = GetSystemTimeMs();
+    while (bus_init_state_.load() == BusInitState::kInitializing) {
+      if (GetSystemTimeMs() - start_time_ms >= kBusInitWaitTimeoutMs) {
+        LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+            "Wait spi bus init timeout\n");
+        return false;
+      }
+      DelayMs(1);
+    }
+
+    const bool ready = bus_init_state_.load() == BusInitState::kReady;
+    return ready;
+  }
+
+  const spi_bus_config_t bus_config = {
+      .mosi_io_num = mosi_,
+      .miso_io_num = miso_,
+      .sclk_io_num = sclk_,
+      .quadwp_io_num = -1,
+      .quadhd_io_num = -1,
+      .data4_io_num = -1,
+      .data5_io_num = -1,
+      .data6_io_num = -1,
+      .data7_io_num = -1,
+      .data_io_default_level = 0,
+      .max_transfer_sz = 0,
+      .flags = SPICOMMON_BUSFLAG_MASTER,
+      .isr_cpu_id = ESP_INTR_CPU_AFFINITY_AUTO,
+      .intr_flags = 0,
+  };
+
+  esp_err_t result = spi_bus_initialize(port_, &bus_config, SPI_DMA_CH_AUTO);
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        "spi_bus_initialize failed (error code: %#X)\n", result);
+    bus_init_state_.store(BusInitState::kNotStarted);
+    return false;
+  }
+
+  delete_bus_on_deinit_ = true;
+  bus_init_state_.store(BusInitState::kReady);
+
+  return true;
+}
+
+void HardwareSpi::set_bus_init_flag(bool enable) {
+  shared_bus_provider_.reset();
+  bus_init_state_.store(
+      enable ? BusInitState::kReady : BusInitState::kNotStarted);
+  delete_bus_on_deinit_ = false;
+}
+#endif
+
 bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  if (bus_init_flag_ && device_init_flag_) {
+  if (bus_init_state_.load() == BusInitState::kReady && device_init_flag_) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "HardwareSpi has been initialized\n");
     return true;
@@ -62,61 +135,36 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
       "HardwareSpi config freq_hz: %d hz\n", freq_hz);
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-
-  if (!bus_init_flag_) {
-    const spi_bus_config_t bus_config = {
-        .mosi_io_num = mosi_,
-        .miso_io_num = miso_,
-        .sclk_io_num = sclk_,
-        .quadwp_io_num = -1,  // WP引脚不设置，这个引脚配置Quad SPI的时候才有用
-        .quadhd_io_num = -1,  // HD引脚不设置，这个引脚配置Quad SPI的时候才有用
-        .data4_io_num = -1,
-        .data5_io_num = -1,
-        .data6_io_num = -1,
-        .data7_io_num = -1,
-        .data_io_default_level = 0,
-        .max_transfer_sz = 0,
-        .flags = SPICOMMON_BUSFLAG_MASTER,
-        .isr_cpu_id = ESP_INTR_CPU_AFFINITY_AUTO,
-        .intr_flags = 0,
-    };
-
-    esp_err_t result = spi_bus_initialize(port_, &bus_config, SPI_DMA_CH_AUTO);
-    if (result != ESP_OK) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
-          "spi_bus_initialize failed (error code: %#X)\n", result);
-      return false;
-    }
-
-    bus_init_flag_ = true;
+  const bool had_bus = bus_init_state_.load() == BusInitState::kReady;
+  if (!InitBus()) {
+    return false;
   }
+  const bool created_bus = !had_bus && delete_bus_on_deinit_;
 
   if (!device_init_flag_) {
     const spi_device_interface_config_t device_config = {
         .command_bits = 0,
         .address_bits = 0,
-        .dummy_bits = 0,  // 无虚拟位
+        .dummy_bits = 0,
         .mode = mode_,
-        .clock_source = clock_source_,  // 时钟源
-        .duty_cycle_pos = 128,          // 50% 占空比
-        .cs_ena_pretrans =
-            1,  // 在数据传输开始之前，片选信号（CS）应该提前多少个SPI位周期被激活
-        .cs_ena_posttrans =
-            1,  // 在数据传输结束后，片选信号（CS）应该保持激活状态多少个SPI位周期
+        .clock_source = clock_source_,
+        .duty_cycle_pos = 128,
+        .cs_ena_pretrans = 1,
+        .cs_ena_posttrans = 1,
         .clock_speed_hz = freq_hz,
-        .input_delay_ns = 0,  // 无输入延迟
+        .input_delay_ns = 0,
         .sample_point = spi_sampling_point_t::SPI_SAMPLING_POINT_PHASE_0,
         .spics_io_num = cs,
-        .flags = flags_,  // 标志，可以填入SPI_DEVICE_BIT_LSBFIRST等信息
+        .flags = flags_,
         .queue_size = 1,
-        .pre_cb = nullptr,   // 无传输前回调
-        .post_cb = nullptr,  // 无传输后回调
+        .pre_cb = nullptr,
+        .post_cb = nullptr,
     };
     esp_err_t result = spi_bus_add_device(port_, &device_config, &spi_device_);
     if (result != ESP_OK) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "spi_bus_add_device failed (error code: %#X)\n", result);
-      Deinit();
+      Deinit(created_bus);
       return false;
     }
 
@@ -158,14 +206,21 @@ bool HardwareSpi::Deinit(bool delete_bus) {
     }
   }
 
-  if (delete_bus && bus_init_flag_) {
+  if (delete_bus && bus_init_state_.load() == BusInitState::kReady) {
+    if (!delete_bus_on_deinit_) {
+      LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+          "Skip deleting external spi bus\n");
+      return result;
+    }
+
     esp_err_t ret = spi_bus_free(port_);
     if (ret != ESP_OK) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "spi_bus_free failed (error code: %#X)\n", ret);
       result = false;
     } else {
-      bus_init_flag_ = false;
+      bus_init_state_.store(BusInitState::kNotStarted);
+      delete_bus_on_deinit_ = false;
     }
   }
 

@@ -16,7 +16,7 @@ class ChipI2cGuide : public Tool {
       : bus_(bus), address_(address) {}
 
   virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
-  virtual bool Deinit(bool delete_bus = false);
+  virtual bool Deinit(bool delete_bus = true);
 
   bool InitSequence(const uint8_t* sequence, size_t length);
   bool InitSequence(const uint16_t* sequence, size_t length);
@@ -35,7 +35,7 @@ class ChipSpiGuide : public Tool {
       : bus_(bus), cs_(cs) {}
 
   virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
-  virtual bool Deinit(bool delete_bus = false);
+  virtual bool Deinit(bool delete_bus = true);
 
   bool InitSequence(const uint8_t* sequence, size_t length);
 

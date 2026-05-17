@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-04-30 13:45:40
+ * @LastEditTime: 2026-05-17 19:49:15
  * @License: GPL 3.0
  */
 #pragma once
@@ -25,6 +25,17 @@ class HardwareSpi final : public BusSpiGuide {
         mode_(mode),
         flags_(flags),
         clock_source_(clock_source) {}
+  explicit HardwareSpi(const std::shared_ptr<HardwareSpi>& bus,
+      uint8_t mode = 0, uint32_t flags = CPP_BUS_DRIVER_DEFAULT_VALUE,
+      spi_clock_source_t clock_source = SPI_CLK_SRC_DEFAULT)
+      : mosi_(bus == nullptr ? CPP_BUS_DRIVER_DEFAULT_VALUE : bus->mosi_),
+        sclk_(bus == nullptr ? CPP_BUS_DRIVER_DEFAULT_VALUE : bus->sclk_),
+        miso_(bus == nullptr ? CPP_BUS_DRIVER_DEFAULT_VALUE : bus->miso_),
+        port_(bus == nullptr ? SPI2_HOST : bus->port_),
+        mode_(mode),
+        flags_(flags),
+        clock_source_(clock_source),
+        shared_bus_provider_(bus) {}
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   HardwareSpi(int32_t mosi, int32_t sclk,
       int32_t miso = CPP_BUS_DRIVER_DEFAULT_VALUE,
@@ -44,11 +55,24 @@ class HardwareSpi final : public BusSpiGuide {
   bool Read(void* data, size_t byte) override;
   bool WriteRead(
       const void* write_data, void* read_data, size_t data_byte) override;
-  bool Deinit(bool delete_bus = false) override;
+  bool Deinit(bool delete_bus = true) override;
 
-  void set_bus_init_flag(bool enable) { bus_init_flag_ = enable; }
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+  bool InitBus();
+  void set_bus_init_flag(bool enable);
+#endif
 
  private:
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+  enum class BusInitState : uint8_t {
+    kNotStarted,
+    kInitializing,
+    kReady,
+  };
+
+  static constexpr int64_t kBusInitWaitTimeoutMs = 1000;
+#endif
+
   int32_t mosi_, sclk_, miso_;
   int32_t cs_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
   int32_t freq_hz_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
@@ -65,8 +89,10 @@ class HardwareSpi final : public BusSpiGuide {
   uint32_t flags_;
   spi_clock_source_t clock_source_;
 
-  bool bus_init_flag_ = false;
+  std::atomic<BusInitState> bus_init_state_{BusInitState::kNotStarted};
   bool device_init_flag_ = false;
+  bool delete_bus_on_deinit_ = false;
+  std::shared_ptr<HardwareSpi> shared_bus_provider_;
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   BitOrder bit_order_;
 #endif

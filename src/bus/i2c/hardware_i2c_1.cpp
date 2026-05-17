@@ -9,11 +9,86 @@
 
 namespace cpp_bus_driver {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+bool HardwareI2c1::InitBus(uint32_t freq_hz) {
+  if (freq_hz == static_cast<uint32_t>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
+    freq_hz = CPP_BUS_DRIVER_DEFAULT_I2C_FREQ_HZ;
+  }
+
+  if (shared_bus_provider_ != nullptr) {
+    if (bus_handle_ != nullptr) {
+      return true;
+    }
+    if (!shared_bus_provider_->InitBus(freq_hz)) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "Init shared i2c bus failed\n");
+      return false;
+    }
+
+    bus_handle_ = shared_bus_provider_->bus_handle();
+    freq_hz_ = freq_hz;
+    delete_bus_on_deinit_ = false;
+    if (bus_handle_ != nullptr) {
+      bus_init_state_.store(BusInitState::kReady);
+    }
+
+    return bus_handle_ != nullptr;
+  }
+
+  if (bus_init_state_.load() == BusInitState::kReady) {
+    return true;
+  }
+
+  BusInitState expected = BusInitState::kNotStarted;
+  if (!bus_init_state_.compare_exchange_strong(
+          expected, BusInitState::kInitializing)) {
+    const int64_t start_time_ms = GetSystemTimeMs();
+    while (bus_init_state_.load() == BusInitState::kInitializing) {
+      if (GetSystemTimeMs() - start_time_ms >= kBusInitWaitTimeoutMs) {
+        LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+            "Wait i2c bus init timeout\n");
+        return false;
+      }
+      DelayMs(1);
+    }
+
+    return bus_init_state_.load() == BusInitState::kReady;
+  }
+
+  const i2c_master_bus_config_t bus_config = {
+      .i2c_port = port_,
+      .sda_io_num = static_cast<gpio_num_t>(sda_),
+      .scl_io_num = static_cast<gpio_num_t>(scl_),
+      .clk_source = I2C_CLK_SRC_DEFAULT,
+      .glitch_ignore_cnt = 7,
+      .intr_priority = 0,
+      .trans_queue_depth = 0,
+      .flags =
+          {
+              .enable_internal_pullup = 1,
+              .allow_pd = 0,
+          },
+  };
+
+  esp_err_t result = i2c_new_master_bus(&bus_config, &bus_handle_);
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        "i2c_new_master_bus failed (error code: %#X)\n", result);
+    bus_init_state_.store(BusInitState::kNotStarted);
+    return false;
+  }
+
+  freq_hz_ = freq_hz;
+  delete_bus_on_deinit_ = true;
+  bus_init_state_.store(BusInitState::kReady);
+
+  return true;
+}
+
 bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
   if (freq_hz == static_cast<uint32_t>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
     freq_hz = CPP_BUS_DRIVER_DEFAULT_I2C_FREQ_HZ;
   }
-  bool created_bus = false;
+  const bool had_bus = bus_handle_ != nullptr;
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareI2c1 config address: %#X\n", address);
@@ -26,32 +101,10 @@ bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareI2c1 config freq_hz: %d hz\n", freq_hz);
 
-  if (bus_handle_ == nullptr) {
-    const i2c_master_bus_config_t bus_config = {
-        .i2c_port = port_,  // 选择I2C端口号，I2C_NUM_0表示使用I2C0
-        .sda_io_num = static_cast<gpio_num_t>(sda_),
-        .scl_io_num = static_cast<gpio_num_t>(scl_),
-        .clk_source = I2C_CLK_SRC_DEFAULT,  // 使用默认的I2C时钟源
-        .glitch_ignore_cnt = 7,  // 设置滤波器忽略的毛刺周期为7个I2C模块时钟周期
-        .intr_priority = 0,      // 设置中断优先级
-        .trans_queue_depth = 0,  // 设置传输队列深度
-        .flags =
-            {
-                .enable_internal_pullup = 1,  // 启用内部上拉电阻
-                .allow_pd = 0  // 不允许在睡眠模式下备份/恢复I2C寄存器
-            },
-    };
-
-    esp_err_t result = i2c_new_master_bus(&bus_config, &bus_handle_);
-    if (result != ESP_OK) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
-          "i2c_new_master_bus failed (error code: %#X)\n", result);
-      Deinit(true);
-      return false;
-    }
-    owns_bus_ = true;
-    created_bus = true;
+  if (!InitBus(freq_hz)) {
+    return false;
   }
+  const bool created_bus = !had_bus && delete_bus_on_deinit_;
 
   if (address == static_cast<uint16_t>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "address is null\n");
@@ -72,8 +125,8 @@ bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
             },
     };
 
-    esp_err_t result =
-        i2c_master_bus_add_device(bus_handle_, &device_config, &device_handle_);
+    esp_err_t result = i2c_master_bus_add_device(
+        bus_handle_, &device_config, &device_handle_);
     if (result != ESP_OK) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "i2c_master_bus_add_device failed (error code: %#X)\n", result);
@@ -103,7 +156,7 @@ bool HardwareI2c1::Deinit(bool delete_bus) {
   }
 
   if (delete_bus && bus_handle_ != nullptr) {
-    if (!owns_bus_) {
+    if (!delete_bus_on_deinit_) {
       LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
           "Skip deleting external i2c bus\n");
       return result;
@@ -116,7 +169,8 @@ bool HardwareI2c1::Deinit(bool delete_bus) {
       result = false;
     } else {
       bus_handle_ = nullptr;
-      owns_bus_ = false;
+      delete_bus_on_deinit_ = false;
+      bus_init_state_.store(BusInitState::kNotStarted);
     }
   }
 
@@ -125,7 +179,8 @@ bool HardwareI2c1::Deinit(bool delete_bus) {
 
 bool HardwareI2c1::Read(uint8_t* data, size_t length) {
   esp_err_t result = i2c_master_receive(
-      device_handle_, data, length, CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS);
+      device_handle_, data, length,
+      CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "i2c_master_receive failed (error code: %#X)\n", result);
@@ -134,9 +189,11 @@ bool HardwareI2c1::Read(uint8_t* data, size_t length) {
 
   return true;
 }
+
 bool HardwareI2c1::Write(const uint8_t* data, size_t length) {
   esp_err_t result = i2c_master_transmit(
-      device_handle_, data, length, CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS);
+      device_handle_, data, length,
+      CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "i2c_master_transmit failed (error code: %#X)\n", result);
@@ -145,6 +202,7 @@ bool HardwareI2c1::Write(const uint8_t* data, size_t length) {
 
   return true;
 }
+
 bool HardwareI2c1::WriteRead(const uint8_t* write_data, size_t write_length,
     uint8_t* read_data, size_t read_length) {
   esp_err_t result =
@@ -174,14 +232,17 @@ bool HardwareI2c1::set_bus_handle(i2c_master_bus_handle_t bus_handle) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
-  if (device_handle_ != nullptr || (bus_handle_ != nullptr && owns_bus_)) {
+  if (device_handle_ != nullptr ||
+      (bus_handle_ != nullptr && delete_bus_on_deinit_)) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2c1 has been initialized\n");
     return false;
   }
 
   bus_handle_ = bus_handle;
-  owns_bus_ = false;
+  shared_bus_provider_.reset();
+  delete_bus_on_deinit_ = false;
+  bus_init_state_.store(BusInitState::kReady);
 
   return true;
 }

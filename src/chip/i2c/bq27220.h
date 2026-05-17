@@ -193,7 +193,7 @@ class Bq27220 final : public ChipI2cGuide {
    * @return 反初始化成功返回 true，失败返回 false
    * @Date 2026-05-12 18:35:00
    */
-  bool Deinit(bool delete_bus = false) override;
+  bool Deinit(bool delete_bus = true) override;
 
   /**
    * @brief 读取芯片 Device ID

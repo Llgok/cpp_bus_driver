@@ -31,7 +31,7 @@ class Hi8561Touch final : public ChipI2cGuide {
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
-  bool Deinit(bool delete_bus = false) override;
+  bool Deinit(bool delete_bus = true) override;
 
   /**
    * @brief 获取触摸总数

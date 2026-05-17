@@ -21,7 +21,7 @@ class BusI2cGuide : public Tool {
       uint8_t* read_data, size_t read_length) = 0;
   virtual bool Probe(const uint16_t address) = 0;
 
-  virtual bool Deinit(bool delete_bus = false);
+  virtual bool Deinit(bool delete_bus = true);
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   virtual i2c_cmd_handle_t CmdLinkCreate();
@@ -148,7 +148,7 @@ class BusSpiGuide : public Tool {
   virtual bool Read(void* data, size_t byte) = 0;
   virtual bool WriteRead(
       const void* write_data, void* read_data, size_t data_byte) = 0;
-  virtual bool Deinit(bool delete_bus = false) = 0;
+  virtual bool Deinit(bool delete_bus = true) = 0;
 
   bool Read(const uint8_t write_c8, uint8_t* read_d8);
   bool Read(
@@ -203,7 +203,7 @@ class BusQspiGuide : public Tool {
   BusQspiGuide() = default;
 
   virtual bool Init(int32_t freq_hz, int32_t cs) = 0;
-  virtual bool Deinit(bool delete_bus = false) = 0;
+  virtual bool Deinit(bool delete_bus = true) = 0;
   virtual bool Write(const void* data, size_t byte, uint32_t flags = 0,
       bool cs_keep_active = false) = 0;
 };

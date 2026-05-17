@@ -29,7 +29,7 @@ class HardwareQspi final : public BusQspiGuide {
 
   bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE,
       int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
-  bool Deinit(bool delete_bus = false) override;
+  bool Deinit(bool delete_bus = true) override;
   bool Write(const void* data, size_t byte,
       uint32_t flags = 0, bool cs_keep_active = false) override;
 
