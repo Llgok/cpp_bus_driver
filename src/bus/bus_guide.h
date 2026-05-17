@@ -10,7 +10,7 @@
 #include "../config.h"
 
 namespace cpp_bus_driver {
-class BusI2cGuide : public Tool {
+class BusI2cGuide : public virtual Tool {
  public:
   BusI2cGuide() = default;
 
@@ -57,7 +57,7 @@ class BusI2cGuide : public Tool {
   bool Scan7bitAddress(std::vector<uint8_t>* address);
 };
 
-class BusI2sGuide : public Tool {
+class BusI2sGuide : public virtual Tool {
  public:
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   enum class DataMode {
@@ -138,7 +138,7 @@ class BusI2sGuide : public Tool {
   virtual bool Deinit() = 0;
 };
 
-class BusSpiGuide : public Tool {
+class BusSpiGuide : public virtual Tool {
  public:
   BusSpiGuide() = default;
 
@@ -197,7 +197,7 @@ class BusSpiGuide : public Tool {
       const uint8_t write_data);
 };
 
-class BusQspiGuide : public Tool {
+class BusQspiGuide : public virtual Tool {
  public:
   BusQspiGuide() = default;
 
@@ -207,7 +207,7 @@ class BusQspiGuide : public Tool {
       const void* data, size_t byte, uint32_t flags, bool cs_keep_active) = 0;
 };
 
-class BusUartGuide : public Tool {
+class BusUartGuide : public virtual Tool {
  public:
   BusUartGuide() = default;
 
@@ -223,7 +223,7 @@ class BusUartGuide : public Tool {
   virtual bool Deinit() = 0;
 };
 
-class BusSdioGuide : public Tool {
+class BusSdioGuide : public virtual Tool {
  public:
   BusSdioGuide() = default;
 
@@ -243,7 +243,7 @@ class BusSdioGuide : public Tool {
       uint32_t function, uint32_t write_c32, const void* data, size_t byte) = 0;
 };
 
-class BusMipiGuide : public Tool {
+class BusMipiGuide : public virtual Tool {
  public:
   BusMipiGuide() = default;
 

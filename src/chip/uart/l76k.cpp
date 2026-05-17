@@ -85,42 +85,42 @@ bool BaudRateToPcas01Value(L76k::BaudRate baud_rate, uint8_t& value) {
 
 bool L76k::Init(int32_t baud_rate) {
   if (rst_ != kDefaultValue) {
-    ChipUartGuide::SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
+    SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
-    ChipUartGuide::GpioWrite(rst_, 1);
-    ChipUartGuide::DelayMs(10);
-    ChipUartGuide::GpioWrite(rst_, 0);
-    ChipUartGuide::DelayMs(10);
-    ChipUartGuide::GpioWrite(rst_, 1);
-    ChipUartGuide::DelayMs(10);
+    GpioWrite(rst_, 1);
+    DelayMs(10);
+    GpioWrite(rst_, 0);
+    DelayMs(10);
+    GpioWrite(rst_, 1);
+    DelayMs(10);
   }
 
   if (wake_up_ != kDefaultValue) {
-    if (!ChipUartGuide::SetGpioMode(
+    if (!SetGpioMode(
             wake_up_, GpioMode::kOutput, GpioStatus::kPullup)) {
-      ChipUartGuide::LogMessage(
+      LogMessage(
           LogLevel::kChip, __FILE__, __LINE__, "GpioMode failed\n");
     }
   }
 
   if (!Sleep(false)) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "Sleep failed\n");
   }
 
   if (!ChipUartGuide::Init(baud_rate)) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
   size_t buffer_index = 0;
   if (!GetDeviceId(&buffer_index)) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kInfo, __FILE__, __LINE__, "Get l76k id failed\n");
     return false;
   } else {
-    ChipUartGuide::LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "Get l76k id success (index: %d)\n", buffer_index);
   }
 
@@ -129,14 +129,14 @@ bool L76k::Init(int32_t baud_rate) {
 
 bool L76k::Deinit() {
   if (!ChipUartGuide::Deinit()) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
     return false;
   }
 
   bool result = true;
-  result &= ChipUartGuide::ResetGpio(wake_up_);
-  result &= ChipUartGuide::ResetGpio(rst_);
+  result &= ResetGpio(wake_up_);
+  result &= ResetGpio(rst_);
 
   return result;
 }
@@ -146,13 +146,13 @@ bool L76k::GetDeviceId(size_t* search_index) {
   uint32_t buffer_length = 0;
 
   if (!GetInfoData(buffer, &buffer_length)) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "GetInfoData failed\n");
     return false;
   }
 
   const char* buffer_cmd = "$G";
-  if (!ChipUartGuide::Search(buffer.get(), buffer_length, buffer_cmd,
+  if (!Search(buffer.get(), buffer_length, buffer_cmd,
           std::strlen(buffer_cmd), search_index)) {
     return false;
   }
@@ -162,19 +162,19 @@ bool L76k::GetDeviceId(size_t* search_index) {
 
 bool L76k::Sleep(bool enable) {
   if (wake_up_ != kDefaultValue) {
-    if (!ChipUartGuide::GpioWrite(wake_up_, !enable)) {
-      ChipUartGuide::LogMessage(
+    if (!GpioWrite(wake_up_, !enable)) {
+      LogMessage(
           LogLevel::kChip, __FILE__, __LINE__, "GpioWrite failed\n");
       return false;
     }
   } else if (wake_up_callback_ != nullptr) {
     if (!wake_up_callback_(!enable)) {
-      ChipUartGuide::LogMessage(
+      LogMessage(
           LogLevel::kChip, __FILE__, __LINE__, "wake_up_callback_ failed\n");
       return false;
     }
   } else {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "Sleep failed\n");
     return false;
   }
@@ -184,7 +184,7 @@ bool L76k::Sleep(bool enable) {
 
 uint32_t L76k::ReadData(uint8_t* data, uint32_t length) {
   if (data == nullptr) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
     return 0;
   }
@@ -203,7 +203,7 @@ uint32_t L76k::ReadData(uint8_t* data, uint32_t length) {
 
   const int32_t result = bus_->Read(data, read_length);
   if (result <= 0) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
     return 0;
   }
@@ -218,13 +218,13 @@ bool L76k::ClearRxBufferData() { return bus_->ClearRxBufferData(); }
 bool L76k::GetInfoData(std::unique_ptr<uint8_t[]>& data, uint32_t* length,
     uint32_t max_length, uint8_t timeout_count) {
   if (length == nullptr) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
     data = nullptr;
     return false;
   }
   if (max_length == 0) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
     data = nullptr;
     *length = 0;
@@ -234,7 +234,7 @@ bool L76k::GetInfoData(std::unique_ptr<uint8_t[]>& data, uint32_t* length,
   uint8_t buffer_timeout_count = 0;
 
   while (true) {
-    ChipUartGuide::DelayMs(update_interval_ms_);
+    DelayMs(update_interval_ms_);
 
     uint32_t buffer_length = GetRxBufferLength();
     if (buffer_length > max_length) {
@@ -244,7 +244,7 @@ bool L76k::GetInfoData(std::unique_ptr<uint8_t[]>& data, uint32_t* length,
     if (buffer_length > 0) {
       data = std::make_unique<uint8_t[]>(buffer_length);
       if (data == nullptr) {
-        ChipUartGuide::LogMessage(
+        LogMessage(
             LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
         data = nullptr;
         *length = 0;
@@ -253,14 +253,14 @@ bool L76k::GetInfoData(std::unique_ptr<uint8_t[]>& data, uint32_t* length,
 
       const int32_t read_length = bus_->Read(data.get(), buffer_length);
       if (read_length <= 0) {
-        ChipUartGuide::LogMessage(
+        LogMessage(
             LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
         data = nullptr;
         *length = 0;
         return false;
       }
 
-      ChipUartGuide::LogMessage(LogLevel::kDebug, __FILE__, __LINE__,
+      LogMessage(LogLevel::kDebug, __FILE__, __LINE__,
           "GetInfoData length: %d\n", read_length);
       buffer_length = static_cast<uint32_t>(read_length);
       *length = buffer_length;
@@ -270,7 +270,7 @@ bool L76k::GetInfoData(std::unique_ptr<uint8_t[]>& data, uint32_t* length,
     buffer_timeout_count++;
     if (buffer_timeout_count > timeout_count)  // 超时
     {
-      ChipUartGuide::LogMessage(
+      LogMessage(
           LogLevel::kChip, __FILE__, __LINE__, "Read timeout\n");
       data = nullptr;
       *length = 0;
@@ -294,7 +294,7 @@ bool L76k::SetUpdateFrequency(UpdateFreq freq) {
       interval_ms = 200;
       break;
     default:
-      ChipUartGuide::LogMessage(
+      LogMessage(
           LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
@@ -311,7 +311,7 @@ bool L76k::SetBaudRate(BaudRate baud_rate) {
   uint8_t pcas_value = 0;
   const uint32_t baud_rate_value = BaudRateToValue(baud_rate);
   if (baud_rate_value == 0 || !BaudRateToPcas01Value(baud_rate, pcas_value)) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
@@ -324,13 +324,13 @@ bool L76k::SetBaudRate(BaudRate baud_rate) {
   // 只有设置波特率时需要延时
   // 因为没有忙总线，所以这里写入数据需要在模块未发送数据空闲的时候写。
   // 延时时间为更新间隔的一半。
-  ChipUartGuide::DelayMs(update_interval_ms_ / 2);
+  DelayMs(update_interval_ms_ / 2);
   if (!WritePcasCommand(body)) {
     return false;
   }
 
   if (!bus_->SetBaudRate(baud_rate_value)) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "SetBaudRate failed\n");
     return false;
   }
@@ -357,7 +357,7 @@ bool L76k::SetRestartMode(RestartMode mode) {
       restart_mode = 3;
       break;
     default:
-      ChipUartGuide::LogMessage(
+      LogMessage(
           LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
@@ -391,7 +391,7 @@ bool L76k::SetGnssConstellation(GnssConstellation constellation) {
       mode = 7;
       break;
     default:
-      ChipUartGuide::LogMessage(
+      LogMessage(
           LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
@@ -408,7 +408,7 @@ bool L76k::SetNmeaOutputConfig(const NmeaOutputConfig& config) {
       !IsPcasOutputRateValid(config.vtg) ||
       !IsPcasOutputRateValid(config.zda) ||
       !IsPcasOutputRateValid(config.ant)) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
@@ -436,7 +436,7 @@ bool L76k::SetNmeaOutputConfig(const NmeaOutputConfig& config) {
 
 bool L76k::SetNmeaSentenceOutput(NmeaSentence sentence, uint16_t rate) {
   if (!((rate <= 9) || (rate == 0xFFFF))) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
@@ -465,7 +465,7 @@ bool L76k::SetNmeaSentenceOutput(NmeaSentence sentence, uint16_t rate) {
       message_id = 0x08;
       break;
     default:
-      ChipUartGuide::LogMessage(
+      LogMessage(
           LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
@@ -499,7 +499,7 @@ bool L76k::QueryCasicPortConfig() {
 bool L76k::SetCasicBaudRate(BaudRate baud_rate) {
   const uint32_t baud_rate_value = BaudRateToValue(baud_rate);
   if (baud_rate_value == 0) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
@@ -510,9 +510,9 @@ bool L76k::SetCasicBaudRate(BaudRate baud_rate) {
     return false;
   }
 
-  ChipUartGuide::DelayMs(update_interval_ms_ / 2);
+  DelayMs(update_interval_ms_ / 2);
   if (!bus_->SetBaudRate(baud_rate_value)) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "SetBaudRate failed\n");
     return false;
   }
@@ -537,7 +537,7 @@ bool L76k::SetCasicRestartMode(RestartMode start_mode,
       start_mode_value = 3;
       break;
     default:
-      ChipUartGuide::LogMessage(
+      LogMessage(
           LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
@@ -549,7 +549,7 @@ bool L76k::SetCasicRestartMode(RestartMode start_mode,
     case CasicResetMode::kHardwareResetAfterPowerOff:
       break;
     default:
-      ChipUartGuide::LogMessage(
+      LogMessage(
           LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
@@ -564,7 +564,7 @@ bool L76k::SetCasicRestartMode(RestartMode start_mode,
 
 bool L76k::SetCasicUpdateInterval(uint16_t interval_ms) {
   if (interval_ms != 200 && interval_ms != 500 && interval_ms != 1000) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
@@ -595,7 +595,7 @@ bool L76k::WritePcasCommand(const std::string& body) {
 
   const std::string command = "$" + body + "*" + checksum_buffer + "\r\n";
   if (!bus_->Write(command.c_str(), command.length())) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -606,7 +606,7 @@ bool L76k::WritePcasCommand(const std::string& body) {
 bool L76k::WriteCasicCommand(
     uint8_t class_id, uint8_t message_id, const std::vector<uint8_t>& payload) {
   if ((payload.size() % 4) != 0) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
@@ -633,7 +633,7 @@ bool L76k::WriteCasicCommand(
   AppendU32(frame, checksum);
 
   if (!bus_->Write(frame.data(), frame.size())) {
-    ChipUartGuide::LogMessage(
+    LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

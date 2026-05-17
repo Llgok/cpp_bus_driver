@@ -10,7 +10,7 @@
 #include "../bus/bus_guide.h"
 
 namespace cpp_bus_driver {
-class ChipI2cGuide : public Tool {
+class ChipI2cGuide : public virtual Tool {
  public:
   ChipI2cGuide(std::shared_ptr<BusI2cGuide> bus, int16_t address)
       : bus_(bus), address_(address) {}
@@ -28,7 +28,7 @@ class ChipI2cGuide : public Tool {
   int16_t address_;
 };
 
-class ChipSpiGuide : public Tool {
+class ChipSpiGuide : public virtual Tool {
  public:
   ChipSpiGuide(std::shared_ptr<BusSpiGuide> bus,
       int32_t cs = kDefaultValue)
@@ -45,7 +45,7 @@ class ChipSpiGuide : public Tool {
   int32_t cs_;
 };
 
-class ChipQspiGuide : public Tool {
+class ChipQspiGuide : public virtual Tool {
  public:
   ChipQspiGuide(std::shared_ptr<BusQspiGuide> bus,
       int32_t cs = kDefaultValue)
@@ -94,7 +94,7 @@ class ChipQspiGuide : public Tool {
   int32_t cs_;
 };
 
-class ChipUartGuide : public Tool {
+class ChipUartGuide : public virtual Tool {
  public:
   ChipUartGuide(std::shared_ptr<BusUartGuide> bus) : bus_(bus) {}
 
@@ -105,7 +105,7 @@ class ChipUartGuide : public Tool {
   std::shared_ptr<BusUartGuide> bus_;
 };
 
-class ChipI2sGuide : public Tool {
+class ChipI2sGuide : public virtual Tool {
  public:
   ChipI2sGuide(std::shared_ptr<BusI2sGuide> bus) : bus_(bus) {}
 
@@ -122,7 +122,7 @@ class ChipI2sGuide : public Tool {
   std::shared_ptr<BusI2sGuide> bus_;
 };
 
-class ChipSdioGuide : public Tool {
+class ChipSdioGuide : public virtual Tool {
  public:
   ChipSdioGuide(std::shared_ptr<BusSdioGuide> bus) : bus_(bus) {}
 
@@ -133,7 +133,7 @@ class ChipSdioGuide : public Tool {
   std::shared_ptr<BusSdioGuide> bus_;
 };
 
-class ChipMipiGuide : public Tool {
+class ChipMipiGuide : public virtual Tool {
  public:
   ChipMipiGuide(std::shared_ptr<BusMipiGuide> bus,
       InitSequenceFormat init_sequence_format = InitSequenceFormat::kWriteC8D8)

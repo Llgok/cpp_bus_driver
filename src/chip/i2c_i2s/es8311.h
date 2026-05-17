@@ -11,7 +11,7 @@
 
 namespace cpp_bus_driver {
 
-class Es8311 final : public ChipI2cGuide, ChipI2sGuide {
+class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
  public:
   enum class ClockSource {
     kAdcDacMclk = 0,

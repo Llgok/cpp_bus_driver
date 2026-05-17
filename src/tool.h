@@ -134,7 +134,7 @@ class Tool {
 };
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-class Pwm : public Tool {
+class Pwm : public virtual Tool {
  public:
   explicit Pwm(int32_t pin) : pin_(pin) {}
 
@@ -191,7 +191,7 @@ class Pwm : public Tool {
 
 #endif
 
-class GnssParser : public Tool {
+class GnssParser : public virtual Tool {
  public:
   // UTC 时间
   struct Utc {
