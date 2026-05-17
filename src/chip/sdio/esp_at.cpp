@@ -254,45 +254,50 @@ bool EspAt::SetDeepSleep(uint32_t sleep_time_ms, int16_t timeout_ms) {
 
 bool EspAt::InitSequence() {
   // enable function 1
-  if (!bus_->Write(0, static_cast<uint32_t>(Cmd::kSdIoCccrFnEnable), 6)) {
+  if (!bus_->Write(
+      0, static_cast<uint32_t>(Cmd::kSdIoCccrFnEnable), 6, nullptr)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
-  if (!bus_->Write(0, static_cast<uint32_t>(Cmd::kSdIoCccrFnReady), 6)) {
+  if (!bus_->Write(
+      0, static_cast<uint32_t>(Cmd::kSdIoCccrFnReady), 6, nullptr)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   // enable interrupts for function 1&2 and master enable
-  if (!bus_->Write(0, static_cast<uint32_t>(Cmd::kSdIoCccrIntEnable), 7)) {
+  if (!bus_->Write(
+      0, static_cast<uint32_t>(Cmd::kSdIoCccrIntEnable), 7, nullptr)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
-  if (!bus_->Write(0, static_cast<uint32_t>(Cmd::kSdIoCccrBlksizel), 0)) {
+  if (!bus_->Write(
+      0, static_cast<uint32_t>(Cmd::kSdIoCccrBlksizel), 0, nullptr)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
-  if (!bus_->Write(0, static_cast<uint32_t>(Cmd::kSdIoCccrBlksizeh), 2)) {
+  if (!bus_->Write(
+      0, static_cast<uint32_t>(Cmd::kSdIoCccrBlksizeh), 2, nullptr)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
-  if (!bus_->Write(0, static_cast<uint32_t>(0x110), 0)) {
+  if (!bus_->Write(0, static_cast<uint32_t>(0x110), 0, nullptr)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   // Set block size 512 (0x200)
-  if (!bus_->Write(0, static_cast<uint32_t>(0x111), 2)) {
+  if (!bus_->Write(0, static_cast<uint32_t>(0x111), 2, nullptr)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
-  if (!bus_->Write(0, static_cast<uint32_t>(0x210), 0)) {
+  if (!bus_->Write(0, static_cast<uint32_t>(0x210), 0, nullptr)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
-  if (!bus_->Write(0, static_cast<uint32_t>(0x210), 2)) {
+  if (!bus_->Write(0, static_cast<uint32_t>(0x210), 2, nullptr)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

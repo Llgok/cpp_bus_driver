@@ -304,7 +304,7 @@ bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
             static_cast<uint8_t>(sequence[index + 2] >> 8),
             static_cast<uint8_t>(sequence[index + 2]),
         };
-        if (!bus_->Write(buffer, 4)) {
+        if (!bus_->Write(buffer, 4, 0, false)) {
           LogMessage(LogLevel::kChip, __FILE__, __LINE__,
               "ChipQspiGuide write failed (error index: %zu)\n", index);
           return false;
@@ -329,7 +329,7 @@ bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
             static_cast<uint8_t>(sequence[index + 3]),
         };
 
-        if (!bus_->Write(buffer, 5)) {
+        if (!bus_->Write(buffer, 5, 0, false)) {
           LogMessage(LogLevel::kChip, __FILE__, __LINE__,
               "ChipQspiGuide write failed (error index: %zu)\n", index);
           return false;

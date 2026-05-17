@@ -93,15 +93,15 @@ bool Sh8601::SetRenderWindow(int x_start, int y_start, int x_end, int y_end) {
       static_cast<uint8_t>(Reg::kWoMemoryWriteStart),
   };
 
-  if (!bus_->Write(buffer, 8)) {
+  if (!bus_->Write(buffer, 8, 0, false)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
-  if (!bus_->Write(buffer_2, 8)) {
+  if (!bus_->Write(buffer_2, 8, 0, false)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
-  if (!bus_->Write(buffer_3, 4)) {
+  if (!bus_->Write(buffer_3, 4, 0, false)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -151,14 +151,14 @@ bool Sh8601::SendColorStream(
   }
 
   if (color_format_ == ColorFormat::kRgb666) {
-    if (!bus_->Write(
-            data, w * h * 3, static_cast<uint32_t>(SpiTrans::kModeQio))) {
+    if (!bus_->Write(data, w * h * 3,
+            static_cast<uint32_t>(SpiTrans::kModeQio), false)) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   } else {
     if (!bus_->Write(data, w * h * (static_cast<uint8_t>(color_format_) / 8),
-            static_cast<uint32_t>(SpiTrans::kModeQio))) {
+            static_cast<uint32_t>(SpiTrans::kModeQio), false)) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
@@ -226,7 +226,7 @@ bool Sh8601::SetBrightness(uint8_t value) {
 
       static_cast<uint8_t>(value)};
 
-  if (!bus_->Write(buffer, 5)) {
+  if (!bus_->Write(buffer, 5, 0, false)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -250,7 +250,7 @@ bool Sh8601::SetSleep(bool enable) {
     buffer[3] = static_cast<uint8_t>(Reg::kWoSleepOut);
   }
 
-  if (!bus_->Write(buffer, 4)) {
+  if (!bus_->Write(buffer, 4, 0, false)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -274,7 +274,7 @@ bool Sh8601::SetScreenOff(bool enable) {
     buffer[3] = static_cast<uint8_t>(Reg::kWoDisplayOn);
   }
 
-  if (!bus_->Write(buffer, 4)) {
+  if (!bus_->Write(buffer, 4, 0, false)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -293,7 +293,7 @@ bool Sh8601::SetColorEnhance(ColorEnhance mode) {
       static_cast<uint8_t>(mode),
   };
 
-  if (!bus_->Write(buffer, 5)) {
+  if (!bus_->Write(buffer, 5, 0, false)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -327,7 +327,7 @@ bool Sh8601::SetColorFormat(ColorFormat format) {
       return false;
   }
 
-  if (!bus_->Write(buffer, 5)) {
+  if (!bus_->Write(buffer, 5, 0, false)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

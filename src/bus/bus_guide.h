@@ -21,18 +21,18 @@ class BusI2cGuide : public Tool {
       uint8_t* read_data, size_t read_length) = 0;
   virtual bool Probe(const uint16_t address) = 0;
 
-  virtual bool Deinit(bool delete_bus = true);
+  virtual bool Deinit(bool delete_bus);
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   virtual i2c_cmd_handle_t CmdLinkCreate();
   virtual bool StartTransmit(
-      i2c_cmd_handle_t cmd_handle, i2c_rw_t rw, bool ack_en = true);
+      i2c_cmd_handle_t cmd_handle, i2c_rw_t rw, bool ack_en);
   virtual bool Write(
-      i2c_cmd_handle_t cmd_handle, uint8_t data, bool ack_en = true);
+      i2c_cmd_handle_t cmd_handle, uint8_t data, bool ack_en);
   virtual bool Write(i2c_cmd_handle_t cmd_handle, const uint8_t* data,
-      size_t data_len, bool ack_en = true);
+      size_t data_len, bool ack_en);
   virtual bool Read(i2c_cmd_handle_t cmd_handle, uint8_t* data, size_t data_len,
-      i2c_ack_type_t ack = I2C_MASTER_LAST_NACK);
+      i2c_ack_type_t ack);
   virtual bool StopTransmit(i2c_cmd_handle_t cmd_handle);
 
   virtual bool StartTransmit();
@@ -78,9 +78,8 @@ class BusI2sGuide : public Tool {
   virtual size_t Write(const void* data, size_t byte) = 0;
 
   virtual bool SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
-      uint32_t sample_rate_hz, DataMode data_mode = DataMode::kInputOutput) = 0;
-  virtual bool SetChannelEnable(
-      bool enable, DataMode data_mode = DataMode::kInputOutput) = 0;
+      uint32_t sample_rate_hz, DataMode data_mode) = 0;
+  virtual bool SetChannelEnable(bool enable, DataMode data_mode) = 0;
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   virtual bool Init(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz,
       nrf_i2s_swidth_t data_bit_width) = 0;
@@ -148,7 +147,7 @@ class BusSpiGuide : public Tool {
   virtual bool Read(void* data, size_t byte) = 0;
   virtual bool WriteRead(
       const void* write_data, void* read_data, size_t data_byte) = 0;
-  virtual bool Deinit(bool delete_bus = true) = 0;
+  virtual bool Deinit(bool delete_bus) = 0;
 
   bool Read(const uint8_t write_c8, uint8_t* read_d8);
   bool Read(
@@ -203,16 +202,16 @@ class BusQspiGuide : public Tool {
   BusQspiGuide() = default;
 
   virtual bool Init(int32_t freq_hz, int32_t cs) = 0;
-  virtual bool Deinit(bool delete_bus = true) = 0;
-  virtual bool Write(const void* data, size_t byte, uint32_t flags = 0,
-      bool cs_keep_active = false) = 0;
+  virtual bool Deinit(bool delete_bus) = 0;
+  virtual bool Write(
+      const void* data, size_t byte, uint32_t flags, bool cs_keep_active) = 0;
 };
 
 class BusUartGuide : public Tool {
  public:
   BusUartGuide() = default;
 
-  virtual bool Init(int32_t baud_rate = kDefaultValue) = 0;
+  virtual bool Init(int32_t baud_rate) = 0;
 
   virtual int32_t Read(void* data, uint32_t length) = 0;
   virtual int32_t Write(const void* data, size_t length) = 0;
@@ -239,7 +238,7 @@ class BusSdioGuide : public Tool {
   virtual bool Write(
       uint32_t function, uint32_t write_c32, const void* data, size_t byte) = 0;
   virtual bool Write(uint32_t function, uint32_t write_c32, uint8_t data,
-      uint8_t* read_d8_verify = nullptr) = 0;
+      uint8_t* read_d8_verify) = 0;
   virtual bool WriteBlock(
       uint32_t function, uint32_t write_c32, const void* data, size_t byte) = 0;
 };

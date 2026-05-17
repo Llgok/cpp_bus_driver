@@ -15,8 +15,8 @@ class ChipI2cGuide : public Tool {
   ChipI2cGuide(std::shared_ptr<BusI2cGuide> bus, int16_t address)
       : bus_(bus), address_(address) {}
 
-  virtual bool Init(int32_t freq_hz = kDefaultValue);
-  virtual bool Deinit(bool delete_bus = true);
+  virtual bool Init(int32_t freq_hz);
+  virtual bool Deinit(bool delete_bus);
 
   bool InitSequence(const uint8_t* sequence, size_t length);
   bool InitSequence(const uint16_t* sequence, size_t length);
@@ -34,8 +34,8 @@ class ChipSpiGuide : public Tool {
       int32_t cs = kDefaultValue)
       : bus_(bus), cs_(cs) {}
 
-  virtual bool Init(int32_t freq_hz = kDefaultValue);
-  virtual bool Deinit(bool delete_bus = true);
+  virtual bool Init(int32_t freq_hz);
+  virtual bool Deinit(bool delete_bus);
 
   bool InitSequence(const uint8_t* sequence, size_t length);
 
@@ -51,7 +51,7 @@ class ChipQspiGuide : public Tool {
       int32_t cs = kDefaultValue)
       : bus_(bus), cs_(cs) {}
 
-  virtual bool Init(int32_t freq_hz = kDefaultValue);
+  virtual bool Init(int32_t freq_hz);
   virtual bool Deinit();
 
   bool InitSequence(const uint32_t* sequence, size_t length);
@@ -98,7 +98,7 @@ class ChipUartGuide : public Tool {
  public:
   ChipUartGuide(std::shared_ptr<BusUartGuide> bus) : bus_(bus) {}
 
-  virtual bool Init(int32_t baud_rate = kDefaultValue);
+  virtual bool Init(int32_t baud_rate);
   virtual bool Deinit();
 
  protected:
@@ -126,7 +126,7 @@ class ChipSdioGuide : public Tool {
  public:
   ChipSdioGuide(std::shared_ptr<BusSdioGuide> bus) : bus_(bus) {}
 
-  virtual bool Init(int32_t freq_hz = kDefaultValue);
+  virtual bool Init(int32_t freq_hz);
   virtual bool Deinit();
 
  protected:
@@ -139,8 +139,7 @@ class ChipMipiGuide : public Tool {
       InitSequenceFormat init_sequence_format = InitSequenceFormat::kWriteC8D8)
       : bus_(bus), init_sequence_format_(init_sequence_format) {}
 
-  virtual bool Init(float freq_mhz = kDefaultValue,
-      float lane_bit_rate_mbps = kDefaultValue);
+  virtual bool Init(float freq_mhz, float lane_bit_rate_mbps);
   virtual bool Deinit();
 
   bool InitSequence(const uint8_t* sequence, size_t length);

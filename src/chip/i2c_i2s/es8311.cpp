@@ -722,7 +722,8 @@ bool Es8311::SetClockReconfig(uint16_t mclk_multiple, uint32_t sample_rate_hz) {
 }
 
 bool Es8311::SetI2sChannelEnable(bool enable) {
-  if (!ChipI2sGuide::bus_->SetChannelEnable(enable)) {
+  if (!ChipI2sGuide::bus_->SetChannelEnable(
+      enable, BusI2sGuide::DataMode::kInputOutput)) {
     ChipI2sGuide::LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "SetChannelEnable failed\n");
     return false;
