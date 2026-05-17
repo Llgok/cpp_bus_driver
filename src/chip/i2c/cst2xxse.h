@@ -22,7 +22,7 @@ class Cst2xxse final : public ChipI2cGuide {
     uint8_t finger_count = -1;     // 触摸手指总数
     bool home_touch_flag = false;  // home按键触摸标志
 
-    std::vector<struct TouchInfo> info;
+    std::vector<TouchInfo> info;
   };
 
   explicit Cst2xxse(std::shared_ptr<BusI2cGuide> bus,

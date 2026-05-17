@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-04-29 16:47:20
+ * @LastEditTime: 2026-05-15 22:09:37
  * @License: GPL 3.0
  */
 #include "hardware_i2c_1.h"
@@ -10,15 +10,10 @@
 namespace cpp_bus_driver {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
-  if ((bus_handle_ != nullptr) && (device_handle_ != nullptr)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
-        "HardwareI2c1 has been initialized\n");
-    return true;
-  }
-
   if (freq_hz == static_cast<uint32_t>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
     freq_hz = CPP_BUS_DRIVER_DEFAULT_I2C_FREQ_HZ;
   }
+  bool created_bus = false;
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareI2c1 config address: %#X\n", address);
@@ -51,13 +46,18 @@ bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
     if (result != ESP_OK) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "i2c_new_master_bus failed (error code: %#X)\n", result);
+      Deinit(true);
       return false;
     }
+    owns_bus_ = true;
+    created_bus = true;
   }
 
   if (address == static_cast<uint16_t>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "address is null\n");
-    return false;
+    freq_hz_ = freq_hz;
+    address_ = address;
+    return true;
   }
 
   if (device_handle_ == nullptr) {
@@ -68,7 +68,7 @@ bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
         .scl_wait_us = 0,
         .flags =
             {
-                .disable_ack_check = 1,
+                .disable_ack_check = 0,
             },
     };
 
@@ -77,6 +77,7 @@ bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
     if (result != ESP_OK) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "i2c_master_bus_add_device failed (error code: %#X)\n", result);
+      Deinit(created_bus);
       return false;
     }
   }
@@ -102,6 +103,12 @@ bool HardwareI2c1::Deinit(bool delete_bus) {
   }
 
   if (delete_bus && bus_handle_ != nullptr) {
+    if (!owns_bus_) {
+      LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+          "Skip deleting external i2c bus\n");
+      return result;
+    }
+
     esp_err_t ret = i2c_del_master_bus(bus_handle_);
     if (ret != ESP_OK) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
@@ -109,9 +116,8 @@ bool HardwareI2c1::Deinit(bool delete_bus) {
       result = false;
     } else {
       bus_handle_ = nullptr;
+      owns_bus_ = false;
     }
-  } else {
-    bus_handle_ = nullptr;
   }
 
   return result;
@@ -168,8 +174,14 @@ bool HardwareI2c1::set_bus_handle(i2c_master_bus_handle_t bus_handle) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
+  if (device_handle_ != nullptr || (bus_handle_ != nullptr && owns_bus_)) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+        "HardwareI2c1 has been initialized\n");
+    return false;
+  }
 
   bus_handle_ = bus_handle;
+  owns_bus_ = false;
 
   return true;
 }

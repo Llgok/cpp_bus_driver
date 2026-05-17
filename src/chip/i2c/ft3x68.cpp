@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-04-20 14:44:28
+ * @LastEditTime: 2026-05-16 23:47:09
  * @License: GPL 3.0
  */
 #include "ft3x68.h"
@@ -78,13 +78,13 @@ bool Ft3x68::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
     return false;
   }
 
-  uint8_t buffer[kSingleTouchPointDataSize] = {0};
+  std::array<uint8_t, kSingleTouchPointDataSize> buffer = {};
 
   // 地址自动偏移
   if (!bus_->Read(
           static_cast<uint8_t>(static_cast<uint8_t>(Cmd::kRoP1Xh) +
                                ((finger_num - 1) * kSingleTouchPointDataSize)),
-          buffer, kSingleTouchPointDataSize)) {
+          buffer.data(), buffer.size())) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -114,10 +114,10 @@ bool Ft3x68::GetMultipleTouchPoint(TouchPoint& tp) {
   // +1 把手指数的地址也读出来
   const uint8_t buffer_touch_point_size =
       kMaxTouchFingerCount * kSingleTouchPointDataSize + 1;
-  uint8_t buffer[buffer_touch_point_size] = {0};
+  std::vector<uint8_t> buffer(buffer_touch_point_size, 0);
 
   // 地址自动偏移
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoTdStatus), buffer,
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoTdStatus), buffer.data(),
           buffer_touch_point_size)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
     return false;

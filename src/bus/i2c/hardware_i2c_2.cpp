@@ -55,6 +55,7 @@ bool HardwareI2c2::Init(uint32_t freq_hz, uint16_t address) {
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "i2c_driver_install failed (error code: %#X)\n", result);
+    return false;
   }
 
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)

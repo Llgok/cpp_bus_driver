@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-04-29 16:48:10
+ * @LastEditTime: 2026-05-17 11:20:25
  * @License: GPL 3.0
  */
 #include "hardware_spi.h"
@@ -24,7 +24,7 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   if (flags_ == CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    flags_ = static_cast<uint32_t>(NULL);
+    flags_ = 0;
   }
 #endif
 
@@ -78,7 +78,7 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
         .max_transfer_sz = 0,
         .flags = SPICOMMON_BUSFLAG_MASTER,
         .isr_cpu_id = ESP_INTR_CPU_AFFINITY_AUTO,
-        .intr_flags = static_cast<uint32_t>(NULL),
+        .intr_flags = 0,
     };
 
     esp_err_t result = spi_bus_initialize(port_, &bus_config, SPI_DMA_CH_AUTO);
@@ -109,13 +109,14 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
         .spics_io_num = cs,
         .flags = flags_,  // 标志，可以填入SPI_DEVICE_BIT_LSBFIRST等信息
         .queue_size = 1,
-        .pre_cb = NULL,   // 无传输前回调
-        .post_cb = NULL,  // 无传输后回调
+        .pre_cb = nullptr,   // 无传输前回调
+        .post_cb = nullptr,  // 无传输后回调
     };
     esp_err_t result = spi_bus_add_device(port_, &device_config, &spi_device_);
     if (result != ESP_OK) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "spi_bus_add_device failed (error code: %#X)\n", result);
+      Deinit();
       return false;
     }
 
@@ -166,8 +167,6 @@ bool HardwareSpi::Deinit(bool delete_bus) {
     } else {
       bus_init_flag_ = false;
     }
-  } else {
-    bus_init_flag_ = false;
   }
 
   return result;
@@ -180,15 +179,15 @@ bool HardwareSpi::Deinit(bool delete_bus) {
 bool HardwareSpi::Write(const void* data, size_t byte) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   spi_transaction_t buffer = {
-      .flags = static_cast<uint32_t>(NULL),
+      .flags = 0,
       .cmd = 0,
       .addr = 0,
       .length = byte * 8,
       .rxlength = 0,
       .override_freq_hz = 0,
-      .user = (void*)0,
+      .user = nullptr,
       .tx_buffer = data,
-      .rx_buffer = NULL,
+      .rx_buffer = nullptr,
   };
 
   esp_err_t result = spi_device_polling_transmit(spi_device_, &buffer);
@@ -217,14 +216,14 @@ bool HardwareSpi::Write(const void* data, size_t byte) {
 bool HardwareSpi::Read(void* data, size_t byte) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   spi_transaction_t buffer = {
-      .flags = static_cast<uint32_t>(NULL),
+      .flags = 0,
       .cmd = 0,
       .addr = 0,
       .length = byte * 8,
       .rxlength = 0,
       .override_freq_hz = 0,
-      .user = (void*)0,
-      .tx_buffer = NULL,
+      .user = nullptr,
+      .tx_buffer = nullptr,
       .rx_buffer = data,
   };
 
@@ -237,11 +236,11 @@ bool HardwareSpi::Read(void* data, size_t byte) {
 
   return true;
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  uint8_t buffer[byte] = {0};
+  std::vector<uint8_t> buffer(byte, 0);
 
   spi_handle_->beginTransaction(spi_settings_);
   GpioWrite(cs_, 0);
-  spi_handle_->transfer(buffer, data, byte);
+  spi_handle_->transfer(buffer.data(), data, byte);
   GpioWrite(cs_, 1);
   spi_handle_->endTransaction();
 
@@ -256,13 +255,13 @@ bool HardwareSpi::WriteRead(
     const void* write_data, void* read_data, size_t data_byte) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   spi_transaction_t buffer = {
-      .flags = static_cast<uint32_t>(NULL),
+      .flags = 0,
       .cmd = 0,
       .addr = 0,
       .length = data_byte * 8,
       .rxlength = 0,
       .override_freq_hz = 0,
-      .user = (void*)0,
+      .user = nullptr,
       .tx_buffer = write_data,
       .rx_buffer = read_data,
   };

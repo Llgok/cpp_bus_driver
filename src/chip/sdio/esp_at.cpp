@@ -8,6 +8,29 @@
 #include "esp_at.h"
 
 namespace cpp_bus_driver {
+namespace {
+
+/**
+ * @brief 将字节长度向上对齐到4字节边界
+ * @param value 原始字节长度
+ * @return 4字节对齐后的字节长度
+ */
+size_t AlignTo4(size_t value) {
+  return (value + 3) & ~static_cast<size_t>(3);
+}
+
+bool IsSafeAtQuotedField(const std::string& value) {
+  for (char ch : value) {
+    if (ch == '"' || ch == '\\' || ch == '\r' || ch == '\n') {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+}  // namespace
+
 bool EspAt::Init(int32_t freq_hz) {
   connect_.status = true;
   connect_.error_count = 0;
@@ -101,7 +124,8 @@ bool EspAt::SetSleep(SleepMode mode, int16_t timeout_ms) {
       break;
 
     default:
-      break;
+      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      return false;
   }
 
   SendPacket(buffer, strlen(buffer));
@@ -497,13 +521,17 @@ bool EspAt::ReceivePacket(std::vector<uint8_t>& data) {
 
   if (buffer_lenght != 0) {
     // 4字节对齐读取
+    const size_t aligned_length = AlignTo4(buffer_lenght);
+    std::vector<uint8_t> read_buffer(aligned_length);
     if (!bus_->Read(1,
             static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
-            data.data() + buffer_block_length, (buffer_lenght + 3) & (~3))) {
+            read_buffer.data(), aligned_length)) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
       SetConnectCount(1);
       return false;
     }
+    std::memcpy(
+        data.data() + buffer_block_length, read_buffer.data(), buffer_lenght);
 
     connect_.receive_total_length_index += buffer_lenght;
   }
@@ -513,7 +541,7 @@ bool EspAt::ReceivePacket(std::vector<uint8_t>& data) {
 }
 
 bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
-  if (data == nullptr) {
+  if (data == nullptr || byte == nullptr) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
@@ -527,6 +555,14 @@ bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
 
   if (buffer_lenght == 0) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "GetRxDataLength failed\n");
+    return false;
+  }
+
+  if (*byte < buffer_lenght) {
+    *byte = buffer_lenght;
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+        "Receive buffer too small (required: %zu)\n",
+        static_cast<size_t>(buffer_lenght));
     return false;
   }
 
@@ -551,14 +587,17 @@ bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
 
   if (buffer_lenght != 0) {
     // 4字节对齐读取
+    const size_t aligned_length = AlignTo4(buffer_lenght);
+    std::vector<uint8_t> read_buffer(aligned_length);
     if (!bus_->Read(1,
             static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
-            data + buffer_block_length, (buffer_lenght + 3) & (~3))) {
+            read_buffer.data(), aligned_length)) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
       *byte = 0;
       SetConnectCount(1);
       return false;
     }
+    std::memcpy(data + buffer_block_length, read_buffer.data(), buffer_lenght);
 
     connect_.receive_total_length_index += buffer_lenght;
   }
@@ -608,14 +647,18 @@ bool EspAt::ReceivePacket(std::unique_ptr<uint8_t[]>& data, size_t* byte) {
 
   if (buffer_lenght != 0) {
     // 4字节对齐读取
+    const size_t aligned_length = AlignTo4(buffer_lenght);
+    std::vector<uint8_t> read_buffer(aligned_length);
     if (!bus_->Read(1,
             static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
-            data.get() + buffer_block_length, (buffer_lenght + 3) & (~3))) {
+            read_buffer.data(), aligned_length)) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
       *byte = 0;
       SetConnectCount(1);
       return false;
     }
+    std::memcpy(
+        data.get() + buffer_block_length, read_buffer.data(), buffer_lenght);
 
     connect_.receive_total_length_index += buffer_lenght;
   }
@@ -687,8 +730,11 @@ bool EspAt::SendPacket(const char* data, size_t byte) {
 
   if (byte != 0) {
     // 4字节对齐发送
+    const size_t aligned_length = AlignTo4(byte);
+    std::vector<uint8_t> write_buffer(aligned_length, 0);
+    std::memcpy(write_buffer.data(), data + buffer_block_length, byte);
     if (!bus_->Write(1, static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - byte,
-            data + buffer_block_length, (byte + 3) & (~3))) {
+            write_buffer.data(), aligned_length)) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
       SetConnectCount(1);
       return false;
@@ -699,7 +745,7 @@ bool EspAt::SendPacket(const char* data, size_t byte) {
   return true;
 }
 
-bool EspAt::SendPacket(const std::string data) {
+bool EspAt::SendPacket(const std::string& data) {
   if (data.size() == 0) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
     return false;
@@ -746,9 +792,13 @@ bool EspAt::SendPacket(const std::string data) {
 
   if (buffer_length != 0) {
     // 4字节对齐发送
+    const size_t aligned_length = AlignTo4(buffer_length);
+    std::vector<uint8_t> write_buffer(aligned_length, 0);
+    std::memcpy(
+        write_buffer.data(), data.data() + buffer_block_length, buffer_length);
     if (!bus_->Write(1,
             static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_length,
-            data.data() + buffer_block_length, (buffer_length + 3) & (~3))) {
+            write_buffer.data(), aligned_length)) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
       SetConnectCount(1);
       return false;
@@ -777,7 +827,8 @@ bool EspAt::SetWifiMode(WifiMode mode, int16_t timeout_ms) {
       break;
 
     default:
-      break;
+      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      return false;
   }
 
   SendPacket(buffer, strlen(buffer));
@@ -963,10 +1014,12 @@ bool EspAt::SetFlashSave(bool enable, int16_t timeout_ms) {
 
 bool EspAt::SetWifiConnect(
     std::string ssid, std::string password, int16_t timeout_ms) {
-  std::string buffer = "AT+CWJAP=\"" + ssid + "\"" + ",\"";
-  if (password != "") {
-    buffer = buffer + password + "\"\r\n";
+  if (!IsSafeAtQuotedField(ssid) || !IsSafeAtQuotedField(password)) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
   }
+
+  std::string buffer = "AT+CWJAP=\"" + ssid + "\",\"" + password + "\"\r\n";
 
   SendPacket(buffer);
 

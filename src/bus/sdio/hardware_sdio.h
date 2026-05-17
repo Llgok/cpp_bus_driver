@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-04-30 13:45:30
+ * @LastEditTime: 2026-05-15 22:29:35
  * @License: GPL 3.0
  */
 #pragma once
@@ -40,6 +40,7 @@ class HardwareSdio final : public BusSdioGuide {
         port_(port) {}
 
   bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Deinit() override;
 
   bool WaitInterrupt(uint32_t timeout_ms) override;
 
@@ -99,7 +100,7 @@ class HardwareSdio final : public BusSdioGuide {
    * @Date 2025-03-21 15:08:14
    */
   bool Write(uint32_t function, uint32_t write_c32, uint8_t data,
-      uint8_t* read_d8_verify = NULL) override;
+      uint8_t* read_d8_verify = nullptr) override;
 
   /**
    * @brief 块模式下，使用 IO_RW_EXTENDED (kCmd53) 写数据块
@@ -116,11 +117,12 @@ class HardwareSdio final : public BusSdioGuide {
  private:
   static constexpr uint8_t kSdioBusInitTimeoutCount = 30;
 
-  uint8_t width_;
+  uint8_t width_ = 1;
   int32_t clk_, cmd_, d0_, d1_, d2_, d3_, d4_, d5_, d6_, d7_;
   SdioPort port_;
-  int32_t freq_hz_;
+  int32_t freq_hz_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
   std::unique_ptr<sdmmc_card_t> sdio_handle_;
+  bool host_init_flag_ = false;
 };
 #endif
 }  // namespace cpp_bus_driver

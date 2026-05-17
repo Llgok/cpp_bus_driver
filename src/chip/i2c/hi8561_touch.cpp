@@ -7,6 +7,9 @@
  */
 #include "hi8561_touch.h"
 
+#include <array>
+#include <vector>
+
 namespace cpp_bus_driver {
 bool Hi8561Touch::Init(int32_t freq_hz) {
   if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
@@ -125,9 +128,9 @@ bool Hi8561Touch::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
       0x03,
   };
 
-  uint8_t buffer_2[kSingleTouchPointDataSize] = {0};
+  std::array<uint8_t, kSingleTouchPointDataSize> buffer_2 = {};
 
-  if (!bus_->WriteRead(buffer, 6, buffer_2, kSingleTouchPointDataSize)) {
+  if (!bus_->WriteRead(buffer, 6, buffer_2.data(), buffer_2.size())) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
@@ -165,9 +168,10 @@ bool Hi8561Touch::GetMultipleTouchPoint(TouchPoint& tp) {
   const uint8_t buffer_touch_point_size =
       kTouchPointAddressOffset +
       kMaxTouchFingerCount * kSingleTouchPointDataSize;
-  uint8_t buffer_2[buffer_touch_point_size] = {0};
+  std::vector<uint8_t> buffer_2(buffer_touch_point_size, 0);
 
-  if (!bus_->WriteRead(buffer, 6, buffer_2, buffer_touch_point_size)) {
+  if (!bus_->WriteRead(
+          buffer, 6, buffer_2.data(), buffer_touch_point_size)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
@@ -218,15 +222,16 @@ bool Hi8561Touch::GetEdgeTouch() {
   const uint8_t buffer_touch_point_size =
       kTouchPointAddressOffset +
       kMaxTouchFingerCount * kSingleTouchPointDataSize;
-  uint8_t buffer_2[buffer_touch_point_size] = {0};
+  std::vector<uint8_t> buffer_2(buffer_touch_point_size, 0);
 
-  if (!bus_->WriteRead(buffer, 6, buffer_2, buffer_touch_point_size)) {
+  if (!bus_->WriteRead(
+          buffer, 6, buffer_2.data(), buffer_touch_point_size)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
   // 如果手指数为0
-  if (buffer_2[0] == 0) {
+  if ((buffer_2[0] == 0) || (buffer_2[0] > kMaxTouchFingerCount)) {
     return false;
   }
 

@@ -8,7 +8,37 @@
 #include "chip_guide.h"
 
 namespace cpp_bus_driver {
+namespace {
+
+/**
+ * @brief 检查初始化序列剩余数据是否足够
+ * @param index 当前序列索引
+ * @param length 序列总长度
+ * @param required 从当前索引开始需要的数据项数量
+ * @return 数据项数量足够返回true
+ */
+bool HasSequenceBytes(size_t index, size_t length, size_t required) {
+  return index <= length && required <= length - index;
+}
+
+template <typename Bus>
+bool HasBus(const std::shared_ptr<Bus>& bus, Tool* tool, const char* file,
+    size_t line) {
+  if (bus != nullptr) {
+    return true;
+  }
+
+  tool->LogMessage(Tool::LogLevel::kInfo, file, line, "Invalid argument\n");
+  return false;
+}
+
+}  // namespace
+
 bool ChipI2cGuide::Init(int32_t freq_hz) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
   if (!bus_->Init(freq_hz, address_)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
     return false;
@@ -24,6 +54,10 @@ bool ChipI2cGuide::Init(int32_t freq_hz) {
 }
 
 bool ChipI2cGuide::Deinit(bool delete_bus) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
   if (!bus_->Deinit(delete_bus)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
     return false;
@@ -33,29 +67,47 @@ bool ChipI2cGuide::Deinit(bool delete_bus) {
 }
 
 bool ChipI2cGuide::InitSequence(const uint8_t* sequence, size_t length) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
+  if (sequence == nullptr || length == 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
   size_t index = 0;
   while (index < length) {
     switch (sequence[index]) {
       case static_cast<uint8_t>(InitSequenceFormat::kDelayMs):
-        index++;
-        DelayMs(sequence[index]);
-        index++;
-        break;
-      case static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8):
-        index++;
-        if (!bus_->Write(&sequence[index], 2)) {
+        if (!HasSequenceBytes(index, length, 2)) {
           LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-              "ChipI2cGuide write failed (error index: %d)\n", index);
+              "ChipI2cGuide InitSequence short data (error index: %zu)\n",
+              index);
           return false;
         }
+        DelayMs(sequence[index + 1]);
         index += 2;
+        break;
+      case static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8):
+        if (!HasSequenceBytes(index, length, 3)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipI2cGuide InitSequence short data (error index: %zu)\n",
+              index);
+          return false;
+        }
+        if (!bus_->Write(&sequence[index + 1], 2)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipI2cGuide write failed (error index: %zu)\n", index);
+          return false;
+        }
+        index += 3;
         break;
 
       default:
         LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-            "ChipI2cGuide InitSequence failed (error index: %d)\n", index);
+            "ChipI2cGuide InitSequence failed (error index: %zu)\n", index);
         return false;
-        break;
     }
   }
 
@@ -63,35 +115,53 @@ bool ChipI2cGuide::InitSequence(const uint8_t* sequence, size_t length) {
 }
 
 bool ChipI2cGuide::InitSequence(const uint16_t* sequence, size_t length) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
+  if (sequence == nullptr || length == 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
   size_t index = 0;
   while (index < length) {
     switch (sequence[index]) {
       case static_cast<uint8_t>(InitSequenceFormat::kDelayMs):
-        index++;
-        DelayMs(sequence[index]);
-        index++;
+        if (!HasSequenceBytes(index, length, 2)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipI2cGuide InitSequence short data (error index: %zu)\n",
+              index);
+          return false;
+        }
+        DelayMs(sequence[index + 1]);
+        index += 2;
         break;
       case static_cast<uint8_t>(InitSequenceFormat::kWriteC16D8): {
-        index++;
+        if (!HasSequenceBytes(index, length, 3)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipI2cGuide InitSequence short data (error index: %zu)\n",
+              index);
+          return false;
+        }
         const uint8_t buffer[] = {
-            static_cast<uint8_t>(sequence[index] >> 8),
-            static_cast<uint8_t>(sequence[index]),
+            static_cast<uint8_t>(sequence[index + 1] >> 8),
             static_cast<uint8_t>(sequence[index + 1]),
+            static_cast<uint8_t>(sequence[index + 2]),
         };
 
         if (!bus_->Write(buffer, 3)) {
           LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-              "ChipI2cGuide write failed (error index: %d)\n", index);
+              "ChipI2cGuide write failed (error index: %zu)\n", index);
           return false;
         }
-        index += 2;
+        index += 3;
         break;
       }
       default:
         LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-            "ChipI2cGuide InitSequence failed (error index: %d)\n", index);
+            "ChipI2cGuide InitSequence failed (error index: %zu)\n", index);
         return false;
-        break;
     }
   }
 
@@ -99,6 +169,10 @@ bool ChipI2cGuide::InitSequence(const uint16_t* sequence, size_t length) {
 }
 
 bool ChipSpiGuide::Init(int32_t freq_hz) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
   if (!bus_->Init(freq_hz, cs_)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
     return false;
@@ -108,6 +182,10 @@ bool ChipSpiGuide::Init(int32_t freq_hz) {
 }
 
 bool ChipSpiGuide::Deinit(bool delete_bus) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
   if (!bus_->Deinit(delete_bus)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
     return false;
@@ -117,29 +195,47 @@ bool ChipSpiGuide::Deinit(bool delete_bus) {
 }
 
 bool ChipSpiGuide::InitSequence(const uint8_t* sequence, size_t length) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
+  if (sequence == nullptr || length == 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
   size_t index = 0;
   while (index < length) {
     switch (sequence[index]) {
       case static_cast<uint8_t>(InitSequenceFormat::kDelayMs):
-        index++;
-        DelayMs(sequence[index]);
-        index++;
-        break;
-      case static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8):
-        index++;
-        if (!bus_->Write(&sequence[index], 2)) {
+        if (!HasSequenceBytes(index, length, 2)) {
           LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-              "ChipSpiGuide write failed (error index: %d)\n", index);
+              "ChipSpiGuide InitSequence short data (error index: %zu)\n",
+              index);
           return false;
         }
+        DelayMs(sequence[index + 1]);
         index += 2;
+        break;
+      case static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8):
+        if (!HasSequenceBytes(index, length, 3)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipSpiGuide InitSequence short data (error index: %zu)\n",
+              index);
+          return false;
+        }
+        if (!bus_->Write(&sequence[index + 1], 2)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipSpiGuide write failed (error index: %zu)\n", index);
+          return false;
+        }
+        index += 3;
         break;
 
       default:
         LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-            "ChipSpiGuide InitSequence failed (error index: %d)\n", index);
+            "ChipSpiGuide InitSequence failed (error index: %zu)\n", index);
         return false;
-        break;
     }
   }
 
@@ -147,6 +243,10 @@ bool ChipSpiGuide::InitSequence(const uint8_t* sequence, size_t length) {
 }
 
 bool ChipQspiGuide::Init(int32_t freq_hz) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
   if (!bus_->Init(freq_hz, cs_)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
     return false;
@@ -155,48 +255,58 @@ bool ChipQspiGuide::Init(int32_t freq_hz) {
   return true;
 }
 
-bool ChipQspiGuide::Deinit() { return true; }
+bool ChipQspiGuide::Deinit() {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
+  if (!bus_->Deinit(true)) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  return true;
+}
 
 bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
+  if (sequence == nullptr || length == 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
   size_t index = 0;
   while (index < length) {
     switch (sequence[index]) {
       case static_cast<uint8_t>(InitSequenceFormat::kDelayMs):
-        index++;
-        DelayMs(sequence[index]);
-        index++;
+        if (!HasSequenceBytes(index, length, 2)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipQspiGuide InitSequence short data (error index: %zu)\n",
+              index);
+          return false;
+        }
+        DelayMs(sequence[index + 1]);
+        index += 2;
         break;
       case static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24): {
-        index++;
+        if (!HasSequenceBytes(index, length, 3)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipQspiGuide InitSequence short data (error index: %zu)\n",
+              index);
+          return false;
+        }
         uint8_t buffer[] = {
-            static_cast<uint8_t>(sequence[index]),
-            static_cast<uint8_t>(sequence[index + 1] >> 16),
-            static_cast<uint8_t>(sequence[index + 1] >> 8),
             static_cast<uint8_t>(sequence[index + 1]),
+            static_cast<uint8_t>(sequence[index + 2] >> 16),
+            static_cast<uint8_t>(sequence[index + 2] >> 8),
+            static_cast<uint8_t>(sequence[index + 2]),
         };
         if (!bus_->Write(buffer, 4)) {
           LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-              "ChipQspiGuide write failed (error index: %d)\n", index);
-          return false;
-        }
-        index += 2;
-
-        break;
-      }
-
-      case static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8): {
-        index++;
-        uint8_t buffer[] = {
-            static_cast<uint8_t>(sequence[index]),
-            static_cast<uint8_t>(sequence[index + 1] >> 16),
-            static_cast<uint8_t>(sequence[index + 1] >> 8),
-            static_cast<uint8_t>(sequence[index + 1]),
-            static_cast<uint8_t>(sequence[index + 2]),
-        };
-
-        if (!bus_->Write(buffer, 5)) {
-          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-              "ChipQspiGuide write failed (error index: %d)\n", index);
+              "ChipQspiGuide write failed (error index: %zu)\n", index);
           return false;
         }
         index += 3;
@@ -204,11 +314,35 @@ bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
         break;
       }
 
+      case static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8): {
+        if (!HasSequenceBytes(index, length, 4)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipQspiGuide InitSequence short data (error index: %zu)\n",
+              index);
+          return false;
+        }
+        uint8_t buffer[] = {
+            static_cast<uint8_t>(sequence[index + 1]),
+            static_cast<uint8_t>(sequence[index + 2] >> 16),
+            static_cast<uint8_t>(sequence[index + 2] >> 8),
+            static_cast<uint8_t>(sequence[index + 2]),
+            static_cast<uint8_t>(sequence[index + 3]),
+        };
+
+        if (!bus_->Write(buffer, 5)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipQspiGuide write failed (error index: %zu)\n", index);
+          return false;
+        }
+        index += 4;
+
+        break;
+      }
+
       default:
         LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-            "ChipQspiGuide InitSequence failed (error index: %d)\n", index);
+            "ChipQspiGuide InitSequence failed (error index: %zu)\n", index);
         return false;
-        break;
     }
   }
 
@@ -216,6 +350,10 @@ bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
 }
 
 bool ChipUartGuide::Init(int32_t baud_rate) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
   if (!bus_->Init(baud_rate)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
     return false;
@@ -225,6 +363,10 @@ bool ChipUartGuide::Init(int32_t baud_rate) {
 }
 
 bool ChipUartGuide::Deinit() {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
   if (!bus_->Deinit()) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
     return false;
@@ -235,95 +377,96 @@ bool ChipUartGuide::Deinit() {
 
 bool ChipI2sGuide::Init(
     uint16_t mclk_multiple, uint32_t sample_rate_hz, uint8_t data_bit_width) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+  i2s_mclk_multiple_t resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
+  if (mclk_multiple <= 128) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
+  } else if (mclk_multiple <= 192) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_192;
+  } else if (mclk_multiple <= 256) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
+  } else if (mclk_multiple <= 384) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_384;
+  } else if (mclk_multiple <= 512) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_512;
+  } else if (mclk_multiple <= 576) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_576;
+  } else if (mclk_multiple <= 768) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_768;
+  } else if (mclk_multiple <= 1024) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_1024;
+  } else if (mclk_multiple <= 1152) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_1152;
+  } else {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
+  }
+
+  i2s_data_bit_width_t resolved_data_bit_width =
+      i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_8BIT;
+  if (data_bit_width <= 8) {
+    resolved_data_bit_width = i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_8BIT;
+  } else if (data_bit_width <= 16) {
+    resolved_data_bit_width = i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_16BIT;
+  } else if (data_bit_width <= 24) {
+    resolved_data_bit_width = i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_24BIT;
+  } else if (data_bit_width <= 32) {
+    resolved_data_bit_width = i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_32BIT;
+  } else {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    resolved_data_bit_width = i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_16BIT;
+  }
+
   if (!bus_->Init(
-          [this](uint16_t mm) -> i2s_mclk_multiple_t {
-            if (mm <= 128) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
-            } else if (mm <= 192) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_192;
-            } else if (mm <= 256) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
-            } else if (mm <= 384) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_384;
-            } else if (mm <= 512) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_512;
-            } else if (mm <= 576) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_576;
-            } else if (mm <= 768) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_768;
-            } else if (mm <= 1024) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_1024;
-            } else if (mm <= 1152) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_1152;
-            } else {
-              LogMessage(
-                  LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
-            }
-          }(mclk_multiple),
-          sample_rate_hz,
-          [this](uint8_t dbw) -> i2s_data_bit_width_t {
-            if (dbw <= 8) {
-              return i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_8BIT;
-            } else if (dbw <= 16) {
-              return i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_16BIT;
-            } else if (dbw <= 24) {
-              return i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_24BIT;
-            } else if (dbw <= 32) {
-              return i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_32BIT;
-            } else {
-              LogMessage(
-                  LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-              return i2s_data_bit_width_t::I2S_DATA_BIT_WIDTH_16BIT;
-            }
-          }(data_bit_width))) {
+      resolved_mclk_multiple, sample_rate_hz, resolved_data_bit_width)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
   return true;
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+  nrf_i2s_ratio_t resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_32_X;
+  if (mclk_multiple <= 32) {
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_32_X;
+  } else if (mclk_multiple <= 48) {
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_48_X;
+  } else if (mclk_multiple <= 64) {
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_64_X;
+  } else if (mclk_multiple <= 96) {
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_96_X;
+  } else if (mclk_multiple <= 128) {
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_128_X;
+  } else if (mclk_multiple <= 192) {
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_192_X;
+  } else if (mclk_multiple <= 256) {
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_256_X;
+  } else if (mclk_multiple <= 384) {
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_384_X;
+  } else if (mclk_multiple <= 512) {
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_512_X;
+  } else {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_32_X;
+  }
+
+  nrf_i2s_swidth_t resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_8_BIT;
+  if (data_bit_width <= 8) {
+    resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_8_BIT;
+  } else if (data_bit_width <= 16) {
+    resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16_BIT;
+  } else if (data_bit_width <= 24) {
+    resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_24_BIT;
+  } else {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16_BIT;
+  }
+
   if (!bus_->Init(
-          [this](uint16_t ratio) -> nrf_i2s_ratio_t {
-            if (ratio <= 32) {
-              return nrf_i2s_ratio_t::NRF_I2S_RATIO_32_X;
-            } else if (ratio <= 48) {
-              return nrf_i2s_ratio_t::NRF_I2S_RATIO_48_X;
-            } else if (ratio <= 64) {
-              return nrf_i2s_ratio_t::NRF_I2S_RATIO_64_X;
-            } else if (ratio <= 96) {
-              return nrf_i2s_ratio_t::NRF_I2S_RATIO_96_X;
-            } else if (ratio <= 128) {
-              return nrf_i2s_ratio_t::NRF_I2S_RATIO_128_X;
-            } else if (ratio <= 192) {
-              return nrf_i2s_ratio_t::NRF_I2S_RATIO_192_X;
-            } else if (ratio <= 256) {
-              return nrf_i2s_ratio_t::NRF_I2S_RATIO_256_X;
-            } else if (ratio <= 384) {
-              return nrf_i2s_ratio_t::NRF_I2S_RATIO_384_X;
-            } else if (ratio <= 512) {
-              return nrf_i2s_ratio_t::NRF_I2S_RATIO_512_X;
-            } else {
-              LogMessage(
-                  LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-              return nrf_i2s_ratio_t::NRF_I2S_RATIO_32_X;
-            }
-          }(mclk_multiple),
-          sample_rate_hz,
-          [this](uint8_t swidth) -> nrf_i2s_swidth_t {
-            if (swidth <= 8) {
-              return nrf_i2s_swidth_t::NRF_I2S_SWIDTH_8_BIT;
-            } else if (swidth <= 16) {
-              return nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16_BIT;
-            } else if (swidth <= 24) {
-              return nrf_i2s_swidth_t::NRF_I2S_SWIDTH_24_BIT;
-            } else {
-              LogMessage(
-                  LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-              return nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16_BIT;
-            }
-          }(data_bit_width))) {
+      resolved_ratio, sample_rate_hz, resolved_swidth)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -336,6 +479,10 @@ bool ChipI2sGuide::Init(
 }
 
 bool ChipI2sGuide::Deinit() {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
   if (!bus_->Deinit()) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
     return false;
@@ -347,33 +494,36 @@ bool ChipI2sGuide::Deinit() {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool ChipI2sGuide::SetClockReconfig(uint16_t mclk_multiple,
     uint32_t sample_rate_hz, BusI2sGuide::DataMode data_mode) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
+  i2s_mclk_multiple_t resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
+  if (mclk_multiple <= 128) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
+  } else if (mclk_multiple <= 192) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_192;
+  } else if (mclk_multiple <= 256) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
+  } else if (mclk_multiple <= 384) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_384;
+  } else if (mclk_multiple <= 512) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_512;
+  } else if (mclk_multiple <= 576) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_576;
+  } else if (mclk_multiple <= 768) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_768;
+  } else if (mclk_multiple <= 1024) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_1024;
+  } else if (mclk_multiple <= 1152) {
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_1152;
+  } else {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
+  }
+
   if (!bus_->SetClockReconfig(
-          [this](uint16_t mm) -> i2s_mclk_multiple_t {
-            if (mm <= 128) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
-            } else if (mm <= 192) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_192;
-            } else if (mm <= 256) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
-            } else if (mm <= 384) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_384;
-            } else if (mm <= 512) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_512;
-            } else if (mm <= 576) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_576;
-            } else if (mm <= 768) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_768;
-            } else if (mm <= 1024) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_1024;
-            } else if (mm <= 1152) {
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_1152;
-            } else {
-              LogMessage(
-                  LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-              return i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
-            }
-          }(mclk_multiple),
-          sample_rate_hz, data_mode)) {
+      resolved_mclk_multiple, sample_rate_hz, data_mode)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -383,6 +533,10 @@ bool ChipI2sGuide::SetClockReconfig(uint16_t mclk_multiple,
 #endif
 
 bool ChipSdioGuide::Init(int32_t freq_hz) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
   if (!bus_->Init(freq_hz)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
     return false;
@@ -391,9 +545,24 @@ bool ChipSdioGuide::Init(int32_t freq_hz) {
   return true;
 }
 
-bool ChipSdioGuide::Deinit() { return true; }
+bool ChipSdioGuide::Deinit() {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
+  if (!bus_->Deinit()) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
+    return false;
+  }
+
+  return true;
+}
 
 bool ChipMipiGuide::Init(float freq_mhz, float lane_bit_rate_mbps) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
   if (!bus_->Init(freq_mhz, lane_bit_rate_mbps, init_sequence_format_)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
     return false;
@@ -403,6 +572,10 @@ bool ChipMipiGuide::Init(float freq_mhz, float lane_bit_rate_mbps) {
 }
 
 bool ChipMipiGuide::Deinit() {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
   if (!bus_->Deinit()) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
     return false;
@@ -412,49 +585,86 @@ bool ChipMipiGuide::Deinit() {
 }
 
 bool ChipMipiGuide::InitSequence(const uint8_t* sequence, size_t length) {
+  if (!HasBus(bus_, this, __FILE__, __LINE__)) {
+    return false;
+  }
+
+  if (sequence == nullptr || length == 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
   size_t index = 0;
   while (index < length) {
     switch (sequence[index]) {
       case static_cast<uint8_t>(InitSequenceFormat::kDelayMs):
-        index++;
-        DelayMs(sequence[index]);
-        index++;
+        if (!HasSequenceBytes(index, length, 2)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipMipiGuide InitSequence short data (error index: %zu)\n",
+              index);
+          return false;
+        }
+        DelayMs(sequence[index + 1]);
+        index += 2;
         break;
       case static_cast<uint8_t>(InitSequenceFormat::kWriteC8):
-        index++;
-        if (!bus_->Write(static_cast<int32_t>(sequence[index]), nullptr, 0)) {
+        if (!HasSequenceBytes(index, length, 2)) {
           LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-              "ChipMipiGuide write failed (error index: %d)\n", index);
+              "ChipMipiGuide InitSequence short data (error index: %zu)\n",
+              index);
           return false;
         }
-        index++;
-        break;
-      case static_cast<uint8_t>(InitSequenceFormat::kWriteC8ByteData):
-        index++;
-        if (!bus_->Write(static_cast<int32_t>(sequence[index]),
-                &sequence[index + 2], sequence[index + 1])) {
+        if (!bus_->Write(
+                static_cast<int32_t>(sequence[index + 1]), nullptr, 0)) {
           LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-              "ChipMipiGuide write failed (error index: %d)\n", index);
-          return false;
-        }
-        index += sequence[index + 1] + 2;
-        break;
-      case static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8):
-        index++;
-        if (!bus_->Write(static_cast<int32_t>(sequence[index]),
-                &sequence[index + 1], 1)) {
-          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-              "ChipMipiGuide write failed (error index: %d)\n", index);
+              "ChipMipiGuide write failed (error index: %zu)\n", index);
           return false;
         }
         index += 2;
         break;
+      case static_cast<uint8_t>(InitSequenceFormat::kWriteC8ByteData): {
+        if (!HasSequenceBytes(index, length, 3)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipMipiGuide InitSequence short data (error index: %zu)\n",
+              index);
+          return false;
+        }
+        const size_t data_length = sequence[index + 2];
+        if (!HasSequenceBytes(index, length, 3 + data_length)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipMipiGuide InitSequence short data (error index: %zu)\n",
+              index);
+          return false;
+        }
+        if (!bus_->Write(static_cast<int32_t>(sequence[index + 1]),
+                &sequence[index + 3], data_length)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipMipiGuide write failed (error index: %zu)\n", index);
+          return false;
+        }
+        index += 3 + data_length;
+        break;
+      }
+      case static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8):
+        if (!HasSequenceBytes(index, length, 3)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipMipiGuide InitSequence short data (error index: %zu)\n",
+              index);
+          return false;
+        }
+        if (!bus_->Write(static_cast<int32_t>(sequence[index + 1]),
+                &sequence[index + 2], 1)) {
+          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+              "ChipMipiGuide write failed (error index: %zu)\n", index);
+          return false;
+        }
+        index += 3;
+        break;
 
       default:
         LogMessage(LogLevel::kChip, __FILE__, __LINE__,
-            "ChipMipiGuide InitSequence failed (error index: %d)\n", index);
+            "ChipMipiGuide InitSequence failed (error index: %zu)\n", index);
         return false;
-        break;
     }
   }
 

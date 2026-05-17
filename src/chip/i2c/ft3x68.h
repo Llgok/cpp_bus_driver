@@ -20,7 +20,7 @@ class Ft3x68 final : public ChipI2cGuide {
   struct TouchPoint {
     uint8_t finger_count = -1;  // 触摸手指总数
 
-    std::vector<struct TouchInfo> info;
+    std::vector<TouchInfo> info;
   };
 
   explicit Ft3x68(std::shared_ptr<BusI2cGuide> bus,

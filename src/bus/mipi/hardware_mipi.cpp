@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-04-29 09:30:51
+ * @LastEditTime: 2026-05-15 23:11:14
  * @License: GPL 3.0
  */
 #include "hardware_mipi.h"
@@ -30,11 +30,12 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "HardwareMipi config freq_mhz: %d\n", freq_mhz);
+      "HardwareMipi config freq_mhz: %f\n", freq_mhz);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareMipi config lane_bit_rate_mbps: %f\n", lane_bit_rate_mbps);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "HardwareMipi config init_sequence_format: %d\n", init_sequence_format);
+      "HardwareMipi config init_sequence_format: %d\n",
+      static_cast<int>(init_sequence_format));
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareMipi config width_: %d\n", width_);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
@@ -76,7 +77,7 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
 
   esp_lcd_dbi_io_config_t io_config = {
       .virtual_channel = 0,
-      .lcd_cmd_bits = [this](InitSequenceFormat format) -> int {
+      .lcd_cmd_bits = [](InitSequenceFormat format) -> int {
         switch (format) {
           case InitSequenceFormat::kWriteC8ByteData:
             return 8;
@@ -86,7 +87,7 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
             return 8;
         }
       }(init_sequence_format),
-      .lcd_param_bits = [this](InitSequenceFormat format) -> int {
+      .lcd_param_bits = [](InitSequenceFormat format) -> int {
         switch (format) {
           case InitSequenceFormat::kWriteC8ByteData:
             return 8;
@@ -101,6 +102,7 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
   if (result != ESP_OK) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__,
         "esp_lcd_new_panel_io_dbi failed (error code: %#X)\n", result);
+    Deinit();
     return false;
   }
 
@@ -169,6 +171,7 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
   if (result != ESP_OK) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__,
         "esp_lcd_new_panel_dpi failed (error code: %#X)\n", result);
+    Deinit();
     return false;
   }
 

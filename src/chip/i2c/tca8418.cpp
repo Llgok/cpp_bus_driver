@@ -2,10 +2,12 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-04-21 11:47:45
+ * @LastEditTime: 2026-05-17 10:04:48
  * @License: GPL 3.0
  */
 #include "tca8418.h"
+
+#include <vector>
 
 namespace cpp_bus_driver {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
@@ -127,7 +129,7 @@ bool Tca8418::GetMultipleTouchPoint(TouchPoint& tp) {
     return false;
   }
 
-  uint8_t buffer[buffer_finger_count] = {0};
+  std::vector<uint8_t> buffer(buffer_finger_count, 0);
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   // 地址不能自动偏移
@@ -139,7 +141,7 @@ bool Tca8418::GetMultipleTouchPoint(TouchPoint& tp) {
   }
 #else
   // 地址自动偏移
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoKeyEvent), buffer,
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoKeyEvent), buffer.data(),
           buffer_finger_count)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
     return false;

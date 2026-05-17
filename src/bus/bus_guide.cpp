@@ -150,11 +150,18 @@ bool BusI2cGuide::Write(const uint16_t write_c16, const uint8_t write_d8) {
 
 bool BusI2cGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
     size_t write_data_length) {
-  uint8_t buffer[1 + write_data_length] = {write_c8};
+  if (write_data == nullptr && write_data_length != 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
 
-  std::memcpy(&buffer[1], write_data, write_data_length);
+  std::vector<uint8_t> buffer(1 + write_data_length);
+  buffer[0] = write_c8;
+  if (write_data_length != 0) {
+    std::memcpy(&buffer[1], write_data, write_data_length);
+  }
 
-  if (!Write(buffer, 1 + write_data_length)) {
+  if (!Write(buffer.data(), buffer.size())) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -164,16 +171,21 @@ bool BusI2cGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
 
 bool BusI2cGuide::Write(const uint32_t write_c32, const uint8_t* write_data,
     size_t write_data_length) {
-  uint8_t buffer[4 + write_data_length] = {
-      static_cast<uint8_t>(write_c32 >> 24),
-      static_cast<uint8_t>(write_c32 >> 16),
-      static_cast<uint8_t>(write_c32 >> 8),
-      static_cast<uint8_t>(write_c32),
-  };
+  if (write_data == nullptr && write_data_length != 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
 
-  std::memcpy(&buffer[4], write_data, write_data_length);
+  std::vector<uint8_t> buffer(4 + write_data_length);
+  buffer[0] = static_cast<uint8_t>(write_c32 >> 24);
+  buffer[1] = static_cast<uint8_t>(write_c32 >> 16);
+  buffer[2] = static_cast<uint8_t>(write_c32 >> 8);
+  buffer[3] = static_cast<uint8_t>(write_c32);
+  if (write_data_length != 0) {
+    std::memcpy(&buffer[4], write_data, write_data_length);
+  }
 
-  if (!Write(buffer, 4 + write_data_length)) {
+  if (!Write(buffer.data(), buffer.size())) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -182,6 +194,11 @@ bool BusI2cGuide::Write(const uint32_t write_c32, const uint8_t* write_data,
 }
 
 bool BusI2cGuide::Scan7bitAddress(std::vector<uint8_t>* address) {
+  if (address == nullptr) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
   std::vector<uint8_t> address_buffer;  // 地址存储器
 
   for (uint8_t i = 1; i < 128; i++) {
@@ -201,6 +218,11 @@ bool BusI2cGuide::Scan7bitAddress(std::vector<uint8_t>* address) {
 }
 
 bool BusSpiGuide::Read(const uint8_t write_c8, uint8_t* read_d8) {
+  if (read_d8 == nullptr) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
   const uint8_t buffer_write[2] = {write_c8};
   uint8_t buffer_read[2] = {0};
 
@@ -216,15 +238,24 @@ bool BusSpiGuide::Read(const uint8_t write_c8, uint8_t* read_d8) {
 
 bool BusSpiGuide::Read(
     const uint8_t write_c8, uint8_t* read_data, size_t read_data_length) {
-  const uint8_t buffer_write[1 + read_data_length] = {write_c8};
-  uint8_t buffer_read[1 + read_data_length] = {0};
+  if (read_data == nullptr && read_data_length != 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
 
-  if (!WriteRead(buffer_write, buffer_read, 1 + read_data_length)) {
+  std::vector<uint8_t> buffer_write(1 + read_data_length, 0);
+  std::vector<uint8_t> buffer_read(1 + read_data_length, 0);
+  buffer_write[0] = write_c8;
+
+  if (!WriteRead(
+          buffer_write.data(), buffer_read.data(), buffer_write.size())) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
-  std::memcpy(read_data, &buffer_read[1], read_data_length);
+  if (read_data_length != 0) {
+    std::memcpy(read_data, &buffer_read[1], read_data_length);
+  }
 
   return true;
 }
@@ -251,11 +282,18 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint8_t write_d8) {
 
 bool BusSpiGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
     size_t write_data_length) {
-  uint8_t buffer[1 + write_data_length] = {write_c8};
+  if (write_data == nullptr && write_data_length != 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
 
-  std::memcpy(&buffer[1], write_data, write_data_length);
+  std::vector<uint8_t> buffer(1 + write_data_length);
+  buffer[0] = write_c8;
+  if (write_data_length != 0) {
+    std::memcpy(&buffer[1], write_data, write_data_length);
+  }
 
-  if (!Write(buffer, 1 + write_data_length)) {
+  if (!Write(buffer.data(), buffer.size())) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -265,45 +303,62 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
 
 bool BusSpiGuide::Read(const uint8_t write_c8, const uint16_t write_c16,
     uint8_t* read_data, size_t read_data_length) {
-  const uint8_t buffer_write[3 + read_data_length] = {
-      write_c8,
-      static_cast<uint8_t>(write_c16 >> 8),
-      static_cast<uint8_t>(write_c16),
-  };
+  if (read_data == nullptr && read_data_length != 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
 
-  uint8_t buffer_read[3 + read_data_length] = {0};
+  std::vector<uint8_t> buffer_write(3 + read_data_length, 0);
+  std::vector<uint8_t> buffer_read(3 + read_data_length, 0);
+  buffer_write[0] = write_c8;
+  buffer_write[1] = static_cast<uint8_t>(write_c16 >> 8);
+  buffer_write[2] = static_cast<uint8_t>(write_c16);
 
-  if (!WriteRead(buffer_write, buffer_read, 3 + read_data_length)) {
+  if (!WriteRead(
+          buffer_write.data(), buffer_read.data(), buffer_write.size())) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
-  std::memcpy(read_data, &buffer_read[3], read_data_length);
+  if (read_data_length != 0) {
+    std::memcpy(read_data, &buffer_read[3], read_data_length);
+  }
 
   return true;
 }
 
 bool BusSpiGuide::Read(const uint8_t write_c8_1, const uint8_t write_c8_2,
     uint8_t* read_data, size_t read_data_length) {
-  const uint8_t buffer_write[2 + read_data_length] = {
-      write_c8_1,
-      write_c8_2,
-  };
+  if (read_data == nullptr && read_data_length != 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
 
-  uint8_t buffer_read[2 + read_data_length] = {0};
+  std::vector<uint8_t> buffer_write(2 + read_data_length, 0);
+  std::vector<uint8_t> buffer_read(2 + read_data_length, 0);
+  buffer_write[0] = write_c8_1;
+  buffer_write[1] = write_c8_2;
 
-  if (!WriteRead(buffer_write, buffer_read, 2 + read_data_length)) {
+  if (!WriteRead(
+          buffer_write.data(), buffer_read.data(), buffer_write.size())) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
-  std::memcpy(read_data, &buffer_read[2], read_data_length);
+  if (read_data_length != 0) {
+    std::memcpy(read_data, &buffer_read[2], read_data_length);
+  }
 
   return true;
 }
 
 bool BusSpiGuide::Read(
     const uint8_t write_c8, const uint16_t write_c16, uint8_t* read_data) {
+  if (read_data == nullptr) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
   const uint8_t buffer_write[4] = {
       write_c8,
       static_cast<uint8_t>(write_c16 >> 8),
@@ -324,15 +379,20 @@ bool BusSpiGuide::Read(
 
 bool BusSpiGuide::Write(const uint8_t write_c8, const uint16_t write_c16,
     const uint8_t* write_data, size_t write_data_length) {
-  uint8_t buffer[3 + write_data_length] = {
-      write_c8,
-      static_cast<uint8_t>(write_c16 >> 8),
-      static_cast<uint8_t>(write_c16),
-  };
+  if (write_data == nullptr && write_data_length != 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
 
-  std::memcpy(&buffer[3], write_data, write_data_length);
+  std::vector<uint8_t> buffer(3 + write_data_length);
+  buffer[0] = write_c8;
+  buffer[1] = static_cast<uint8_t>(write_c16 >> 8);
+  buffer[2] = static_cast<uint8_t>(write_c16);
+  if (write_data_length != 0) {
+    std::memcpy(&buffer[3], write_data, write_data_length);
+  }
 
-  if (!Write(buffer, 3 + write_data_length)) {
+  if (!Write(buffer.data(), buffer.size())) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -342,14 +402,19 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint16_t write_c16,
 
 bool BusSpiGuide::Write(const uint8_t write_c8_1, const uint8_t write_c8_2,
     const uint8_t* write_data, size_t write_data_length) {
-  uint8_t buffer[2 + write_data_length] = {
-      write_c8_1,
-      write_c8_2,
-  };
+  if (write_data == nullptr && write_data_length != 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
 
-  std::memcpy(&buffer[2], write_data, write_data_length);
+  std::vector<uint8_t> buffer(2 + write_data_length);
+  buffer[0] = write_c8_1;
+  buffer[1] = write_c8_2;
+  if (write_data_length != 0) {
+    std::memcpy(&buffer[2], write_data, write_data_length);
+  }
 
-  if (!Write(buffer, 2 + write_data_length)) {
+  if (!Write(buffer.data(), buffer.size())) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

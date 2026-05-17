@@ -18,7 +18,7 @@ class Tca8418 final : public ChipI2cGuide {
     kCtrlAltDelKeySequence = 0B00010000,
     kFifoOverflow = 0B00001000,
     kKeypadLock = 0B00000100,
-    GPIO_INTERRUPT = 0B00000010,
+    kGpioInterrupt = 0B00000010,
     kKeyEvents = 0B00000001,
   };
 
@@ -27,7 +27,7 @@ class Tca8418 final : public ChipI2cGuide {
     kAll = 0B00001111,  // 全部中断
     kFifoOverflow = 0B00001000,
     kKeypadLock = 0B00000100,
-    GPIO_INTERRUPT = 0B00000010,
+    kGpioInterrupt = 0B00000010,
     kKeyEvents = 0B00000001,
   };
 
@@ -46,7 +46,7 @@ class Tca8418 final : public ChipI2cGuide {
   struct TouchPoint {
     uint8_t finger_count = -1;  // 触摸手指总数
 
-    std::vector<struct TouchInfo> info;
+    std::vector<TouchInfo> info;
   };
 
   struct IrqStatus  // 中断状态

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:26:23
- * @LastEditTime: 2026-04-22 17:36:05
+ * @LastEditTime: 2026-05-16 23:40:46
  * @License: GPL 3.0
  */
 #include "hardware_uart.h"
@@ -62,29 +62,32 @@ bool HardwareUart::Init(int32_t baud_rate) {
   };
 
   esp_err_t result = uart_driver_install(
-      static_cast<uart_port_t>(port_), kUartRxMaxSize, 0, 0, NULL, 0);
+      static_cast<uart_port_t>(port_), kUartRxMaxSize, 0, 0, nullptr, 0);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "uart_driver_install failed (error code: %#X)\n", result);
     return false;
   }
 
+  init_flag_ = true;
+
   result = uart_param_config(static_cast<uart_port_t>(port_), &uart_config);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "uart_param_config failed (error code: %#X)\n", result);
+    Deinit();
     return false;
   }
+
+  baud_rate_ = baud_rate;
 
   result = uart_set_pin(static_cast<uart_port_t>(port_), tx_, rx_, rts_, cts_);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "uart_set_pin failed (error code: %#X)\n", result);
+    Deinit();
     return false;
   }
-
-  baud_rate_ = baud_rate;
-  init_flag_ = true;
 
   return true;
 }

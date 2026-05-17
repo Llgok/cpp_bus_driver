@@ -208,7 +208,7 @@ bool Sh8601::SetWriteStreamMode(WriteStreamMode mode) {
       break;
   }
 
-  if (!bus_->Write(buffer, 4, static_cast<uint32_t>(NULL), true)) {
+  if (!bus_->Write(buffer, 4, 0, true)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

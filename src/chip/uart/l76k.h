@@ -88,11 +88,11 @@ class L76k final : public ChipUartGuide, public GnssParser {
     uint32_t baud_rate = 9600;
   };
 
-  explicit L76k(const std::shared_ptr<BusUartGuide> bus, const int32_t wake_up,
+  explicit L76k(std::shared_ptr<BusUartGuide> bus, const int32_t wake_up,
       const int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
       : ChipUartGuide(bus), wake_up_(wake_up), rst_(rst) {}
 
-  explicit L76k(const std::shared_ptr<BusUartGuide> bus,
+  explicit L76k(std::shared_ptr<BusUartGuide> bus,
       const std::function<bool(bool)>& wake_up_callback,
       const int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
       : ChipUartGuide(bus), wake_up_callback_(wake_up_callback), rst_(rst) {}

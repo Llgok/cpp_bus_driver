@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-23 17:19:14
+ * @LastEditTime: 2026-05-15 00:03:48
  * @License: GPL 3.0
  */
 #pragma once
@@ -188,7 +188,7 @@ class EspAt final : public ChipSdioGuide {
    * @return
    * @Date 2025-03-27 09:38:47
    */
-  bool SendPacket(const std::string data);
+  bool SendPacket(const std::string& data);
 
   /**
    * @brief 设置wifi模式

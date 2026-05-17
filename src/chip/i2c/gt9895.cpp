@@ -2,7 +2,7 @@
  * @Description: gt9895
  * @Author: LILYGO_L
  * @Date 2025-07-09 09:15:31
- * @LastEditTime: 2026-04-20 14:44:50
+ * @LastEditTime: 2026-05-16 23:47:03
  * @License: GPL 3.0
  */
 #include "gt9895.h"
@@ -81,10 +81,10 @@ bool Gt9895::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
 
   const uint8_t buffer_touch_point_size =
       kTouchPointAddressOffset + finger_num * kSingleTouchPointDataSize;
-  uint8_t buffer[buffer_touch_point_size] = {0};
+  std::vector<uint8_t> buffer(buffer_touch_point_size, 0);
 
-  if (!bus_->Read(static_cast<uint32_t>(Cmd::kRoTouchInfoStartAddress), buffer,
-          buffer_touch_point_size)) {
+  if (!bus_->Read(static_cast<uint32_t>(Cmd::kRoTouchInfoStartAddress),
+          buffer.data(), buffer_touch_point_size)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -139,10 +139,10 @@ bool Gt9895::GetMultipleTouchPoint(TouchPoint& tp) {
   const uint8_t buffer_touch_point_size =
       kTouchPointAddressOffset +
       kMaxTouchFingerCount * kSingleTouchPointDataSize;
-  uint8_t buffer[buffer_touch_point_size] = {0};
+  std::vector<uint8_t> buffer(buffer_touch_point_size, 0);
 
-  if (!bus_->Read(static_cast<uint32_t>(Cmd::kRoTouchInfoStartAddress), buffer,
-          buffer_touch_point_size)) {
+  if (!bus_->Read(static_cast<uint32_t>(Cmd::kRoTouchInfoStartAddress),
+          buffer.data(), buffer_touch_point_size)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
     return false;
   }

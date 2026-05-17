@@ -231,7 +231,13 @@ bool Tool::Search(const char* search_library, size_t search_library_length,
 
 bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  gpio_config_t config;
+  if (pin >= static_cast<uint32_t>(GPIO_NUM_MAX)) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+        "Value out of range (gpio pin: %u)\n", pin);
+    return false;
+  }
+
+  gpio_config_t config = {};
   config.pin_bit_mask = BIT64(pin);
   switch (mode) {
     case GpioMode::kDisable:
@@ -254,7 +260,8 @@ bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
       break;
 
     default:
-      break;
+      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      return false;
   }
   switch (status) {
     case GpioStatus::kDisable:
@@ -271,7 +278,8 @@ bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
       break;
 
     default:
-      break;
+      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      return false;
   }
   config.intr_type = GPIO_INTR_DISABLE;
 #if SOC_GPIO_SUPPORT_PIN_HYS_FILTER
@@ -381,7 +389,13 @@ int64_t Tool::GetSystemTimeMs() { return esp_timer_get_time() / 1000; }
 
 bool Tool::InitGpioInterrupt(
     uint32_t pin, InterruptMode mode, void (*interrupt)(void*), void* args) {
-  gpio_config_t config;
+  if (pin >= static_cast<uint32_t>(GPIO_NUM_MAX)) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+        "Value out of range (gpio pin: %u)\n", pin);
+    return false;
+  }
+
+  gpio_config_t config = {};
   config.pin_bit_mask = BIT64(pin);
   config.mode = GPIO_MODE_INPUT;
   switch (mode) {
@@ -423,7 +437,8 @@ bool Tool::InitGpioInterrupt(
       break;
 
     default:
-      break;
+      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      return false;
   }
 #if SOC_GPIO_SUPPORT_PIN_HYS_FILTER
   config.hys_ctrl_mode = GPIO_HYS_SOFT_ENABLE;

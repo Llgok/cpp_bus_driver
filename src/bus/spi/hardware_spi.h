@@ -49,7 +49,9 @@ class HardwareSpi final : public BusSpiGuide {
   void set_bus_init_flag(bool enable) { bus_init_flag_ = enable; }
 
  private:
-  int32_t mosi_, sclk_, miso_, cs_, freq_hz_;
+  int32_t mosi_, sclk_, miso_;
+  int32_t cs_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
+  int32_t freq_hz_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   spi_host_device_t port_;

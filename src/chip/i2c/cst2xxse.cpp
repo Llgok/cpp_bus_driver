@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2026-04-20 14:43:40
+ * @LastEditTime: 2026-05-16 23:45:48
  * @License: GPL 3.0
  */
 #include "cst2xxse.h"
@@ -78,13 +78,13 @@ bool Cst2xxse::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
     return false;
   }
 
-  uint8_t buffer[kSingleTouchPointDataSize] = {0};
+  std::array<uint8_t, kSingleTouchPointDataSize> buffer = {};
 
   if (finger_num == 1) {
     if (!bus_->Read(static_cast<uint8_t>(
                         static_cast<uint8_t>(Cmd::kRoTouchPointInfoStart) +
                         ((finger_num - 1) * kSingleTouchPointDataSize)),
-            buffer, kSingleTouchPointDataSize)) {
+            buffer.data(), buffer.size())) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
@@ -92,7 +92,7 @@ bool Cst2xxse::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
     if (!bus_->Read(static_cast<uint8_t>(
                         static_cast<uint8_t>(Cmd::kRoTouchPointInfoStart) +
                         ((finger_num - 1) * kSingleTouchPointDataSize) + 2),
-            buffer, kSingleTouchPointDataSize)) {
+            buffer.data(), buffer.size())) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
@@ -123,19 +123,20 @@ bool Cst2xxse::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
 bool Cst2xxse::GetMultipleTouchPoint(TouchPoint& tp) {
   const uint8_t buffer_touch_point_size =
       kMaxTouchFingerCount * kSingleTouchPointDataSize + 2;
-  uint8_t buffer[buffer_touch_point_size] = {0};
+  std::vector<uint8_t> buffer(buffer_touch_point_size, 0);
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoTouchPointInfoStart), buffer,
-          buffer_touch_point_size)) {
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoTouchPointInfoStart),
+          buffer.data(), buffer_touch_point_size)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   // 如果手指数为0
-  if ((buffer[5] & 0B00001111) == 0) {
+  const uint8_t finger_count = buffer[5] & 0B00001111;
+  if ((finger_count == 0) || (finger_count > kMaxTouchFingerCount)) {
     return false;
   }
-  tp.finger_count = buffer[5] & 0B00001111;
+  tp.finger_count = finger_count;
 
   for (uint8_t i = 0; i < tp.finger_count; i++) {
     uint8_t buffer_touch_point_offset;

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-04-20 17:56:23
+ * @LastEditTime: 2026-05-15 23:18:42
  * @License: GPL 3.0
  */
 #include "hardware_qspi.h"
@@ -10,6 +10,12 @@
 namespace cpp_bus_driver {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
+  if (spi_device_ != nullptr) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+        "HardwareQspi has been initialized\n");
+    return true;
+  }
+
   if (freq_hz == CPP_BUS_DRIVER_DEFAULT_VALUE) {
     freq_hz = CPP_BUS_DRIVER_DEFAULT_QSPI_FREQ_HZ;
   }
@@ -18,9 +24,9 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
     flags_ = SPI_DEVICE_HALFDUPLEX;
   }
 
+  cs_ = cs;
   if (cs_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    cs_ = cs;
-    SetGpioMode(cs_, GpioMode::kOutput, GpioStatus ::kPullup);
+    SetGpioMode(cs_, GpioMode::kOutput, GpioStatus::kPullup);
     SetCs(1);
   }
 
@@ -61,14 +67,19 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
       .max_transfer_sz = kQspiMaxTransferSize,
       .flags = SPICOMMON_BUSFLAG_MASTER | SPICOMMON_BUSFLAG_QUAD,
       .isr_cpu_id = ESP_INTR_CPU_AFFINITY_AUTO,
-      .intr_flags = static_cast<uint32_t>(NULL),
+      .intr_flags = 0,
   };
 
-  esp_err_t result = spi_bus_initialize(port_, &bus_config, SPI_DMA_CH_AUTO);
-  if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
-        "spi_bus_initialize failed (error code: %#X)\n", result);
-    return false;
+  esp_err_t result = ESP_OK;
+  if (!bus_init_flag_) {
+    result = spi_bus_initialize(port_, &bus_config, SPI_DMA_CH_AUTO);
+    if (result != ESP_OK) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "spi_bus_initialize failed (error code: %#X)\n", result);
+      Deinit();
+      return false;
+    }
+    bus_init_flag_ = true;
   }
 
   const spi_device_interface_config_t device_config = {
@@ -88,14 +99,15 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
       .spics_io_num = -1,
       .flags = flags_,  // 标志，可以填入SPI_DEVICE_BIT_LSBFIRST等信息
       .queue_size = 1,
-      .pre_cb = NULL,   // 无传输前回调
-      .post_cb = NULL,  // 无传输后回调
+      .pre_cb = nullptr,   // 无传输前回调
+      .post_cb = nullptr,  // 无传输后回调
   };
 
   result = spi_bus_add_device(port_, &device_config, &spi_device_);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "spi_bus_add_device failed (error code: %#X)\n", result);
+    Deinit();
     return false;
   }
 
@@ -109,11 +121,46 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
     max_transfer_size_ = buffer;
   }
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "HardwareQspi config max_transfer_size_: %d\n", max_transfer_size_);
+      "HardwareQspi config max_transfer_size_: %zu\n", max_transfer_size_);
 
   freq_hz_ = freq_hz;
 
   return true;
+}
+
+bool HardwareQspi::Deinit(bool delete_bus) {
+  bool result = true;
+
+  if (spi_device_ != nullptr) {
+    esp_err_t ret = spi_bus_remove_device(spi_device_);
+    if (ret != ESP_OK) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "spi_bus_remove_device failed (error code: %#X)\n", ret);
+      result = false;
+    } else {
+      spi_device_ = nullptr;
+    }
+  }
+
+  if (delete_bus && bus_init_flag_) {
+    esp_err_t ret = spi_bus_free(port_);
+    if (ret != ESP_OK) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "spi_bus_free failed (error code: %#X)\n", ret);
+      result = false;
+    } else {
+      bus_init_flag_ = false;
+    }
+  }
+
+  if (cs_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+    if (!SetGpioMode(cs_, GpioMode::kDisable, GpioStatus::kDisable)) {
+      result = false;
+    }
+    cs_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
+  }
+
+  return result;
 }
 
 bool HardwareQspi::Write(
@@ -125,9 +172,9 @@ bool HardwareQspi::Write(
       .length = byte * 8,
       .rxlength = 0,
       .override_freq_hz = 0,
-      .user = (void*)0,
+      .user = nullptr,
       .tx_buffer = data,
-      .rx_buffer = NULL,
+      .rx_buffer = nullptr,
   };
 
   if (byte > max_transfer_size_) {
@@ -186,10 +233,7 @@ bool HardwareQspi::Write(
 
 bool HardwareQspi::SetCs(bool value) {
   if (cs_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    if (!GpioWrite(cs_, value)) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
-      return false;
-    }
+    GpioWrite(cs_, value);
   }
 
   return true;

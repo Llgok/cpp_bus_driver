@@ -37,6 +37,7 @@ class HardwareI2c1 final : public BusI2cGuide {
   uint32_t freq_hz_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
   i2c_master_dev_handle_t device_handle_ = nullptr;
   i2c_master_bus_handle_t bus_handle_ = nullptr;
+  bool owns_bus_ = false;
 };
 #endif
 }  // namespace cpp_bus_driver

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-04-24 10:01:30
+ * @LastEditTime: 2026-05-15 23:35:42
  * @License: GPL 3.0
  */
 #include "hardware_sdio.h"
@@ -10,11 +10,17 @@
 namespace cpp_bus_driver {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool HardwareSdio::Init(int32_t freq_hz) {
+  if (sdio_handle_ != nullptr) {
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        "HardwareSdio has been initialized\n");
+    return true;
+  }
+
   if (freq_hz == CPP_BUS_DRIVER_DEFAULT_VALUE) {
     freq_hz = CPP_BUS_DRIVER_DEFAULT_SDIO_FREQ_HZ;
-  } else if ((freq_hz != SDMMC_FREQ_DEFAULT) ||
-             (freq_hz != SDMMC_FREQ_HIGHSPEED) ||
-             (freq_hz != SDMMC_FREQ_PROBING) || (freq_hz != SDMMC_FREQ_52M) ||
+  } else if ((freq_hz != SDMMC_FREQ_DEFAULT) &&
+             (freq_hz != SDMMC_FREQ_HIGHSPEED) &&
+             (freq_hz != SDMMC_FREQ_PROBING) && (freq_hz != SDMMC_FREQ_52M) &&
              (freq_hz != SDMMC_FREQ_26M)) {
     freq_hz = CPP_BUS_DRIVER_DEFAULT_SDIO_FREQ_HZ;
   }
@@ -44,20 +50,18 @@ bool HardwareSdio::Init(int32_t freq_hz) {
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareSdio config d7_: %d\n", d7_);
 
-  if (d7_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (d1_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
+      d2_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
+      d3_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
+      d4_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
+      d5_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
+      d6_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
+      d7_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
     width_ = 8;
-  } else if (d6_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    width_ = 7;
-  } else if (d5_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    width_ = 6;
-  } else if (d4_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    width_ = 5;
-  } else if (d3_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  } else if (d1_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
+             d2_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
+             d3_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
     width_ = 4;
-  } else if (d2_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    width_ = 3;
-  } else if (d1_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    width_ = 2;
   } else {
     width_ = 1;
   }
@@ -85,15 +89,19 @@ bool HardwareSdio::Init(int32_t freq_hz) {
     return false;
   }
 
+  host_init_flag_ = true;
   result = sdmmc_host_init_slot(static_cast<int>(port_), &sdmmc_slot_config);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "sdmmc_host_init_slot failed (error code: %#X)\n", result);
+    Deinit();
+    return false;
   }
 
   sdio_handle_ = std::make_unique<sdmmc_card_t>();
   if (sdio_handle_ == nullptr) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    Deinit();
     return false;
   }
 
@@ -114,6 +122,7 @@ bool HardwareSdio::Init(int32_t freq_hz) {
     if (timeout_count > kSdioBusInitTimeoutCount) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "sdmmc_card_init failed (error code: %#X)\n", result);
+      Deinit();
       return false;
     }
     DelayMs(100);
@@ -123,6 +132,8 @@ bool HardwareSdio::Init(int32_t freq_hz) {
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "sdmmc_io_enable_int failed (error code: %#X)\n", result);
+    Deinit();
+    return false;
   }
 
   // sdmmc_card_print_info(stdout, sdio_handle_.get());
@@ -130,6 +141,25 @@ bool HardwareSdio::Init(int32_t freq_hz) {
   freq_hz_ = freq_hz;
 
   return true;
+}
+
+bool HardwareSdio::Deinit() {
+  bool result = true;
+
+  sdio_handle_.reset();
+
+  if (host_init_flag_) {
+    esp_err_t ret = sdmmc_host_deinit();
+    if (ret != ESP_OK) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+          "sdmmc_host_deinit failed (error code: %#X)\n", ret);
+      result = false;
+    } else {
+      host_init_flag_ = false;
+    }
+  }
+
+  return result;
 }
 
 bool HardwareSdio::WaitInterrupt(uint32_t timeout_ms) {

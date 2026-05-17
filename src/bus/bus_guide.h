@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2026-04-30 13:45:50
+ * @LastEditTime: 2026-05-17 12:15:06
  * @License: GPL 3.0
  */
 #pragma once
@@ -203,8 +203,8 @@ class BusQspiGuide : public Tool {
   BusQspiGuide() = default;
 
   virtual bool Init(int32_t freq_hz, int32_t cs) = 0;
-  virtual bool Write(const void* data, size_t byte,
-      uint32_t flags = static_cast<uint32_t>(NULL),
+  virtual bool Deinit(bool delete_bus = false) = 0;
+  virtual bool Write(const void* data, size_t byte, uint32_t flags = 0,
       bool cs_keep_active = false) = 0;
 };
 
@@ -229,6 +229,7 @@ class BusSdioGuide : public Tool {
   BusSdioGuide() = default;
 
   virtual bool Init(int32_t freq_hz) = 0;
+  virtual bool Deinit() = 0;
   virtual bool WaitInterrupt(uint32_t timeout_ms) = 0;
   virtual bool Read(
       uint32_t function, uint32_t write_c32, void* data, size_t byte) = 0;
@@ -238,7 +239,7 @@ class BusSdioGuide : public Tool {
   virtual bool Write(
       uint32_t function, uint32_t write_c32, const void* data, size_t byte) = 0;
   virtual bool Write(uint32_t function, uint32_t write_c32, uint8_t data,
-      uint8_t* read_d8_verify = NULL) = 0;
+      uint8_t* read_d8_verify = nullptr) = 0;
   virtual bool WriteBlock(
       uint32_t function, uint32_t write_c32, const void* data, size_t byte) = 0;
 };

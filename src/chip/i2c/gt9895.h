@@ -23,7 +23,7 @@ class Gt9895 final : public ChipI2cGuide {
     uint8_t finger_count = -1;     // 触摸手指总数
     bool edge_touch_flag = false;  // 边缘触摸标志
 
-    std::vector<struct TouchInfo> info;
+    std::vector<TouchInfo> info;
   };
 
   explicit Gt9895(std::shared_ptr<BusI2cGuide> bus,

@@ -80,6 +80,14 @@ bool SoftwareI2c::StartTransmit() {
 }
 
 bool SoftwareI2c::Read(uint8_t* data, size_t length) {
+  if (data == nullptr && length != 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+  if (length == 0) {
+    return true;
+  }
+
   if (!StartTransmit()) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "StartTransmit failed\n");
     return false;
@@ -96,7 +104,7 @@ bool SoftwareI2c::Read(uint8_t* data, size_t length) {
   }
 
   uint8_t* buffer_ptr = data;
-  for (size_t i = 0; i < (length - 1); i++) {
+  for (size_t i = 0; i + 1 < length; i++) {
     if (!ReadByte(buffer_ptr++)) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__, "ReadByte failed\n");
       return false;
@@ -128,6 +136,11 @@ bool SoftwareI2c::Read(uint8_t* data, size_t length) {
 }
 
 bool SoftwareI2c::Write(const uint8_t* data, size_t length) {
+  if (data == nullptr && length != 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
   if (!StartTransmit()) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "StartTransmit failed\n");
     return false;
@@ -164,6 +177,15 @@ bool SoftwareI2c::Write(const uint8_t* data, size_t length) {
 
 bool SoftwareI2c::WriteRead(const uint8_t* write_data, size_t write_length,
     uint8_t* read_data, size_t read_length) {
+  if (write_data == nullptr && write_length != 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+  if (read_data == nullptr && read_length != 0) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
   if (!StartTransmit()) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "StartTransmit failed\n");
     return false;
@@ -186,11 +208,19 @@ bool SoftwareI2c::WriteRead(const uint8_t* write_data, size_t write_length,
     }
     if (!WaitAck()) {
       // 如果不为最后一位数据，则报错
-      if (i != (write_length - 1)) {
+      if (i + 1 != write_length) {
         LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WaitAck failed\n");
         return false;
       }
     }
+  }
+
+  if (read_length == 0) {
+    if (!StopTransmit()) {
+      LogMessage(LogLevel::kBus, __FILE__, __LINE__, "StopTransmit failed\n");
+      return false;
+    }
+    return true;
   }
 
   if (!Read(read_data, read_length)) {
@@ -274,6 +304,11 @@ bool SoftwareI2c::WriteByte(uint8_t data) {
 }
 
 bool SoftwareI2c::ReadByte(uint8_t* data) {
+  if (data == nullptr) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
   if (!GpioWrite(sda_, 1)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
