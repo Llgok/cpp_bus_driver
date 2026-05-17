@@ -9,7 +9,7 @@
 
 namespace cpp_bus_driver {
 bool Sh8601::Init(int32_t freq_hz) {
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
     GpioWrite(rst_, 1);
@@ -47,7 +47,7 @@ bool Sh8601::Deinit() {
     return false;
   }
 
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
   }
 

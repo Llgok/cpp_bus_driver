@@ -86,9 +86,9 @@ class HardwareI2s final : public BusI2sGuide {
   i2s_chan_handle_t chan_rx_handle_ = nullptr;
 #endif
 
-  uint16_t mclk_multiple_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
-  uint32_t sample_rate_hz_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
-  uint8_t data_bit_width_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
+  uint16_t mclk_multiple_ = kDefaultValue;
+  uint32_t sample_rate_hz_ = kDefaultValue;
+  uint8_t data_bit_width_ = kDefaultValue;
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   DataMode data_mode_;

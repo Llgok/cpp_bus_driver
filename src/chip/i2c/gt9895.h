@@ -28,14 +28,14 @@ class Gt9895 final : public ChipI2cGuide {
 
   explicit Gt9895(std::shared_ptr<BusI2cGuide> bus,
       int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE, float x_scale_factor = 1.0,
+      int32_t rst = kDefaultValue, float x_scale_factor = 1.0,
       float y_scale_factor = 1.0)
       : ChipI2cGuide(bus, address),
         rst_(rst),
         x_scale_factor_(x_scale_factor),
         y_scale_factor_(y_scale_factor) {}
 
-  bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
 
   uint8_t GetDeviceId();

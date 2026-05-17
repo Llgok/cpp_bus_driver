@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cstring>
 #include <functional>
@@ -20,7 +21,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <atomic>
 
 #if defined(CONFIG_IDF_INIT_VERSION)
 #define CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
@@ -87,27 +87,31 @@
 #define CPP_BUS_DRIVER_LOG_LEVEL_CHIP
 #endif
 
-#define CPP_BUS_DRIVER_DEFAULT_VALUE -1
+namespace cpp_bus_driver {
 
-#define CPP_BUS_DRIVER_DEFAULT_I2C_FREQ_HZ 100000
-#define CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS 1000
+constexpr int kDefaultValue = -1;
 
-#define CPP_BUS_DRIVER_DEFAULT_SPI_FREQ_HZ 10000000
+constexpr int kDefaultI2cFreqHz = 100000;
+constexpr int kDefaultI2cWaitTimeoutMs = 1000;
 
-#define CPP_BUS_DRIVER_DEFAULT_QSPI_FREQ_HZ 10000000
-#define CPP_BUS_DRIVER_DEFAULT_QSPI_WAIT_TIMEOUT_MS 1000
+constexpr int kDefaultSpiFreqHz = 10000000;
 
-#define CPP_BUS_DRIVER_DEFAULT_UART_BAUD_RATE 115200
-#define CPP_BUS_DRIVER_DEFAULT_UART_WAIT_TIMEOUT_MS 1000
+constexpr int kDefaultQspiFreqHz = 10000000;
+constexpr int kDefaultQspiWaitTimeoutMs = 1000;
 
-#define CPP_BUS_DRIVER_DEFAULT_I2S_WAIT_TIMEOUT_MS 1000
+constexpr int kDefaultUartBaudRate = 115200;
+constexpr int kDefaultUartWaitTimeoutMs = 1000;
 
-#define CPP_BUS_DRIVER_DEFAULT_MIPI_FREQ_MHZ 60
-#define CPP_BUS_DRIVER_DEFAULT_MIPI_LANE_BIT_RATE_MBPS 1000
+constexpr int kDefaultI2sWaitTimeoutMs = 1000;
+
+constexpr float kDefaultMipiFreqMhz = 60.0F;
+constexpr float kDefaultMipiLaneBitRateMbps = 1000.0F;
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-#define CPP_BUS_DRIVER_DEFAULT_SDIO_FREQ_HZ SDMMC_FREQ_DEFAULT
+constexpr int kDefaultSdioFreqHz = SDMMC_FREQ_DEFAULT;
 #endif
+
+}  // namespace cpp_bus_driver
 
 #if defined(CPP_BUS_DRIVER_CUSTOM_TEMPLATE_MAKE_UNIQUE)
 namespace std {

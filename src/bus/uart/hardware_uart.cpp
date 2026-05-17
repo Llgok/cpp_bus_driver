@@ -16,8 +16,8 @@ bool HardwareUart::Init(int32_t baud_rate) {
     return true;
   }
 
-  if (baud_rate == CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    baud_rate = CPP_BUS_DRIVER_DEFAULT_UART_BAUD_RATE;
+  if (baud_rate == kDefaultValue) {
+    baud_rate = kDefaultUartBaudRate;
   }
 
   LogMessage(
@@ -39,14 +39,14 @@ bool HardwareUart::Init(int32_t baud_rate) {
       .parity = UART_PARITY_DISABLE,
       .stop_bits = UART_STOP_BITS_1,
       .flow_ctrl = [](int32_t rts, int32_t cts) -> uart_hw_flowcontrol_t {
-        if ((rts != CPP_BUS_DRIVER_DEFAULT_VALUE) &&
-            (cts != CPP_BUS_DRIVER_DEFAULT_VALUE)) {
+        if ((rts != kDefaultValue) &&
+            (cts != kDefaultValue)) {
           return uart_hw_flowcontrol_t::UART_HW_FLOWCTRL_CTS_RTS;
-        } else if ((rts != CPP_BUS_DRIVER_DEFAULT_VALUE) &&
-                   (cts == CPP_BUS_DRIVER_DEFAULT_VALUE)) {
+        } else if ((rts != kDefaultValue) &&
+                   (cts == kDefaultValue)) {
           return uart_hw_flowcontrol_t::UART_HW_FLOWCTRL_RTS;
-        } else if ((rts == CPP_BUS_DRIVER_DEFAULT_VALUE) &&
-                   (cts != CPP_BUS_DRIVER_DEFAULT_VALUE)) {
+        } else if ((rts == kDefaultValue) &&
+                   (cts != kDefaultValue)) {
           return uart_hw_flowcontrol_t::UART_HW_FLOWCTRL_CTS;
         }
 
@@ -94,7 +94,7 @@ bool HardwareUart::Init(int32_t baud_rate) {
 
 int32_t HardwareUart::Read(void* data, uint32_t length) {
   int32_t buffer_size = uart_read_bytes(static_cast<uart_port_t>(port_), data,
-      length, pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_UART_WAIT_TIMEOUT_MS));
+      length, pdMS_TO_TICKS(kDefaultUartWaitTimeoutMs));
   if (buffer_size == (-1)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "uart_read_bytes failed (uart_read_bytes == (-1))\n");

@@ -19,13 +19,13 @@ class HardwareSdio final : public BusSdioGuide {
   };
 
   explicit HardwareSdio(int32_t clk, int32_t cmd, int32_t d0,
-      int32_t d1 = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      int32_t d2 = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      int32_t d3 = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      int32_t d4 = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      int32_t d5 = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      int32_t d6 = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      int32_t d7 = CPP_BUS_DRIVER_DEFAULT_VALUE,
+      int32_t d1 = kDefaultValue,
+      int32_t d2 = kDefaultValue,
+      int32_t d3 = kDefaultValue,
+      int32_t d4 = kDefaultValue,
+      int32_t d5 = kDefaultValue,
+      int32_t d6 = kDefaultValue,
+      int32_t d7 = kDefaultValue,
       SdioPort port = SdioPort::kSlot1)
       : clk_(clk),
         cmd_(cmd),
@@ -39,7 +39,7 @@ class HardwareSdio final : public BusSdioGuide {
         d7_(d7),
         port_(port) {}
 
-  bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit() override;
 
   bool WaitInterrupt(uint32_t timeout_ms) override;
@@ -120,7 +120,7 @@ class HardwareSdio final : public BusSdioGuide {
   uint8_t width_ = 1;
   int32_t clk_, cmd_, d0_, d1_, d2_, d3_, d4_, d5_, d6_, d7_;
   SdioPort port_;
-  int32_t freq_hz_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
+  int32_t freq_hz_ = kDefaultValue;
   std::unique_ptr<sdmmc_card_t> sdio_handle_;
   bool host_init_flag_ = false;
 };

@@ -9,8 +9,8 @@
 
 namespace cpp_bus_driver {
 bool HardwareI2c2::Init(uint32_t freq_hz, uint16_t address) {
-  if (freq_hz == static_cast<uint32_t>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
-    freq_hz = CPP_BUS_DRIVER_DEFAULT_I2C_FREQ_HZ;
+  if (freq_hz == static_cast<uint32_t>(kDefaultValue)) {
+    freq_hz = kDefaultI2cFreqHz;
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
@@ -26,7 +26,7 @@ bool HardwareI2c2::Init(uint32_t freq_hz, uint16_t address) {
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareI2c2 config freq_hz: %d hz\n", freq_hz);
 
-  if (address == static_cast<uint16_t>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
+  if (address == static_cast<uint16_t>(kDefaultValue)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "address is null\n");
   }
 
@@ -99,7 +99,7 @@ bool HardwareI2c2::Deinit(bool delete_bus) {
 bool HardwareI2c2::Read(uint8_t* data, size_t length) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   esp_err_t result = i2c_master_read_from_device(port_, address_, data, length,
-      pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS));
+      pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "i2c_master_read_from_device failed (error code: %#X)\n", result);
@@ -125,7 +125,7 @@ bool HardwareI2c2::Read(uint8_t* data, size_t length) {
 bool HardwareI2c2::Write(const uint8_t* data, size_t length) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   esp_err_t result = i2c_master_write_to_device(port_, address_, data, length,
-      pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS));
+      pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "i2c_master_write_to_device failed (error code: %#X)\n", result);
@@ -177,7 +177,7 @@ bool HardwareI2c2::WriteRead(const uint8_t* write_data, size_t write_length,
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   esp_err_t result = i2c_master_write_read_device(port_, address_, write_data,
       write_length, read_data, read_length,
-      pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS));
+      pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "i2c_master_write_read_device failed (error code: %#X)\n", result);
@@ -234,7 +234,7 @@ bool HardwareI2c2::Probe(const uint16_t address) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   uint8_t buffer = 0;
   esp_err_t result = i2c_master_read_from_device(port_, address, &buffer, 1,
-      pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS));
+      pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
   if (result != ESP_OK) {
     return false;
   }
@@ -341,7 +341,7 @@ bool HardwareI2c2::StopTransmit(i2c_cmd_handle_t cmd_handle) {
   }
 
   result = i2c_master_cmd_begin(port_, cmd_handle,
-      pdMS_TO_TICKS(CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS));
+      pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "i2c_master_cmd_begin failed (error code: %#X)\n", result);

@@ -212,7 +212,7 @@ class BusUartGuide : public Tool {
  public:
   BusUartGuide() = default;
 
-  virtual bool Init(int32_t baud_rate = CPP_BUS_DRIVER_DEFAULT_VALUE) = 0;
+  virtual bool Init(int32_t baud_rate = kDefaultValue) = 0;
 
   virtual int32_t Read(void* data, uint32_t length) = 0;
   virtual int32_t Write(const void* data, size_t length) = 0;

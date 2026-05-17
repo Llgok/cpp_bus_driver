@@ -38,8 +38,8 @@ class HardwareMipi final : public BusMipiGuide {
         num_frame_buffer_(num_frame_buffer),
         port_(port) {}
 
-  bool Init(float freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      float lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE,
+  bool Init(float freq_mhz = kDefaultValue,
+      float lane_bit_rate_mbps = kDefaultValue,
       InitSequenceFormat init_sequence_format =
           InitSequenceFormat::kWriteC8D8) override;
 

@@ -38,8 +38,8 @@ class Sh8601 final : public ChipQspiGuide {
   };
 
   explicit Sh8601(std::shared_ptr<BusQspiGuide> bus, uint16_t width,
-      uint16_t height, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE, int16_t x_offset = 0,
+      uint16_t height, int32_t cs = kDefaultValue,
+      int32_t rst = kDefaultValue, int16_t x_offset = 0,
       int16_t y_offset = 0, ColorFormat color_format = ColorFormat::kRgb565)
       : ChipQspiGuide(bus, cs),
         rst_(rst),
@@ -49,7 +49,7 @@ class Sh8601 final : public ChipQspiGuide {
         y_offset_(y_offset),
         color_format_(color_format) {}
 
-  bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit() override;
 
   /**

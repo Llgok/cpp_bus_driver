@@ -463,7 +463,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
 size_t HardwareI2s::Read(void* data, size_t byte) {
   size_t buffer = 0;
   esp_err_t result = i2s_channel_read(chan_rx_handle_, data, byte, &buffer,
-      CPP_BUS_DRIVER_DEFAULT_I2S_WAIT_TIMEOUT_MS);
+      kDefaultI2sWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "i2s_channel_read failed (error code: %#X)\n", result);
@@ -476,7 +476,7 @@ size_t HardwareI2s::Read(void* data, size_t byte) {
 size_t HardwareI2s::Write(const void* data, size_t byte) {
   size_t buffer = 0;
   esp_err_t result = i2s_channel_write(chan_tx_handle_, data, byte, &buffer,
-      CPP_BUS_DRIVER_DEFAULT_I2S_WAIT_TIMEOUT_MS);
+      kDefaultI2sWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "i2s_channel_write failed (error code: %#X)\n", result);

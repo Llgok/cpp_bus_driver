@@ -21,8 +21,8 @@ class SoftwareI2c final : public BusI2cGuide {
 
   explicit SoftwareI2c(int32_t sda, int32_t scl) : sda_(sda), scl_(scl) {}
 
-  bool Init(uint32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      uint16_t address = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Init(uint32_t freq_hz = kDefaultValue,
+      uint16_t address = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
 
   bool StartTransmit() override;
@@ -48,8 +48,8 @@ class SoftwareI2c final : public BusI2cGuide {
 
  private:
   int32_t sda_, scl_;
-  uint16_t address_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
-  uint32_t freq_hz_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
+  uint16_t address_ = kDefaultValue;
+  uint32_t freq_hz_ = kDefaultValue;
   uint32_t transmit_delay_us_ = 0;
 };
 #endif

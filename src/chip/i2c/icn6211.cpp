@@ -11,7 +11,7 @@
 
 namespace cpp_bus_driver {
 bool Icn6211::Init(int32_t freq_hz) {
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
     GpioWrite(rst_, 1);
     DelayMs(10);
@@ -45,7 +45,7 @@ bool Icn6211::Deinit(bool delete_bus) {
     return false;
   }
 
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
   }
 

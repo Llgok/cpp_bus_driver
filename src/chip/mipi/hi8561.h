@@ -32,11 +32,11 @@ class Hi8561 final : public ChipMipiGuide {
   };
 
   explicit Hi8561(std::shared_ptr<BusMipiGuide> bus,
-      int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      int32_t rst = kDefaultValue)
       : ChipMipiGuide(bus, InitSequenceFormat::kWriteC8D8), rst_(rst) {}
 
-  bool Init(float freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      float lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Init(float freq_mhz = kDefaultValue,
+      float lane_bit_rate_mbps = kDefaultValue) override;
   bool Deinit() override;
 
   uint16_t GetDeviceId();

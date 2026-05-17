@@ -9,7 +9,7 @@
 
 namespace cpp_bus_driver {
 bool Pcf8563x::Init(int32_t freq_hz) {
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
     GpioWrite(rst_, 1);
@@ -26,7 +26,7 @@ bool Pcf8563x::Init(int32_t freq_hz) {
   }
 
   auto buffer = GetDeviceId();
-  if (buffer == static_cast<uint8_t>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
+  if (buffer == static_cast<uint8_t>(kDefaultValue)) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "Get pcf8563x id failed (error id: %#X)\n", buffer);
     return false;
@@ -51,7 +51,7 @@ bool Pcf8563x::Deinit(bool delete_bus) {
     return false;
   }
 
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
   }
 

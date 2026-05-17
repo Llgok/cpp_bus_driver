@@ -21,12 +21,12 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
     }
   }
 
-  if (freq_mhz == static_cast<float>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
-    freq_mhz = CPP_BUS_DRIVER_DEFAULT_MIPI_FREQ_MHZ;
+  if (freq_mhz == static_cast<float>(kDefaultValue)) {
+    freq_mhz = kDefaultMipiFreqMhz;
   }
 
-  if (lane_bit_rate_mbps == static_cast<float>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
-    lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_MIPI_LANE_BIT_RATE_MBPS;
+  if (lane_bit_rate_mbps == static_cast<float>(kDefaultValue)) {
+    lane_bit_rate_mbps = kDefaultMipiLaneBitRateMbps;
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,

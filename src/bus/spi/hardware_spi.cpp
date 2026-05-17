@@ -91,12 +91,12 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
 
 #endif
 
-  if (freq_hz == CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    freq_hz = CPP_BUS_DRIVER_DEFAULT_SPI_FREQ_HZ;
+  if (freq_hz == kDefaultValue) {
+    freq_hz = kDefaultSpiFreqHz;
   }
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  if (flags_ == CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (flags_ == kDefaultValue) {
     flags_ = 0;
   }
 #endif

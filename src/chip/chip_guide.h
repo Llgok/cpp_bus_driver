@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-04-30 13:47:25
+ * @LastEditTime: 2026-05-17 21:22:14
  * @License: GPL 3.0
  */
 #pragma once
@@ -15,7 +15,7 @@ class ChipI2cGuide : public Tool {
   ChipI2cGuide(std::shared_ptr<BusI2cGuide> bus, int16_t address)
       : bus_(bus), address_(address) {}
 
-  virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  virtual bool Init(int32_t freq_hz = kDefaultValue);
   virtual bool Deinit(bool delete_bus = true);
 
   bool InitSequence(const uint8_t* sequence, size_t length);
@@ -31,10 +31,10 @@ class ChipI2cGuide : public Tool {
 class ChipSpiGuide : public Tool {
  public:
   ChipSpiGuide(std::shared_ptr<BusSpiGuide> bus,
-      int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      int32_t cs = kDefaultValue)
       : bus_(bus), cs_(cs) {}
 
-  virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  virtual bool Init(int32_t freq_hz = kDefaultValue);
   virtual bool Deinit(bool delete_bus = true);
 
   bool InitSequence(const uint8_t* sequence, size_t length);
@@ -48,10 +48,10 @@ class ChipSpiGuide : public Tool {
 class ChipQspiGuide : public Tool {
  public:
   ChipQspiGuide(std::shared_ptr<BusQspiGuide> bus,
-      int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      int32_t cs = kDefaultValue)
       : bus_(bus), cs_(cs) {}
 
-  virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  virtual bool Init(int32_t freq_hz = kDefaultValue);
   virtual bool Deinit();
 
   bool InitSequence(const uint32_t* sequence, size_t length);
@@ -98,7 +98,7 @@ class ChipUartGuide : public Tool {
  public:
   ChipUartGuide(std::shared_ptr<BusUartGuide> bus) : bus_(bus) {}
 
-  virtual bool Init(int32_t baud_rate = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  virtual bool Init(int32_t baud_rate = kDefaultValue);
   virtual bool Deinit();
 
  protected:
@@ -126,7 +126,7 @@ class ChipSdioGuide : public Tool {
  public:
   ChipSdioGuide(std::shared_ptr<BusSdioGuide> bus) : bus_(bus) {}
 
-  virtual bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  virtual bool Init(int32_t freq_hz = kDefaultValue);
   virtual bool Deinit();
 
  protected:
@@ -139,8 +139,8 @@ class ChipMipiGuide : public Tool {
       InitSequenceFormat init_sequence_format = InitSequenceFormat::kWriteC8D8)
       : bus_(bus), init_sequence_format_(init_sequence_format) {}
 
-  virtual bool Init(float freq_mhz = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      float lane_bit_rate_mbps = CPP_BUS_DRIVER_DEFAULT_VALUE);
+  virtual bool Init(float freq_mhz = kDefaultValue,
+      float lane_bit_rate_mbps = kDefaultValue);
   virtual bool Deinit();
 
   bool InitSequence(const uint8_t* sequence, size_t length);

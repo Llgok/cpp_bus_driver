@@ -20,8 +20,8 @@ class HardwareI2c2 final : public BusI2cGuide {
       : sda_(sda), scl_(scl), i2c_handle_(i2c_handle) {}
 #endif
 
-  bool Init(uint32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      uint16_t address = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Init(uint32_t freq_hz = kDefaultValue,
+      uint16_t address = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
   bool Read(uint8_t* data, size_t length) override;
   bool Write(const uint8_t* data, size_t length) override;
@@ -52,7 +52,7 @@ class HardwareI2c2 final : public BusI2cGuide {
   TwoWire* i2c_handle_;
 #endif
 
-  int16_t address_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
-  int32_t freq_hz_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
+  int16_t address_ = kDefaultValue;
+  int32_t freq_hz_ = kDefaultValue;
 };
 }  // namespace cpp_bus_driver

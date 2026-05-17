@@ -51,7 +51,7 @@ class EspAt final : public ChipSdioGuide {
       std::shared_ptr<BusSdioGuide> bus, void (*rst_callback)(bool value))
       : ChipSdioGuide(bus), rst_callback_(rst_callback) {}
 
-  bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit() override;
 
   /**
@@ -287,7 +287,7 @@ class EspAt final : public ChipSdioGuide {
       "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
   EspAtConnect connect_;
-  int32_t rst_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
+  int32_t rst_ = kDefaultValue;
   void (*rst_callback_)(bool value) = nullptr;
 };
 }  // namespace cpp_bus_driver

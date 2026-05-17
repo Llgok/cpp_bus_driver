@@ -10,8 +10,8 @@
 namespace cpp_bus_driver {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool HardwareI2c1::InitBus(uint32_t freq_hz) {
-  if (freq_hz == static_cast<uint32_t>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
-    freq_hz = CPP_BUS_DRIVER_DEFAULT_I2C_FREQ_HZ;
+  if (freq_hz == static_cast<uint32_t>(kDefaultValue)) {
+    freq_hz = kDefaultI2cFreqHz;
   }
 
   if (shared_bus_provider_ != nullptr) {
@@ -85,8 +85,8 @@ bool HardwareI2c1::InitBus(uint32_t freq_hz) {
 }
 
 bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
-  if (freq_hz == static_cast<uint32_t>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
-    freq_hz = CPP_BUS_DRIVER_DEFAULT_I2C_FREQ_HZ;
+  if (freq_hz == static_cast<uint32_t>(kDefaultValue)) {
+    freq_hz = kDefaultI2cFreqHz;
   }
   const bool had_bus = bus_handle_ != nullptr;
 
@@ -106,7 +106,7 @@ bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
   }
   const bool created_bus = !had_bus && delete_bus_on_deinit_;
 
-  if (address == static_cast<uint16_t>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
+  if (address == static_cast<uint16_t>(kDefaultValue)) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "address is null\n");
     freq_hz_ = freq_hz;
     address_ = address;
@@ -180,7 +180,7 @@ bool HardwareI2c1::Deinit(bool delete_bus) {
 bool HardwareI2c1::Read(uint8_t* data, size_t length) {
   esp_err_t result = i2c_master_receive(
       device_handle_, data, length,
-      CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS);
+      kDefaultI2cWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "i2c_master_receive failed (error code: %#X)\n", result);
@@ -193,7 +193,7 @@ bool HardwareI2c1::Read(uint8_t* data, size_t length) {
 bool HardwareI2c1::Write(const uint8_t* data, size_t length) {
   esp_err_t result = i2c_master_transmit(
       device_handle_, data, length,
-      CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS);
+      kDefaultI2cWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "i2c_master_transmit failed (error code: %#X)\n", result);
@@ -207,7 +207,7 @@ bool HardwareI2c1::WriteRead(const uint8_t* write_data, size_t write_length,
     uint8_t* read_data, size_t read_length) {
   esp_err_t result =
       i2c_master_transmit_receive(device_handle_, write_data, write_length,
-          read_data, read_length, CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS);
+          read_data, read_length, kDefaultI2cWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
         "i2c_master_transmit_receive failed (error code: %#X)\n", result);
@@ -219,7 +219,7 @@ bool HardwareI2c1::WriteRead(const uint8_t* write_data, size_t write_length,
 
 bool HardwareI2c1::Probe(const uint16_t address) {
   esp_err_t result = i2c_master_probe(
-      bus_handle_, address, CPP_BUS_DRIVER_DEFAULT_I2C_WAIT_TIMEOUT_MS);
+      bus_handle_, address, kDefaultI2cWaitTimeoutMs);
   if (result != ESP_OK) {
     return false;
   }

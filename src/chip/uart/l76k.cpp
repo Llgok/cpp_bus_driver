@@ -84,7 +84,7 @@ bool BaudRateToPcas01Value(L76k::BaudRate baud_rate, uint8_t& value) {
 }  // namespace
 
 bool L76k::Init(int32_t baud_rate) {
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     ChipUartGuide::SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
     ChipUartGuide::GpioWrite(rst_, 1);
@@ -95,7 +95,7 @@ bool L76k::Init(int32_t baud_rate) {
     ChipUartGuide::DelayMs(10);
   }
 
-  if (wake_up_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (wake_up_ != kDefaultValue) {
     if (!ChipUartGuide::SetGpioMode(
             wake_up_, GpioMode::kOutput, GpioStatus::kPullup)) {
       ChipUartGuide::LogMessage(
@@ -134,11 +134,11 @@ bool L76k::Deinit() {
     return false;
   }
 
-  if (wake_up_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (wake_up_ != kDefaultValue) {
     ChipUartGuide::SetGpioMode(
         wake_up_, GpioMode::kDisable, GpioStatus::kDisable);
   }
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     ChipUartGuide::SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
   }
 
@@ -165,7 +165,7 @@ bool L76k::GetDeviceId(size_t* search_index) {
 }
 
 bool L76k::Sleep(bool enable) {
-  if (wake_up_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (wake_up_ != kDefaultValue) {
     if (!ChipUartGuide::GpioWrite(wake_up_, !enable)) {
       ChipUartGuide::LogMessage(
           LogLevel::kChip, __FILE__, __LINE__, "GpioWrite failed\n");

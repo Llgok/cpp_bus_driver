@@ -16,16 +16,16 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
     return true;
   }
 
-  if (freq_hz == CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    freq_hz = CPP_BUS_DRIVER_DEFAULT_QSPI_FREQ_HZ;
+  if (freq_hz == kDefaultValue) {
+    freq_hz = kDefaultQspiFreqHz;
   }
 
-  if (flags_ == CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (flags_ == kDefaultValue) {
     flags_ = SPI_DEVICE_HALFDUPLEX;
   }
 
   cs_ = cs;
-  if (cs_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (cs_ != kDefaultValue) {
     SetGpioMode(cs_, GpioMode::kOutput, GpioStatus::kPullup);
     SetCs(1);
   }
@@ -153,11 +153,11 @@ bool HardwareQspi::Deinit(bool delete_bus) {
     }
   }
 
-  if (cs_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (cs_ != kDefaultValue) {
     if (!SetGpioMode(cs_, GpioMode::kDisable, GpioStatus::kDisable)) {
       result = false;
     }
-    cs_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
+    cs_ = kDefaultValue;
   }
 
   return result;
@@ -232,7 +232,7 @@ bool HardwareQspi::Write(
 }
 
 bool HardwareQspi::SetCs(bool value) {
-  if (cs_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (cs_ != kDefaultValue) {
     GpioWrite(cs_, value);
   }
 

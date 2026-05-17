@@ -16,7 +16,7 @@ class HardwareQspi final : public BusQspiGuide {
   explicit HardwareQspi(int32_t data0, int32_t data1, int32_t data2,
       int32_t data3, int32_t sclk, spi_host_device_t port = SPI2_HOST,
       int8_t mode = 0, spi_clock_source_t clock_source = SPI_CLK_SRC_DEFAULT,
-      uint32_t flags = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      uint32_t flags = kDefaultValue)
       : data0_(data0),
         data1_(data1),
         data2_(data2),
@@ -27,8 +27,8 @@ class HardwareQspi final : public BusQspiGuide {
         clock_source_(clock_source),
         flags_(flags) {}
 
-  bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Init(int32_t freq_hz = kDefaultValue,
+      int32_t cs = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
   bool Write(const void* data, size_t byte,
       uint32_t flags = 0, bool cs_keep_active = false) override;
@@ -41,8 +41,8 @@ class HardwareQspi final : public BusQspiGuide {
   static constexpr int32_t kQspiMaxTransferSize = 32 * 1024;
 
   int32_t data0_, data1_, data2_, data3_, sclk_;
-  int32_t cs_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
-  int32_t freq_hz_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
+  int32_t cs_ = kDefaultValue;
+  int32_t freq_hz_ = kDefaultValue;
   spi_host_device_t port_;
   uint8_t mode_;
   spi_clock_source_t clock_source_;

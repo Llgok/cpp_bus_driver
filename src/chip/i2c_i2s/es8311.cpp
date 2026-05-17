@@ -13,7 +13,7 @@ constexpr const Es8311::ClockCoeff Es8311::kClockCoeffTable_[];
 #endif
 
 bool Es8311::Init(int32_t freq_hz) {
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     ChipI2cGuide::SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
     ChipI2cGuide::GpioWrite(rst_, 1);
@@ -89,7 +89,7 @@ bool Es8311::Deinit(bool delete_bus) {
     return false;
   }
 
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     ChipI2cGuide::SetGpioMode(
         rst_, GpioMode::kDisable, GpioStatus::kDisable);
   }

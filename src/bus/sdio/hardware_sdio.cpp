@@ -16,13 +16,13 @@ bool HardwareSdio::Init(int32_t freq_hz) {
     return true;
   }
 
-  if (freq_hz == CPP_BUS_DRIVER_DEFAULT_VALUE) {
-    freq_hz = CPP_BUS_DRIVER_DEFAULT_SDIO_FREQ_HZ;
+  if (freq_hz == kDefaultValue) {
+    freq_hz = kDefaultSdioFreqHz;
   } else if ((freq_hz != SDMMC_FREQ_DEFAULT) &&
              (freq_hz != SDMMC_FREQ_HIGHSPEED) &&
              (freq_hz != SDMMC_FREQ_PROBING) && (freq_hz != SDMMC_FREQ_52M) &&
              (freq_hz != SDMMC_FREQ_26M)) {
-    freq_hz = CPP_BUS_DRIVER_DEFAULT_SDIO_FREQ_HZ;
+    freq_hz = kDefaultSdioFreqHz;
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
@@ -50,17 +50,17 @@ bool HardwareSdio::Init(int32_t freq_hz) {
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareSdio config d7_: %d\n", d7_);
 
-  if (d1_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
-      d2_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
-      d3_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
-      d4_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
-      d5_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
-      d6_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
-      d7_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (d1_ != kDefaultValue &&
+      d2_ != kDefaultValue &&
+      d3_ != kDefaultValue &&
+      d4_ != kDefaultValue &&
+      d5_ != kDefaultValue &&
+      d6_ != kDefaultValue &&
+      d7_ != kDefaultValue) {
     width_ = 8;
-  } else if (d1_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
-             d2_ != CPP_BUS_DRIVER_DEFAULT_VALUE &&
-             d3_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  } else if (d1_ != kDefaultValue &&
+             d2_ != kDefaultValue &&
+             d3_ != kDefaultValue) {
     width_ = 4;
   } else {
     width_ = 1;

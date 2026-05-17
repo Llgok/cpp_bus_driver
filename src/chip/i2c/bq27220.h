@@ -1,4 +1,4 @@
-﻿/*
+/*
  * @Description: BQ27220 single-cell CEDV fuel gauge driver
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
@@ -171,12 +171,12 @@ class Bq27220 final : public ChipI2cGuide {
    * @brief 构造 BQ27220 电量计驱动对象
    * @param bus I2C 总线对象
    * @param address BQ27220 7bit I2C 地址
-   * @param rst 可选复位引脚，不使用时保持 CPP_BUS_DRIVER_DEFAULT_VALUE
+   * @param rst 可选复位引脚，不使用时保持 kDefaultValue
    * @Date 2026-05-12 18:35:00
    */
   explicit Bq27220(std::shared_ptr<BusI2cGuide> bus,
       int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      int32_t rst = kDefaultValue)
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   /**
@@ -185,7 +185,7 @@ class Bq27220 final : public ChipI2cGuide {
    * @return 初始化成功返回 true，失败返回 false
    * @Date 2026-05-12 18:35:00
    */
-  bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Init(int32_t freq_hz = kDefaultValue) override;
 
   /**
    * @brief 反初始化 BQ27220 驱动

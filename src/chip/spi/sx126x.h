@@ -463,8 +463,8 @@ class Sx126x final : public ChipSpiGuide {
   };
 
   explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
-      int32_t busy, int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      int32_t busy, int32_t cs = kDefaultValue,
+      int32_t rst = kDefaultValue)
       : Sx126x(bus, chip_type, busy, cs, rst, Config{}) {}
 
   explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
@@ -476,8 +476,8 @@ class Sx126x final : public ChipSpiGuide {
         busy_(busy) {}
 
   explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
-      bool (*busy_wait_callback)(), int32_t cs = CPP_BUS_DRIVER_DEFAULT_VALUE,
-      int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      bool (*busy_wait_callback)(), int32_t cs = kDefaultValue,
+      int32_t rst = kDefaultValue)
       : Sx126x(bus, chip_type, busy_wait_callback, cs, rst, Config{}) {}
 
   explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
@@ -489,7 +489,7 @@ class Sx126x final : public ChipSpiGuide {
         rst_(rst),
         busy_wait_callback_(busy_wait_callback) {}
 
-  bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
 
   std::string GetDeviceId();
@@ -1629,7 +1629,7 @@ class Sx126x final : public ChipSpiGuide {
   Config config_;
   Param param_;
   int32_t rst_;
-  int32_t busy_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
+  int32_t busy_ = kDefaultValue;
   bool (*busy_wait_callback_)() = nullptr;
 };
 }  // namespace cpp_bus_driver

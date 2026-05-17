@@ -15,7 +15,7 @@ constexpr const uint8_t Tca8418::kInitSequence[];
 #endif
 
 bool Tca8418::Init(int32_t freq_hz) {
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
     GpioWrite(rst_, 1);
@@ -45,7 +45,7 @@ bool Tca8418::Deinit(bool delete_bus) {
     return false;
   }
 
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
   }
 

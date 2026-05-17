@@ -9,7 +9,7 @@
 
 namespace cpp_bus_driver {
 bool Hi8561::Init(float freq_mhz, float lane_bit_rate_mbps) {
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
     GpioWrite(rst_, 1);
@@ -54,7 +54,7 @@ bool Hi8561::Deinit() {
     return false;
   }
 
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
   }
 

@@ -132,10 +132,10 @@ class Es8311 final : public ChipI2cGuide, ChipI2sGuide {
 
   explicit Es8311(std::shared_ptr<BusI2cGuide> i2c_bus,
       std::shared_ptr<BusI2sGuide> i2s_bus, int16_t i2c_address,
-      int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      int32_t rst = kDefaultValue)
       : ChipI2cGuide(i2c_bus, i2c_address), ChipI2sGuide(i2s_bus), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = CPP_BUS_DRIVER_DEFAULT_VALUE) override;
+  bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
   bool Init(uint16_t mclk_multiple, uint32_t sample_rate_hz,
       uint8_t data_bit_width) override;

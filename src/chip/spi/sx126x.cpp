@@ -13,11 +13,11 @@ constexpr uint8_t kNop = 0x00;
 }  // namespace
 
 bool Sx126x::Init(int32_t freq_hz) {
-  if (busy_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (busy_ != kDefaultValue) {
     SetGpioMode(busy_, GpioMode::kInput, GpioStatus::kDisable);
   }
 
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
     GpioWrite(rst_, 1);
@@ -98,10 +98,10 @@ bool Sx126x::Deinit(bool delete_bus) {
     return false;
   }
 
-  if (busy_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (busy_ != kDefaultValue) {
     SetGpioMode(busy_, GpioMode::kDisable, GpioStatus::kDisable);
   }
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
   }
 
@@ -121,7 +121,7 @@ std::string Sx126x::GetDeviceId() {
 }
 
 bool Sx126x::CheckBusy() {
-  if (busy_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (busy_ != kDefaultValue) {
     uint16_t timeout_count = 0;
     while (1) {
       DelayUs(1);
@@ -2047,7 +2047,7 @@ bool Sx126x::SetSleep(SleepMode mode) {
 }
 
 bool Sx126x::Wakeup() {
-  if (cs_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (cs_ != kDefaultValue) {
     GpioWrite(cs_, 0);
     DelayMs(1);
     GpioWrite(cs_, 1);

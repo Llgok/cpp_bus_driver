@@ -9,7 +9,7 @@
 
 namespace cpp_bus_driver {
 bool Xl95x5::Init(int32_t freq_hz) {
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     Tool::SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
     Tool::GpioWrite(rst_, 1);
@@ -26,7 +26,7 @@ bool Xl95x5::Init(int32_t freq_hz) {
   }
 
   auto buffer = GetDeviceId();
-  if (buffer == static_cast<uint8_t>(CPP_BUS_DRIVER_DEFAULT_VALUE)) {
+  if (buffer == static_cast<uint8_t>(kDefaultValue)) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "Get xl95x5 id failed (error id: %#X)\n", buffer);
     return false;
@@ -44,7 +44,7 @@ bool Xl95x5::Deinit(bool delete_bus) {
     return false;
   }
 
-  if (rst_ != CPP_BUS_DRIVER_DEFAULT_VALUE) {
+  if (rst_ != kDefaultValue) {
     Tool::SetGpioMode(rst_, GpioMode::kDisable, GpioStatus::kDisable);
   }
 

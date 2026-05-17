@@ -89,12 +89,12 @@ class L76k final : public ChipUartGuide, public GnssParser {
   };
 
   explicit L76k(std::shared_ptr<BusUartGuide> bus, const int32_t wake_up,
-      const int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      const int32_t rst = kDefaultValue)
       : ChipUartGuide(bus), wake_up_(wake_up), rst_(rst) {}
 
   explicit L76k(std::shared_ptr<BusUartGuide> bus,
       const std::function<bool(bool)>& wake_up_callback,
-      const int32_t rst = CPP_BUS_DRIVER_DEFAULT_VALUE)
+      const int32_t rst = kDefaultValue)
       : ChipUartGuide(bus), wake_up_callback_(wake_up_callback), rst_(rst) {}
 
   bool Init(int32_t baud_rate = 9600) override;
@@ -289,7 +289,7 @@ class L76k final : public ChipUartGuide, public GnssParser {
    */
   uint32_t BaudRateToValue(BaudRate baud_rate);
 
-  int32_t wake_up_ = CPP_BUS_DRIVER_DEFAULT_VALUE;
+  int32_t wake_up_ = kDefaultValue;
   std::function<bool(bool)> wake_up_callback_ = nullptr;
   int32_t rst_;
   uint16_t update_interval_ms_ = 1000;  // 默认更新间隔为 1000ms（1Hz）
