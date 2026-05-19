@@ -85,27 +85,35 @@ bool BaudRateToPcas01Value(L76k::BaudRate baud_rate, uint8_t& value) {
 
 bool L76k::Init(int32_t baud_rate) {
   if (rst_ != kDefaultValue) {
-    SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
+    bool result = true;
+    result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
-    GpioWrite(rst_, 1);
+    result &= GpioWrite(rst_, 1);
     DelayMs(10);
-    GpioWrite(rst_, 0);
+    result &= GpioWrite(rst_, 0);
     DelayMs(10);
-    GpioWrite(rst_, 1);
+    result &= GpioWrite(rst_, 1);
     DelayMs(10);
+    if (!result) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      return false;
+    }
   }
 
   if (wake_up_ != kDefaultValue) {
-    if (!SetGpioMode(
-            wake_up_, GpioMode::kOutput, GpioStatus::kPullup)) {
-      LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "GpioMode failed\n");
+    bool result = true;
+    result &=
+        SetGpioMode(wake_up_, GpioMode::kOutput, GpioStatus::kPullup);
+    if (!result) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WakeUp failed\n");
+      return false;
     }
   }
 
   if (!Sleep(false)) {
     LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "Sleep failed\n");
+    return false;
   }
 
   if (!ChipUartGuide::Init(baud_rate)) {

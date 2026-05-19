@@ -10,14 +10,18 @@
 namespace cpp_bus_driver {
 bool Pcf8563x::Init(int32_t freq_hz) {
   if (rst_ != kDefaultValue) {
-    SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
-
-    GpioWrite(rst_, 1);
+    bool result = true;
+    result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
+    result &= GpioWrite(rst_, 1);
     DelayMs(10);
-    GpioWrite(rst_, 0);
+    result &= GpioWrite(rst_, 0);
     DelayMs(10);
-    GpioWrite(rst_, 1);
+    result &= GpioWrite(rst_, 1);
     DelayMs(10);
+    if (!result) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      return false;
+    }
   }
 
   if (!ChipI2cGuide::Init(freq_hz)) {
@@ -46,16 +50,18 @@ bool Pcf8563x::Init(int32_t freq_hz) {
 }
 
 bool Pcf8563x::Deinit(bool delete_bus) {
+  bool result = true;
+
   if (!ChipI2cGuide::Deinit(delete_bus)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
-    return false;
+    result = false;
   }
 
   if (rst_ != kDefaultValue) {
-    ResetGpio(rst_);
+    result &= ResetGpio(rst_);
   }
 
-  return true;
+  return result;
 }
 
 uint8_t Pcf8563x::GetDeviceId() {

@@ -37,14 +37,19 @@ bool EspAt::Init(int32_t freq_hz) {
   connect_.receive_total_length_index = 0;
 
   if (rst_ != kDefaultValue) {
-    SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
+    bool result = true;
+    result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
-    GpioWrite(rst_, 1);
+    result &= GpioWrite(rst_, 1);
     DelayMs(50);
-    GpioWrite(rst_, 0);
+    result &= GpioWrite(rst_, 0);
     DelayMs(50);
-    GpioWrite(rst_, 1);
+    result &= GpioWrite(rst_, 1);
     DelayMs(1000);
+    if (!result) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      return false;
+    }
   } else if (rst_callback_ != nullptr) {
     rst_callback_(1);
     DelayMs(50);
@@ -80,22 +85,25 @@ bool EspAt::Init(int32_t freq_hz) {
 }
 
 bool EspAt::Deinit() {
+  bool result = true;
+
   if (!ChipSdioGuide::Deinit()) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
-    return false;
+    result = false;
   }
 
   if (rst_ != kDefaultValue) {
-    ResetGpio(rst_);
+    result &= ResetGpio(rst_);
   }
 
-  return true;
+  return result;
 }
 
 bool EspAt::SetSleep(SleepMode mode, int16_t timeout_ms) {
   if (mode == SleepMode::kPowerDown) {
+    bool result = true;
     if (rst_ != kDefaultValue) {
-      GpioWrite(rst_, 0);
+      result &= GpioWrite(rst_, 0);
     } else if (rst_callback_ != nullptr) {
       rst_callback_(0);
     } else {
@@ -104,7 +112,7 @@ bool EspAt::SetSleep(SleepMode mode, int16_t timeout_ms) {
     }
 
     connect_.status = false;
-    return true;
+    return result;
   }
 
   const char* buffer = nullptr;

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-05-15 23:18:42
+ * @LastEditTime: 2026-05-19 11:27:02
  * @License: GPL 3.0
  */
 #include "hardware_qspi.h"
@@ -25,9 +25,13 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
   }
 
   cs_ = cs;
+  bool result = true;
   if (cs_ != kDefaultValue) {
-    SetGpioMode(cs_, GpioMode::kOutput, GpioStatus::kPullup);
-    SetCs(1);
+    result &= SetGpioMode(cs_, GpioMode::kOutput, GpioStatus::kPullup);
+    result &= SetCs(1);
+  }
+  if (!result) {
+    return false;
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
@@ -70,12 +74,12 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
       .intr_flags = 0,
   };
 
-  esp_err_t result = ESP_OK;
+  esp_err_t ret = ESP_OK;
   if (!bus_init_flag_) {
-    result = spi_bus_initialize(port_, &bus_config, SPI_DMA_CH_AUTO);
-    if (result != ESP_OK) {
+    ret = spi_bus_initialize(port_, &bus_config, SPI_DMA_CH_AUTO);
+    if (ret != ESP_OK) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
-          "spi_bus_initialize failed (error code: %#X)\n", result);
+          "spi_bus_initialize failed (error code: %#X)\n", ret);
       Deinit();
       return false;
     }
@@ -103,19 +107,19 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
       .post_cb = nullptr,  // 无传输后回调
   };
 
-  result = spi_bus_add_device(port_, &device_config, &spi_device_);
-  if (result != ESP_OK) {
+  ret = spi_bus_add_device(port_, &device_config, &spi_device_);
+  if (ret != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
-        "spi_bus_add_device failed (error code: %#X)\n", result);
+        "spi_bus_add_device failed (error code: %#X)\n", ret);
     Deinit();
     return false;
   }
 
   size_t buffer = 0;
-  result = spi_bus_get_max_transaction_len(port_, &buffer);
-  if (result != ESP_OK) {
+  ret = spi_bus_get_max_transaction_len(port_, &buffer);
+  if (ret != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
-        "spi_bus_get_max_transaction_len failed (error code: %#X)\n", result);
+        "spi_bus_get_max_transaction_len failed (error code: %#X)\n", ret);
     max_transfer_size_ = kQspiMaxTransferSize;
   } else {
     max_transfer_size_ = buffer;
@@ -170,6 +174,7 @@ bool HardwareQspi::Deinit(bool delete_bus) {
 
 bool HardwareQspi::Write(
     const void* data, size_t byte, uint32_t flags, bool cs_keep_active) {
+  bool result = true;
   spi_transaction_t buffer = {
       .flags = flags,
       .cmd = 0,
@@ -189,15 +194,18 @@ bool HardwareQspi::Write(
 
     buffer.length = max_transfer_size_ * 8;
 
-    SetCs(0);
+    result &= SetCs(0);
+    if (!result) {
+      return false;
+    }
     for (size_t i = 0; i < buffer_send_count; i++) {
       buffer.tx_buffer = buffer_data_ptr;
 
-      esp_err_t result = spi_device_polling_transmit(spi_device_, &buffer);
-      if (result != ESP_OK) {
-        SetCs(1);
+      esp_err_t ret = spi_device_polling_transmit(spi_device_, &buffer);
+      if (ret != ESP_OK) {
+        result &= SetCs(1);
         LogMessage(LogLevel::kBus, __FILE__, __LINE__,
-            "spi_device_polling_transmit failed (error code: %#X)\n", result);
+            "spi_device_polling_transmit failed (error code: %#X)\n", ret);
         return false;
       }
 
@@ -207,38 +215,44 @@ bool HardwareQspi::Write(
       buffer.tx_buffer = buffer_data_ptr;
       buffer.length = buffer_remaining_size * 8;
 
-      esp_err_t result = spi_device_polling_transmit(spi_device_, &buffer);
-      if (result != ESP_OK) {
-        SetCs(1);
+      esp_err_t ret = spi_device_polling_transmit(spi_device_, &buffer);
+      if (ret != ESP_OK) {
+        result &= SetCs(1);
         LogMessage(LogLevel::kBus, __FILE__, __LINE__,
-            "spi_device_polling_transmit failed (error code: %#X)\n", result);
+            "spi_device_polling_transmit failed (error code: %#X)\n", ret);
         return false;
       }
     }
 
     if (!cs_keep_active) {
-      SetCs(1);
+      result &= SetCs(1);
     }
   } else {
-    SetCs(0);
-    esp_err_t result = spi_device_polling_transmit(spi_device_, &buffer);
-    if (result != ESP_OK) {
-      SetCs(1);
+    result &= SetCs(0);
+    if (!result) {
+      return false;
+    }
+    esp_err_t ret = spi_device_polling_transmit(spi_device_, &buffer);
+    if (ret != ESP_OK) {
+      result &= SetCs(1);
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
-          "spi_device_polling_transmit failed (error code: %#X)\n", result);
+          "spi_device_polling_transmit failed (error code: %#X)\n", ret);
       return false;
     }
     if (!cs_keep_active) {
-      SetCs(1);
+      result &= SetCs(1);
     }
   }
 
-  return true;
+  return result;
 }
 
 bool HardwareQspi::SetCs(bool value) {
   if (cs_ != kDefaultValue) {
-    GpioWrite(cs_, value);
+    if (!GpioWrite(cs_, value)) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "GpioWrite failed\n");
+      return false;
+    }
   }
 
   return true;

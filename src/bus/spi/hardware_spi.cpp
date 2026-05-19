@@ -174,7 +174,11 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   spi_handle_ = std::make_unique<SPIClass>(port_, static_cast<uint8_t>(miso_),
       static_cast<uint8_t>(sclk_), static_cast<uint8_t>(mosi_));
-  GpioMode(cs, GpioMode::kOutput);
+  bool result = true;
+  result &= SetGpioMode(cs, GpioMode::kOutput);
+  if (!result) {
+    return false;
+  }
   spi_settings_ = SPISettings(freq_hz, bit_order_, mode_);
 
   spi_handle_->begin();
@@ -260,13 +264,16 @@ bool HardwareSpi::Write(const void* data, size_t byte) {
   return true;
 
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+  bool result = true;
   spi_handle_->beginTransaction(spi_settings_);
-  GpioWrite(cs_, 0);
-  spi_handle_->transfer(const_cast<void*>(data), byte);
-  GpioWrite(cs_, 1);
+  result &= GpioWrite(cs_, 0);
+  if (result) {
+    spi_handle_->transfer(const_cast<void*>(data), byte);
+  }
+  result &= GpioWrite(cs_, 1);
   spi_handle_->endTransaction();
 
-  return true;
+  return result;
 #else
   LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
   return false;
@@ -298,13 +305,16 @@ bool HardwareSpi::Read(void* data, size_t byte) {
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   std::vector<uint8_t> buffer(byte, 0);
 
+  bool result = true;
   spi_handle_->beginTransaction(spi_settings_);
-  GpioWrite(cs_, 0);
-  spi_handle_->transfer(buffer.data(), data, byte);
-  GpioWrite(cs_, 1);
+  result &= GpioWrite(cs_, 0);
+  if (result) {
+    spi_handle_->transfer(buffer.data(), data, byte);
+  }
+  result &= GpioWrite(cs_, 1);
   spi_handle_->endTransaction();
 
-  return true;
+  return result;
 #else
   LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Read failed\n");
   return false;
@@ -335,13 +345,16 @@ bool HardwareSpi::WriteRead(
 
   return true;
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+  bool result = true;
   spi_handle_->beginTransaction(spi_settings_);
-  GpioWrite(cs_, 0);
-  spi_handle_->transfer(write_data, read_data, data_byte);
-  GpioWrite(cs_, 1);
+  result &= GpioWrite(cs_, 0);
+  if (result) {
+    spi_handle_->transfer(write_data, read_data, data_byte);
+  }
+  result &= GpioWrite(cs_, 1);
   spi_handle_->endTransaction();
 
-  return true;
+  return result;
 #else
   LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WriteRead failed\n");
   return false;

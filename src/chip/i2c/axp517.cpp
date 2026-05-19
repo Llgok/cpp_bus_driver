@@ -10,14 +10,19 @@
 namespace cpp_bus_driver {
 bool Axp517::Init(int32_t freq_hz) {
   if (rst_ != kDefaultValue) {
-    Tool::SetGpioMode(rst_, Tool::GpioMode::kOutput, Tool::GpioStatus::kPullup);
-
-    Tool::GpioWrite(rst_, 1);
+    bool result = true;
+    result &= Tool::SetGpioMode(
+        rst_, Tool::GpioMode::kOutput, Tool::GpioStatus::kPullup);
+    result &= Tool::GpioWrite(rst_, 1);
     DelayMs(10);
-    Tool::GpioWrite(rst_, 0);
+    result &= Tool::GpioWrite(rst_, 0);
     DelayMs(10);
-    Tool::GpioWrite(rst_, 1);
+    result &= Tool::GpioWrite(rst_, 1);
     DelayMs(10);
+    if (!result) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      return false;
+    }
   }
 
   if (!ChipI2cGuide::Init(freq_hz)) {
@@ -48,16 +53,18 @@ bool Axp517::Init(int32_t freq_hz) {
 }
 
 bool Axp517::Deinit(bool delete_bus) {
+  bool result = true;
+
   if (!ChipI2cGuide::Deinit(delete_bus)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
-    return false;
+    result = false;
   }
 
   if (rst_ != kDefaultValue) {
-    Tool::ResetGpio(rst_);
+    result &= Tool::ResetGpio(rst_);
   }
 
-  return true;
+  return result;
 }
 
 uint8_t Axp517::GetDeviceId() {

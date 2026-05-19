@@ -14,18 +14,28 @@ constexpr uint8_t kNop = 0x00;
 
 bool Sx126x::Init(int32_t freq_hz) {
   if (busy_ != kDefaultValue) {
-    SetGpioMode(busy_, GpioMode::kInput, GpioStatus::kDisable);
+    bool result = true;
+    result &= SetGpioMode(busy_, GpioMode::kInput, GpioStatus::kDisable);
+    if (!result) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Busy failed\n");
+      return false;
+    }
   }
 
   if (rst_ != kDefaultValue) {
-    SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
+    bool result = true;
+    result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
-    GpioWrite(rst_, 1);
+    result &= GpioWrite(rst_, 1);
     DelayMs(10);
-    GpioWrite(rst_, 0);
+    result &= GpioWrite(rst_, 0);
     DelayMs(10);
-    GpioWrite(rst_, 1);
+    result &= GpioWrite(rst_, 1);
     DelayMs(10);
+    if (!result) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      return false;
+    }
   }
 
   if (!ChipSpiGuide::Init(freq_hz)) {
@@ -44,7 +54,6 @@ bool Sx126x::Init(int32_t freq_hz) {
   }
 
   bool result = true;
-
   if (config_.enable_retention_list && !InitRetentionList()) {
     LogMessage(
         LogLevel::kChip, __FILE__, __LINE__, "InitRetentionList failed\n");
@@ -2048,10 +2057,15 @@ bool Sx126x::SetSleep(SleepMode mode) {
 }
 
 bool Sx126x::Wakeup() {
+  bool result = true;
+
   if (cs_ != kDefaultValue) {
-    GpioWrite(cs_, 0);
+    result &= GpioWrite(cs_, 0);
     DelayMs(1);
-    GpioWrite(cs_, 1);
+    result &= GpioWrite(cs_, 1);
+    if (!result) {
+      return false;
+    }
   } else {
     uint8_t status = 0;
     if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoGetStatus), &status)) {

@@ -10,14 +10,18 @@
 namespace cpp_bus_driver {
 bool Hi8561::Init(float freq_mhz, float lane_bit_rate_mbps) {
   if (rst_ != kDefaultValue) {
-    SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
-
-    GpioWrite(rst_, 1);
+    bool result = true;
+    result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
+    result &= GpioWrite(rst_, 1);
     DelayMs(5);
-    GpioWrite(rst_, 0);
+    result &= GpioWrite(rst_, 0);
     DelayMs(10);
-    GpioWrite(rst_, 1);
+    result &= GpioWrite(rst_, 1);
     DelayMs(120);
+    if (!result) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      return false;
+    }
   }
 
   if (!ChipMipiGuide::Init(freq_mhz, lane_bit_rate_mbps)) {
@@ -49,16 +53,18 @@ bool Hi8561::Init(float freq_mhz, float lane_bit_rate_mbps) {
 }
 
 bool Hi8561::Deinit() {
+  bool result = true;
+
   if (!ChipMipiGuide::Deinit()) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
-    return false;
+    result = false;
   }
 
   if (rst_ != kDefaultValue) {
-    ResetGpio(rst_);
+    result &= ResetGpio(rst_);
   }
 
-  return true;
+  return result;
 }
 
 uint16_t Hi8561::GetDeviceId() {
