@@ -50,6 +50,10 @@ class HardwareI2s final : public BusI2sGuide {
   bool SetChannelEnable(
       bool enable, DataMode data_mode = DataMode::kInputOutput) override;
 
+  i2s_port_t port() const { return port_; }
+  i2s_chan_handle_t rx_handle() const { return rx_handle_; }
+  i2s_chan_handle_t tx_handle() const { return tx_handle_; }
+
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   // 配置输入和输出设备
   HardwareI2s(int32_t data_in, int32_t data_out, int32_t ws_lrck, int32_t bclk,
@@ -82,8 +86,8 @@ class HardwareI2s final : public BusI2sGuide {
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   i2s_port_t port_;
-  i2s_chan_handle_t chan_tx_handle_ = nullptr;
-  i2s_chan_handle_t chan_rx_handle_ = nullptr;
+  i2s_chan_handle_t tx_handle_ = nullptr;
+  i2s_chan_handle_t rx_handle_ = nullptr;
 #endif
 
   uint16_t mclk_multiple_ = kDefaultValue;

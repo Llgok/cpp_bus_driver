@@ -12,13 +12,13 @@ namespace cpp_bus_driver {
 bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
     uint32_t sample_rate_hz, i2s_data_bit_width_t data_bit_width) {
   if (data_mode_ == DataMode::kInputOutput) {
-    if ((chan_tx_handle_ != nullptr) && (chan_rx_handle_ != nullptr)) {
+    if ((tx_handle_ != nullptr) && (rx_handle_ != nullptr)) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "HardwareI2s has been initialized\n");
       return true;
     }
   } else {
-    if ((chan_tx_handle_ != nullptr) || (chan_rx_handle_ != nullptr)) {
+    if ((tx_handle_ != nullptr) || (rx_handle_ != nullptr)) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "HardwareI2s has been initialized\n");
       return true;
@@ -62,7 +62,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
         "HardwareI2s config data_out_: %d\n", data_out_);
 
     esp_err_t result =
-        i2s_new_channel(&chan_config, &chan_tx_handle_, &chan_rx_handle_);
+        i2s_new_channel(&chan_config, &tx_handle_, &rx_handle_);
     if (result != ESP_OK) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "i2s_new_channel failed (error code: %#X)\n", result);
@@ -104,7 +104,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
                 },
         };
 
-        result = i2s_channel_init_std_mode(chan_tx_handle_, &config);
+        result = i2s_channel_init_std_mode(tx_handle_, &config);
         if (result != ESP_OK) {
           LogMessage(LogLevel::kBus, __FILE__, __LINE__,
               "i2s_channel_init_std_mode failed (error code: %#X)\n", result);
@@ -114,7 +114,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
 
         config.slot_cfg.slot_mode = slot_mode_in_;
 
-        result = i2s_channel_init_std_mode(chan_rx_handle_, &config);
+        result = i2s_channel_init_std_mode(rx_handle_, &config);
         if (result != ESP_OK) {
           LogMessage(LogLevel::kBus, __FILE__, __LINE__,
               "i2s_channel_init_std_mode failed (error code: %#X)\n", result);
@@ -176,7 +176,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
                 },
         };
 
-        result = i2s_channel_init_pdm_rx_mode(chan_rx_handle_, &rx_config);
+        result = i2s_channel_init_pdm_rx_mode(rx_handle_, &rx_config);
         if (result != ESP_OK) {
           LogMessage(LogLevel::kBus, __FILE__, __LINE__,
               "i2s_channel_init_pdm_rx_mode failed (error code: %#X)\n",
@@ -185,7 +185,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
           return false;
         }
 
-        result = i2s_channel_init_pdm_tx_mode(chan_tx_handle_, &tx_config);
+        result = i2s_channel_init_pdm_tx_mode(tx_handle_, &tx_config);
         if (result != ESP_OK) {
           LogMessage(LogLevel::kBus, __FILE__, __LINE__,
               "i2s_channel_init_pdm_tx_mode failed (error code: %#X)\n",
@@ -200,7 +200,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
         break;
     }
 
-    result = i2s_channel_enable(chan_tx_handle_);
+    result = i2s_channel_enable(tx_handle_);
     if (result != ESP_OK) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "i2s_channel_enable failed (error code: %#X)\n", result);
@@ -208,7 +208,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
       return false;
     }
 
-    result = i2s_channel_enable(chan_rx_handle_);
+    result = i2s_channel_enable(rx_handle_);
     if (result != ESP_OK) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "i2s_channel_enable failed (error code: %#X)\n", result);
@@ -258,7 +258,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
             config.slot_cfg.slot_mode = slot_mode_in_;
 
             esp_err_t result =
-                i2s_new_channel(&chan_config, nullptr, &chan_rx_handle_);
+                i2s_new_channel(&chan_config, nullptr, &rx_handle_);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_new_channel failed (error code: %#X)\n", result);
@@ -266,7 +266,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
               return false;
             }
 
-            result = i2s_channel_init_std_mode(chan_rx_handle_, &config);
+            result = i2s_channel_init_std_mode(rx_handle_, &config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_init_std_mode failed (error code: %#X)\n",
@@ -275,7 +275,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
               return false;
             }
 
-            result = i2s_channel_enable(chan_rx_handle_);
+            result = i2s_channel_enable(rx_handle_);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_enable failed (error code: %#X)\n", result);
@@ -290,7 +290,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
             config.gpio_cfg.dout = static_cast<gpio_num_t>(data_out_);
 
             esp_err_t result =
-                i2s_new_channel(&chan_config, &chan_tx_handle_, nullptr);
+                i2s_new_channel(&chan_config, &tx_handle_, nullptr);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_new_channel failed (error code: %#X)\n", result);
@@ -298,7 +298,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
               return false;
             }
 
-            result = i2s_channel_init_std_mode(chan_tx_handle_, &config);
+            result = i2s_channel_init_std_mode(tx_handle_, &config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_init_std_mode failed (error code: %#X)\n",
@@ -307,7 +307,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
               return false;
             }
 
-            result = i2s_channel_enable(chan_tx_handle_);
+            result = i2s_channel_enable(tx_handle_);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_enable failed (error code: %#X)\n", result);
@@ -356,7 +356,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
             };
 
             esp_err_t result =
-                i2s_new_channel(&chan_config, nullptr, &chan_rx_handle_);
+                i2s_new_channel(&chan_config, nullptr, &rx_handle_);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_new_channel failed (error code: %#X)\n", result);
@@ -364,7 +364,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
               return false;
             }
 
-            result = i2s_channel_init_pdm_rx_mode(chan_rx_handle_, &rx_config);
+            result = i2s_channel_init_pdm_rx_mode(rx_handle_, &rx_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_init_pdm_rx_mode failed (error code: %#X)\n",
@@ -373,7 +373,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
               return false;
             }
 
-            result = i2s_channel_enable(chan_rx_handle_);
+            result = i2s_channel_enable(rx_handle_);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_enable failed (error code: %#X)\n", result);
@@ -416,7 +416,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
             };
 
             esp_err_t result =
-                i2s_new_channel(&chan_config, &chan_tx_handle_, nullptr);
+                i2s_new_channel(&chan_config, &tx_handle_, nullptr);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_new_channel failed (error code: %#X)\n", result);
@@ -424,7 +424,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
               return false;
             }
 
-            result = i2s_channel_init_pdm_tx_mode(chan_tx_handle_, &tx_config);
+            result = i2s_channel_init_pdm_tx_mode(tx_handle_, &tx_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_init_pdm_tx_mode failed (error code: %#X)\n",
@@ -433,7 +433,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
               return false;
             }
 
-            result = i2s_channel_enable(chan_tx_handle_);
+            result = i2s_channel_enable(tx_handle_);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_enable failed (error code: %#X)\n", result);
@@ -462,7 +462,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
 
 size_t HardwareI2s::Read(void* data, size_t byte) {
   size_t buffer = 0;
-  esp_err_t result = i2s_channel_read(chan_rx_handle_, data, byte, &buffer,
+  esp_err_t result = i2s_channel_read(rx_handle_, data, byte, &buffer,
       kDefaultI2sWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
@@ -475,7 +475,7 @@ size_t HardwareI2s::Read(void* data, size_t byte) {
 
 size_t HardwareI2s::Write(const void* data, size_t byte) {
   size_t buffer = 0;
-  esp_err_t result = i2s_channel_write(chan_tx_handle_, data, byte, &buffer,
+  esp_err_t result = i2s_channel_write(tx_handle_, data, byte, &buffer,
       kDefaultI2sWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__,
@@ -504,7 +504,7 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
             };
 
             esp_err_t result =
-                i2s_channel_reconfig_std_clock(chan_rx_handle_, &clk_config);
+                i2s_channel_reconfig_std_clock(rx_handle_, &clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_reconfig_std_clock failed (error code: %#X)\n",
@@ -524,7 +524,7 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
             };
 
             esp_err_t result = i2s_channel_reconfig_pdm_rx_clock(
-                chan_rx_handle_, &rx_clk_config);
+                rx_handle_, &rx_clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_reconfig_pdm_rx_clock failed (error code: "
@@ -554,7 +554,7 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
             };
 
             esp_err_t result =
-                i2s_channel_reconfig_std_clock(chan_tx_handle_, &clk_config);
+                i2s_channel_reconfig_std_clock(tx_handle_, &clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_reconfig_std_clock failed (error code: %#X)\n",
@@ -575,7 +575,7 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
             };
 
             esp_err_t result = i2s_channel_reconfig_pdm_tx_clock(
-                chan_tx_handle_, &tx_clk_config);
+                tx_handle_, &tx_clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_reconfig_pdm_tx_clock failed (error code: "
@@ -605,7 +605,7 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
             };
 
             esp_err_t result =
-                i2s_channel_reconfig_std_clock(chan_tx_handle_, &clk_config);
+                i2s_channel_reconfig_std_clock(tx_handle_, &clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_reconfig_std_clock failed (error code: %#X)\n",
@@ -614,7 +614,7 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
             }
 
             result =
-                i2s_channel_reconfig_std_clock(chan_rx_handle_, &clk_config);
+                i2s_channel_reconfig_std_clock(rx_handle_, &clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_reconfig_std_clock failed (error code: %#X)\n",
@@ -643,7 +643,7 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
             };
 
             esp_err_t result = i2s_channel_reconfig_pdm_rx_clock(
-                chan_rx_handle_, &rx_clk_config);
+                rx_handle_, &rx_clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_reconfig_pdm_rx_clock failed (error code: "
@@ -653,7 +653,7 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
             }
 
             result = i2s_channel_reconfig_pdm_tx_clock(
-                chan_tx_handle_, &tx_clk_config);
+                tx_handle_, &tx_clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_reconfig_pdm_tx_clock failed (error code: "
@@ -689,7 +689,7 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
         switch (data_mode_) {
           case DataMode::kInput: {
             esp_err_t result =
-                i2s_channel_reconfig_std_clock(chan_rx_handle_, &clk_config);
+                i2s_channel_reconfig_std_clock(rx_handle_, &clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_reconfig_std_clock failed (error code: %#X)\n",
@@ -699,7 +699,7 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
           } break;
           case DataMode::kOutput: {
             esp_err_t result =
-                i2s_channel_reconfig_std_clock(chan_tx_handle_, &clk_config);
+                i2s_channel_reconfig_std_clock(tx_handle_, &clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_reconfig_std_clock failed (error code: %#X)\n",
@@ -726,7 +726,7 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
             };
 
             esp_err_t result = i2s_channel_reconfig_pdm_rx_clock(
-                chan_rx_handle_, &rx_clk_config);
+                rx_handle_, &rx_clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_reconfig_pdm_rx_clock failed (error code: "
@@ -748,7 +748,7 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
             };
 
             esp_err_t result = i2s_channel_reconfig_pdm_tx_clock(
-                chan_tx_handle_, &tx_clk_config);
+                tx_handle_, &tx_clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                   "i2s_channel_reconfig_pdm_tx_clock failed (error code: "
@@ -777,7 +777,7 @@ bool HardwareI2s::SetChannelEnable(bool enable, DataMode data_mode) {
     if (data_mode_ == DataMode::kInputOutput) {
       switch (data_mode) {
         case DataMode::kInput: {
-          esp_err_t result = i2s_channel_enable(chan_rx_handle_);
+          esp_err_t result = i2s_channel_enable(rx_handle_);
           if (result != ESP_OK) {
             LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                 "i2s_channel_enable failed (error code: %#X)\n", result);
@@ -787,7 +787,7 @@ bool HardwareI2s::SetChannelEnable(bool enable, DataMode data_mode) {
         }
 
         case DataMode::kOutput: {
-          esp_err_t result = i2s_channel_enable(chan_tx_handle_);
+          esp_err_t result = i2s_channel_enable(tx_handle_);
           if (result != ESP_OK) {
             LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                 "i2s_channel_enable failed (error code: %#X)\n", result);
@@ -796,14 +796,14 @@ bool HardwareI2s::SetChannelEnable(bool enable, DataMode data_mode) {
           break;
         }
         case DataMode::kInputOutput: {
-          esp_err_t result = i2s_channel_enable(chan_tx_handle_);
+          esp_err_t result = i2s_channel_enable(tx_handle_);
           if (result != ESP_OK) {
             LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                 "i2s_channel_enable failed (error code: %#X)\n", result);
             return false;
           }
 
-          result = i2s_channel_enable(chan_rx_handle_);
+          result = i2s_channel_enable(rx_handle_);
           if (result != ESP_OK) {
             LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                 "i2s_channel_enable failed (error code: %#X)\n", result);
@@ -818,7 +818,7 @@ bool HardwareI2s::SetChannelEnable(bool enable, DataMode data_mode) {
     } else {
       switch (data_mode_) {
         case DataMode::kInput: {
-          esp_err_t result = i2s_channel_enable(chan_rx_handle_);
+          esp_err_t result = i2s_channel_enable(rx_handle_);
           if (result != ESP_OK) {
             LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                 "i2s_channel_enable failed (error code: %#X)\n", result);
@@ -827,7 +827,7 @@ bool HardwareI2s::SetChannelEnable(bool enable, DataMode data_mode) {
           break;
         }
         case DataMode::kOutput: {
-          esp_err_t result = i2s_channel_enable(chan_tx_handle_);
+          esp_err_t result = i2s_channel_enable(tx_handle_);
           if (result != ESP_OK) {
             LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                 "i2s_channel_enable failed (error code: %#X)\n", result);
@@ -843,7 +843,7 @@ bool HardwareI2s::SetChannelEnable(bool enable, DataMode data_mode) {
     if (data_mode_ == DataMode::kInputOutput) {
       switch (data_mode) {
         case DataMode::kInput: {
-          esp_err_t result = i2s_channel_disable(chan_rx_handle_);
+          esp_err_t result = i2s_channel_disable(rx_handle_);
           if (result != ESP_OK) {
             LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                 "i2s_channel_disable failed (error code: %#X)\n", result);
@@ -852,7 +852,7 @@ bool HardwareI2s::SetChannelEnable(bool enable, DataMode data_mode) {
           break;
         }
         case DataMode::kOutput: {
-          esp_err_t result = i2s_channel_disable(chan_tx_handle_);
+          esp_err_t result = i2s_channel_disable(tx_handle_);
           if (result != ESP_OK) {
             LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                 "i2s_channel_disable failed (error code: %#X)\n", result);
@@ -861,14 +861,14 @@ bool HardwareI2s::SetChannelEnable(bool enable, DataMode data_mode) {
           break;
         }
         case DataMode::kInputOutput: {
-          esp_err_t result = i2s_channel_disable(chan_tx_handle_);
+          esp_err_t result = i2s_channel_disable(tx_handle_);
           if (result != ESP_OK) {
             LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                 "i2s_channel_disable failed (error code: %#X)\n", result);
             return false;
           }
 
-          result = i2s_channel_disable(chan_rx_handle_);
+          result = i2s_channel_disable(rx_handle_);
           if (result != ESP_OK) {
             LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                 "i2s_channel_disable failed (error code: %#X)\n", result);
@@ -882,7 +882,7 @@ bool HardwareI2s::SetChannelEnable(bool enable, DataMode data_mode) {
     } else {
       switch (data_mode_) {
         case DataMode::kInput: {
-          esp_err_t result = i2s_channel_disable(chan_rx_handle_);
+          esp_err_t result = i2s_channel_disable(rx_handle_);
           if (result != ESP_OK) {
             LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                 "i2s_channel_disable failed (error code: %#X)\n", result);
@@ -891,7 +891,7 @@ bool HardwareI2s::SetChannelEnable(bool enable, DataMode data_mode) {
           break;
         }
         case DataMode::kOutput: {
-          esp_err_t result = i2s_channel_disable(chan_tx_handle_);
+          esp_err_t result = i2s_channel_disable(tx_handle_);
           if (result != ESP_OK) {
             LogMessage(LogLevel::kBus, __FILE__, __LINE__,
                 "i2s_channel_disable failed (error code: %#X)\n", result);
@@ -1249,43 +1249,43 @@ bool HardwareI2s::Deinit() {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   bool result = true;
 
-  if (chan_tx_handle_ != nullptr) {
-    esp_err_t ret = i2s_channel_disable(chan_tx_handle_);
+  if (tx_handle_ != nullptr) {
+    esp_err_t ret = i2s_channel_disable(tx_handle_);
     if ((ret != ESP_OK) && (ret != ESP_ERR_INVALID_STATE)) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "i2s_channel_disable failed (error code: %#X)\n", ret);
       result = false;
     }
 
-    ret = i2s_del_channel(chan_tx_handle_);
+    ret = i2s_del_channel(tx_handle_);
     if (ret != ESP_OK) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "i2s_del_channel failed (error code: %#X)\n", ret);
       result = false;
     } else {
-      chan_tx_handle_ = nullptr;
+      tx_handle_ = nullptr;
     }
   }
 
-  if (chan_rx_handle_ != nullptr) {
-    esp_err_t ret = i2s_channel_disable(chan_rx_handle_);
+  if (rx_handle_ != nullptr) {
+    esp_err_t ret = i2s_channel_disable(rx_handle_);
     if ((ret != ESP_OK) && (ret != ESP_ERR_INVALID_STATE)) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "i2s_channel_disable failed (error code: %#X)\n", ret);
       result = false;
     }
 
-    ret = i2s_del_channel(chan_rx_handle_);
+    ret = i2s_del_channel(rx_handle_);
     if (ret != ESP_OK) {
       LogMessage(LogLevel::kBus, __FILE__, __LINE__,
           "i2s_del_channel failed (error code: %#X)\n", ret);
       result = false;
     } else {
-      chan_rx_handle_ = nullptr;
+      rx_handle_ = nullptr;
     }
   }
 
-  if ((chan_tx_handle_ == nullptr) && (chan_rx_handle_ == nullptr)) {
+  if ((tx_handle_ == nullptr) && (rx_handle_ == nullptr)) {
     result &= ResetGpio(data_in_);
     result &= ResetGpio(data_out_);
     result &= ResetGpio(ws_lrck_);
