@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-04-30 13:41:05
+ * @LastEditTime: 2026-05-26 17:40:38
  * @License: GPL 3.0
  */
 #include "xl95x5.h"
@@ -99,8 +99,7 @@ bool Xl95x5::SetGpioMode(Pin pin, Mode mode) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
-    if (mode == Mode::kOutput)  // 写0输出，写1输入
-    {
+    if (mode == Mode::kOutput) {
       buffer = buffer & (~(1 << (static_cast<uint8_t>(pin) - 10)));
     } else {
       buffer = buffer | (1 << (static_cast<uint8_t>(pin) - 10));
@@ -116,8 +115,7 @@ bool Xl95x5::SetGpioMode(Pin pin, Mode mode) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
-    if (mode == Mode::kOutput)  // 写0输出，写1输入
-    {
+    if (mode == Mode::kOutput) {
       buffer = buffer & (~(1 << static_cast<uint8_t>(pin)));
     } else {
       buffer = buffer | (1 << static_cast<uint8_t>(pin));
@@ -132,39 +130,25 @@ bool Xl95x5::SetGpioMode(Pin pin, Mode mode) {
   return true;
 }
 
-bool Xl95x5::GpioWrite(Pin pin, Value value) {
+bool Xl95x5::GpioWrite(Pin pin, uint8_t value) {
   uint8_t buffer = 0;
 
   if (pin == Pin::kIoPort0) {
-    if (value == Value::kLow)  // 写0为低电平，写1为高电平
-    {
-      buffer = 0B00000000;
-    } else {
-      buffer = 0B11111111;
-    }
-    if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwOutputPort0), buffer)) {
+    if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwOutputPort0), value)) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   } else if (pin == Pin::kIoPort1) {
-    if (value == Value::kLow)  // 写0为低电平，写1为高电平
-    {
-      buffer = 0B00000000;
-    } else {
-      buffer = 0B11111111;
-    }
-    if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwOutputPort1), buffer)) {
+    if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwOutputPort1), value)) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
-  }
-  if (static_cast<uint8_t>(pin) > 7) {
+  } else if (static_cast<uint8_t>(pin) > 7) {
     if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwOutputPort1), &buffer)) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
-    if (value == Value::kLow)  // 写0为低电平，写1为高电平
-    {
+    if (value == 0) {
       buffer = buffer & (~(1 << (static_cast<uint8_t>(pin) - 10)));
     } else {
       buffer = buffer | (1 << (static_cast<uint8_t>(pin) - 10));
@@ -179,8 +163,7 @@ bool Xl95x5::GpioWrite(Pin pin, Value value) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
-    if (value == Value::kLow)  // 写0为低电平，写1为高电平
-    {
+    if (value == 0) {
       buffer = buffer & (~(1 << static_cast<uint8_t>(pin)));
     } else {
       buffer = buffer | (1 << static_cast<uint8_t>(pin));
@@ -194,11 +177,20 @@ bool Xl95x5::GpioWrite(Pin pin, Value value) {
   return true;
 }
 
-bool Xl95x5::GpioRead(Pin pin) {
+uint8_t Xl95x5::GpioRead(Pin pin) {
   uint8_t buffer = 0;
 
-  // 写0为低电平，写1为高电平
-  if (static_cast<uint8_t>(pin) > 7) {
+  if (pin == Pin::kIoPort0) {
+    if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoInputPort0), &buffer)) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+      return -1;
+    }
+  } else if (pin == Pin::kIoPort1) {
+    if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoInputPort1), &buffer)) {
+      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+      return -1;
+    }
+  } else if (static_cast<uint8_t>(pin) > 7) {
     if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoInputPort1), &buffer)) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
       return -1;
