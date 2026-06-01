@@ -8,6 +8,21 @@
 #include "aw862xx.h"
 
 namespace cpp_bus_driver {
+
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+constexpr uint8_t Aw862xx::kHapticWaveformRtpTest[];
+constexpr uint8_t Aw862xx::kHapticWaveformRamTest[];
+constexpr uint8_t Aw862xx::kHapticWaveformRam12k101635_130[];
+constexpr uint8_t Aw862xx::kHapticWaveformRam12k0809_170[];
+constexpr uint8_t Aw862xx::kHapticWaveformRam12k0815_170[];
+constexpr uint8_t Aw862xx::kHapticWaveformRam12k9595_170[];
+constexpr uint8_t Aw862xx::kHapticWaveformRam12k0832_205[];
+constexpr uint8_t Aw862xx::kHapticWaveformRam12k0832_235[];
+constexpr uint8_t Aw862xx::kHapticWaveformRam12k041230_235[];
+constexpr uint8_t Aw862xx::kHapticWaveformRam12k041235_240[];
+constexpr uint8_t Aw862xx::kHapticWaveformRam12k0832_260[];
+#endif
+
 Aw862xx::RamWaveformInfo Aw862xx::GetRamWaveformInfo(
     RamWaveformLibrary library) {
   RamWaveformInfo info;
@@ -802,7 +817,8 @@ bool Aw862xx::ParseRamHeader(
         waveform_data[table_end_index];
     const uint16_t candidate_base = first_wave_addr - ram_num * 4 - 1;
 
-    if ((last_wave_end - candidate_base + 1) == length) {
+    if ((last_wave_end >= candidate_base) &&
+        (static_cast<size_t>(last_wave_end - candidate_base + 1) == length)) {
       base_addr = candidate_base;
       waveform_count = ram_num;
       return true;

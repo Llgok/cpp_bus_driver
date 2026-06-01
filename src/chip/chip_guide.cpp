@@ -429,40 +429,40 @@ bool ChipI2sGuide::Init(
 
   return true;
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  nrf_i2s_ratio_t resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_32_X;
+  nrf_i2s_ratio_t resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_32X;
   if (mclk_multiple <= 32) {
-    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_32_X;
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_32X;
   } else if (mclk_multiple <= 48) {
-    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_48_X;
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_48X;
   } else if (mclk_multiple <= 64) {
-    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_64_X;
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_64X;
   } else if (mclk_multiple <= 96) {
-    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_96_X;
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_96X;
   } else if (mclk_multiple <= 128) {
-    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_128_X;
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_128X;
   } else if (mclk_multiple <= 192) {
-    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_192_X;
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_192X;
   } else if (mclk_multiple <= 256) {
-    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_256_X;
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_256X;
   } else if (mclk_multiple <= 384) {
-    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_384_X;
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_384X;
   } else if (mclk_multiple <= 512) {
-    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_512_X;
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_512X;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_32_X;
+    resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_32X;
   }
 
-  nrf_i2s_swidth_t resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_8_BIT;
+  nrf_i2s_swidth_t resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_8BIT;
   if (data_bit_width <= 8) {
-    resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_8_BIT;
+    resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_8BIT;
   } else if (data_bit_width <= 16) {
-    resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16_BIT;
+    resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16BIT;
   } else if (data_bit_width <= 24) {
-    resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_24_BIT;
+    resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_24BIT;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
-    resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16_BIT;
+    resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16BIT;
   }
 
   if (!bus_->Init(

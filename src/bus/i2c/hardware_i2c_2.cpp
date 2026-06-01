@@ -62,7 +62,7 @@ bool HardwareI2c2::Init(uint32_t freq_hz, uint16_t address) {
 
   i2c_handle_->setPins(static_cast<uint8_t>(sda_), static_cast<uint8_t>(scl_));
   i2c_handle_->setClock(freq_hz);
-  i2c_handle_->Init();
+  i2c_handle_->begin();
 
 #else
   LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
@@ -113,11 +113,14 @@ bool HardwareI2c2::Read(uint8_t* data, size_t length) {
   return true;
 
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  if (!i2c_handle_->requestFrom(address_, length)) {
+  const size_t read_count = i2c_handle_->requestFrom(address_, length);
+  if (read_count != length) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "requestFrom failed\n");
     return false;
   }
-  *data = i2c_handle_->Read();
+  for (size_t i = 0; i < read_count; i++) {
+    data[i] = static_cast<uint8_t>(i2c_handle_->read());
+  }
 
   return true;
 #else
@@ -193,7 +196,7 @@ bool HardwareI2c2::WriteRead(const uint8_t* write_data, size_t write_length,
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   i2c_handle_->beginTransmission(address_);
 
-  size_t result = i2c_handle_->Write(write_data, write_length);
+  size_t result = i2c_handle_->write(write_data, write_length);
   if (result == 0) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -220,11 +223,14 @@ bool HardwareI2c2::WriteRead(const uint8_t* write_data, size_t write_length,
       break;
   }
 
-  if (!i2c_handle_->requestFrom(address_, read_length)) {
+  const size_t read_count = i2c_handle_->requestFrom(address_, read_length);
+  if (read_count != read_length) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "requestFrom failed\n");
     return false;
   }
-  *read_data = i2c_handle_->Read();
+  for (size_t i = 0; i < read_count; i++) {
+    read_data[i] = static_cast<uint8_t>(i2c_handle_->read());
+  }
 
   return true;
 

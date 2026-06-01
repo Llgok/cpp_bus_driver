@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-05-17 19:49:15
+ * @LastEditTime: 2026-06-01 15:00:41
  * @License: GPL 3.0
  */
 #pragma once
@@ -39,8 +39,8 @@ class HardwareSpi final : public BusSpiGuide {
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   HardwareSpi(int32_t mosi, int32_t sclk,
       int32_t miso = kDefaultValue,
-      NRF_SPIM_Type* port = NRF_SPIM_3, uint8_t mode = 0,
-      BitOrder bit_order = BitOrder::kMsbfirst)
+      NRF_SPIM_Type* port = NRF_SPIM3, uint8_t mode = 0,
+      BitOrder bit_order = MSBFIRST)
       : mosi_(mosi),
         sclk_(sclk),
         miso_(miso),

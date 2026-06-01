@@ -743,7 +743,7 @@ bool Sx126x::CalibrateImage(uint16_t start_freq_mhz, uint16_t end_freq_mhz) {
 }
 
 bool Sx126x::SetRfFrequency(double freq_mhz) {
-  const uint32_t buffer_freq = static_cast<uint32_t>(std::round(
+  const uint32_t buffer_freq = static_cast<uint32_t>((std::round)(
       (freq_mhz * static_cast<double>(static_cast<uint32_t>(1) << 25)) / 32.0));
 
   uint8_t buffer[] = {
@@ -1542,9 +1542,9 @@ bool Sx126x::SetGfskModulationParams(
 
   // 计算原始频率偏差值
   uint32_t buffer_freq_deviation_khz = static_cast<uint32_t>(
-      std::round(((freq_deviation_khz * 1000.0) *
-                     static_cast<double>(static_cast<uint32_t>(1) << 25)) /
-                 (32.0 * 1000000.0)));
+      (std::round)(((freq_deviation_khz * 1000.0) *
+                       static_cast<double>(static_cast<uint32_t>(1) << 25)) /
+                   (32.0 * 1000000.0)));
 
   uint8_t buffer[] = {
       static_cast<uint8_t>(buffer_br >> 16),

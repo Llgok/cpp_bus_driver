@@ -78,6 +78,19 @@ class Aw862xx final : public ChipI2cGuide {
 #include "aw862xx_haptic_waveform_table.h"
 
   struct RamWaveformInfo {
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+    RamWaveformInfo() = default;
+    RamWaveformInfo(const char* name, const uint8_t* data, size_t length,
+        SampleRate sample_rate, uint16_t rated_f0_hz,
+        uint8_t waveform_count)
+        : name(name),
+          data(data),
+          length(length),
+          sample_rate(sample_rate),
+          rated_f0_hz(rated_f0_hz),
+          waveform_count(waveform_count) {}
+#endif
+
     const char* name = nullptr;
     const uint8_t* data = nullptr;
     size_t length = 0;

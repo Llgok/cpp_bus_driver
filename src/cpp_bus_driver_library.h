@@ -16,7 +16,7 @@
 #include "./bus/spi/hardware_qspi.h"
 #include "./bus/spi/hardware_spi.h"
 #include "./bus/uart/hardware_uart.h"
-#include "./chip/i2c/aw21009xxx.h"
+#include "./chip/i2c/aw21009.h"
 #include "./chip/i2c/aw862xx.h"
 #include "./chip/i2c/axp517.h"
 #include "./chip/i2c/bq27220.h"

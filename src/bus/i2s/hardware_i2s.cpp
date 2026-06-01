@@ -924,55 +924,55 @@ bool HardwareI2s::Init(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz,
   double buffer_mclk_freq_mhz = 0.0;
 
   switch (mclk_multiple) {
-    case nrf_i2s_ratio_t::NRF_I2S_RATIO_32_X:
+    case nrf_i2s_ratio_t::NRF_I2S_RATIO_32X:
       buffer_mclk_freq_mhz =
           (static_cast<double>(sample_rate_hz) * 32.0) / 1000000.0;
       LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
           "HardwareI2s config mclk_multiple: 32\n");
       break;
-    case nrf_i2s_ratio_t::NRF_I2S_RATIO_48_X:
+    case nrf_i2s_ratio_t::NRF_I2S_RATIO_48X:
       buffer_mclk_freq_mhz =
           (static_cast<double>(sample_rate_hz) * 48.0) / 1000000.0;
       LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
           "HardwareI2s config mclk_multiple: 48\n");
       break;
-    case nrf_i2s_ratio_t::NRF_I2S_RATIO_64_X:
+    case nrf_i2s_ratio_t::NRF_I2S_RATIO_64X:
       buffer_mclk_freq_mhz =
           (static_cast<double>(sample_rate_hz) * 64.0) / 1000000.0;
       LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
           "HardwareI2s config mclk_multiple: 64\n");
       break;
-    case nrf_i2s_ratio_t::NRF_I2S_RATIO_96_X:
+    case nrf_i2s_ratio_t::NRF_I2S_RATIO_96X:
       buffer_mclk_freq_mhz =
           (static_cast<double>(sample_rate_hz) * 96.0) / 1000000.0;
       LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
           "HardwareI2s config mclk_multiple: 96\n");
       break;
-    case nrf_i2s_ratio_t::NRF_I2S_RATIO_128_X:
+    case nrf_i2s_ratio_t::NRF_I2S_RATIO_128X:
       buffer_mclk_freq_mhz =
           (static_cast<double>(sample_rate_hz) * 128.0) / 1000000.0;
       LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
           "HardwareI2s config mclk_multiple: 128\n");
       break;
-    case nrf_i2s_ratio_t::NRF_I2S_RATIO_192_X:
+    case nrf_i2s_ratio_t::NRF_I2S_RATIO_192X:
       buffer_mclk_freq_mhz =
           (static_cast<double>(sample_rate_hz) * 192.0) / 1000000.0;
       LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
           "HardwareI2s config mclk_multiple: 192\n");
       break;
-    case nrf_i2s_ratio_t::NRF_I2S_RATIO_256_X:
+    case nrf_i2s_ratio_t::NRF_I2S_RATIO_256X:
       buffer_mclk_freq_mhz =
           (static_cast<double>(sample_rate_hz) * 256.0) / 1000000.0;
       LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
           "HardwareI2s config mclk_multiple: 256\n");
       break;
-    case nrf_i2s_ratio_t::NRF_I2S_RATIO_384_X:
+    case nrf_i2s_ratio_t::NRF_I2S_RATIO_384X:
       buffer_mclk_freq_mhz =
           (static_cast<double>(sample_rate_hz) * 384.0) / 1000000.0;
       LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
           "HardwareI2s config mclk_multiple: 384\n");
       break;
-    case nrf_i2s_ratio_t::NRF_I2S_RATIO_512_X:
+    case nrf_i2s_ratio_t::NRF_I2S_RATIO_512X:
       buffer_mclk_freq_mhz =
           (static_cast<double>(sample_rate_hz) * 512.0) / 1000000.0;
       LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
@@ -1034,67 +1034,67 @@ bool HardwareI2s::Init(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz,
 
   if ((buffer_mclk_freq_mhz >= buffer_division_freq_125) &&
       (buffer_mclk_freq_mhz < buffer_division_freq_mid_125_63)) {
-    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32_MDIV_125;
+    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32MDIV125;
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config mclk_division: 125 (division_freq: %.6f mhz)\n",
         buffer_division_freq_125);
   } else if (buffer_mclk_freq_mhz < buffer_division_freq_mid_63_42) {
-    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32_MDIV_63;
+    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32MDIV63;
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config mclk_division: 63 (division_freq: %.6f mhz)\n",
         buffer_division_freq_63);
   } else if (buffer_mclk_freq_mhz < buffer_division_freq_mid_42_32) {
-    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32_MDIV_42;
+    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32MDIV42;
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config mclk_division: 42 (division_freq: %.6f mhz)\n",
         buffer_division_freq_42);
   } else if (buffer_mclk_freq_mhz < buffer_division_freq_mid_32_31) {
-    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32_MDIV_32;
+    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32MDIV32;
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config mclk_division: 32 (division_freq: %.6f mhz)\n",
         buffer_division_freq_32);
   } else if (buffer_mclk_freq_mhz < buffer_division_freq_mid_31_30) {
-    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32_MDIV_31;
+    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32MDIV31;
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config mclk_division: 31 (division_freq: %.6f mhz)\n",
         buffer_division_freq_31);
   } else if (buffer_mclk_freq_mhz < buffer_division_freq_mid_30_23) {
-    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32_MDIV_30;
+    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32MDIV30;
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config mclk_division: 30 (division_freq: %.6f mhz)\n",
         buffer_division_freq_30);
   } else if (buffer_mclk_freq_mhz < buffer_division_freq_mid_23_21) {
-    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32_MDIV_23;
+    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32MDIV23;
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config mclk_division: 23 (division_freq: %.6f mhz)\n",
         buffer_division_freq_23);
   } else if (buffer_mclk_freq_mhz < buffer_division_freq_mid_21_16) {
-    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32_MDIV_21;
+    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32MDIV21;
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config mclk_division: 21 (division_freq: %.6f mhz)\n",
         buffer_division_freq_21);
   } else if (buffer_mclk_freq_mhz < buffer_division_freq_mid_16_15) {
-    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32_MDIV_16;
+    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32MDIV16;
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config mclk_division: 16 (division_freq: %.6f mhz)\n",
         buffer_division_freq_16);
   } else if (buffer_mclk_freq_mhz < buffer_division_freq_mid_15_11) {
-    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32_MDIV_15;
+    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32MDIV15;
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config mclk_division: 15 (division_freq: %.6f mhz)\n",
         buffer_division_freq_15);
   } else if (buffer_mclk_freq_mhz < buffer_division_freq_mid_11_10) {
-    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32_MDIV_11;
+    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32MDIV11;
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config mclk_division: 11 (division_freq: %.6f mhz)\n",
         buffer_division_freq_11);
   } else if (buffer_mclk_freq_mhz < buffer_division_freq_mid_10_8) {
-    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32_MDIV_10;
+    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32MDIV10;
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config mclk_division: 10 (division_freq: %.6f mhz)\n",
         buffer_division_freq_10);
   } else if (buffer_mclk_freq_mhz <= buffer_division_freq_8) {
-    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32_MDIV_8;
+    buffer_mclk_division = nrf_i2s_mck_t::NRF_I2S_MCK_32MDIV8;
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config mclk_division: 8 (division_freq: %.6f mhz)\n",
         buffer_division_freq_8);
