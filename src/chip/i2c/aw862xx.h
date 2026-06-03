@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-05-12 15:02:32
+ * @LastEditTime: 2026-06-03 09:45:41
  * @License: GPL 3.0
  */
 #pragma once
@@ -48,8 +48,22 @@ class Aw862xx final : public ChipI2cGuide {
     kGain40,
   };
 
+  enum class ChipType {
+    kUnknown = 0,  // 未知芯片
+    kAw8623,
+    kAw8624,
+    kAw86214,
+    kAw86223,
+    kAw86224,
+    kAw86225,
+    kAw86233,
+    kAw86234,
+    kAw86235,
+    kAw86243,
+    kAw86245,
+  };
+
   enum class RamWaveformLibrary {
-    kRamTest = 0,
     kRam12k101635_130,
     kRam12k0809_170,
     kRam12k0815_170,
@@ -59,6 +73,18 @@ class Aw862xx final : public ChipI2cGuide {
     kRam12k041230_235,
     kRam12k041235_240,
     kRam12k0832_260,
+    kRam24k101635_130,
+    kRam24k0619_170,
+    kRam24k0809_170,
+    kRam24k0815_170,
+    kRam24k1010_170,
+    kRam24k1040_170,
+    kRam24k9595_170,
+    kRam24k0832_205,
+    kRam24k0832_235,
+    kRam24k041230_235,
+    kRam24k041235_240,
+    kRam24k0832_260,
   };
 
   enum class ForceMode {
@@ -81,8 +107,7 @@ class Aw862xx final : public ChipI2cGuide {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
     RamWaveformInfo() = default;
     RamWaveformInfo(const char* name, const uint8_t* data, size_t length,
-        SampleRate sample_rate, uint16_t rated_f0_hz,
-        uint8_t waveform_count)
+        SampleRate sample_rate, uint16_t rated_f0_hz, uint8_t waveform_count)
         : name(name),
           data(data),
           length(length),
@@ -99,21 +124,18 @@ class Aw862xx final : public ChipI2cGuide {
     uint8_t waveform_count = 0;
   };
 
-  struct RamWaveformSelection {
-    uint32_t detected_f0_0p1_hz = 0;
-    RamWaveformLibrary library = RamWaveformLibrary::kRam12k0809_170;
-    RamWaveformInfo info;
-  };
-
   explicit Aw862xx(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kDefaultValue)
+      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
 
-  uint8_t GetDeviceId();
+  /**
+   * @brief 读取并识别AW862xx芯片类型
+   * @return 返回芯片类型，无法识别返回ChipType::kUnknown
+   */
+  ChipType GetDeviceId();
 
   /**
    * @brief 软件复位
@@ -274,21 +296,7 @@ class Aw862xx final : public ChipI2cGuide {
    * @brief 获取当前F0校准参考值，单位为0.1Hz
    * @return 返回读取到的数值
    */
-  uint32_t GetF0Preset() const { return f0_value_; }
-
-  /**
-   * @brief 根据检测到的F0选择最接近的内置RAM波形库
-   * @param f0_0p1_hz GetF0Detection()获取的F0值，单位为0.1Hz
-   * @return 返回函数执行结果
-   */
-  static RamWaveformLibrary FindClosestRamWaveformLibrary(uint32_t f0_0p1_hz);
-
-  /**
-   * @brief 检测F0并选择最接近的内置RAM波形库
-   * @param selection 返回检测F0、波形库枚举和波形库信息
-   * @return 操作成功返回 true，失败返回 false
-   */
-  bool SelectRamWaveformByF0(RamWaveformSelection& selection);
+  uint32_t f0_preset() const { return f0_value_; }
 
   /**
    * @brief 输入f0的值开始进行f0校准
@@ -341,13 +349,6 @@ class Aw862xx final : public ChipI2cGuide {
   bool InitRamMode(RamWaveformLibrary library);
 
   /**
-   * @brief 检测F0、选择最接近的内置RAM波形库并初始化RAM模式
-   * @param selection 返回检测F0、波形库枚举和波形库信息
-   * @return 初始化成功返回 true，失败返回 false
-   */
-  bool InitRamModeByF0(RamWaveformSelection& selection);
-
-  /**
    * @brief 获取RAM波形数据中的sequence数量
    * @param *waveform_data RAM波形数据指针
    * @param length RAM波形数据长度
@@ -360,7 +361,7 @@ class Aw862xx final : public ChipI2cGuide {
    * @brief 设置RAM模式播放waveform数据
    * @param waveform_sequence_number
    * 值范围0~127，波形的序列号（该序列号为波形数据库里的序列号）
-   * @param waveform_playback_count
+   * @param loop_count
    * 值范围0~15，波形的回放次数，当设置为15的时候为无限循环播放，当设置为无限循环播放的时候需要使用函数xxx进行停止播放
    * @param gain 值范围0~255，配置增益
    * @param auto_brake [true]：启动，[false]：关闭，自动制动
@@ -369,8 +370,8 @@ class Aw862xx final : public ChipI2cGuide {
    * @return 操作成功返回 true，失败返回 false
    */
   bool RunRamPlaybackWaveform(uint8_t waveform_sequence_number,
-      uint8_t waveform_playback_count, uint8_t gain = 127,
-      bool auto_brake = true, bool gain_bypass = true);
+      uint8_t loop_count, uint8_t gain = 127, bool auto_brake = true,
+      bool gain_bypass = true);
 
   /**
    * @brief 播放RAM波形，loop_count为实际播放次数
@@ -433,9 +434,8 @@ class Aw862xx final : public ChipI2cGuide {
 
  private:
   enum class Cmd {
-    kRoDeviceId = 0x64,
-
-    kWoSrst = 0x00,
+    kRoDeviceId = 0x00,
+    kWoSrst = kRoDeviceId,
     kRoSysst,
     kRcSysint,
     kRwSysintm,
@@ -511,15 +511,16 @@ class Aw862xx final : public ChipI2cGuide {
     kRwDetRl,
 
     kRwDetVbat = 0x55,
+    kRoChipIdHigh = 0x57,
     kRwDetLo = 0x57,
+    kRoAw8624xChipIdLow = 0x58,
     kRwTrimcfg3 = 0x5A,
+    kRoEfId = 0x64,
+    kRoAw8623xChipIdLow = 0x69,
     kRwAnacfg8 = 0X77,
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x58;
-
-  int32_t rst_;
-  uint32_t f0_value_ = 1700;
 
   /**
    * @brief 解析RAM波形头，获取base地址和sequence数量
@@ -531,6 +532,20 @@ class Aw862xx final : public ChipI2cGuide {
    */
   static bool ParseRamHeader(const uint8_t* waveform_data, size_t length,
       uint16_t& base_addr, uint8_t& waveform_count);
+
+  /**
+   * @brief 获取芯片类型名称
+   * @param chip_type 芯片类型
+   * @return 芯片类型名称字符串
+   */
+  static const char* ChipTypeToString(ChipType chip_type);
+
+  /**
+   * @brief 获取RAM波形采样率名称。
+   * @param sample_rate RAM波形采样率。
+   * @return RAM波形采样率名称字符串。
+   */
+  static const char* SampleRateToString(SampleRate sample_rate);
 
   /**
    * @brief 设置RAM base地址
@@ -552,5 +567,10 @@ class Aw862xx final : public ChipI2cGuide {
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetRamAddress(uint16_t ram_addr);
+
+  int32_t rst_;
+  uint32_t f0_value_ = 1700;
+  RamWaveformInfo ram_waveform_info_;
+  ChipType chip_type_ = ChipType::kUnknown;
 };
 }  // namespace cpp_bus_driver

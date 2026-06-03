@@ -148,7 +148,10 @@ bool HardwareI2c2::Write(const uint8_t* data, size_t length) {
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
     return false;
   } else if (result != length) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "buffer is full\n");
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        "buffer is full (written: %u, expected: %u)\n",
+        static_cast<unsigned int>(result), static_cast<unsigned int>(length));
+    return false;
   }
 
   result = i2c_handle_->endTransmission();
@@ -201,7 +204,11 @@ bool HardwareI2c2::WriteRead(const uint8_t* write_data, size_t write_length,
     LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
     return false;
   } else if (result != write_length) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "buffer is full\n");
+    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        "buffer is full (written: %u, expected: %u)\n",
+        static_cast<unsigned int>(result),
+        static_cast<unsigned int>(write_length));
+    return false;
   }
 
   result = i2c_handle_->endTransmission();
