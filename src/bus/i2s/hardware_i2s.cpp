@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-05-15 23:10:35
+ * @LastEditTime: 2026-06-18 09:02:57
  * @License: GPL 3.0
  */
 #include "hardware_i2s.h"
@@ -47,6 +47,10 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
       "HardwareI2s config slot_mode_in_: %d\n", slot_mode_in_);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareI2s config slot_mode_out_: %d\n", slot_mode_out_);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareI2s config slot_mask_in_: %#X\n", slot_mask_in_);
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "HardwareI2s config slot_mask_out_: %#X\n", slot_mask_out_);
 
   i2s_chan_config_t chan_config =
       I2S_CHANNEL_DEFAULT_CONFIG(port_, I2S_ROLE_MASTER);
@@ -103,6 +107,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
                         },
                 },
         };
+        config.slot_cfg.slot_mask = slot_mask_out_;
 
         result = i2s_channel_init_std_mode(tx_handle_, &config);
         if (result != ESP_OK) {
@@ -113,6 +118,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
         }
 
         config.slot_cfg.slot_mode = slot_mode_in_;
+        config.slot_cfg.slot_mask = slot_mask_in_;
 
         result = i2s_channel_init_std_mode(rx_handle_, &config);
         if (result != ESP_OK) {
@@ -248,6 +254,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
                         },
                 },
         };
+        config.slot_cfg.slot_mask = slot_mask_out_;
 
         switch (data_mode_) {
           case DataMode::kInput: {
@@ -256,6 +263,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
 
             config.gpio_cfg.din = static_cast<gpio_num_t>(data_in_);
             config.slot_cfg.slot_mode = slot_mode_in_;
+            config.slot_cfg.slot_mask = slot_mask_in_;
 
             esp_err_t result =
                 i2s_new_channel(&chan_config, nullptr, &rx_handle_);

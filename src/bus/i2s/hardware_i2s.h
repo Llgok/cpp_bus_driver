@@ -24,8 +24,12 @@ class HardwareI2s final : public BusI2sGuide {
       DataMode data_mode = DataMode::kInputOutput,
       I2sMode i2s_mode = I2sMode::kStd,
       i2s_clock_src_t clock_source = I2S_CLK_SRC_DEFAULT,
-      i2s_slot_mode_t slot_mode_in = I2S_SLOT_MODE_STEREO,
-      i2s_slot_mode_t slot_mode_out = I2S_SLOT_MODE_STEREO)
+      i2s_slot_mode_t slot_mode_in = i2s_slot_mode_t::I2S_SLOT_MODE_STEREO,
+      i2s_slot_mode_t slot_mode_out = i2s_slot_mode_t::I2S_SLOT_MODE_STEREO,
+      i2s_std_slot_mask_t slot_mask_in =
+          i2s_std_slot_mask_t::I2S_STD_SLOT_BOTH,
+      i2s_std_slot_mask_t slot_mask_out =
+          i2s_std_slot_mask_t::I2S_STD_SLOT_BOTH)
       : data_in_(data_in),
         data_out_(data_out),
         ws_lrck_(ws_lrck),
@@ -36,7 +40,9 @@ class HardwareI2s final : public BusI2sGuide {
         i2s_mode_(i2s_mode),
         clock_source_(clock_source),
         slot_mode_in_(slot_mode_in),
-        slot_mode_out_(slot_mode_out) {}
+        slot_mode_out_(slot_mode_out),
+        slot_mask_in_(slot_mask_in),
+        slot_mask_out_(slot_mask_out) {}
 
   bool Init(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz,
       i2s_data_bit_width_t data_bit_width) override;
@@ -100,6 +106,8 @@ class HardwareI2s final : public BusI2sGuide {
   i2s_clock_src_t clock_source_;
   i2s_slot_mode_t slot_mode_in_;
   i2s_slot_mode_t slot_mode_out_;
+  i2s_std_slot_mask_t slot_mask_in_;
+  i2s_std_slot_mask_t slot_mask_out_;
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   nrf_i2s_channels_t channel_;
 #endif
