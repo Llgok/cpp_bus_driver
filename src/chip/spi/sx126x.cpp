@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-05-16 09:52:59
+ * @LastEditTime: 2026-06-30 17:09:45
  * @License: GPL 3.0
  */
 #include "sx126x.h"
@@ -743,8 +743,10 @@ bool Sx126x::CalibrateImage(uint16_t start_freq_mhz, uint16_t end_freq_mhz) {
 }
 
 bool Sx126x::SetRfFrequency(double freq_mhz) {
-  const uint32_t buffer_freq = static_cast<uint32_t>((std::round)(
-      (freq_mhz * static_cast<double>(static_cast<uint32_t>(1) << 25)) / 32.0));
+  const uint32_t buffer_freq = static_cast<uint32_t>(
+      (std::round)((freq_mhz *
+                       static_cast<double>(static_cast<uint32_t>(1) << 25)) /
+                   32.0));
 
   uint8_t buffer[] = {
       static_cast<uint8_t>(buffer_freq >> 24),
@@ -2057,21 +2059,11 @@ bool Sx126x::SetSleep(SleepMode mode) {
 }
 
 bool Sx126x::Wakeup() {
-  bool result = true;
-
-  if (cs_ != kDefaultValue) {
-    result &= GpioWrite(cs_, 0);
-    DelayMs(1);
-    result &= GpioWrite(cs_, 1);
-    if (!result) {
-      return false;
-    }
-  } else {
-    uint8_t status = 0;
-    if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoGetStatus), &status)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
-      return false;
-    }
+  uint8_t status = 0;
+  // 直接读取任意命令触发cs引脚变化唤醒设备
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoGetStatus), &status)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    return false;
   }
 
   DelayMs(1);
