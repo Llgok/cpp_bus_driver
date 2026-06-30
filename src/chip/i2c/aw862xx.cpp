@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-26 11:13:26
- * @LastEditTime: 2026-06-03 11:27:10
+ * @LastEditTime: 2026-06-30 17:31:30
  * @License: GPL 3.0
  */
 #include "aw862xx.h"
@@ -41,8 +41,8 @@ Aw862xx::RamWaveformInfo Aw862xx::GetRamWaveformInfo(
   switch (library) {
     case RamWaveformLibrary::kRam12k101635_130:
       info = {"12k_101635_130", kHapticWaveformRam12k101635_130,
-          sizeof(kHapticWaveformRam12k101635_130), SampleRate::kRate12Khz,
-          130, 0};
+          sizeof(kHapticWaveformRam12k101635_130), SampleRate::kRate12Khz, 130,
+          0};
       break;
     case RamWaveformLibrary::kRam12k0809_170:
       info = {"12k_0809_170", kHapticWaveformRam12k0809_170,
@@ -71,13 +71,13 @@ Aw862xx::RamWaveformInfo Aw862xx::GetRamWaveformInfo(
       break;
     case RamWaveformLibrary::kRam12k041230_235:
       info = {"12k_041230_235", kHapticWaveformRam12k041230_235,
-          sizeof(kHapticWaveformRam12k041230_235), SampleRate::kRate12Khz,
-          235, 0};
+          sizeof(kHapticWaveformRam12k041230_235), SampleRate::kRate12Khz, 235,
+          0};
       break;
     case RamWaveformLibrary::kRam12k041235_240:
       info = {"12k_041235_240", kHapticWaveformRam12k041235_240,
-          sizeof(kHapticWaveformRam12k041235_240), SampleRate::kRate12Khz,
-          240, 0};
+          sizeof(kHapticWaveformRam12k041235_240), SampleRate::kRate12Khz, 240,
+          0};
       break;
     case RamWaveformLibrary::kRam12k0832_260:
       info = {"12k_0832_260", kHapticWaveformRam12k0832_260,
@@ -86,8 +86,8 @@ Aw862xx::RamWaveformInfo Aw862xx::GetRamWaveformInfo(
       break;
     case RamWaveformLibrary::kRam24k101635_130:
       info = {"24k_101635_130", kHapticWaveformRam24k101635_130,
-          sizeof(kHapticWaveformRam24k101635_130), SampleRate::kRate24Khz,
-          130, 0};
+          sizeof(kHapticWaveformRam24k101635_130), SampleRate::kRate24Khz, 130,
+          0};
       break;
     case RamWaveformLibrary::kRam24k0619_170:
       info = {"24k_0619_170", kHapticWaveformRam24k0619_170,
@@ -131,13 +131,13 @@ Aw862xx::RamWaveformInfo Aw862xx::GetRamWaveformInfo(
       break;
     case RamWaveformLibrary::kRam24k041230_235:
       info = {"24k_041230_235", kHapticWaveformRam24k041230_235,
-          sizeof(kHapticWaveformRam24k041230_235), SampleRate::kRate24Khz,
-          235, 0};
+          sizeof(kHapticWaveformRam24k041230_235), SampleRate::kRate24Khz, 235,
+          0};
       break;
     case RamWaveformLibrary::kRam24k041235_240:
       info = {"24k_041235_240", kHapticWaveformRam24k041235_240,
-          sizeof(kHapticWaveformRam24k041235_240), SampleRate::kRate24Khz,
-          240, 0};
+          sizeof(kHapticWaveformRam24k041235_240), SampleRate::kRate24Khz, 240,
+          0};
       break;
     case RamWaveformLibrary::kRam24k0832_260:
       info = {"24k_0832_260", kHapticWaveformRam24k0832_260,
@@ -216,15 +216,25 @@ bool Aw862xx::Init(int32_t freq_hz) {
     return false;
   }
 
-  const ChipType chip_type = GetDeviceId();
-  if (chip_type == ChipType::kUnknown) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get aw862xx id failed (chip: %s)\n", ChipTypeToString(chip_type));
+  // GetDeviceId
+  // 有可能会在正常工作状态下读取到芯片ID失败，导致无法识别芯片类型，所以这边直接读取寄存器来判断芯片是否存在
+  // const ChipType chip_type = GetDeviceId();
+  // if (chip_type == ChipType::kUnknown) {
+  //   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+  //       "Get aw862xx id failed (chip: %s)\n", ChipTypeToString(chip_type));
+  //   return false;
+  // }
+
+  // LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Get %s id success\n",
+  //     ChipTypeToString(chip_type));
+
+  uint8_t buffer = 0;
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceId), &buffer)) {
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Get aw862xx id failed\n");
     return false;
   }
 
-  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "Get %s id success\n", ChipTypeToString(chip_type));
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Get aw862xx id success\n");
 
   return true;
 }
@@ -885,9 +895,7 @@ bool Aw862xx::GetSystemStatus(SystemStatus& status) {
   return true;
 }
 
-bool Aw862xx::SetClock(bool enable) {
-  return SetRamInit(enable);
-}
+bool Aw862xx::SetClock(bool enable) { return SetRamInit(enable); }
 
 bool Aw862xx::SetRamInit(bool enable) {
   uint8_t buffer = 0;
@@ -914,9 +922,8 @@ bool Aw862xx::SetRrtModeGain(uint8_t gain) {
   return true;
 }
 
-bool Aw862xx::ParseRamHeader(
-    const uint8_t* waveform_data, size_t length, uint16_t& base_addr,
-    uint8_t& waveform_count) {
+bool Aw862xx::ParseRamHeader(const uint8_t* waveform_data, size_t length,
+    uint16_t& base_addr, uint8_t& waveform_count) {
   base_addr = 0;
   waveform_count = 0;
 
@@ -1017,14 +1024,14 @@ bool Aw862xx::SetRamFifoThreshold(uint16_t base_addr) {
   const uint16_t almost_empty = base_addr >> 1;
   const uint16_t almost_full = base_addr - (base_addr >> 2);
   const uint8_t buffer[3] = {
-      static_cast<uint8_t>((((almost_empty >> 8) << 4) & 0xF0) |
-                           ((almost_full >> 8) & 0x0F)),
+      static_cast<uint8_t>(
+          (((almost_empty >> 8) << 4) & 0xF0) | ((almost_full >> 8) & 0x0F)),
       static_cast<uint8_t>(almost_empty & 0xFF),
       static_cast<uint8_t>(almost_full & 0xFF),
   };
 
-  if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwRtpcfg3), buffer,
-          sizeof(buffer))) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Cmd::kRwRtpcfg3), buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -1036,8 +1043,8 @@ bool Aw862xx::SetRamAddress(uint16_t ram_addr) {
   const uint8_t buffer[2] = {static_cast<uint8_t>(ram_addr >> 8),
       static_cast<uint8_t>(ram_addr & 0xFF)};
 
-  if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwRamaddrh), buffer,
-          sizeof(buffer))) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Cmd::kRwRamaddrh), buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -1064,8 +1071,8 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
   // container_update流程：停止播放、进入raminit、配置地址/FIFO、
   // 写入RAM数据，然后退出raminit。
   if (!StopRamPlaybackWaveform()) {
-    LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "StopRamPlaybackWaveform failed\n");
+    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        "StopRamPlaybackWaveform failed\n");
     return false;
   }
 
@@ -1099,8 +1106,7 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
   constexpr size_t kRamWriteChunkSize = 62;
   size_t offset = 0;
   while (offset < length) {
-    const size_t chunk_length =
-        std::min(kRamWriteChunkSize, length - offset);
+    const size_t chunk_length = std::min(kRamWriteChunkSize, length - offset);
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwRamadata),
             waveform_data + offset, chunk_length)) {
       LogMessage(LogLevel::kChip, __FILE__, __LINE__,
@@ -1132,8 +1138,8 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
   const bool has_waveform_info = ram_waveform_info_.name != nullptr;
 
   if (!has_waveform_info) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Unknown AW862xx RAM waveform\n");
+    LogMessage(
+        LogLevel::kInfo, __FILE__, __LINE__, "Unknown AW862xx RAM waveform\n");
     return true;
   }
 
@@ -1178,8 +1184,8 @@ bool Aw862xx::SetRamWaveformSequence(
     return false;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(
-                       static_cast<uint8_t>(Cmd::kRwWavcfg1) + slot),
+  if (!bus_->Write(
+          static_cast<uint8_t>(static_cast<uint8_t>(Cmd::kRwWavcfg1) + slot),
           waveform_sequence_number)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -1200,8 +1206,7 @@ bool Aw862xx::SetRamWaveformLoop(uint8_t slot, uint8_t loop_count) {
   }
 
   uint8_t buffer = 0;
-  const uint8_t loop_reg =
-      static_cast<uint8_t>(Cmd::kRwWavcfg9) + (slot / 2);
+  const uint8_t loop_reg = static_cast<uint8_t>(Cmd::kRwWavcfg9) + (slot / 2);
   if (!bus_->Read(loop_reg, &buffer)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -1228,8 +1233,8 @@ bool Aw862xx::PlayRamWaveform(uint8_t waveform_sequence_number,
     loop_count = 1;
   }
 
-  return RunRamPlaybackWaveform(waveform_sequence_number, loop_count - 1, gain,
-      auto_brake, gain_bypass);
+  return RunRamPlaybackWaveform(
+      waveform_sequence_number, loop_count - 1, gain, auto_brake, gain_bypass);
 }
 
 bool Aw862xx::PlayRamLoopWaveform(uint8_t waveform_sequence_number,
@@ -1240,8 +1245,8 @@ bool Aw862xx::PlayRamLoopWaveform(uint8_t waveform_sequence_number,
 
 bool Aw862xx::RunRamPlaybackWaveform(uint8_t waveform_sequence_number,
     uint8_t loop_count, uint8_t gain, bool auto_brake, bool gain_bypass) {
-  if (!ConfigureRamPlaybackWaveform(
-          waveform_sequence_number, loop_count, gain, auto_brake, gain_bypass)) {
+  if (!ConfigureRamPlaybackWaveform(waveform_sequence_number, loop_count, gain,
+          auto_brake, gain_bypass)) {
     return false;
   }
   return StartRamPlaybackWaveform();
@@ -1280,8 +1285,7 @@ bool Aw862xx::ConfigureRamPlaybackWaveform(uint8_t waveform_sequence_number,
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
-  buffer = (buffer & 0B00001111) |
-           (static_cast<uint8_t>(loop_count) << 4);
+  buffer = (buffer & 0B00001111) | (static_cast<uint8_t>(loop_count) << 4);
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwWavcfg9), buffer)) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
     return false;
