@@ -374,6 +374,25 @@ class Aw862xx final : public ChipI2cGuide {
       bool gain_bypass = true);
 
   /**
+   * @brief 配置RAM模式播放参数但不启动播放
+   * @param waveform_sequence_number RAM波形sequence编号
+   * @param loop_count 寄存器循环值，范围0~15，15为无限循环
+   * @param gain 增益，范围0~255
+   * @param auto_brake [true]：启用自动制动，[false]：关闭自动制动
+   * @param gain_bypass [true]：播放时允许改变增益，[false]：播放时不改变增益
+   * @return 操作成功返回 true，失败返回 false
+   */
+  bool ConfigureRamPlaybackWaveform(uint8_t waveform_sequence_number,
+      uint8_t loop_count, uint8_t gain = 127, bool auto_brake = true,
+      bool gain_bypass = true);
+
+  /**
+   * @brief 启动当前已配置的RAM模式播放
+   * @return 操作成功返回 true，失败返回 false
+   */
+  bool StartRamPlaybackWaveform();
+
+  /**
    * @brief 播放RAM波形，loop_count为实际播放次数
    * @param waveform_sequence_number RAM波形sequence编号
    * @param loop_count 播放次数，范围1~16

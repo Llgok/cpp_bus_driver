@@ -1240,6 +1240,15 @@ bool Aw862xx::PlayRamLoopWaveform(uint8_t waveform_sequence_number,
 
 bool Aw862xx::RunRamPlaybackWaveform(uint8_t waveform_sequence_number,
     uint8_t loop_count, uint8_t gain, bool auto_brake, bool gain_bypass) {
+  if (!ConfigureRamPlaybackWaveform(
+          waveform_sequence_number, loop_count, gain, auto_brake, gain_bypass)) {
+    return false;
+  }
+  return StartRamPlaybackWaveform();
+}
+
+bool Aw862xx::ConfigureRamPlaybackWaveform(uint8_t waveform_sequence_number,
+    uint8_t loop_count, uint8_t gain, bool auto_brake, bool gain_bypass) {
   if (waveform_sequence_number == 0 ||
       waveform_sequence_number > ram_waveform_info_.waveform_count) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
@@ -1301,7 +1310,10 @@ bool Aw862xx::RunRamPlaybackWaveform(uint8_t waveform_sequence_number,
     return false;
   }
 
-  // 开始播放
+  return true;
+}
+
+bool Aw862xx::StartRamPlaybackWaveform() {
   if (!SetGoFlag()) {
     LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetGoFlag failed\n");
     return false;
