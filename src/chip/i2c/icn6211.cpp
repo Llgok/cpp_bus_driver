@@ -21,13 +21,13 @@ bool Icn6211::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipI2cGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
@@ -48,7 +48,7 @@ bool Icn6211::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!ChipI2cGuide::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -63,7 +63,7 @@ uint16_t Icn6211::GetDeviceId() {
   uint8_t buffer[2] = {0};
 
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceIdStart), buffer, 2)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
 
@@ -75,64 +75,64 @@ bool Icn6211::CheckInterfaceParamsOutOfRange(InterfaceParams& params) {
 
   // 检查并限制rgb_width (H Active Pixel) - 最大值4095
   if (params.rgb_width > 4095) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     params.rgb_width = 4095;
     result = false;
   } else if (params.rgb_width == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     params.rgb_width = 1;
     result = false;
   }
 
   // 检查并限制rgb_height (V Active Line) - 最大值4095
   if (params.rgb_height > 4095) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     params.rgb_height = 4095;
     result = false;
   } else if (params.rgb_height == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     params.rgb_height = 1;
     result = false;
   }
 
   // 检查并限制rgb_hfp (H Front Porch) - 最大值1023
   if (params.rgb_hfp > 1023) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     params.rgb_hfp = 1023;
     result = false;
   }
 
   // 检查并限制rgb_hsync (H Sync Width) - 最大值1023
   if (params.rgb_hsync > 1023) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     params.rgb_hsync = 1023;
     result = false;
   }
 
   // 检查并限制rgb_hbp (H Back Porch) - 最大值1023
   if (params.rgb_hbp > 1023) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     params.rgb_hbp = 1023;
     result = false;
   }
 
   // 检查并限制rgb_vfp (V Front Porch) - 最大值255
   if (params.rgb_vfp > 255) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     params.rgb_vfp = 255;
     result = false;
   }
 
   // 检查并限制rgb_vsync (V Sync Width) - 最大值255
   if (params.rgb_vsync > 255) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     params.rgb_vsync = 255;
     result = false;
   }
 
   // 检查并限制rgb_vbp (V Back Porch) - 最大值255
   if (params.rgb_vbp > 255) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     params.rgb_vbp = 255;
     result = false;
   }
@@ -142,19 +142,19 @@ bool Icn6211::CheckInterfaceParamsOutOfRange(InterfaceParams& params) {
 
 bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
   if (!CheckInterfaceParamsOutOfRange(params)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "CheckInterfaceParamsOutOfRange failed\n");
   }
 
   // 设置 H/V Active 低位
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kHactiveL),
           static_cast<uint8_t>(params.rgb_width))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kVactiveL),
           static_cast<uint8_t>(params.rgb_height))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -162,24 +162,24 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
   uint8_t hv_h =
       ((params.rgb_height & 0x0F00) >> 4) | ((params.rgb_width & 0x0F00) >> 8);
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kHvActiveH), hv_h)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   // 设置 kHfp/kHsync/kHbp 低位
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kHfpL),
           static_cast<uint8_t>(params.rgb_hfp))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kHsyncL),
           static_cast<uint8_t>(params.rgb_hsync))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kHbpL),
           static_cast<uint8_t>(params.rgb_hbp))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -188,31 +188,31 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
                       ((params.rgb_hsync & 0x0300) >> 6) |
                       ((params.rgb_hbp & 0x0300) >> 8);
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kHPorchH), h_porch_h)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   // 设置 Vertical Porches
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kVfp),
           static_cast<uint8_t>(params.rgb_vfp))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kVsync),
           static_cast<uint8_t>(params.rgb_vsync))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kVbp),
           static_cast<uint8_t>(params.rgb_vbp))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   // 设置时钟相位
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kSysCtrl1),
           static_cast<uint8_t>(params.rgb_clock_phase))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -221,7 +221,7 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
     // 使用外部参考时钟
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kPllRefSel),
             static_cast<uint8_t>(0x90))) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
 
@@ -241,7 +241,7 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
     }
 
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kPllRefDiv), pll_ref_div)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
 
@@ -252,7 +252,7 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
     }
 
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kPllInt), pll_int_value)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
 
@@ -263,7 +263,7 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
     // 使用MIPI时钟作为参考
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kPllRefSel),
             static_cast<uint8_t>(0x92))) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
 
@@ -297,7 +297,7 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
     }
 
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kPllRefDiv), pll_ref_div)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
 
@@ -308,7 +308,7 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
     }
 
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kPllInt), pll_int_value)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
 
@@ -320,13 +320,13 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
   // 设置PLL相关寄存器
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kPllWtLock), static_cast<uint8_t>(0xFF))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kPllCtrl1), static_cast<uint8_t>(0x20))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -356,7 +356,7 @@ bool Icn6211::SetPolarityEnable(bool de, bool vsync, bool hsync) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kSyncPolarityTestMode), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   return true;
@@ -366,7 +366,7 @@ bool Icn6211::SetMipiLane(uint8_t lane) {
   uint8_t buffer = 0x28 | ((lane - 1) & 0x03);
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kDsiCtrl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -382,7 +382,7 @@ bool Icn6211::SetRgbOutputFormat(
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kSysCtrl0), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   return true;
@@ -392,7 +392,7 @@ bool Icn6211::SetTestMode(TestMode mode) {
   uint8_t buffer = 0;
 
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kSyncPolarityTestMode), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -400,20 +400,20 @@ bool Icn6211::SetTestMode(TestMode mode) {
     // 关闭 kBist
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kBistModeEn),
             static_cast<uint8_t>(0x83))) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
 
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kSyncPolarityTestMode),
             static_cast<uint8_t>(0x00))) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   } else {
     // 开启 kBist
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kBistModeEn),
             static_cast<uint8_t>(0x43))) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   }
@@ -422,7 +422,7 @@ bool Icn6211::SetTestMode(TestMode mode) {
 
   // 写入 kBist 模式
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kSyncPolarityTestMode), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -433,7 +433,7 @@ bool Icn6211::SetChipEnable(bool enable) {
   uint8_t buffer = enable << 4;
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kConfigFinishSoftReset), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 

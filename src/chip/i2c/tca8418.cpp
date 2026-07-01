@@ -21,13 +21,13 @@ bool Tca8418::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipI2cGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
@@ -35,7 +35,7 @@ bool Tca8418::Init(int32_t freq_hz) {
   config.auto_increment = true;
   config.overflow_mode = true;
   if (!SetConfiguration(config)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetConfiguration failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetConfiguration failed\n");
     return false;
   }
 
@@ -45,7 +45,7 @@ bool Tca8418::Init(int32_t freq_hz) {
   clear_result &= GetClearGpioIrqFlag(&gpio_irq_status);
   clear_result &= ClearIrqFlag(IrqFlag::kAll);
   if (!clear_result) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Clear status failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Clear status failed\n");
     return false;
   }
 
@@ -56,7 +56,7 @@ bool Tca8418::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!ChipI2cGuide::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -119,7 +119,7 @@ bool Tca8418::SetConfiguration(const Configuration& config) {
 
 bool Tca8418::GetConfiguration(Configuration* config) {
   if (config == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -166,7 +166,7 @@ bool Tca8418::SetKeypadScanWindow(
     uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
   if ((w == 0) || (h == 0) || (x >= kColumnCount) || (y >= kRowCount) ||
       (w > (kColumnCount - x)) || (h > (kRowCount - y))) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -200,7 +200,7 @@ uint8_t Tca8418::GetFingerCount() {
 
 bool Tca8418::ReadKeyEvent(TouchInfo* event) {
   if (event == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -214,7 +214,7 @@ bool Tca8418::ReadKeyEvent(TouchInfo* event) {
     return false;
   }
   if (!IsValidFifoEventNumber(event_num)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -259,7 +259,7 @@ uint8_t Tca8418::GetIrqFlag() {
 
 bool Tca8418::ParseIrqStatus(uint8_t irq_flag, IrqStatus& status) {
   if ((irq_flag == kInvalidU8) || ((irq_flag & ~kValidIrqMask) != 0)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -320,7 +320,7 @@ bool Tca8418::SetIrqGpioMode(uint8_t mode) {
 
 bool Tca8418::ParseTouchNum(uint8_t num, TouchPosition& position) {
   if ((num < kKeypadFirstEvent) || (num > kKeypadLastEvent)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -331,7 +331,7 @@ bool Tca8418::ParseTouchNum(uint8_t num, TouchPosition& position) {
 
 bool Tca8418::GetKeyLockInfo(KeyLockInfo* info) {
   if (info == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -356,7 +356,7 @@ bool Tca8418::SetKeypadLock(bool enable) {
 bool Tca8418::SetKeypadLockTimer(
     uint8_t lock_to_lock_timer_s, uint8_t interrupt_mask_timer_s) {
   if ((lock_to_lock_timer_s > 7) || (interrupt_mask_timer_s > 31)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -368,7 +368,7 @@ bool Tca8418::SetKeypadLockTimer(
 bool Tca8418::SetUnlockKeys(uint8_t unlock_key_1, uint8_t unlock_key_2) {
   if (!IsValidUnlockKeyNumber(unlock_key_1) ||
       !IsValidUnlockKeyNumber(unlock_key_2)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -380,7 +380,7 @@ bool Tca8418::SetUnlockKeys(uint8_t unlock_key_1, uint8_t unlock_key_2) {
 
 bool Tca8418::SetGpioDirection(Gpio gpio, GpioMode mode) {
   if (!IsValidGpio(gpio)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
   return SetGpioDirectionMask(GpioMask(gpio), mode);
@@ -397,7 +397,7 @@ bool Tca8418::GetGpioDirectionMask(uint32_t* output_mask) {
 
 bool Tca8418::SetGpioOutput(Gpio gpio, bool high) {
   if (!IsValidGpio(gpio)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
   return UpdateGpioRegisterBlock(
@@ -429,11 +429,11 @@ bool Tca8418::GetGpioDataStatus(uint32_t* status, bool read_twice) {
 
 bool Tca8418::GetGpioInput(Gpio gpio, bool* high) {
   if (!IsValidGpio(gpio)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
   if (high == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -448,7 +448,7 @@ bool Tca8418::GetGpioInput(Gpio gpio, bool* high) {
 
 bool Tca8418::SetGpioInterruptEnable(Gpio gpio, bool enable) {
   if (!IsValidGpio(gpio)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
   return SetGpioInterruptEnableMask(GpioMask(gpio), enable);
@@ -466,7 +466,7 @@ bool Tca8418::GetGpioInterruptEnableMask(uint32_t* enable_mask) {
 bool Tca8418::SetGpioInterruptTrigger(
     Gpio gpio, GpioInterruptTrigger trigger) {
   if (!IsValidGpio(gpio)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
   return SetGpioInterruptTriggerMask(GpioMask(gpio), trigger);
@@ -485,7 +485,7 @@ bool Tca8418::GetGpioInterruptTriggerMask(uint32_t* rising_high_mask) {
 
 bool Tca8418::SetGpiEventMode(Gpio gpio, bool enable) {
   if (!IsValidGpio(gpio)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
   return SetGpiEventModeMask(GpioMask(gpio), enable);
@@ -502,7 +502,7 @@ bool Tca8418::GetGpiEventModeMask(uint32_t* enable_mask) {
 
 bool Tca8418::SetGpioDebounce(Gpio gpio, bool enable) {
   if (!IsValidGpio(gpio)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
   return SetGpioDebounceMask(GpioMask(gpio), enable);
@@ -515,7 +515,7 @@ bool Tca8418::SetGpioDebounceMask(uint32_t gpio_mask, bool enable) {
 
 bool Tca8418::GetGpioDebounceEnabledMask(uint32_t* enable_mask) {
   if (enable_mask == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -529,7 +529,7 @@ bool Tca8418::GetGpioDebounceEnabledMask(uint32_t* enable_mask) {
 
 bool Tca8418::SetGpioPullup(Gpio gpio, bool enable) {
   if (!IsValidGpio(gpio)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
   return SetGpioPullupMask(GpioMask(gpio), enable);
@@ -542,7 +542,7 @@ bool Tca8418::SetGpioPullupMask(uint32_t gpio_mask, bool enable) {
 
 bool Tca8418::GetGpioPullupEnabledMask(uint32_t* enable_mask) {
   if (enable_mask == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -556,12 +556,12 @@ bool Tca8418::GetGpioPullupEnabledMask(uint32_t* enable_mask) {
 
 bool Tca8418::ReadRegister(Register reg, uint8_t* value) {
   if (value == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   if (!bus_->Read(static_cast<uint8_t>(reg), value)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -570,7 +570,7 @@ bool Tca8418::ReadRegister(Register reg, uint8_t* value) {
 
 bool Tca8418::WriteRegister(Register reg, uint8_t value) {
   if (!bus_->Write(static_cast<uint8_t>(reg), value)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -589,7 +589,7 @@ bool Tca8418::UpdateRegisterBits(Register reg, uint8_t mask, uint8_t value) {
 
 bool Tca8418::ReadGpioRegisterBlock(Register start_reg, uint32_t* value) {
   if (value == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -597,7 +597,7 @@ bool Tca8418::ReadGpioRegisterBlock(Register start_reg, uint32_t* value) {
   const uint8_t start_address = static_cast<uint8_t>(start_reg);
   for (uint8_t i = 0; i < 3; i++) {
     if (!bus_->Read(static_cast<uint8_t>(start_address + i), &buffer[i])) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
   }
@@ -624,7 +624,7 @@ bool Tca8418::WriteGpioRegisterBlock(Register start_reg, uint32_t value) {
   }
 
   if (!result) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
   }
   return result;
 }

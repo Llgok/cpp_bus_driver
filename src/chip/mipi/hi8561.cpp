@@ -19,13 +19,13 @@ bool Hi8561::Init(float freq_mhz, float lane_bit_rate_mbps) {
     result &= GpioWrite(rst_, 1);
     DelayMs(120);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipMipiGuide::Init(freq_mhz, lane_bit_rate_mbps)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
@@ -40,12 +40,12 @@ bool Hi8561::Init(float freq_mhz, float lane_bit_rate_mbps) {
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "InitSequence failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
     return false;
   }
 
   if (!bus_->StartTransmit()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "StartTransmit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "StartTransmit failed\n");
     return false;
   }
 
@@ -56,7 +56,7 @@ bool Hi8561::Deinit() {
   bool result = true;
 
   if (!ChipMipiGuide::Deinit()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -73,7 +73,7 @@ uint16_t Hi8561::GetDeviceId() {
   for (uint8_t i = 0; i < 2; i++) {
     if (!bus_->Read(
             static_cast<uint8_t>(Cmd::kRoDeviceIdStart) + i, &buffer[i], 1)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return -1;
     }
   }
@@ -85,7 +85,7 @@ uint16_t Hi8561::GetDeviceId() {
 bool Hi8561::SetSleep(bool enable) {
   if (!bus_->Write(enable ? static_cast<uint8_t>(Cmd::kWoSlpin)
                           : static_cast<uint8_t>(Cmd::kWoSlpout))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -97,7 +97,7 @@ bool Hi8561::SetSleep(bool enable) {
 bool Hi8561::SetScreenOff(bool enable) {
   if (!bus_->Write(enable ? static_cast<uint8_t>(Cmd::kWoDispoff)
                           : static_cast<uint8_t>(Cmd::kWoDispon))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -127,7 +127,7 @@ bool Hi8561::SetMirror(MirrorMode mode) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kWoMadctl), madctl_data_)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -137,7 +137,7 @@ bool Hi8561::SetMirror(MirrorMode mode) {
 bool Hi8561::SetInversion(bool enable) {
   if (!bus_->Write(enable ? static_cast<uint8_t>(Cmd::kWoInvon)
                           : static_cast<uint8_t>(Cmd::kWoInvoff))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -146,7 +146,7 @@ bool Hi8561::SetInversion(bool enable) {
 
 bool Hi8561::SetBrightness(uint8_t brightness) {
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kWoWrdisbv), brightness)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -158,7 +158,7 @@ bool Hi8561::SetColorOrder(ColorOrder order) {
       (madctl_data_ & 0xB11110111) | (static_cast<uint8_t>(order) << 3);
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kWoMadctl), madctl_data_)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -168,7 +168,7 @@ bool Hi8561::SetColorOrder(ColorOrder order) {
 bool Hi8561::SetCabcMode(CabcMode mode) {
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kWoWrcabc), static_cast<uint8_t>(mode))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -178,7 +178,7 @@ bool Hi8561::SetCabcMode(CabcMode mode) {
 bool Hi8561::SendColorStreamCoordinate(
     int x_start, int y_start, int x_end, int y_end, const void* data) {
   if (!bus_->Write(x_start, y_start, x_end, y_end, data)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-05-17 11:20:25
+ * @LastEditTime: 2026-07-01 11:47:34
  * @License: GPL 3.0
  */
 #include "hardware_spi.h"
@@ -12,7 +12,7 @@ namespace cpp_bus_driver {
 bool HardwareSpi::InitBus() {
   if (shared_bus_provider_ != nullptr) {
     if (!shared_bus_provider_->InitBus()) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "Init shared spi bus failed\n");
       return false;
     }
@@ -31,7 +31,7 @@ bool HardwareSpi::InitBus() {
     const int64_t start_time_ms = GetSystemTimeMs();
     while (bus_init_state_.load() == BusInitState::kInitializing) {
       if (GetSystemTimeMs() - start_time_ms >= kBusInitWaitTimeoutMs) {
-        LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        LogMessage(LogLevel::kError, __FILE__, __LINE__,
             "Wait spi bus init timeout\n");
         return false;
       }
@@ -61,7 +61,7 @@ bool HardwareSpi::InitBus() {
 
   esp_err_t result = spi_bus_initialize(port_, &bus_config, SPI_DMA_CH_AUTO);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "spi_bus_initialize failed (error code: %#X)\n", result);
     bus_init_state_.store(BusInitState::kNotStarted);
     return false;
@@ -84,7 +84,7 @@ void HardwareSpi::set_bus_init_flag(bool enable) {
 bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   if (bus_init_state_.load() == BusInitState::kReady && device_init_flag_) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HardwareSpi has been initialized\n");
     return true;
   }
@@ -162,7 +162,7 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
     };
     esp_err_t result = spi_bus_add_device(port_, &device_config, &spi_device_);
     if (result != ESP_OK) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "spi_bus_add_device failed (error code: %#X)\n", result);
       Deinit(created_bus);
       return false;
@@ -184,7 +184,7 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
   spi_handle_->begin();
 
 #else
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Init failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
   return false;
 #endif
 
@@ -201,7 +201,7 @@ bool HardwareSpi::Deinit(bool delete_bus) {
   if (device_init_flag_) {
     esp_err_t ret = spi_bus_remove_device(spi_device_);
     if (ret != ESP_OK) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "spi_bus_remove_device failed (error code: %#X)\n", ret);
       result = false;
     } else {
@@ -214,14 +214,14 @@ bool HardwareSpi::Deinit(bool delete_bus) {
 
   if (delete_bus && bus_init_state_.load() == BusInitState::kReady) {
     if (!delete_bus_on_deinit_) {
-      LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
           "Skip deleting external spi bus\n");
       return result;
     }
 
     esp_err_t ret = spi_bus_free(port_);
     if (ret != ESP_OK) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "spi_bus_free failed (error code: %#X)\n", ret);
       result = false;
     } else {
@@ -235,7 +235,7 @@ bool HardwareSpi::Deinit(bool delete_bus) {
 
   return result;
 #else
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
   return false;
 #endif
 }
@@ -256,7 +256,7 @@ bool HardwareSpi::Write(const void* data, size_t byte) {
 
   esp_err_t result = spi_device_polling_transmit(spi_device_, &buffer);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "spi_device_polling_transmit failed (error code: %#X)\n", result);
     return false;
   }
@@ -275,7 +275,7 @@ bool HardwareSpi::Write(const void* data, size_t byte) {
 
   return result;
 #else
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
   return false;
 #endif
 }
@@ -296,7 +296,7 @@ bool HardwareSpi::Read(void* data, size_t byte) {
 
   esp_err_t result = spi_device_polling_transmit(spi_device_, &buffer);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "spi_device_polling_transmit failed (error code: %#X)\n", result);
     return false;
   }
@@ -316,7 +316,7 @@ bool HardwareSpi::Read(void* data, size_t byte) {
 
   return result;
 #else
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Read failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
   return false;
 #endif
 }
@@ -338,7 +338,7 @@ bool HardwareSpi::WriteRead(
 
   esp_err_t result = spi_device_polling_transmit(spi_device_, &buffer);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "spi_device_polling_transmit failed (error code: %#X)\n", result);
     return false;
   }
@@ -356,7 +356,7 @@ bool HardwareSpi::WriteRead(
 
   return result;
 #else
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WriteRead failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
   return false;
 #endif
 }

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-04-24 10:47:02
+ * @LastEditTime: 2026-07-01 11:52:21
  * @License: GPL 3.0
  */
 #include "esp_at.h"
@@ -47,7 +47,7 @@ bool EspAt::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(1000);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   } else if (rst_callback_ != nullptr) {
@@ -60,25 +60,25 @@ bool EspAt::Init(int32_t freq_hz) {
   }
 
   if (!ChipSdioGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
   if (!InitSequence()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "InitSequence failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
     return false;
   }
 
   if (!InitConnect()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "InitConnect failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitConnect failed\n");
     return false;
   }
 
   if (!GetDeviceId()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Get espat id failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Get espat id failed\n");
     return false;
   } else {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Get espat id success\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Get espat id success\n");
   }
 
   return true;
@@ -88,7 +88,7 @@ bool EspAt::Deinit() {
   bool result = true;
 
   if (!ChipSdioGuide::Deinit()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -107,7 +107,7 @@ bool EspAt::SetSleep(SleepMode mode, int16_t timeout_ms) {
     } else if (rst_callback_ != nullptr) {
       rst_callback_(0);
     } else {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetSleep failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetSleep failed\n");
       return false;
     }
 
@@ -132,7 +132,7 @@ bool EspAt::SetSleep(SleepMode mode, int16_t timeout_ms) {
       break;
 
     default:
-      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
 
@@ -155,7 +155,7 @@ bool EspAt::SetSleep(SleepMode mode, int16_t timeout_ms) {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReceivePacket
+        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
         // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nOK\r\n";
@@ -167,14 +167,14 @@ bool EspAt::SetSleep(SleepMode mode, int16_t timeout_ms) {
         buffer_cmd = "\r\nERROR\r\n";
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
                 std::strlen(buffer_cmd))) {
-          LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetSleep error\n");
+          LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetSleep error\n");
           return false;
         }
 
         buffer_cmd = "\r\nbusy p...\r\n";
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
                 std::strlen(buffer_cmd))) {
-          LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetSleep busy\n");
+          LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetSleep busy\n");
           buffer_timeout_count = 0;
         }
       }
@@ -182,7 +182,7 @@ bool EspAt::SetSleep(SleepMode mode, int16_t timeout_ms) {
 
     buffer_timeout_count++;
     if (buffer_timeout_count > timeout_ms / 10) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetSleep timeout\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetSleep timeout\n");
       return false;
     }
 
@@ -194,7 +194,7 @@ bool EspAt::SetSleep(SleepMode mode, int16_t timeout_ms) {
 
 bool EspAt::SetDeepSleep(uint32_t sleep_time_ms, int16_t timeout_ms) {
   if (sleep_time_ms > ((1U << 31) - 1)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -221,7 +221,7 @@ bool EspAt::SetDeepSleep(uint32_t sleep_time_ms, int16_t timeout_ms) {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReceivePacket
+        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
         // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nOK\r\n";
@@ -234,7 +234,7 @@ bool EspAt::SetDeepSleep(uint32_t sleep_time_ms, int16_t timeout_ms) {
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
                 std::strlen(buffer_cmd))) {
           LogMessage(
-              LogLevel::kChip, __FILE__, __LINE__, "SetDeepSleep error\n");
+              LogLevel::kError, __FILE__, __LINE__, "SetDeepSleep error\n");
           return false;
         }
 
@@ -242,7 +242,7 @@ bool EspAt::SetDeepSleep(uint32_t sleep_time_ms, int16_t timeout_ms) {
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
                 std::strlen(buffer_cmd))) {
           LogMessage(
-              LogLevel::kChip, __FILE__, __LINE__, "SetDeepSleep busy\n");
+              LogLevel::kError, __FILE__, __LINE__, "SetDeepSleep busy\n");
           buffer_timeout_count = 0;
         }
       }
@@ -250,7 +250,7 @@ bool EspAt::SetDeepSleep(uint32_t sleep_time_ms, int16_t timeout_ms) {
 
     buffer_timeout_count++;
     if (buffer_timeout_count > timeout_ms / 10) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetDeepSleep timeout\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetDeepSleep timeout\n");
       return false;
     }
 
@@ -264,49 +264,49 @@ bool EspAt::InitSequence() {
   // enable function 1
   if (!bus_->Write(
       0, static_cast<uint32_t>(Cmd::kSdIoCccrFnEnable), 6, nullptr)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(
       0, static_cast<uint32_t>(Cmd::kSdIoCccrFnReady), 6, nullptr)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   // enable interrupts for function 1&2 and master enable
   if (!bus_->Write(
       0, static_cast<uint32_t>(Cmd::kSdIoCccrIntEnable), 7, nullptr)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!bus_->Write(
       0, static_cast<uint32_t>(Cmd::kSdIoCccrBlksizel), 0, nullptr)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(
       0, static_cast<uint32_t>(Cmd::kSdIoCccrBlksizeh), 2, nullptr)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!bus_->Write(0, static_cast<uint32_t>(0x110), 0, nullptr)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   // Set block size 512 (0x200)
   if (!bus_->Write(0, static_cast<uint32_t>(0x111), 2, nullptr)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!bus_->Write(0, static_cast<uint32_t>(0x210), 0, nullptr)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(0, static_cast<uint32_t>(0x210), 2, nullptr)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -326,7 +326,7 @@ bool EspAt::InitConnect() {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReceivePacket
+        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
         // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nready\r\n";
@@ -334,7 +334,7 @@ bool EspAt::InitConnect() {
                 std::strlen(buffer_cmd))) {
           connect_.status = true;
           LogMessage(
-              LogLevel::kChip, __FILE__, __LINE__, "InitConnect success\n");
+              LogLevel::kError, __FILE__, __LINE__, "InitConnect success\n");
           break;
         }
       }
@@ -343,7 +343,7 @@ bool EspAt::InitConnect() {
     buffer_timeout_count++;
     if (buffer_timeout_count > kTransmitTimeoutCount) {
       connect_.status = false;
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Connect timeout\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Connect timeout\n");
       return false;
     }
 
@@ -374,13 +374,13 @@ bool EspAt::GetDeviceId() {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReceivePacket
+        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
         // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nOK\r\n";
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
                 std::strlen(buffer_cmd))) {
-          // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Connect
+          // LogMessage(LogLevel::kError, __FILE__, __LINE__, "Connect
           // success\n");
           break;
         }
@@ -389,7 +389,7 @@ bool EspAt::GetDeviceId() {
 
     buffer_timeout_count++;
     if (buffer_timeout_count > kTransmitTimeoutCount) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "GetDeviceId timeout\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetDeviceId timeout\n");
       return false;
     }
 
@@ -404,7 +404,7 @@ bool EspAt::Reconnect() {
   connect_.error_count = 0;
 
   if (!GetDeviceId()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "GetDeviceId fail, starting reinitialization\n");
     Init();
 
@@ -423,7 +423,7 @@ void EspAt::SetConnectCount(int8_t count) {
   } else if (connect_.error_count > kConnectErrorCount) {
     connect_.error_count = kConnectErrorCount + 1;
     connect_.status = false;
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Connect error count > kConnectErrorCount\n");
   }
 }
@@ -438,7 +438,7 @@ uint32_t EspAt::GetIrqFlag() {
 
   if (!bus_->Read(1, static_cast<uint32_t>(Cmd::kInterruptRaw), &buffer,
           sizeof(uint32_t))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     SetConnectCount(1);
     return -1;
   }
@@ -455,7 +455,7 @@ bool EspAt::ClearIrqFlag(uint32_t irq_mask) {
 
   if (!bus_->Write(1, static_cast<uint32_t>(Cmd::kInterruptClear), &irq_mask,
           sizeof(uint32_t))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     SetConnectCount(1);
     return false;
   }
@@ -466,12 +466,12 @@ bool EspAt::ClearIrqFlag(uint32_t irq_mask) {
 
 bool EspAt::ParseRxNewPacketFlag(uint32_t flag) {
   if (flag == static_cast<uint32_t>(-1)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   if (!((flag & static_cast<uint32_t>(IrqFlag::kRxNewPacket)) >> 23)) {
-    // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "kRxNewPacket failed\n");
+    // LogMessage(LogLevel::kError, __FILE__, __LINE__, "kRxNewPacket failed\n");
     return false;
   }
 
@@ -488,7 +488,7 @@ uint32_t EspAt::GetRxDataLength() {
 
   if (!bus_->Read(1, static_cast<uint32_t>(Cmd::kPacketLength), &buffer,
           sizeof(uint32_t))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     SetConnectCount(1);
     return false;
   }
@@ -510,7 +510,7 @@ bool EspAt::ReceivePacket(std::vector<uint8_t>& data) {
   uint32_t buffer_lenght = GetRxDataLength();
 
   if (buffer_lenght == 0) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "GetRxDataLength failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetRxDataLength failed\n");
     return false;
   }
 
@@ -523,7 +523,7 @@ bool EspAt::ReceivePacket(std::vector<uint8_t>& data) {
     if (!bus_->ReadBlock(1,
             static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
             data.data(), buffer_block_length)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadBlock failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadBlock failed\n");
       connect_.status = false;
       return false;
     }
@@ -539,7 +539,7 @@ bool EspAt::ReceivePacket(std::vector<uint8_t>& data) {
     if (!bus_->Read(1,
             static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
             read_buffer.data(), aligned_length)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       SetConnectCount(1);
       return false;
     }
@@ -555,7 +555,7 @@ bool EspAt::ReceivePacket(std::vector<uint8_t>& data) {
 
 bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
   if (data == nullptr || byte == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -567,15 +567,14 @@ bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
   uint32_t buffer_lenght = GetRxDataLength();
 
   if (buffer_lenght == 0) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "GetRxDataLength failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetRxDataLength failed\n");
     return false;
   }
 
   if (*byte < buffer_lenght) {
     *byte = buffer_lenght;
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Receive buffer too small (required: %zu)\n",
-        static_cast<size_t>(buffer_lenght));
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Value out of range\n");
     return false;
   }
 
@@ -588,7 +587,7 @@ bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
     if (!bus_->ReadBlock(1,
             static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
             data, buffer_block_length)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadBlock failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadBlock failed\n");
       *byte = 0;
       connect_.status = false;
       return false;
@@ -605,7 +604,7 @@ bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
     if (!bus_->Read(1,
             static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
             read_buffer.data(), aligned_length)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       *byte = 0;
       SetConnectCount(1);
       return false;
@@ -621,7 +620,7 @@ bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
 
 bool EspAt::ReceivePacket(std::unique_ptr<uint8_t[]>& data, size_t* byte) {
   if (byte == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -633,7 +632,7 @@ bool EspAt::ReceivePacket(std::unique_ptr<uint8_t[]>& data, size_t* byte) {
   uint32_t buffer_lenght = GetRxDataLength();
 
   if (buffer_lenght == 0) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "GetRxDataLength failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetRxDataLength failed\n");
     return false;
   }
 
@@ -648,7 +647,7 @@ bool EspAt::ReceivePacket(std::unique_ptr<uint8_t[]>& data, size_t* byte) {
     if (!bus_->ReadBlock(1,
             static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
             data.get(), buffer_block_length)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadBlock failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadBlock failed\n");
       *byte = 0;
       connect_.status = false;
       return false;
@@ -665,7 +664,7 @@ bool EspAt::ReceivePacket(std::unique_ptr<uint8_t[]>& data, size_t* byte) {
     if (!bus_->Read(1,
             static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
             read_buffer.data(), aligned_length)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       *byte = 0;
       SetConnectCount(1);
       return false;
@@ -690,7 +689,7 @@ uint32_t EspAt::GetTxBlockBufferLength() {
 
   if (!bus_->Read(1, static_cast<uint32_t>(Cmd::kTokenRdata), &buffer,
           sizeof(uint32_t))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     SetConnectCount(1);
     return false;
   }
@@ -700,7 +699,7 @@ uint32_t EspAt::GetTxBlockBufferLength() {
 
 bool EspAt::SendPacket(const char* data, size_t byte) {
   if (data == nullptr || byte == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -719,7 +718,7 @@ bool EspAt::SendPacket(const char* data, size_t byte) {
     buffer_timeout_count++;
     if (buffer_timeout_count > 100)  // 超时
     {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "GetTxBlockBufferLength timeout\n");
       return false;
     }
@@ -734,7 +733,7 @@ bool EspAt::SendPacket(const char* data, size_t byte) {
     if (!bus_->WriteBlock(1,
             static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - byte, data,
             buffer_block_length)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteBlock failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteBlock failed\n");
       SetConnectCount(1);
       return false;
     }
@@ -748,7 +747,7 @@ bool EspAt::SendPacket(const char* data, size_t byte) {
     std::memcpy(write_buffer.data(), data + buffer_block_length, byte);
     if (!bus_->Write(1, static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - byte,
             write_buffer.data(), aligned_length)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       SetConnectCount(1);
       return false;
     }
@@ -760,7 +759,7 @@ bool EspAt::SendPacket(const char* data, size_t byte) {
 
 bool EspAt::SendPacket(const std::string& data) {
   if (data.size() == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -781,7 +780,7 @@ bool EspAt::SendPacket(const std::string& data) {
     buffer_timeout_count++;
     if (buffer_timeout_count > 100)  // 超时
     {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "GetTxBlockBufferLength timeout\n");
       return false;
     }
@@ -796,7 +795,7 @@ bool EspAt::SendPacket(const std::string& data) {
     if (!bus_->WriteBlock(1,
             static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_length,
             data.data(), buffer_block_length)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteBlock failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteBlock failed\n");
       SetConnectCount(1);
       return false;
     }
@@ -812,7 +811,7 @@ bool EspAt::SendPacket(const std::string& data) {
     if (!bus_->Write(1,
             static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_length,
             write_buffer.data(), aligned_length)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       SetConnectCount(1);
       return false;
     }
@@ -840,7 +839,7 @@ bool EspAt::SetWifiMode(WifiMode mode, int16_t timeout_ms) {
       break;
 
     default:
-      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
 
@@ -863,7 +862,7 @@ bool EspAt::SetWifiMode(WifiMode mode, int16_t timeout_ms) {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReceivePacket
+        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
         // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nOK\r\n";
@@ -876,7 +875,7 @@ bool EspAt::SetWifiMode(WifiMode mode, int16_t timeout_ms) {
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
                 std::strlen(buffer_cmd))) {
           LogMessage(
-              LogLevel::kChip, __FILE__, __LINE__, "SetWifiMode error\n");
+              LogLevel::kError, __FILE__, __LINE__, "SetWifiMode error\n");
           return false;
         }
       }
@@ -884,7 +883,7 @@ bool EspAt::SetWifiMode(WifiMode mode, int16_t timeout_ms) {
 
     buffer_timeout_count++;
     if (buffer_timeout_count > timeout_ms / 10) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetWifiMode timeout\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetWifiMode timeout\n");
       return false;
     }
 
@@ -916,7 +915,7 @@ bool EspAt::WifiScan(std::vector<uint8_t>& data, int16_t timeout_ms) {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReceivePacket
+        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
         // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "+CWLAP:";
@@ -938,7 +937,7 @@ bool EspAt::WifiScan(std::vector<uint8_t>& data, int16_t timeout_ms) {
         buffer_cmd = "\r\nERROR\r\n";
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
                 std::strlen(buffer_cmd))) {
-          LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WifiScan error\n");
+          LogMessage(LogLevel::kError, __FILE__, __LINE__, "WifiScan error\n");
           return false;
         }
       }
@@ -946,7 +945,7 @@ bool EspAt::WifiScan(std::vector<uint8_t>& data, int16_t timeout_ms) {
 
     buffer_timeout_count++;
     if (buffer_timeout_count > timeout_ms / 10) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WifiScan timeout\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "WifiScan timeout\n");
       return false;
     }
 
@@ -958,7 +957,7 @@ bool EspAt::WifiScan(std::vector<uint8_t>& data, int16_t timeout_ms) {
 
 bool EspAt::WaitInterrupt(uint32_t timeout_ms) {
   if (!bus_->WaitInterrupt(timeout_ms)) {
-    // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WaitInterrupt
+    // LogMessage(LogLevel::kError, __FILE__, __LINE__, "WaitInterrupt
     // failed\n");
     return false;
   }
@@ -993,7 +992,7 @@ bool EspAt::SetFlashSave(bool enable, int16_t timeout_ms) {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReceivePacket
+        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
         // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nOK\r\n";
@@ -1006,7 +1005,7 @@ bool EspAt::SetFlashSave(bool enable, int16_t timeout_ms) {
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
                 std::strlen(buffer_cmd))) {
           LogMessage(
-              LogLevel::kChip, __FILE__, __LINE__, "SetWifiConnect error\n");
+              LogLevel::kError, __FILE__, __LINE__, "SetWifiConnect error\n");
           return false;
         }
       }
@@ -1015,7 +1014,7 @@ bool EspAt::SetFlashSave(bool enable, int16_t timeout_ms) {
     buffer_timeout_count++;
     if (buffer_timeout_count > timeout_ms / 10) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "SetWifiConnect timeout\n");
+          LogLevel::kError, __FILE__, __LINE__, "SetWifiConnect timeout\n");
       return false;
     }
 
@@ -1028,7 +1027,7 @@ bool EspAt::SetFlashSave(bool enable, int16_t timeout_ms) {
 bool EspAt::SetWifiConnect(
     std::string ssid, std::string password, int16_t timeout_ms) {
   if (!IsSafeAtQuotedField(ssid) || !IsSafeAtQuotedField(password)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -1053,7 +1052,7 @@ bool EspAt::SetWifiConnect(
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReceivePacket
+        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
         // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nOK\r\n";
@@ -1066,7 +1065,7 @@ bool EspAt::SetWifiConnect(
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
                 std::strlen(buffer_cmd))) {
           LogMessage(
-              LogLevel::kChip, __FILE__, __LINE__, "SetWifiConnect error\n");
+              LogLevel::kError, __FILE__, __LINE__, "SetWifiConnect error\n");
           return false;
         }
       }
@@ -1074,7 +1073,7 @@ bool EspAt::SetWifiConnect(
 
     buffer_timeout_count++;
     if (buffer_timeout_count > timeout_ms / 10) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetWifiMode timeout\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetWifiMode timeout\n");
       return false;
     }
 
@@ -1107,7 +1106,7 @@ bool EspAt::GetRealTime(RealTime& time, int16_t timeout_ms) {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReceivePacket
+        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
         // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = ",Date: ";
@@ -1130,14 +1129,14 @@ bool EspAt::GetRealTime(RealTime& time, int16_t timeout_ms) {
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
                 std::strlen(buffer_cmd))) {
           LogMessage(
-              LogLevel::kChip, __FILE__, __LINE__, "GetRealTime error\n");
+              LogLevel::kError, __FILE__, __LINE__, "GetRealTime error\n");
           return false;
         }
 
         buffer_cmd = "\r\nbusy p...\r\n";
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
                 std::strlen(buffer_cmd))) {
-          LogMessage(LogLevel::kChip, __FILE__, __LINE__, "GetRealTime busy\n");
+          LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetRealTime busy\n");
           buffer_timeout_count = 0;
         }
       }
@@ -1145,21 +1144,21 @@ bool EspAt::GetRealTime(RealTime& time, int16_t timeout_ms) {
 
     buffer_timeout_count++;
     if (buffer_timeout_count > timeout_ms / 10) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "GetRealTime timeout\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetRealTime timeout\n");
       return false;
     }
 
     DelayMs(10);
   }
 
-  // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "buffer_data: [%s]\n",
+  // LogMessage(LogLevel::kError, __FILE__, __LINE__, "buffer_data: [%s]\n",
   // buffer_data.data());
 
   const char* buffer_cmd = " ";
   size_t buffer_index = 0;
   size_t buffer_Index_used = 0;
   if (buffer_data.size() == 0) {
-    // LogMessage(LogLevel::kChip, __FILE__, __LINE__, "search fail
+    // LogMessage(LogLevel::kError, __FILE__, __LINE__, "search fail
     // (buffer_data.size() == 0)\n");
     return false;
   }

@@ -19,13 +19,13 @@ bool S023msafjf10111e1::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipI2cGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
@@ -36,7 +36,7 @@ bool S023msafjf10111e1::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!ChipI2cGuide::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -53,14 +53,14 @@ bool S023msafjf10111e1::SetDataFormat(DataFormat format) {
       if (!bus_->Write(
               static_cast<uint16_t>(Cmd::kRwInternalTestModeRegisterControl1),
               0x14)) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
 
       if (!bus_->Write(
               static_cast<uint16_t>(Cmd::kRwInternalTestModeRegisterControl2),
               0x40)) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
       break;
@@ -68,14 +68,14 @@ bool S023msafjf10111e1::SetDataFormat(DataFormat format) {
       if (!bus_->Write(
               static_cast<uint16_t>(Cmd::kRwInternalTestModeRegisterControl1),
               0x15)) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
 
       if (!bus_->Write(
               static_cast<uint16_t>(Cmd::kRwInternalTestModeRegisterControl2),
               0x80)) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
       break;
@@ -90,7 +90,7 @@ bool S023msafjf10111e1::SetDataFormat(DataFormat format) {
 bool S023msafjf10111e1::SetInternalTestMode(InternalTestMode mode) {
   if (!bus_->Write(static_cast<uint16_t>(Cmd::kRwInternalTestMode),
           static_cast<uint8_t>(mode))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -102,13 +102,13 @@ bool S023msafjf10111e1::SetShowDirection(ShowDirection direction) {
 
   if (!bus_->Read(static_cast<uint16_t>(Cmd::kRwHorizontalVerticalMirror1),
           &buffer[0])) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   if (!bus_->Read(static_cast<uint16_t>(Cmd::kRwHorizontalVerticalMirror2),
           &buffer[1])) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -135,19 +135,19 @@ bool S023msafjf10111e1::SetShowDirection(ShowDirection direction) {
 
     default:
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "invalid show direction\n");
+          LogLevel::kError, __FILE__, __LINE__, "invalid show direction\n");
       return false;
   }
 
   if (!bus_->Write(static_cast<uint16_t>(Cmd::kRwHorizontalVerticalMirror1),
           buffer[0])) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!bus_->Write(static_cast<uint16_t>(Cmd::kRwHorizontalVerticalMirror2),
           buffer[1])) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -156,33 +156,33 @@ bool S023msafjf10111e1::SetShowDirection(ShowDirection direction) {
 
 bool S023msafjf10111e1::SetBrightness(uint16_t value) {
   if (value > 511) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     value = 511;
   }
 
   if (!bus_->Write(
           static_cast<uint16_t>(Cmd::kRwDisplayBrightnessRegisterControl1),
           0x1C)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!bus_->Write(
           static_cast<uint16_t>(Cmd::kRwDisplayBrightnessRegisterControl2),
           0x03)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!bus_->Write(static_cast<uint16_t>(Cmd::kRwDisplayBrightness1),
           static_cast<uint8_t>(value))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!bus_->Write(static_cast<uint16_t>(Cmd::kRwDisplayBrightness2),
           static_cast<uint8_t>(value >> 8))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 

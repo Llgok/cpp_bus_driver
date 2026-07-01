@@ -19,13 +19,13 @@ bool Gt9895::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(100);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipI2cGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
@@ -46,7 +46,7 @@ bool Gt9895::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!ChipI2cGuide::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -61,7 +61,7 @@ uint8_t Gt9895::GetDeviceId() {
   uint8_t buffer = 0;
 
   if (!bus_->Read(static_cast<uint32_t>(Cmd::kRoIcInfoStartAddress), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
 
@@ -73,7 +73,7 @@ uint8_t Gt9895::GetFingerCount() {
 
   if (!bus_->Read(
           static_cast<uint32_t>(Cmd::kRoTouchInfoStartAddress), buffer, 3)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
 
@@ -91,7 +91,7 @@ bool Gt9895::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
 
   if (!bus_->Read(static_cast<uint32_t>(Cmd::kRoTouchInfoStartAddress),
           buffer.data(), buffer_touch_point_size)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -149,7 +149,7 @@ bool Gt9895::GetMultipleTouchPoint(TouchPoint& tp) {
 
   if (!bus_->Read(static_cast<uint32_t>(Cmd::kRoTouchInfoStartAddress),
           buffer.data(), buffer_touch_point_size)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -208,7 +208,7 @@ bool Gt9895::GetEdgeTouch() {
 
   if (!bus_->Read(
           static_cast<uint32_t>(Cmd::kRoTouchInfoStartAddress), &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -224,7 +224,7 @@ bool Gt9895::SetSleep() {
 
   if (!bus_->Write(static_cast<uint32_t>(Cmd::kWoRealTimeCommandStartAddress),
           buffer, 6)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 

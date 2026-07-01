@@ -19,13 +19,13 @@ bool Sgm38121::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipI2cGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
@@ -46,7 +46,7 @@ bool Sgm38121::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!ChipI2cGuide::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -61,7 +61,7 @@ uint8_t Sgm38121::GetDeviceId() {
   uint8_t buffer = 0;
 
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceId), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
 
@@ -74,61 +74,61 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
   switch (channel) {
     case Channel::kDvdd1:
       if (voltage < 528) {
-        LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 528;
       } else if (voltage > 1504) {
-        LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 1504;
       }
       buffer = (voltage - 504) / 8;
       if (!bus_->Write(
               static_cast<uint8_t>(Cmd::kRwDvdd1OutputVoltageLevel), buffer)) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
       break;
     case Channel::kDvdd2:
       if (voltage < 528) {
-        LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 528;
       } else if (voltage > 1504) {
-        LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 1504;
       }
       buffer = (voltage - 504) / 8;
       if (!bus_->Write(
               static_cast<uint8_t>(Cmd::kRwDvdd2OutputVoltageLevel), buffer)) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
       break;
     case Channel::kAvdd1:
       if (voltage < 1504) {
-        LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 1504;
       } else if (voltage > 3424) {
-        LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 3424;
       }
       buffer = (voltage - 1384) / 8;
       if (!bus_->Write(
               static_cast<uint8_t>(Cmd::kRwAvdd1OutputVoltageLevel), buffer)) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
       break;
     case Channel::kAvdd2:
       if (voltage < 1504) {
-        LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 1504;
       } else if (voltage > 3424) {
-        LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 3424;
       }
       buffer = (voltage - 1384) / 8;
       if (!bus_->Write(
               static_cast<uint8_t>(Cmd::kRwAvdd2OutputVoltageLevel), buffer)) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
       break;
@@ -143,7 +143,7 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
 bool Sgm38121::SetChannelStatus(Channel channel, Status status) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwEnableControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   switch (channel) {
@@ -164,7 +164,7 @@ bool Sgm38121::SetChannelStatus(Channel channel, Status status) {
       break;
   }
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwEnableControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 

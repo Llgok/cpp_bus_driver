@@ -41,11 +41,10 @@ bool SafeStringToDouble(const std::string& input, double* output);
 class Tool {
  public:
   enum class LogLevel {
-    kDebug,  // debug信息
-    kInfo,   // 普通信息
-
-    kBus,   // 总线错误
-    kChip,  // 芯片错误
+    kDebug,    // debug信息
+    kInfo,     // 普通信息
+    kWarning,  // 警告信息
+    kError,    // 错误信息
   };
 
   enum class InterruptMode {

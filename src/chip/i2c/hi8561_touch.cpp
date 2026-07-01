@@ -22,22 +22,22 @@ bool Hi8561Touch::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipI2cGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
   if (!InitAddressInfo()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "InitAddressInfo failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitAddressInfo failed\n");
     return false;
   } else {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "InitAddressInfo success\n");
+        LogLevel::kError, __FILE__, __LINE__, "InitAddressInfo success\n");
   }
 
   return true;
@@ -47,7 +47,7 @@ bool Hi8561Touch::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!ChipI2cGuide::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -71,7 +71,7 @@ bool Hi8561Touch::InitAddressInfo() {
   uint8_t buffer_2[48] = {0};
 
   if (!bus_->WriteRead(buffer, 6, buffer_2, 48)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
@@ -80,7 +80,7 @@ bool Hi8561Touch::InitAddressInfo() {
 
   if ((touch_info_start_address_ < kMemoryAddressEram) ||
       (touch_info_start_address_ >= (kMemoryAddressEram + kMemoryEramSize))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "touch_info_start_address_ get error\n");
     touch_info_start_address_ = 0;
     return false;
@@ -102,7 +102,7 @@ uint8_t Hi8561Touch::GetFingerCount() {
   uint8_t buffer_2 = 0;
 
   if (!bus_->WriteRead(buffer, 6, &buffer_2, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return -1;
   }
 
@@ -137,7 +137,7 @@ bool Hi8561Touch::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
   std::array<uint8_t, kSingleTouchPointDataSize> buffer_2 = {};
 
   if (!bus_->WriteRead(buffer, 6, buffer_2.data(), buffer_2.size())) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
@@ -178,7 +178,7 @@ bool Hi8561Touch::GetMultipleTouchPoint(TouchPoint& tp) {
 
   if (!bus_->WriteRead(
           buffer, 6, buffer_2.data(), buffer_touch_point_size)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
@@ -232,7 +232,7 @@ bool Hi8561Touch::GetEdgeTouch() {
 
   if (!bus_->WriteRead(
           buffer, 6, buffer_2.data(), buffer_touch_point_size)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 

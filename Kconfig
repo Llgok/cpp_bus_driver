@@ -7,6 +7,8 @@ menu "cpp_bus_driver configuration"
                 bool "Debug"
             config CPP_BUS_DRIVER_LOG_LEVEL_INFO
                 bool "Info"
+            config CPP_BUS_DRIVER_LOG_LEVEL_WARNING
+                bool "Warning"
             config CPP_BUS_DRIVER_LOG_LEVEL_ERROR
                 bool "Error"
             config CPP_BUS_DRIVER_LOG_LEVEL_NONE

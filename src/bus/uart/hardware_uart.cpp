@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:26:23
- * @LastEditTime: 2026-05-16 23:40:46
+ * @LastEditTime: 2026-07-01 11:47:56
  * @License: GPL 3.0
  */
 #include "hardware_uart.h"
@@ -11,7 +11,7 @@ namespace cpp_bus_driver {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool HardwareUart::Init(int32_t baud_rate) {
   if (init_flag_) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "HardwareUart has been initialized\n");
     return true;
   }
@@ -64,7 +64,7 @@ bool HardwareUart::Init(int32_t baud_rate) {
   esp_err_t result = uart_driver_install(
       static_cast<uart_port_t>(port_), kUartRxMaxSize, 0, 0, nullptr, 0);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "uart_driver_install failed (error code: %#X)\n", result);
     return false;
   }
@@ -73,7 +73,7 @@ bool HardwareUart::Init(int32_t baud_rate) {
 
   result = uart_param_config(static_cast<uart_port_t>(port_), &uart_config);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "uart_param_config failed (error code: %#X)\n", result);
     Deinit();
     return false;
@@ -83,7 +83,7 @@ bool HardwareUart::Init(int32_t baud_rate) {
 
   result = uart_set_pin(static_cast<uart_port_t>(port_), tx_, rx_, rts_, cts_);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "uart_set_pin failed (error code: %#X)\n", result);
     Deinit();
     return false;
@@ -96,7 +96,7 @@ int32_t HardwareUart::Read(void* data, uint32_t length) {
   int32_t buffer_size = uart_read_bytes(static_cast<uart_port_t>(port_), data,
       length, pdMS_TO_TICKS(kDefaultUartWaitTimeoutMs));
   if (buffer_size == (-1)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "uart_read_bytes failed (uart_read_bytes == (-1))\n");
     return false;
   }
@@ -108,7 +108,7 @@ int32_t HardwareUart::Write(const void* data, size_t length) {
   int32_t buffer_size =
       uart_write_bytes(static_cast<uart_port_t>(port_), data, length);
   if (buffer_size == (-1)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "uart_write_bytes failed (uart_write_bytes == (-1))\n");
     return false;
   }
@@ -122,7 +122,7 @@ size_t HardwareUart::GetRxBufferLength() {
   esp_err_t result =
       uart_get_buffered_data_len(static_cast<uart_port_t>(port_), &buffer);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "uart_get_buffered_data_len failed (error code: %#X)\n", result);
     return false;
   }
@@ -133,7 +133,7 @@ size_t HardwareUart::GetRxBufferLength() {
 bool HardwareUart::ClearRxBufferData() {
   esp_err_t result = uart_flush_input(static_cast<uart_port_t>(port_));
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "uart_flush_input failed (error code: %#X)\n", result);
     return false;
   }
@@ -145,7 +145,7 @@ bool HardwareUart::SetBaudRate(uint32_t baud_rate) {
   esp_err_t result =
       uart_set_baudrate(static_cast<uart_port_t>(port_), baud_rate);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "uart_set_baudrate failed (error code: %#X)\n", result);
     return false;
   }
@@ -159,7 +159,7 @@ uint32_t HardwareUart::GetBaudRate() {
   esp_err_t result =
       uart_get_baudrate(static_cast<uart_port_t>(port_), &buffer);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "uart_get_baudrate failed (error code: %#X)\n", result);
     return -1;
   }
@@ -174,7 +174,7 @@ bool HardwareUart::Deinit() {
 
   esp_err_t result = uart_driver_delete(static_cast<uart_port_t>(port_));
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "uart_driver_delete failed (error code: %#X)\n", result);
     return false;
   }

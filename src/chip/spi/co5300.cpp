@@ -19,25 +19,25 @@ bool Co5300::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipQspiGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence) / sizeof(uint32_t))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "InitSequence failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
     return false;
   }
 
   if (color_format_ != ColorFormat::kRgb565) {
     if (!SetColorFormat(color_format_)) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "SetColorFormat failed\n");
+          LogLevel::kError, __FILE__, __LINE__, "SetColorFormat failed\n");
       return false;
     }
   }
@@ -49,7 +49,7 @@ bool Co5300::Deinit() {
   bool result = true;
 
   if (!ChipQspiGuide::Deinit()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -100,15 +100,15 @@ bool Co5300::SetRenderWindow(int x_start, int y_start, int x_end, int y_end) {
   };
 
   if (!bus_->Write(buffer, 8, 0, false)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(buffer_2, 8, 0, false)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(buffer_3, 4, 0, false)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -119,25 +119,25 @@ bool Co5300::SendColorStream(
     uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t* data) {
   // 有效性检查
   if (data == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   } else if (w == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   } else if (h == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   } else if (x >= width_) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   } else if (y >= height_) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   } else if (w > (width_ - x)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   } else if (h > (height_ - y)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -146,26 +146,26 @@ bool Co5300::SendColorStream(
   // 13, 14，所以 x_end 应该是 14（即 x + w - 1） 如果不 -1，x_end 会是
   // 15，可能超出实际范围或导致多写一个像素
   if (!SetRenderWindow(x, y, x + w - 1, y + h - 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRenderWindow failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRenderWindow failed\n");
     return false;
   }
 
   if (!SetWriteStreamMode(WriteStreamMode::kContinuousWrite4lanes)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetWriteStreamMode failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetWriteStreamMode failed\n");
     return false;
   }
 
   if (color_format_ == ColorFormat::kRgb666) {
     if (!bus_->Write(data, w * h * 3,
             static_cast<uint32_t>(SpiTrans::kModeQio), false)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   } else {
     if (!bus_->Write(data, w * h * (static_cast<uint8_t>(color_format_) / 8),
             static_cast<uint32_t>(SpiTrans::kModeQio), false)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   }
@@ -215,7 +215,7 @@ bool Co5300::SetWriteStreamMode(WriteStreamMode mode) {
   }
 
   if (!bus_->Write(buffer, 4, 0, true)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -233,7 +233,7 @@ bool Co5300::SetBrightness(uint8_t value) {
       static_cast<uint8_t>(value)};
 
   if (!bus_->Write(buffer, 5, 0, false)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -257,7 +257,7 @@ bool Co5300::SetSleep(bool enable) {
   }
 
   if (!bus_->Write(buffer, 4, 0, false)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -281,7 +281,7 @@ bool Co5300::SetScreenOff(bool enable) {
   }
 
   if (!bus_->Write(buffer, 4, 0, false)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -300,7 +300,7 @@ bool Co5300::SetColorEnhance(ColorEnhance mode) {
   };
 
   if (!bus_->Write(buffer, 5, 0, false)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -334,7 +334,7 @@ bool Co5300::SetColorFormat(ColorFormat format) {
   }
 
   if (!bus_->Write(buffer, 5, 0, false)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 

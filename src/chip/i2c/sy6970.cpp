@@ -23,13 +23,13 @@ bool Sy6970::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipI2cGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
@@ -44,7 +44,7 @@ bool Sy6970::Init(int32_t freq_hz) {
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "InitSequence failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
     return false;
   }
 
@@ -55,7 +55,7 @@ bool Sy6970::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!ChipI2cGuide::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -69,7 +69,7 @@ bool Sy6970::Deinit(bool delete_bus) {
 uint8_t Sy6970::GetDeviceId() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwDeviceControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return static_cast<uint8_t>(-1);
   }
 
@@ -79,7 +79,7 @@ uint8_t Sy6970::GetDeviceId() {
 bool Sy6970::SetHizModeEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwInputSourceControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -90,7 +90,7 @@ bool Sy6970::SetHizModeEnable(bool enable) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwInputSourceControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -100,7 +100,7 @@ bool Sy6970::SetHizModeEnable(bool enable) {
 bool Sy6970::SetIlimPinEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwInputSourceControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -111,7 +111,7 @@ bool Sy6970::SetIlimPinEnable(bool enable) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwInputSourceControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -125,14 +125,14 @@ bool Sy6970::SetInputCurrentLimit(uint16_t current_ma) {
 
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwInputSourceControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = (buffer & 0xC0) | static_cast<uint8_t>((current_ma - 100) / 50);
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwInputSourceControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -147,7 +147,7 @@ bool Sy6970::SetBoostHotThreshold(uint8_t threshold) {
   uint8_t buffer = 0;
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwTemperatureMonitorControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -155,7 +155,7 @@ bool Sy6970::SetBoostHotThreshold(uint8_t threshold) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwTemperatureMonitorControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -166,7 +166,7 @@ bool Sy6970::SetBoostColdThreshold(bool threshold) {
   uint8_t buffer = 0;
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwTemperatureMonitorControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -178,7 +178,7 @@ bool Sy6970::SetBoostColdThreshold(bool threshold) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwTemperatureMonitorControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -193,7 +193,7 @@ bool Sy6970::SetVindpmOffset(uint16_t offset_mv) {
   uint8_t buffer = 0;
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwTemperatureMonitorControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -201,7 +201,7 @@ bool Sy6970::SetVindpmOffset(uint16_t offset_mv) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwTemperatureMonitorControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -211,7 +211,7 @@ bool Sy6970::SetVindpmOffset(uint16_t offset_mv) {
 bool Sy6970::SetAdcConversionEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSystemControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -222,7 +222,7 @@ bool Sy6970::SetAdcConversionEnable(bool enable) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSystemControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -232,7 +232,7 @@ bool Sy6970::SetAdcConversionEnable(bool enable) {
 bool Sy6970::SetAdcConversionRate(bool continuous) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSystemControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -243,7 +243,7 @@ bool Sy6970::SetAdcConversionRate(bool continuous) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSystemControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -253,7 +253,7 @@ bool Sy6970::SetAdcConversionRate(bool continuous) {
 bool Sy6970::SetBoostFrequency(bool high_freq) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSystemControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -264,7 +264,7 @@ bool Sy6970::SetBoostFrequency(bool high_freq) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSystemControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -274,7 +274,7 @@ bool Sy6970::SetBoostFrequency(bool high_freq) {
 bool Sy6970::SetAdaptiveCurrentLimitEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSystemControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -285,7 +285,7 @@ bool Sy6970::SetAdaptiveCurrentLimitEnable(bool enable) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSystemControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -295,7 +295,7 @@ bool Sy6970::SetAdaptiveCurrentLimitEnable(bool enable) {
 bool Sy6970::SetHvdcpEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSystemControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -306,7 +306,7 @@ bool Sy6970::SetHvdcpEnable(bool enable) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSystemControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -316,7 +316,7 @@ bool Sy6970::SetHvdcpEnable(bool enable) {
 bool Sy6970::SetHvdcpVoltageType(bool high_voltage) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSystemControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -327,7 +327,7 @@ bool Sy6970::SetHvdcpVoltageType(bool high_voltage) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSystemControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -337,7 +337,7 @@ bool Sy6970::SetHvdcpVoltageType(bool high_voltage) {
 bool Sy6970::SetForceDpdmDetection(bool force) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSystemControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -348,7 +348,7 @@ bool Sy6970::SetForceDpdmDetection(bool force) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSystemControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -358,7 +358,7 @@ bool Sy6970::SetForceDpdmDetection(bool force) {
 bool Sy6970::SetAutoDpdmDetectionEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSystemControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -369,7 +369,7 @@ bool Sy6970::SetAutoDpdmDetectionEnable(bool enable) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSystemControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -380,7 +380,7 @@ bool Sy6970::SetBatteryLoadEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -392,7 +392,7 @@ bool Sy6970::SetBatteryLoadEnable(bool enable) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -403,7 +403,7 @@ bool Sy6970::SetWatchdogReset(bool reset) {
   uint8_t buffer = 0;
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -415,7 +415,7 @@ bool Sy6970::SetWatchdogReset(bool reset) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -426,7 +426,7 @@ bool Sy6970::SetOtgEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -438,7 +438,7 @@ bool Sy6970::SetOtgEnable(bool enable) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -449,7 +449,7 @@ bool Sy6970::SetChargeEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -461,7 +461,7 @@ bool Sy6970::SetChargeEnable(bool enable) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -476,7 +476,7 @@ bool Sy6970::SetMinSystemVoltageLimit(uint16_t voltage_mv) {
   uint8_t buffer = 0;
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -485,7 +485,7 @@ bool Sy6970::SetMinSystemVoltageLimit(uint16_t voltage_mv) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -496,7 +496,7 @@ bool Sy6970::SetPumpxEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwChargeCurrentControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -508,7 +508,7 @@ bool Sy6970::SetPumpxEnable(bool enable) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwChargeCurrentControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -523,7 +523,7 @@ bool Sy6970::SetFastChargeCurrentLimit(uint16_t current_ma) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwChargeCurrentControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -531,7 +531,7 @@ bool Sy6970::SetFastChargeCurrentLimit(uint16_t current_ma) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwChargeCurrentControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -546,7 +546,7 @@ bool Sy6970::SetPrechargeCurrentLimit(uint16_t current_ma) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwPrechrgTermCurrentControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -555,7 +555,7 @@ bool Sy6970::SetPrechargeCurrentLimit(uint16_t current_ma) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwPrechrgTermCurrentControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -570,7 +570,7 @@ bool Sy6970::SetTerminationCurrentLimit(uint16_t current_ma) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwPrechrgTermCurrentControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -578,7 +578,7 @@ bool Sy6970::SetTerminationCurrentLimit(uint16_t current_ma) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwPrechrgTermCurrentControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -593,7 +593,7 @@ bool Sy6970::SetChargeVoltageLimit(uint16_t voltage_mv) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwChargeVoltageControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -602,7 +602,7 @@ bool Sy6970::SetChargeVoltageLimit(uint16_t voltage_mv) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwChargeVoltageControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -613,7 +613,7 @@ bool Sy6970::SetBatteryLowVoltageThreshold(bool high_threshold) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwChargeVoltageControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -625,7 +625,7 @@ bool Sy6970::SetBatteryLowVoltageThreshold(bool high_threshold) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwChargeVoltageControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -636,7 +636,7 @@ bool Sy6970::SetBatteryRechargeThreshold(bool high_threshold) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwChargeVoltageControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -648,7 +648,7 @@ bool Sy6970::SetBatteryRechargeThreshold(bool high_threshold) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwChargeVoltageControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -659,7 +659,7 @@ bool Sy6970::SetChargeTerminationEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwChargeTerminationTimerControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -671,7 +671,7 @@ bool Sy6970::SetChargeTerminationEnable(bool enable) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwChargeTerminationTimerControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -682,7 +682,7 @@ bool Sy6970::SetStatPinDisable(bool disable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwChargeTerminationTimerControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -694,7 +694,7 @@ bool Sy6970::SetStatPinDisable(bool disable) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwChargeTerminationTimerControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -723,7 +723,7 @@ bool Sy6970::SetWatchdogTimer(uint16_t timer_s) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwChargeTerminationTimerControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -731,7 +731,7 @@ bool Sy6970::SetWatchdogTimer(uint16_t timer_s) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwChargeTerminationTimerControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -742,7 +742,7 @@ bool Sy6970::SetChargeSafetyTimerEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwChargeTerminationTimerControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -754,7 +754,7 @@ bool Sy6970::SetChargeSafetyTimerEnable(bool enable) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwChargeTerminationTimerControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -783,7 +783,7 @@ bool Sy6970::SetFastChargeTimer(uint8_t timer_hr) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwChargeTerminationTimerControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -791,7 +791,7 @@ bool Sy6970::SetFastChargeTimer(uint8_t timer_hr) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwChargeTerminationTimerControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -802,7 +802,7 @@ bool Sy6970::SetJeitaLowTempCurrent(bool low_current) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwChargeTerminationTimerControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -814,7 +814,7 @@ bool Sy6970::SetJeitaLowTempCurrent(bool low_current) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwChargeTerminationTimerControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -829,7 +829,7 @@ bool Sy6970::SetBatteryCompensationResistance(uint8_t resistance_mohm) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwIrCompensationControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -837,7 +837,7 @@ bool Sy6970::SetBatteryCompensationResistance(uint8_t resistance_mohm) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwIrCompensationControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -852,7 +852,7 @@ bool Sy6970::SetIrCompensationVoltageClamp(uint8_t voltage_mv) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwIrCompensationControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -860,7 +860,7 @@ bool Sy6970::SetIrCompensationVoltageClamp(uint8_t voltage_mv) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwIrCompensationControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -889,7 +889,7 @@ bool Sy6970::SetThermalRegulationThreshold(uint8_t temperature) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwIrCompensationControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -897,7 +897,7 @@ bool Sy6970::SetThermalRegulationThreshold(uint8_t temperature) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwIrCompensationControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -909,7 +909,7 @@ bool Sy6970::SetForceAdaptiveCurrentLimit(bool force) {
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -922,7 +922,7 @@ bool Sy6970::SetForceAdaptiveCurrentLimit(bool force) {
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -934,7 +934,7 @@ bool Sy6970::SetSafetyTimerSlowdown(bool enable) {
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -947,7 +947,7 @@ bool Sy6970::SetSafetyTimerSlowdown(bool enable) {
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -959,7 +959,7 @@ bool Sy6970::SetShippingModeEnable(bool enable) {
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -972,7 +972,7 @@ bool Sy6970::SetShippingModeEnable(bool enable) {
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -984,7 +984,7 @@ bool Sy6970::SetJeitaHighTempVoltage(bool normal_voltage) {
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -997,7 +997,7 @@ bool Sy6970::SetJeitaHighTempVoltage(bool normal_voltage) {
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1009,7 +1009,7 @@ bool Sy6970::SetBatfetTurnoffDelay(bool delay) {
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1022,7 +1022,7 @@ bool Sy6970::SetBatfetTurnoffDelay(bool delay) {
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1034,7 +1034,7 @@ bool Sy6970::SetBatfetResetEnable(bool enable) {
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1047,7 +1047,7 @@ bool Sy6970::SetBatfetResetEnable(bool enable) {
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1059,7 +1059,7 @@ bool Sy6970::SetPumpControl(bool up, bool down) {
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1078,7 +1078,7 @@ bool Sy6970::SetPumpControl(bool up, bool down) {
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1092,7 +1092,7 @@ bool Sy6970::SetBoostVoltage(uint16_t voltage_mv) {
 
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwBoostModeControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1100,7 +1100,7 @@ bool Sy6970::SetBoostVoltage(uint16_t voltage_mv) {
            static_cast<uint8_t>(((voltage_mv - 4550) / 64) << 4);
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwBoostModeControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1140,14 +1140,14 @@ bool Sy6970::SetBoostCurrentLimit(uint16_t current_ma) {
 
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwBoostModeControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = (buffer & 0xF8) | value;
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwBoostModeControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1157,7 +1157,7 @@ bool Sy6970::SetBoostCurrentLimit(uint16_t current_ma) {
 bool Sy6970::SetVindpmMode(bool absolute) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwVindpmControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1168,7 +1168,7 @@ bool Sy6970::SetVindpmMode(bool absolute) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwVindpmControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1182,14 +1182,14 @@ bool Sy6970::SetAbsoluteVindpmThreshold(uint16_t voltage_mv) {
 
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwVindpmControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = (buffer & 0x80) | static_cast<uint8_t>((voltage_mv - 2600) / 100);
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwVindpmControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1199,7 +1199,7 @@ bool Sy6970::SetAbsoluteVindpmThreshold(uint16_t voltage_mv) {
 uint8_t Sy6970::GetChipStatus() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdSystemStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return static_cast<uint8_t>(-1);
   }
 
@@ -1208,7 +1208,7 @@ uint8_t Sy6970::GetChipStatus() {
 
 bool Sy6970::ParseChipStatus(uint8_t chip_flag, ChipStatus& status) {
   if (chip_flag == static_cast<uint8_t>(-1)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -1224,7 +1224,7 @@ bool Sy6970::ParseChipStatus(uint8_t chip_flag, ChipStatus& status) {
 Sy6970::BusStatus Sy6970::ReadBusStatus() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdSystemStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return BusStatus::kNoInput;
   }
 
@@ -1234,7 +1234,7 @@ Sy6970::BusStatus Sy6970::ReadBusStatus() {
 Sy6970::ChargeStatus Sy6970::ReadChargeStatus() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdSystemStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return ChargeStatus::kNotCharging;
   }
 
@@ -1244,7 +1244,7 @@ Sy6970::ChargeStatus Sy6970::ReadChargeStatus() {
 bool Sy6970::ReadPowerGoodStatus() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdSystemStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1254,7 +1254,7 @@ bool Sy6970::ReadPowerGoodStatus() {
 bool Sy6970::ReadUsbStatus() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdSystemStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1264,7 +1264,7 @@ bool Sy6970::ReadUsbStatus() {
 bool Sy6970::ReadSystemVoltageRegulationStatus() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdSystemStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1274,7 +1274,7 @@ bool Sy6970::ReadSystemVoltageRegulationStatus() {
 uint8_t Sy6970::GetIrqFlag() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdFaultStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return static_cast<uint8_t>(-1);
   }
 
@@ -1283,7 +1283,7 @@ uint8_t Sy6970::GetIrqFlag() {
 
 bool Sy6970::ParseIrqStatus(uint8_t irq_flag, IrqStatus& status) {
   if (irq_flag == static_cast<uint8_t>(-1)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -1300,7 +1300,7 @@ bool Sy6970::ParseIrqStatus(uint8_t irq_flag, IrqStatus& status) {
 bool Sy6970::ReadThermalRegulationStatus() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdBatteryVoltage), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1310,7 +1310,7 @@ bool Sy6970::ReadThermalRegulationStatus() {
 uint16_t Sy6970::GetBatteryVoltage() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdBatteryVoltage), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return 0;
   }
 
@@ -1320,7 +1320,7 @@ uint16_t Sy6970::GetBatteryVoltage() {
 uint16_t Sy6970::GetSystemVoltage() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdSystemVoltage), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return 0;
   }
 
@@ -1330,7 +1330,7 @@ uint16_t Sy6970::GetSystemVoltage() {
 uint32_t Sy6970::ReadNtcVoltagePercentage() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdNtcVoltage), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return 0;
   }
 
@@ -1340,7 +1340,7 @@ uint32_t Sy6970::ReadNtcVoltagePercentage() {
 bool Sy6970::ReadBusConnectionStatus() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdBusVoltageStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1350,7 +1350,7 @@ bool Sy6970::ReadBusConnectionStatus() {
 uint16_t Sy6970::GetBusVoltage() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdBusVoltageStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return 0;
   }
 
@@ -1360,7 +1360,7 @@ uint16_t Sy6970::GetBusVoltage() {
 uint16_t Sy6970::GetChargingCurrent() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdChargeCurrent), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return 0;
   }
 
@@ -1371,7 +1371,7 @@ bool Sy6970::ReadVindpmStatus() {
   uint8_t buffer = 0;
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRdInputCurrentLimitStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1382,7 +1382,7 @@ bool Sy6970::ReadIindpmStatus() {
   uint8_t buffer = 0;
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRdInputCurrentLimitStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1393,7 +1393,7 @@ uint16_t Sy6970::ReadInputCurrentLimitSetting() {
   uint8_t buffer = 0;
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRdInputCurrentLimitStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return 0;
   }
 
@@ -1403,7 +1403,7 @@ uint16_t Sy6970::ReadInputCurrentLimitSetting() {
 bool Sy6970::SetRegisterReset(bool reset) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwDeviceControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1414,7 +1414,7 @@ bool Sy6970::SetRegisterReset(bool reset) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwDeviceControl), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1424,7 +1424,7 @@ bool Sy6970::SetRegisterReset(bool reset) {
 bool Sy6970::ReadAiclOptimizedStatus() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwDeviceControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1434,7 +1434,7 @@ bool Sy6970::ReadAiclOptimizedStatus() {
 uint8_t Sy6970::ReadDeviceConfiguration() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwDeviceControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return 0;
   }
 
@@ -1444,7 +1444,7 @@ uint8_t Sy6970::ReadDeviceConfiguration() {
 bool Sy6970::ReadTemperatureProfile() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwDeviceControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1454,7 +1454,7 @@ bool Sy6970::ReadTemperatureProfile() {
 uint8_t Sy6970::ReadDeviceRevision() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwDeviceControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return 0;
   }
 

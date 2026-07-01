@@ -23,13 +23,13 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipI2cGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
@@ -44,7 +44,7 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "InitSequence failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
     return false;
   }
 
@@ -55,7 +55,7 @@ bool Sgm41562xx::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!ChipI2cGuide::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -69,7 +69,7 @@ bool Sgm41562xx::Deinit(bool delete_bus) {
 uint8_t Sgm41562xx::GetDeviceId() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceId), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
 
@@ -79,7 +79,7 @@ uint8_t Sgm41562xx::GetDeviceId() {
 uint8_t Sgm41562xx::GetIrqFlag() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdFault), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
 
@@ -88,7 +88,7 @@ uint8_t Sgm41562xx::GetIrqFlag() {
 
 bool Sgm41562xx::ParseIrqStatus(uint8_t irq_flag, IrqStatus& status) {
   if (irq_flag == static_cast<uint8_t>(-1)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -106,7 +106,7 @@ bool Sgm41562xx::SetChargeEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(
           static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -118,7 +118,7 @@ bool Sgm41562xx::SetChargeEnable(bool enable) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -128,7 +128,7 @@ bool Sgm41562xx::SetChargeEnable(bool enable) {
 uint8_t Sgm41562xx::GetChipStatus() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdSystemStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
 
@@ -137,7 +137,7 @@ uint8_t Sgm41562xx::GetChipStatus() {
 
 bool Sgm41562xx::ParseChipStatus(uint8_t chip_flag, ChipStatus& status) {
   if (chip_flag == static_cast<uint8_t>(-1)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -156,7 +156,7 @@ bool Sgm41562xx::SetShippingModeEnable(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -168,7 +168,7 @@ bool Sgm41562xx::SetShippingModeEnable(bool enable) {
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
           buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -178,14 +178,14 @@ bool Sgm41562xx::SetShippingModeEnable(bool enable) {
 bool Sgm41562xx::SetEnterShippingTime(EnterShippingTime time) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRdFault), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = (buffer & 0B00111111) | (static_cast<uint8_t>(time) << 6);
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRdFault), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 

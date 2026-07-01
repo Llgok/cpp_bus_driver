@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2026-05-15 17:18:00
+ * @LastEditTime: 2026-07-01 11:53:34
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -25,10 +25,10 @@ const char* LogLevelName(Tool::LogLevel level) {
       return "Debug";
     case Tool::LogLevel::kInfo:
       return "Info";
-    case Tool::LogLevel::kBus:
-      return "Bus";
-    case Tool::LogLevel::kChip:
-      return "Chip";
+    case Tool::LogLevel::kWarning:
+      return "Warning";
+    case Tool::LogLevel::kError:
+      return "Error";
     default:
       return "Unknown";
   }
@@ -49,12 +49,12 @@ bool IsLogLevelEnabled(Tool::LogLevel level) {
     case Tool::LogLevel::kInfo:
       return true;
 #endif
-#if defined(CPP_BUS_DRIVER_LOG_LEVEL_BUS)
-    case Tool::LogLevel::kBus:
+#if defined(CPP_BUS_DRIVER_LOG_LEVEL_WARNING)
+    case Tool::LogLevel::kWarning:
       return true;
 #endif
-#if defined(CPP_BUS_DRIVER_LOG_LEVEL_CHIP)
-    case Tool::LogLevel::kChip:
+#if defined(CPP_BUS_DRIVER_LOG_LEVEL_ERROR)
+    case Tool::LogLevel::kError:
       return true;
 #endif
     default:
@@ -161,19 +161,19 @@ bool Tool::Search(const uint8_t* search_library, size_t search_library_length,
     const char* search_sample, size_t sample_length, size_t* search_index) {
   // 检查参数有效性
   if (search_sample == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   } else if (search_library == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   } else if (sample_length == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   } else if (search_library_length == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   } else if (sample_length > search_library_length) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -196,19 +196,19 @@ bool Tool::Search(const char* search_library, size_t search_library_length,
     const char* search_sample, size_t sample_length, size_t* search_index) {
   // 检查参数有效性
   if (search_sample == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   } else if (search_library == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   } else if (sample_length == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   } else if (search_library_length == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   } else if (sample_length > search_library_length) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -230,7 +230,7 @@ bool Tool::Search(const char* search_library, size_t search_library_length,
 bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   if (pin >= static_cast<uint32_t>(GPIO_NUM_MAX)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Value out of range (gpio pin: %u)\n", pin);
     return false;
   }
@@ -258,7 +258,7 @@ bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
       break;
 
     default:
-      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
   switch (status) {
@@ -276,7 +276,7 @@ bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
       break;
 
     default:
-      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
   config.intr_type = GPIO_INTR_DISABLE;
@@ -286,7 +286,7 @@ bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
 
   esp_err_t result = gpio_config(&config);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_config failed (error gpio pin: %u, error code: %#X)\n", pin,
         result);
     return false;
@@ -320,14 +320,14 @@ bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
       break;
 
     default:
-      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       nrf_gpio_cfg_default(pin);
       return false;
   }
 
   return true;
 #else
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "GpioMode failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioMode failed\n");
   return false;
 #endif
 }
@@ -336,7 +336,7 @@ bool Tool::GpioWrite(uint32_t pin, bool value) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   esp_err_t result = gpio_set_level(static_cast<gpio_num_t>(pin), value);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_set_level failed (error gpio pin: %u, error code: %#X)\n", pin,
         result);
     return false;
@@ -367,14 +367,14 @@ bool Tool::ResetGpio(int32_t pin) {
   }
 
   if (pin < 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Value out of range (gpio pin: %d)\n", pin);
     return false;
   }
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   if (pin >= static_cast<int32_t>(GPIO_NUM_MAX)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Value out of range (gpio pin: %d)\n", pin);
     return false;
   }
@@ -382,21 +382,21 @@ bool Tool::ResetGpio(int32_t pin) {
   const gpio_num_t gpio = static_cast<gpio_num_t>(pin);
   esp_err_t result = gpio_sleep_sel_dis(gpio);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_sleep_sel_dis failed (error code: %#X)\n", result);
     return false;
   }
 
   result = gpio_hold_dis(gpio);
   if ((result != ESP_OK) && (result != ESP_ERR_NOT_SUPPORTED)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_hold_dis failed (error code: %#X)\n", result);
     return false;
   }
 
   result = gpio_reset_pin(gpio);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_reset_pin failed (error code: %#X)\n", result);
     return false;
   }
@@ -406,7 +406,7 @@ bool Tool::ResetGpio(int32_t pin) {
   nrf_gpio_cfg_default(pin);
   return true;
 #else
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "ResetGpio failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "ResetGpio failed\n");
   return false;
 #endif
 }
@@ -438,7 +438,7 @@ int64_t Tool::GetSystemTimeMs() { return esp_timer_get_time() / 1000; }
 bool Tool::InitGpioInterrupt(
     uint32_t pin, InterruptMode mode, void (*interrupt)(void*), void* args) {
   if (pin >= static_cast<uint32_t>(GPIO_NUM_MAX)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Value out of range (gpio pin: %u)\n", pin);
     return false;
   }
@@ -485,7 +485,7 @@ bool Tool::InitGpioInterrupt(
       break;
 
     default:
-      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
 #if SOC_GPIO_SUPPORT_PIN_HYS_FILTER
@@ -494,27 +494,27 @@ bool Tool::InitGpioInterrupt(
 
   esp_err_t result = gpio_config(&config);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_config failed (error code: %#X)\n", result);
     return false;
   }
 
   result = gpio_install_isr_service(0);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_install_isr_service failed (error code: %#X)\n", result);
   }
 
   result = gpio_isr_handler_add(static_cast<gpio_num_t>(pin), interrupt, args);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_isr_handler_add failed (error code: %#X)\n", result);
     return false;
   }
 
   result = gpio_intr_enable(static_cast<gpio_num_t>(pin));
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_intr_enable failed (error code: %#X)\n", result);
     return false;
   }
@@ -526,28 +526,28 @@ bool Tool::DeinitGpioInterrupt(uint32_t pin) {
   esp_err_t result =
       gpio_set_intr_type(static_cast<gpio_num_t>(pin), GPIO_INTR_DISABLE);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_set_intr_type failed (error code: %#X)\n", result);
     return false;
   }
 
   result = gpio_isr_handler_remove(static_cast<gpio_num_t>(pin));
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_isr_handler_remove failed (error code: %#X)\n", result);
     return false;
   }
 
   result = gpio_intr_disable(static_cast<gpio_num_t>(pin));
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_intr_disable failed (error code: %#X)\n", result);
     return false;
   }
 
   result = gpio_reset_pin(static_cast<gpio_num_t>(pin));
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_reset_pin failed (error code: %#X)\n", result);
     return false;
   }
@@ -570,7 +570,7 @@ bool Pwm::Init(ledc_timer_t timer_num, ledc_channel_t channel, uint32_t freq_hz,
 
   esp_err_t result = ledc_timer_config(&buffer_ledc_timer_config);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ledc_timer_config failed (error code: %#X)\n", result);
     return false;
   }
@@ -592,7 +592,7 @@ bool Pwm::Init(ledc_timer_t timer_num, ledc_channel_t channel, uint32_t freq_hz,
 
   result = ledc_channel_config(&buffer_ledc_channel_config);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ledc_channel_config failed (error code: %#X)\n", result);
     return false;
   }
@@ -610,7 +610,7 @@ bool Pwm::Init(ledc_timer_t timer_num, ledc_channel_t channel, uint32_t freq_hz,
 
 bool Pwm::SetDuty(uint8_t duty) {
   if (duty > 100) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     duty = 100;
   }
 
@@ -618,14 +618,14 @@ bool Pwm::SetDuty(uint8_t duty) {
       (static_cast<float>(duty) / 100.0) *
           (1 << static_cast<uint8_t>(duty_resolution_)));
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ledc_set_duty failed (error code: %#X)\n", result);
     return false;
   }
 
   result = ledc_update_duty(speed_mode_, channel_);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ledc_update_duty failed (error code: %#X)\n", result);
     return false;
   }
@@ -638,7 +638,7 @@ bool Pwm::SetDuty(uint8_t duty) {
 bool Pwm::SetFrequency(uint32_t freq_hz) {
   esp_err_t result = ledc_set_freq(speed_mode_, timer_num_, freq_hz);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ledc_set_freq failed (error code: %#X)\n", result);
     return false;
   }
@@ -650,13 +650,13 @@ bool Pwm::SetFrequency(uint32_t freq_hz) {
 
 bool Pwm::StartGradientTime(uint8_t target_duty, int32_t time_ms) {
   if (target_duty > 100) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     target_duty = 100;
   }
 
   esp_err_t result = ledc_fade_func_install(0);
   if (result != ESP_OK && result != ESP_ERR_INVALID_STATE) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ledc_fade_func_install failed (error code: %#X)\n", result);
   }
 
@@ -665,7 +665,7 @@ bool Pwm::StartGradientTime(uint8_t target_duty, int32_t time_ms) {
           (1 << static_cast<uint8_t>(duty_resolution_)),
       time_ms);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ledc_set_fade_with_time failed (error code: %#X)\n", result);
     return false;
   }
@@ -673,7 +673,7 @@ bool Pwm::StartGradientTime(uint8_t target_duty, int32_t time_ms) {
   result = ledc_fade_start(
       speed_mode_, channel_, ledc_fade_mode_t::LEDC_FADE_WAIT_DONE);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ledc_fade_start failed (error code: %#X)\n", result);
     return false;
   }
@@ -686,7 +686,7 @@ bool Pwm::StartGradientTime(uint8_t target_duty, int32_t time_ms) {
 bool Pwm::Stop(uint32_t idle_level) {
   esp_err_t result = ledc_stop(speed_mode_, channel_, idle_level);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ledc_stop failed (error code: %#X)\n", result);
     return false;
   }

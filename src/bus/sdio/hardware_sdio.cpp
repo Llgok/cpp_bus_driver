@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-05-15 23:35:42
+ * @LastEditTime: 2026-07-01 13:56:02
  * @License: GPL 3.0
  */
 #include "hardware_sdio.h"
@@ -11,7 +11,7 @@ namespace cpp_bus_driver {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool HardwareSdio::Init(int32_t freq_hz) {
   if (sdio_handle_ != nullptr) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "HardwareSdio has been initialized\n");
     return true;
   }
@@ -84,7 +84,7 @@ bool HardwareSdio::Init(int32_t freq_hz) {
 
   esp_err_t result = sdmmc_host_init();
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "sdmmc_host_init failed (error code: %#X)\n", result);
     return false;
   }
@@ -92,7 +92,7 @@ bool HardwareSdio::Init(int32_t freq_hz) {
   host_init_flag_ = true;
   result = sdmmc_host_init_slot(static_cast<int>(port_), &sdmmc_slot_config);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "sdmmc_host_init_slot failed (error code: %#X)\n", result);
     Deinit();
     return false;
@@ -100,7 +100,7 @@ bool HardwareSdio::Init(int32_t freq_hz) {
 
   sdio_handle_ = std::make_unique<sdmmc_card_t>();
   if (sdio_handle_ == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     Deinit();
     return false;
   }
@@ -120,7 +120,7 @@ bool HardwareSdio::Init(int32_t freq_hz) {
 
     timeout_count++;
     if (timeout_count > kSdioBusInitTimeoutCount) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "sdmmc_card_init failed (error code: %#X)\n", result);
       Deinit();
       return false;
@@ -130,7 +130,7 @@ bool HardwareSdio::Init(int32_t freq_hz) {
 
   result = sdmmc_io_enable_int(sdio_handle_.get());
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "sdmmc_io_enable_int failed (error code: %#X)\n", result);
     Deinit();
     return false;
@@ -151,7 +151,7 @@ bool HardwareSdio::Deinit() {
   if (host_init_flag_) {
     esp_err_t ret = sdmmc_host_deinit();
     if (ret != ESP_OK) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "sdmmc_host_deinit failed (error code: %#X)\n", ret);
       result = false;
     } else {
@@ -176,11 +176,11 @@ bool HardwareSdio::WaitInterrupt(uint32_t timeout_ms) {
   esp_err_t result =
       sdmmc_io_wait_int(sdio_handle_.get(), pdMS_TO_TICKS(timeout_ms));
   if (result == ESP_ERR_TIMEOUT) {
-    // LogMessage(LogLevel::kBus, __FILE__, __LINE__, "sdmmc_io_wait_int timeout
+    // LogMessage(LogLevel::kError, __FILE__, __LINE__, "sdmmc_io_wait_int timeout
     // \n");
     return false;
   } else if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "sdmmc_io_wait_int failed (error code: %#X)\n", result);
     return false;
   }
@@ -193,7 +193,7 @@ bool HardwareSdio::Read(
   esp_err_t result =
       sdmmc_io_read_bytes(sdio_handle_.get(), function, write_c32, data, byte);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "sdmmc_io_read_bytes failed (error code: %#X)\n", result);
     return false;
   }
@@ -205,7 +205,7 @@ bool HardwareSdio::Read(uint32_t function, uint32_t write_c32, uint8_t* data) {
   esp_err_t result =
       sdmmc_io_read_byte(sdio_handle_.get(), function, write_c32, data);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "sdmmc_io_read_byte failed (error code: %#X)\n", result);
     return false;
   }
@@ -218,7 +218,7 @@ bool HardwareSdio::ReadBlock(
   esp_err_t result =
       sdmmc_io_read_blocks(sdio_handle_.get(), function, write_c32, data, byte);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "sdmmc_io_read_blocks failed (error code: %#X)\n", result);
     return false;
   }
@@ -231,7 +231,7 @@ bool HardwareSdio::Write(
   esp_err_t result =
       sdmmc_io_write_bytes(sdio_handle_.get(), function, write_c32, data, byte);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "sdmmc_io_write_bytes failed (error code: %#X)\n", result);
     return false;
   }
@@ -244,7 +244,7 @@ bool HardwareSdio::Write(uint32_t function, uint32_t write_c32, uint8_t data,
   esp_err_t result = sdmmc_io_write_byte(
       sdio_handle_.get(), function, write_c32, data, read_d8_verify);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "sdmmc_io_write_byte failed (error code: %#X)\n", result);
     return false;
   }
@@ -257,7 +257,7 @@ bool HardwareSdio::WriteBlock(
   esp_err_t result = sdmmc_io_write_blocks(
       sdio_handle_.get(), function, write_c32, data, byte);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "sdmmc_io_write_blocks failed (error code: %#X)\n", result);
     return false;
   }

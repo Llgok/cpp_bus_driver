@@ -17,7 +17,7 @@ bool Sx126x::Init(int32_t freq_hz) {
     bool result = true;
     result &= SetGpioMode(busy_, GpioMode::kInput, GpioStatus::kDisable);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Busy failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Busy failed\n");
       return false;
     }
   }
@@ -33,13 +33,13 @@ bool Sx126x::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipSpiGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
@@ -56,32 +56,32 @@ bool Sx126x::Init(int32_t freq_hz) {
   bool result = true;
   if (config_.enable_retention_list && !InitRetentionList()) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "InitRetentionList failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "InitRetentionList failed\n");
     result = false;
   }
 
   if (config_.enable_tx_clamp_workaround && !FixTxClamp(true)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "FixTxClamp failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "FixTxClamp failed\n");
     result = false;
   }
 
   // 切换到STDBY_RC模式
   if (!SetStandby(StdbyConfig::kStdbyRc)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetStandby failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetStandby failed\n");
     result = false;
   }
 
   // 设置电源调节器模式
   if (!SetRegulatorMode(config_.regulator_mode)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetRegulatorMode failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetRegulatorMode failed\n");
     result = false;
   }
 
   // 设置DIO2的模式功能为控制RF开关
   if (!SetDio2AsRfSwitchCtrl(config_.dio2_mode)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetDio2AsRfSwitchCtrl failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetDio2AsRfSwitchCtrl failed\n");
     result = false;
   }
 
@@ -90,10 +90,10 @@ bool Sx126x::Init(int32_t freq_hz) {
     if (!SetDio3AsTcxoCtrl(
             config_.tcxo_voltage, config_.tcxo_startup_time_us)) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "SetDio3AsTcxoCtrl failed\n");
+          LogLevel::kError, __FILE__, __LINE__, "SetDio3AsTcxoCtrl failed\n");
       result = false;
     } else if (!Calibrate(kCalibrateAll)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Calibrate failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Calibrate failed\n");
       result = false;
     }
   }
@@ -103,7 +103,7 @@ bool Sx126x::Init(int32_t freq_hz) {
 
 bool Sx126x::Deinit(bool delete_bus) {
   if (!ChipSpiGuide::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     return false;
   }
 
@@ -123,7 +123,7 @@ std::string Sx126x::GetDeviceId() {
 
   if (!ReadRegister(
           static_cast<uint16_t>(Reg::kRoDeviceId), buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return "fail";
   }
 
@@ -140,7 +140,7 @@ bool Sx126x::CheckBusy() {
       }
       timeout_count++;
       if (timeout_count > kBusyPinTimeoutCount) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__, "busy_ timeout\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "busy_ timeout\n");
         return false;
       }
     }
@@ -153,13 +153,13 @@ bool Sx126x::CheckBusy() {
       }
       timeout_count++;
       if (timeout_count > kBusyFunctionTimeoutCount) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+        LogMessage(LogLevel::kError, __FILE__, __LINE__,
             "busy_wait_callback_ timeout\n");
         return false;
       }
     }
   } else {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "CheckBusy failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "CheckBusy failed\n");
     return false;
   }
 
@@ -173,7 +173,7 @@ uint8_t Sx126x::GetStatus() {
     return static_cast<uint8_t>(-1);
   }
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoGetStatus), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return static_cast<uint8_t>(-1);
   }
 
@@ -182,7 +182,7 @@ uint8_t Sx126x::GetStatus() {
 
 Sx126x::CmdStatus Sx126x::ParseCmdStatus(uint8_t parse_status) {
   if ((parse_status == 0x00) || (parse_status == static_cast<uint8_t>(-1))) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return CmdStatus::kFalse;
   }
 
@@ -203,7 +203,7 @@ Sx126x::CmdStatus Sx126x::ParseCmdStatus(uint8_t parse_status) {
       break;
 
     default:
-      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return CmdStatus::kFalse;
   }
 
@@ -212,7 +212,7 @@ Sx126x::CmdStatus Sx126x::ParseCmdStatus(uint8_t parse_status) {
 
 Sx126x::ChipModeStatus Sx126x::ParseChipModeStatus(uint8_t parse_status) {
   if ((parse_status == 0x00) || (parse_status == static_cast<uint8_t>(-1))) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return ChipModeStatus::kFalse;
   }
 
@@ -231,7 +231,7 @@ Sx126x::ChipModeStatus Sx126x::ParseChipModeStatus(uint8_t parse_status) {
       break;
 
     default:
-      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return ChipModeStatus::kFalse;
   }
 
@@ -240,7 +240,7 @@ Sx126x::ChipModeStatus Sx126x::ParseChipModeStatus(uint8_t parse_status) {
 
 bool Sx126x::ParseIrqStatus(uint16_t irq_flag, IrqStatus& status) {
   if (irq_flag == static_cast<uint16_t>(-1)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -262,7 +262,7 @@ bool Sx126x::ParseIrqStatus(uint16_t irq_flag, IrqStatus& status) {
 bool Sx126x::SetStandby(StdbyConfig config) {
   const uint8_t buffer = static_cast<uint8_t>(config);
   if (!WriteCommand(Cmd::kWoSetStandby, &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -279,7 +279,7 @@ bool Sx126x::SetDio3AsTcxoCtrl(Dio3TcxoVoltage voltage, uint32_t time_out_us) {
   };
 
   if (!WriteCommand(Cmd::kWoSetDio3AsTcxoCtrl, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -290,7 +290,7 @@ bool Sx126x::FixTxClamp(bool enable) {
   uint8_t buffer = 0;
 
   if (!ReadRegister(static_cast<uint16_t>(Reg::kRwTxClampConfig), &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
@@ -302,7 +302,7 @@ bool Sx126x::FixTxClamp(bool enable) {
 
   if (!WriteRegister(
           static_cast<uint16_t>(Reg::kRwTxClampConfig), &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
 
@@ -314,7 +314,7 @@ bool Sx126x::SetBufferBaseAddress(
   uint8_t buffer[] = {tx_base_address, rx_base_address};
 
   if (!WriteCommand(Cmd::kWoSetBufferBaseAddress, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -324,7 +324,7 @@ bool Sx126x::SetBufferBaseAddress(
 bool Sx126x::SetPacketType(PacketType type) {
   const uint8_t buffer = static_cast<uint8_t>(type);
   if (!WriteCommand(Cmd::kWoSetPacketType, &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
   param_.packet_type = type;
@@ -335,7 +335,7 @@ bool Sx126x::SetPacketType(PacketType type) {
 bool Sx126x::SetRxTxFallbackMode(FallbackMode mode) {
   const uint8_t buffer = static_cast<uint8_t>(mode);
   if (!WriteCommand(Cmd::kWoSetRxTxFallbackMode, &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -356,7 +356,7 @@ bool Sx126x::SetCadParams(CadSymbolNum num, uint8_t cad_det_peak,
   };
 
   if (!WriteCommand(Cmd::kWoSetCadParams, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -374,7 +374,7 @@ bool Sx126x::ClearIrqFlag(uint16_t flags) {
   };
 
   if (!WriteCommand(Cmd::kWoClearIrqStatus, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -395,7 +395,7 @@ bool Sx126x::SetDioIrqParams(uint16_t irq_mask, uint16_t dio1_mask,
   };
 
   if (!WriteCommand(Cmd::kWoSetDioIrqParams, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -404,7 +404,7 @@ bool Sx126x::SetDioIrqParams(uint16_t irq_mask, uint16_t dio1_mask,
 
 bool Sx126x::Calibrate(uint8_t calib_param) {
   if (!WriteCommand(Cmd::kWoCalibrate, &calib_param, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -415,7 +415,7 @@ Sx126x::PacketType Sx126x::GetPacketType() {
   uint8_t buffer = 0;
 
   if (!ReadCommand(Cmd::kRoGetPacketType, &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return PacketType::kFalse;
   }
 
@@ -428,7 +428,7 @@ Sx126x::PacketType Sx126x::GetPacketType() {
       break;
 
     default:
-      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return PacketType::kFalse;
   }
 
@@ -439,7 +439,7 @@ Sx126x::PacketType Sx126x::GetPacketType() {
 bool Sx126x::SetRegulatorMode(RegulatorMode mode) {
   const uint8_t buffer = static_cast<uint8_t>(mode);
   if (!WriteCommand(Cmd::kWoSetRegulatorMode, &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
   param_.regulator_mode = mode;
@@ -449,10 +449,10 @@ bool Sx126x::SetRegulatorMode(RegulatorMode mode) {
 
 bool Sx126x::SetCurrentLimit(float current) {
   if (current < 0.0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     current = 0.0;
   } else if (current > 140.0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     current = 140.0;
   }
 
@@ -460,7 +460,7 @@ bool Sx126x::SetCurrentLimit(float current) {
 
   if (!WriteRegister(
           static_cast<uint16_t>(Reg::kRwOcpConfiguration), &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
   param_.current_limit = current;
@@ -473,7 +473,7 @@ uint8_t Sx126x::GetCurrentLimit() {
 
   if (!ReadRegister(
           static_cast<uint16_t>(Reg::kRwOcpConfiguration), &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return static_cast<uint8_t>(-1);
   }
 
@@ -483,7 +483,7 @@ uint8_t Sx126x::GetCurrentLimit() {
 bool Sx126x::SetDio2AsRfSwitchCtrl(Dio2Mode mode) {
   const uint8_t buffer = static_cast<uint8_t>(mode);
   if (!WriteCommand(Cmd::kWoSetDio2AsRfSwitchCtrl, &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -499,7 +499,7 @@ bool Sx126x::SetPaConfig(uint8_t pa_duty_cycle, uint8_t hp_max) {
   };
 
   if (!WriteCommand(Cmd::kWoSetPaConfig, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -511,7 +511,7 @@ bool Sx126x::SetTxParams(int8_t power, RampTime ramp_time) {
       static_cast<uint8_t>(power), static_cast<uint8_t>(ramp_time)};
 
   if (!WriteCommand(Cmd::kWoSetTxParams, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -524,7 +524,7 @@ bool Sx126x::SetLoraSyncWord(uint16_t sync_word) {
   if (sync_word <= 0xFF) {
     if (!ReadRegister(
             static_cast<uint16_t>(Reg::kRwLoraSyncWordStart), buffer, 2)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
       return false;
     }
 
@@ -538,7 +538,7 @@ bool Sx126x::SetLoraSyncWord(uint16_t sync_word) {
 
   if (!WriteRegister(
           static_cast<uint16_t>(Reg::kRwLoraSyncWordStart), buffer, 2)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
   param_.lora.sync_word = (static_cast<uint16_t>(buffer[0]) << 8) | buffer[1];
@@ -551,7 +551,7 @@ uint16_t Sx126x::GetLoraSyncWord() {
 
   if (!ReadRegister(
           static_cast<uint16_t>(Reg::kRwLoraSyncWordStart), buffer, 2)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return static_cast<uint16_t>(-1);
   }
 
@@ -563,7 +563,7 @@ bool Sx126x::FixLoraInvertedIq(InvertIq iq) {
 
   if (!ReadRegister(
           static_cast<uint16_t>(Reg::kRwIqPolaritySetup), &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
@@ -575,7 +575,7 @@ bool Sx126x::FixLoraInvertedIq(InvertIq iq) {
 
   if (!WriteRegister(
           static_cast<uint16_t>(Reg::kRwIqPolaritySetup), &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
   param_.lora.invert_iq = iq;
@@ -588,12 +588,12 @@ bool Sx126x::SetLoraModulationParams(Sf sf, LoraBw bw, Cr cr, Ldro ldro) {
       static_cast<uint8_t>(cr), static_cast<uint8_t>(ldro)};
 
   if (!WriteCommand(Cmd::kWoSetModulationParams, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
   if (!FixBw500KhzSensitivity(bw == LoraBw::kBw500000Hz)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "FixBw500KhzSensitivity failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "FixBw500KhzSensitivity failed\n");
     return false;
   }
   param_.lora.spreading_factor = sf;
@@ -617,12 +617,12 @@ bool Sx126x::SetLoraPacketParams(uint16_t preamble_length,
   };
 
   if (!WriteCommand(Cmd::kWoSetPacketParams, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
   if (!FixLoraInvertedIq(iq)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "FixLoraInvertedIq failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "FixLoraInvertedIq failed\n");
     return false;
   }
   param_.lora.preamble_length = preamble_length;
@@ -639,10 +639,10 @@ bool Sx126x::SetOutputPower(int8_t power) {
   const int8_t max_power = (chip_type_ == ChipType::kSx1261) ? 14 : 22;
 
   if (power < min_power) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     power = min_power;
   } else if (power > max_power) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     power = max_power;
   }
 
@@ -651,25 +651,25 @@ bool Sx126x::SetOutputPower(int8_t power) {
   // 读取OCP配置
   if (!ReadRegister(
           static_cast<uint16_t>(Reg::kRwOcpConfiguration), &ocp_config, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
   const uint8_t pa_duty_cycle = (chip_type_ == ChipType::kSx1261) ? 0x01 : 0x04;
   const uint8_t hp_max = (chip_type_ == ChipType::kSx1261) ? 0x00 : 0x07;
   if (!SetPaConfig(pa_duty_cycle, hp_max)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetPaConfig failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetPaConfig failed\n");
     return false;
   }
 
   if (!SetTxParams(power, RampTime::kRamp40Us)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetTxParams failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetTxParams failed\n");
     return false;
   }
 
   if (!WriteRegister(
           static_cast<uint16_t>(Reg::kRwOcpConfiguration), &ocp_config, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
   param_.power = power;
@@ -707,7 +707,7 @@ bool Sx126x::CalibrateImage(ImgCalFreq freq_mhz) {
   }
 
   if (!WriteCommand(Cmd::kWoCalibrateImage, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -721,7 +721,7 @@ bool Sx126x::CalibrateImage(uint16_t start_freq_mhz, uint16_t end_freq_mhz) {
 
   if ((start_freq_mhz < 150) || (end_freq_mhz < 150) ||
       (start_freq_mhz > 960) || (end_freq_mhz > 960)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
   }
   start_freq_mhz =
       std::min<uint16_t>(960, std::max<uint16_t>(150, start_freq_mhz));
@@ -735,7 +735,7 @@ bool Sx126x::CalibrateImage(uint16_t start_freq_mhz, uint16_t end_freq_mhz) {
   };
 
   if (!WriteCommand(Cmd::kWoCalibrateImage, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -756,7 +756,7 @@ bool Sx126x::SetRfFrequency(double freq_mhz) {
   };
 
   if (!WriteCommand(Cmd::kWoSetRfFrequency, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -765,10 +765,10 @@ bool Sx126x::SetRfFrequency(double freq_mhz) {
 
 bool Sx126x::SetFrequency(double freq_mhz) {
   if (freq_mhz < 150.0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     freq_mhz = 150.0;
   } else if (freq_mhz > 960.0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     freq_mhz = 960.0;
   }
 
@@ -776,35 +776,35 @@ bool Sx126x::SetFrequency(double freq_mhz) {
   if ((freq_mhz >= 902.0) && (freq_mhz <= 928.0)) {
     if (!CalibrateImage(ImgCalFreq::kFreq902_928Mhz)) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "CalibrateImage failed\n");
+          LogLevel::kError, __FILE__, __LINE__, "CalibrateImage failed\n");
       return false;
     }
     calibrated = true;
   } else if ((freq_mhz >= 863.0) && (freq_mhz <= 870.0)) {
     if (!CalibrateImage(ImgCalFreq::kFreq863_870Mhz)) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "CalibrateImage failed\n");
+          LogLevel::kError, __FILE__, __LINE__, "CalibrateImage failed\n");
       return false;
     }
     calibrated = true;
   } else if ((freq_mhz >= 779.0) && (freq_mhz <= 787.0)) {
     if (!CalibrateImage(ImgCalFreq::kFreq779_787Mhz)) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "CalibrateImage failed\n");
+          LogLevel::kError, __FILE__, __LINE__, "CalibrateImage failed\n");
       return false;
     }
     calibrated = true;
   } else if ((freq_mhz >= 470.0) && (freq_mhz <= 510.0)) {
     if (!CalibrateImage(ImgCalFreq::kFreq470_510Mhz)) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "CalibrateImage failed\n");
+          LogLevel::kError, __FILE__, __LINE__, "CalibrateImage failed\n");
       return false;
     }
     calibrated = true;
   } else if ((freq_mhz >= 430.0) && (freq_mhz <= 440.0)) {
     if (!CalibrateImage(ImgCalFreq::kFreq430_440Mhz)) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "CalibrateImage failed\n");
+          LogLevel::kError, __FILE__, __LINE__, "CalibrateImage failed\n");
       return false;
     }
     calibrated = true;
@@ -815,14 +815,14 @@ bool Sx126x::SetFrequency(double freq_mhz) {
     const uint16_t end_freq_mhz = static_cast<uint16_t>(std::ceil(freq_mhz));
     if (!CalibrateImage(start_freq_mhz, end_freq_mhz)) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "CalibrateImage failed\n");
+          LogLevel::kError, __FILE__, __LINE__, "CalibrateImage failed\n");
       return false;
     }
   }
 
   // 设置射频频率模式的频率
   if (!SetRfFrequency(freq_mhz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRfFrequency failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRfFrequency failed\n");
     return false;
   }
   param_.freq_mhz = freq_mhz;
@@ -832,7 +832,7 @@ bool Sx126x::SetFrequency(double freq_mhz) {
 
 bool Sx126x::SetFs() {
   if (!WriteCommand(Cmd::kWoSetFs)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -852,7 +852,7 @@ bool Sx126x::SetRxDutyCycle(uint32_t rx_time_us, uint32_t sleep_time_us) {
   };
 
   if (!WriteCommand(Cmd::kWoSetRxDutyCycle, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -862,7 +862,7 @@ bool Sx126x::SetRxDutyCycle(uint32_t rx_time_us, uint32_t sleep_time_us) {
 bool Sx126x::StopTimerOnPreamble(bool enable) {
   const uint8_t buffer = enable ? 1 : 0;
   if (!WriteCommand(Cmd::kWoStopTimerOnPreamble, &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -871,7 +871,7 @@ bool Sx126x::StopTimerOnPreamble(bool enable) {
 
 bool Sx126x::SetCad() {
   if (!WriteCommand(Cmd::kWoSetCad)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -880,7 +880,7 @@ bool Sx126x::SetCad() {
 
 bool Sx126x::SetTxInfinitePreamble() {
   if (!WriteCommand(Cmd::kWoSetTxInfinitePreamble)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -889,7 +889,7 @@ bool Sx126x::SetTxInfinitePreamble() {
 
 bool Sx126x::SetLoraSymbolTimeout(uint8_t symbol_count) {
   if (symbol_count > 248) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     symbol_count = 248;
   }
 
@@ -902,7 +902,7 @@ bool Sx126x::SetLoraSymbolTimeout(uint8_t symbol_count) {
 
   const uint8_t command_value = static_cast<uint8_t>(mant << ((2 * exp) + 1));
   if (!WriteCommand(Cmd::kWoSetLoraSymbolNumTimeout, &command_value, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -910,7 +910,7 @@ bool Sx126x::SetLoraSymbolTimeout(uint8_t symbol_count) {
     const uint8_t register_value = static_cast<uint8_t>(exp + (mant << 3));
     if (!WriteRegister(static_cast<uint16_t>(Reg::kRwLoraSymbolTimeout),
             &register_value, 1)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
       return false;
     }
   }
@@ -923,19 +923,19 @@ bool Sx126x::ConfigLoraParams(double freq_mhz, LoraBw bw, float current_limit,
     uint16_t sync_word) {
   // 切换到STDBY_RC模式
   if (!SetStandby(StdbyConfig::kStdbyRc)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetStandby failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetStandby failed\n");
     return false;
   }
 
   // 设置包类型
   if (!SetPacketType(PacketType::kLora)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetPacketType failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetPacketType failed\n");
     return false;
   }
 
   if (!SetBufferBaseAddress(0, 0)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetBufferBaseAddress failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetBufferBaseAddress failed\n");
     return false;
   }
 
@@ -945,19 +945,19 @@ bool Sx126x::ConfigLoraParams(double freq_mhz, LoraBw bw, float current_limit,
   GetLoraCadParams(sf, cad_symbol_num, cad_det_peak, cad_det_min);
   if (!SetCadParams(
           cad_symbol_num, cad_det_peak, cad_det_min, CadExitMode::kOnly, 0)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetCadParams failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetCadParams failed\n");
     return false;
   }
 
   // 校准
   if (!Calibrate(kCalibrateAll)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Calibrate failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Calibrate failed\n");
     return false;
   }
 
   DelayMs(5);
   if (!CheckBusy()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "CheckBusy failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "CheckBusy failed\n");
     return false;
   }
 
@@ -965,7 +965,7 @@ bool Sx126x::ConfigLoraParams(double freq_mhz, LoraBw bw, float current_limit,
   CmdStatus buffer_cs = ParseCmdStatus(GetStatus());
   if ((buffer_cs != CmdStatus::kRfu) && (buffer_cs != CmdStatus::kCmdTxDone) &&
       (buffer_cs != CmdStatus::kDataIsAvailableToHost)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ParseCmdStatus failed (error code: %#X)\n",
         static_cast<uint8_t>(buffer_cs));
     return false;
@@ -973,14 +973,14 @@ bool Sx126x::ConfigLoraParams(double freq_mhz, LoraBw bw, float current_limit,
 
   const Ldro ldro = GetLoraLowDataRateOptimize(sf, bw);
   if (!SetLoraModulationParams(sf, bw, cr, ldro)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "SetLoraModulationParams failed\n");
     return false;
   }
 
   // 设置同步字
   if (!SetLoraSyncWord(sync_word)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetLoraSyncWord failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetLoraSyncWord failed\n");
     return false;
   }
 
@@ -989,40 +989,40 @@ bool Sx126x::ConfigLoraParams(double freq_mhz, LoraBw bw, float current_limit,
           LoraHeaderType::kVariableLengthPacket, kMaxPayloadSize, crc_type,
           InvertIq::kStandardIqSetup)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetLoraPacketParams failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetLoraPacketParams failed\n");
     return false;
   }
 
   // 设置电流限制
   if (!SetCurrentLimit(current_limit)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetCurrentLimit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetCurrentLimit failed\n");
     return false;
   }
 
   // 设置频率
   if (!SetFrequency(freq_mhz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetFrequency failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetFrequency failed\n");
     return false;
   }
 
   // 设置功率
   if (!SetOutputPower(power)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetOutputPower failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetOutputPower failed\n");
     return false;
   }
 
   if (!SetRxBoosted(param_.rx_boosted)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRxBoosted failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRxBoosted failed\n");
     return false;
   }
 
   if (!ResetStats()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ResetStats failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ResetStats failed\n");
     return false;
   }
 
   if (!ClearIrqFlag(IrqMaskFlag::kAll)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ClearIrqFlag failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ClearIrqFlag failed\n");
     return false;
   }
 
@@ -1039,7 +1039,7 @@ bool Sx126x::SetRx(uint32_t time_out_us) {
   };
 
   if (!WriteCommand(Cmd::kWoSetRx, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -1051,7 +1051,7 @@ bool Sx126x::StartLora(ChipMode chip_mode, uint32_t time_out_us,
   // 从RX或TX模式退出返回的模式设定
   if (!SetRxTxFallbackMode(fallback_mode)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetRxTxFallbackMode failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetRxTxFallbackMode failed\n");
     return false;
   }
 
@@ -1060,7 +1060,7 @@ bool Sx126x::StartLora(ChipMode chip_mode, uint32_t time_out_us,
           param_.lora.payload_length, param_.lora.crc_type,
           param_.lora.invert_iq)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetLoraPacketParams failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetLoraPacketParams failed\n");
     return false;
   }
 
@@ -1068,14 +1068,14 @@ bool Sx126x::StartLora(ChipMode chip_mode, uint32_t time_out_us,
     case ChipMode::kRx:
       // 设置为接收模式
       if (!SetRx(time_out_us)) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRx failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRx failed\n");
         return false;
       }
       break;
     case ChipMode::kTx:
       // 设置为发送模式
       if (!SetTx(time_out_us)) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetTx failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetTx failed\n");
         return false;
       }
       break;
@@ -1091,7 +1091,7 @@ uint16_t Sx126x::GetIrqFlag() {
   uint8_t buffer[2] = {0};
 
   if (!ReadCommand(Cmd::kRoGetIrqStatus, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return static_cast<uint16_t>(-1);
   }
 
@@ -1102,7 +1102,7 @@ bool Sx126x::GetRxBufferStatus(RxBufferStatus& status) {
   uint8_t buffer[2] = {0};
 
   if (!ReadCommand(Cmd::kRoGetRxBufferStatus, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return false;
   }
 
@@ -1117,7 +1117,7 @@ uint8_t Sx126x::GetRxBufferLength() {
 
   if (!GetRxBufferStatus(status)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "GetRxBufferStatus failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "GetRxBufferStatus failed\n");
     return 0;
   }
 
@@ -1127,7 +1127,7 @@ uint8_t Sx126x::GetRxBufferLength() {
 bool Sx126x::ReadBuffer(uint8_t* data, uint8_t length, uint8_t offset) {
   // 设置基地址
   if (!ReadBufferRaw(offset, data, length)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadBufferRaw failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadBufferRaw failed\n");
     return false;
   }
 
@@ -1139,20 +1139,20 @@ bool Sx126x::GetReceiveStatus(ReceiveStatus& status) {
   status.packet_type = param_.packet_type;
   const uint16_t irq_flag = GetIrqFlag();
   if (irq_flag == static_cast<uint16_t>(-1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "GetIrqFlag failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetIrqFlag failed\n");
     return false;
   }
   status.irq_flags = irq_flag;
 
   if (!ParseIrqStatus(irq_flag, status.irq_status)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ParseIrqStatus failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ParseIrqStatus failed\n");
     return false;
   }
 
   status.done = status.irq_status.all_flag.rx_done;
   if (status.done && !StopRxTimeoutTimer()) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "StopRxTimeoutTimer failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "StopRxTimeoutTimer failed\n");
     return false;
   }
 
@@ -1167,7 +1167,7 @@ bool Sx126x::GetReceiveStatus(ReceiveStatus& status) {
     status.gfsk_packet_status_raw = GetGfskPacketStatus();
     if (!ParseGfskPacketStatus(
             status.gfsk_packet_status_raw, status.gfsk_packet_status)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "ParseGfskPacketStatus failed\n");
       return false;
     }
@@ -1188,7 +1188,7 @@ bool Sx126x::GetReceiveStatus(ReceiveStatus& status) {
   if (status.done && !status.error) {
     if (!GetRxBufferStatus(status.rx_buffer_status)) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "GetRxBufferStatus failed\n");
+          LogLevel::kError, __FILE__, __LINE__, "GetRxBufferStatus failed\n");
       return false;
     }
     status.payload_available = status.rx_buffer_status.payload_length > 0;
@@ -1202,14 +1202,14 @@ bool Sx126x::GetReceiveStatus(ReceiveStatus& status) {
 uint8_t Sx126x::ReceiveData(
     uint8_t* data, uint8_t length, ReceiveStatus* status) {
   if (data == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return 0;
   }
 
   ReceiveStatus receive_status;
   if (!GetReceiveStatus(receive_status)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "GetReceiveStatus failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "GetReceiveStatus failed\n");
     if (status != nullptr) {
       *status = receive_status;
     }
@@ -1220,27 +1220,27 @@ uint8_t Sx126x::ReceiveData(
   }
 
   if (receive_status.timeout) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Receive timeout\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Receive timeout\n");
     ClearIrqFlag(receive_status.irq_flags);
     return 0;
   }
 
   if (receive_status.crc_error) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Receive crc error\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Receive crc error\n");
     ClearIrqFlag(receive_status.irq_flags);
     return 0;
   }
 
   if (receive_status.header_error) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "Receive lora header error\n");
+        LogLevel::kError, __FILE__, __LINE__, "Receive lora header error\n");
     ClearIrqFlag(receive_status.irq_flags);
     return 0;
   }
 
   if (!receive_status.done) {
     if (receive_status.irq_flags != 0) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "Receive pending (irq flags: %#X)\n", receive_status.irq_flags);
     }
     return 0;
@@ -1249,13 +1249,13 @@ uint8_t Sx126x::ReceiveData(
   if (receive_status.abort_error || receive_status.length_error ||
       receive_status.address_error || !receive_status.packet_received) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "Receive packet status error\n");
+        LogLevel::kError, __FILE__, __LINE__, "Receive packet status error\n");
     ClearIrqFlag(receive_status.irq_flags);
     return 0;
   }
 
   if (!receive_status.payload_available) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Receive empty payload\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Receive empty payload\n");
     ClearIrqFlag(receive_status.irq_flags);
     return 0;
   }
@@ -1268,7 +1268,7 @@ uint8_t Sx126x::ReceiveData(
 
   if (!ReadBuffer(
           data, read_length, receive_status.rx_buffer_status.start_pointer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadBuffer failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadBuffer failed\n");
     return 0;
   }
 
@@ -1280,7 +1280,7 @@ bool Sx126x::GetLoraPacketMetrics(PacketMetrics& metrics) {
   uint8_t buffer[3] = {0};
 
   if (!ReadCommand(Cmd::kRoGetPacketStatus, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return false;
   }
 
@@ -1296,7 +1296,7 @@ bool Sx126x::GetRssiInst(float& rssi_dbm) {
   uint8_t buffer = 0;
 
   if (!ReadCommand(Cmd::kRoGetRssiInst, &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return false;
   }
 
@@ -1309,7 +1309,7 @@ bool Sx126x::GetPacketStats(PacketStats& stats) {
   uint8_t buffer[6] = {0};
 
   if (!ReadCommand(Cmd::kRoGetStats, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return false;
   }
 
@@ -1329,7 +1329,7 @@ bool Sx126x::GetPacketStats(PacketStats& stats) {
 bool Sx126x::ResetStats() {
   const uint8_t buffer[6] = {0};
   if (!WriteCommand(Cmd::kWoResetStats, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -1340,7 +1340,7 @@ uint16_t Sx126x::GetDeviceErrors() {
   uint8_t buffer[2] = {0};
 
   if (!ReadCommand(Cmd::kRoGetDeviceErrors, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return static_cast<uint16_t>(-1);
   }
 
@@ -1350,7 +1350,7 @@ uint16_t Sx126x::GetDeviceErrors() {
 bool Sx126x::ClearDeviceErrors() {
   const uint8_t buffer[2] = {0};
   if (!WriteCommand(Cmd::kWoClearDeviceErrors, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -1360,7 +1360,7 @@ bool Sx126x::ClearDeviceErrors() {
 bool Sx126x::SetRxBoosted(bool enable) {
   const uint8_t buffer = enable ? 0x96 : 0x94;
   if (!WriteRegister(static_cast<uint16_t>(Reg::kRwRxGain), &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
   param_.rx_boosted = enable;
@@ -1372,7 +1372,7 @@ bool Sx126x::FixBw500KhzSensitivity(bool enable) {
   uint8_t buffer = 0;
 
   if (!ReadRegister(static_cast<uint16_t>(Reg::kRwTxModulation), &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
@@ -1383,7 +1383,7 @@ bool Sx126x::FixBw500KhzSensitivity(bool enable) {
   }
 
   if (!WriteRegister(static_cast<uint16_t>(Reg::kRwTxModulation), &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
 
@@ -1400,7 +1400,7 @@ bool Sx126x::SetTx(uint32_t time_out_us) {
   };
 
   if (!WriteCommand(Cmd::kWoSetTx, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -1411,12 +1411,12 @@ bool Sx126x::WriteBuffer(const uint8_t* data, uint8_t length, uint8_t offset) {
   // 设置基地址
   if (!SetBufferBaseAddress(0, 0)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetBufferBaseAddress failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetBufferBaseAddress failed\n");
     return false;
   }
 
   if (!WriteBufferRaw(offset, data, length)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteBufferRaw failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteBufferRaw failed\n");
     return false;
   }
 
@@ -1428,13 +1428,13 @@ bool Sx126x::GetSendStatus(SendStatus& status) {
   status.packet_type = param_.packet_type;
   const uint16_t irq_flag = GetIrqFlag();
   if (irq_flag == static_cast<uint16_t>(-1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "GetIrqFlag failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetIrqFlag failed\n");
     return false;
   }
   status.irq_flags = irq_flag;
 
   if (!ParseIrqStatus(irq_flag, status.irq_status)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ParseIrqStatus failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ParseIrqStatus failed\n");
     return false;
   }
 
@@ -1455,7 +1455,7 @@ bool Sx126x::SendData(
                 param_.gfsk.preamble_detector, param_.gfsk.sync_word.length * 8,
                 param_.gfsk.address_comparison, param_.gfsk.header_type, length,
                 param_.gfsk.crc.type, param_.gfsk.whitening)) {
-          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+          LogMessage(LogLevel::kError, __FILE__, __LINE__,
               "SetGfskPacketParams failed\n");
           return false;
         }
@@ -1468,7 +1468,7 @@ bool Sx126x::SendData(
         if (!SetLoraPacketParams(param_.lora.preamble_length,
                 param_.lora.header_type, length, param_.lora.crc_type,
                 param_.lora.invert_iq)) {
-          LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+          LogMessage(LogLevel::kError, __FILE__, __LINE__,
               "SetLoraPacketParams failed\n");
           return false;
         }
@@ -1481,27 +1481,27 @@ bool Sx126x::SendData(
   }
 
   if (!WriteBuffer(data, length, 0)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteBuffer failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteBuffer failed\n");
     return false;
   }
 
   if (param_.packet_type == PacketType::kLora) {
     if (!FixBw500KhzSensitivity(
             param_.lora.band_width == LoraBw::kBw500000Hz)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "FixBw500KhzSensitivity failed\n");
       return false;
     }
   } else if (param_.packet_type == PacketType::kGfsk) {
     if (!FixBw500KhzSensitivity(false)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "FixBw500KhzSensitivity failed\n");
       return false;
     }
   }
 
   if (!SetTx(time_out_us)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetTx failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetTx failed\n");
     return false;
   }
 
@@ -1513,7 +1513,7 @@ bool Sx126x::SetLoraCrcPacketParams(LoraCrcType crc_type) {
   if (!SetLoraPacketParams(param_.lora.preamble_length, param_.lora.header_type,
           param_.lora.payload_length, crc_type, param_.lora.invert_iq)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetLoraPacketParams failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetLoraPacketParams failed\n");
     return false;
   }
   param_.lora.crc_type = crc_type;
@@ -1524,18 +1524,18 @@ bool Sx126x::SetLoraCrcPacketParams(LoraCrcType crc_type) {
 bool Sx126x::SetGfskModulationParams(
     double br, PulseShape ps, GfskBw bw, double freq_deviation_khz) {
   if (br < 0.6) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     br = 0.6;
   } else if (br > 300.0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     br = 300.0;
   }
 
   if (freq_deviation_khz < 0.6) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     freq_deviation_khz = 0.6;
   } else if (freq_deviation_khz > 200.0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     freq_deviation_khz = 200.0;
   }
 
@@ -1560,12 +1560,12 @@ bool Sx126x::SetGfskModulationParams(
   };
 
   if (!WriteCommand(Cmd::kWoSetModulationParams, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
   if (!FixBw500KhzSensitivity(false)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "FixBw500KhzSensitivity failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "FixBw500KhzSensitivity failed\n");
     return false;
   }
   param_.gfsk.bit_rate = br;
@@ -1578,7 +1578,7 @@ bool Sx126x::SetGfskModulationParams(
 
 bool Sx126x::SetGfskSyncWord(const uint8_t* sync_word, uint8_t length) {
   if ((sync_word == nullptr) || (length == 0) || (length > 8)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -1586,7 +1586,7 @@ bool Sx126x::SetGfskSyncWord(const uint8_t* sync_word, uint8_t length) {
   std::memcpy(buffer, sync_word, length);
   if (!WriteRegister(static_cast<uint16_t>(Reg::kRwSyncWordProgrammingStart),
           buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
   param_.gfsk.sync_word.data = sync_word;
@@ -1600,7 +1600,7 @@ bool Sx126x::SetGfskPacketAddress(
   uint8_t buffer[] = {node_address, broadcast_address};
   if (!WriteRegister(
           static_cast<uint16_t>(Reg::kRwGfskNodeAddress), buffer, 2)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
 
@@ -1624,7 +1624,7 @@ bool Sx126x::SetGfskPacketParams(uint16_t preamble_length,
   };
 
   if (!WriteCommand(Cmd::kWoSetPacketParams, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
   param_.gfsk.preamble_length = preamble_length;
@@ -1650,12 +1650,12 @@ bool Sx126x::SetGfskCrc(uint16_t initial, uint16_t polynomial) {
 
   if (!WriteRegister(static_cast<uint16_t>(Reg::kRwCrcValueProgrammingStart),
           crc_seed, sizeof(crc_seed))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
   if (!WriteRegister(static_cast<uint16_t>(Reg::kRwCrcPolynomialStart),
           crc_polynomial, sizeof(crc_polynomial))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
   param_.gfsk.crc.initial = initial;
@@ -1668,7 +1668,7 @@ bool Sx126x::SetGfskWhiteningSeed(uint16_t seed) {
   uint8_t msb = 0;
   if (!ReadRegister(
           static_cast<uint16_t>(Reg::kRwWhiteningSeedStart), &msb, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
@@ -1676,12 +1676,12 @@ bool Sx126x::SetGfskWhiteningSeed(uint16_t seed) {
   const uint8_t lsb = static_cast<uint8_t>(seed);
   if (!WriteRegister(
           static_cast<uint16_t>(Reg::kRwWhiteningSeedStart), &msb, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
   if (!WriteRegister(
           static_cast<uint16_t>(Reg::kRwWhiteningSeedStart) + 1, &lsb, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
 
@@ -1697,30 +1697,30 @@ bool Sx126x::ConfigGfskParams(double freq_mhz, double br, GfskBw bw,
     uint16_t whitening_seed, PreambleDetector preamble_detector) {
   // 切换到STDBY_RC模式
   if (!SetStandby(StdbyConfig::kStdbyRc)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetStandby failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetStandby failed\n");
     return false;
   }
 
   // 设置包类型
   if (!SetPacketType(PacketType::kGfsk)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetPacketType failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetPacketType failed\n");
     return false;
   }
 
   if (!SetBufferBaseAddress(0, 0)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetBufferBaseAddress failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetBufferBaseAddress failed\n");
     return false;
   }
   // 校准
   if (!Calibrate(kCalibrateAll)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Calibrate failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Calibrate failed\n");
     return false;
   }
 
   DelayMs(5);
   if (!CheckBusy()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "CheckBusy failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "CheckBusy failed\n");
     return false;
   }
 
@@ -1728,14 +1728,14 @@ bool Sx126x::ConfigGfskParams(double freq_mhz, double br, GfskBw bw,
   CmdStatus buffer_cs = ParseCmdStatus(GetStatus());
   if ((buffer_cs != CmdStatus::kRfu) && (buffer_cs != CmdStatus::kCmdTxDone) &&
       (buffer_cs != CmdStatus::kDataIsAvailableToHost)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ParseCmdStatus failed (error code: %#X)\n",
         static_cast<uint8_t>(buffer_cs));
     return false;
   }
 
   if (!SetGfskModulationParams(br, ps, bw, freq_deviation_khz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "SetGfskModulationParams failed\n");
     return false;
   }
@@ -1749,7 +1749,7 @@ bool Sx126x::ConfigGfskParams(double freq_mhz, double br, GfskBw bw,
   }
   // 设置同步字（有效同步字长度会在GFSK包参数中同步更新）
   if (!SetGfskSyncWord(sync_word, sync_word_length)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetGfskSyncWord failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetGfskSyncWord failed\n");
     return false;
   }
 
@@ -1757,7 +1757,7 @@ bool Sx126x::ConfigGfskParams(double freq_mhz, double br, GfskBw bw,
       GetGfskMaxPreambleDetector(preamble_length);
   if (static_cast<uint8_t>(preamble_detector) >
       static_cast<uint8_t>(max_preamble_detector)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     preamble_detector = max_preamble_detector;
   }
   param_.gfsk.preamble_detector = preamble_detector;
@@ -1765,7 +1765,7 @@ bool Sx126x::ConfigGfskParams(double freq_mhz, double br, GfskBw bw,
   if (addr_comp != AddrComp::kFilteringDisable) {
     if (!SetGfskPacketAddress(node_address, broadcast_address)) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "SetGfskPacketAddress failed\n");
+          LogLevel::kError, __FILE__, __LINE__, "SetGfskPacketAddress failed\n");
       return false;
     }
   }
@@ -1773,7 +1773,7 @@ bool Sx126x::ConfigGfskParams(double freq_mhz, double br, GfskBw bw,
   if (whitening != Whitening::kNoEncoding) {
     if (!SetGfskWhiteningSeed(whitening_seed)) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "SetGfskWhiteningSeed failed\n");
+          LogLevel::kError, __FILE__, __LINE__, "SetGfskWhiteningSeed failed\n");
       return false;
     }
   }
@@ -1783,7 +1783,7 @@ bool Sx126x::ConfigGfskParams(double freq_mhz, double br, GfskBw bw,
           sync_word_length * 8, addr_comp, header_type,
           param_.gfsk.payload_length, crc_type, whitening)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetGfskPacketParams failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetGfskPacketParams failed\n");
     return false;
   }
   param_.gfsk.sync_word.data = sync_word;
@@ -1794,41 +1794,41 @@ bool Sx126x::ConfigGfskParams(double freq_mhz, double br, GfskBw bw,
   // 设置CRC。官方示例仅在CRC类型不为OFF时写入seed和polynomial寄存器。
   if (crc_type != GfskCrcType::kCrcOff) {
     if (!SetGfskCrc(crc_initial, crc_polynomial)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetGfskCrc failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetGfskCrc failed\n");
       return false;
     }
   }
 
   // 设置电流限制
   if (!SetCurrentLimit(current_limit)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetCurrentLimit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetCurrentLimit failed\n");
     return false;
   }
 
   // 设置频率
   if (!SetFrequency(freq_mhz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetFrequency failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetFrequency failed\n");
     return false;
   }
 
   // 设置功率
   if (!SetOutputPower(power)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetOutputPower failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetOutputPower failed\n");
     return false;
   }
 
   if (!SetRxBoosted(param_.rx_boosted)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRxBoosted failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRxBoosted failed\n");
     return false;
   }
 
   if (!ResetStats()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ResetStats failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ResetStats failed\n");
     return false;
   }
 
   if (!ClearIrqFlag(IrqMaskFlag::kAll)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ClearIrqFlag failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ClearIrqFlag failed\n");
     return false;
   }
 
@@ -1840,7 +1840,7 @@ bool Sx126x::StartGfsk(ChipMode chip_mode, uint32_t time_out_us,
   // 从RX或TX模式退出返回的模式设定
   if (!SetRxTxFallbackMode(fallback_mode)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetRxTxFallbackMode failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetRxTxFallbackMode failed\n");
     return false;
   }
 
@@ -1849,7 +1849,7 @@ bool Sx126x::StartGfsk(ChipMode chip_mode, uint32_t time_out_us,
       GetGfskMaxPreambleDetector(preamble_length);
   if (static_cast<uint8_t>(preamble_detector) >
       static_cast<uint8_t>(max_preamble_detector)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     preamble_detector = max_preamble_detector;
   }
 
@@ -1859,7 +1859,7 @@ bool Sx126x::StartGfsk(ChipMode chip_mode, uint32_t time_out_us,
           param_.gfsk.header_type, param_.gfsk.payload_length,
           param_.gfsk.crc.type, param_.gfsk.whitening)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetGfskPacketParams failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetGfskPacketParams failed\n");
     return false;
   }
 
@@ -1867,14 +1867,14 @@ bool Sx126x::StartGfsk(ChipMode chip_mode, uint32_t time_out_us,
     case ChipMode::kRx:
       // 设置为接收模式
       if (!SetRx(time_out_us)) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRx failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRx failed\n");
         return false;
       }
       break;
     case ChipMode::kTx:
       // 设置为发送模式
       if (!SetTx(time_out_us)) {
-        LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetTx failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetTx failed\n");
         return false;
       }
       break;
@@ -1890,7 +1890,7 @@ uint32_t Sx126x::GetGfskPacketStatus() {
   uint8_t buffer[3] = {0};
 
   if (!ReadCommand(Cmd::kRoGetPacketStatus, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return static_cast<uint32_t>(-1);
   }
 
@@ -1902,7 +1902,7 @@ uint32_t Sx126x::GetGfskPacketStatus() {
 bool Sx126x::ParseGfskPacketStatus(
     uint32_t parse_status, GfskPacketStatus& status) {
   if (parse_status == static_cast<uint32_t>(-1)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -1921,7 +1921,7 @@ bool Sx126x::ParseGfskPacketStatus(
 bool Sx126x::ParseGfskPacketMetrics(
     uint32_t parse_metrics, PacketMetrics& metrics) {
   if (parse_metrics == static_cast<uint32_t>(-1)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -1940,12 +1940,12 @@ bool Sx126x::ParseGfskPacketMetrics(
 bool Sx126x::SetGfskSyncWordPacketParams(
     const uint8_t* sync_word, uint8_t sync_word_length) {
   if ((sync_word == nullptr) || (sync_word_length == 0)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
   // 设置同步字（有效同步字长度会在GFSK包参数中同步更新）
   if (!SetGfskSyncWord(sync_word, sync_word_length)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetGfskSyncWord failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetGfskSyncWord failed\n");
     return false;
   }
 
@@ -1954,7 +1954,7 @@ bool Sx126x::SetGfskSyncWordPacketParams(
       GetGfskMaxPreambleDetector(param_.gfsk.preamble_length);
   if (static_cast<uint8_t>(preamble_detector) >
       static_cast<uint8_t>(max_preamble_detector)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     preamble_detector = max_preamble_detector;
   }
 
@@ -1964,7 +1964,7 @@ bool Sx126x::SetGfskSyncWordPacketParams(
           param_.gfsk.header_type, param_.gfsk.payload_length,
           param_.gfsk.crc.type, param_.gfsk.whitening)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetGfskPacketParams failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetGfskPacketParams failed\n");
     return false;
   }
   param_.gfsk.sync_word.data = sync_word;
@@ -1981,14 +1981,14 @@ bool Sx126x::SetGfskCrcPacketParams(
           param_.gfsk.address_comparison, param_.gfsk.header_type,
           param_.gfsk.payload_length, crc_type, param_.gfsk.whitening)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetGfskPacketParams failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetGfskPacketParams failed\n");
     return false;
   }
 
   // CRC类型会在GFSK包参数中同步更新；CRC关闭时不写seed和polynomial寄存器。
   if (crc_type != GfskCrcType::kCrcOff) {
     if (!SetGfskCrc(crc_initial, crc_polynomial)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetGfskCrc failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetGfskCrc failed\n");
       return false;
     }
   }
@@ -2015,7 +2015,7 @@ bool Sx126x::SetIrqGpioMode(uint16_t dio1_mask, uint16_t dio2_mask,
   }
 
   if (!SetDioIrqParams(irq_mask, dio1_mask, dio2_mask, dio3_mask)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetDioIrqParams failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetDioIrqParams failed\n");
     return false;
   }
 
@@ -2029,7 +2029,7 @@ bool Sx126x::ClearBuffer() {
   std::memset(buffer.get(), 0, kMaxPayloadSize);
 
   if (!WriteBuffer(buffer.get(), kMaxPayloadSize, 0)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteBuffer failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteBuffer failed\n");
     return false;
   }
 
@@ -2038,7 +2038,7 @@ bool Sx126x::ClearBuffer() {
 
 bool Sx126x::SetTxContinuousWave() {
   if (!WriteCommand(Cmd::kWoSetTxContinuousWave)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -2048,7 +2048,7 @@ bool Sx126x::SetTxContinuousWave() {
 bool Sx126x::SetSleep(SleepMode mode) {
   const uint8_t buffer = static_cast<uint8_t>(mode);
   if (!WriteCommand(Cmd::kWoSetSleep, &buffer, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteCommand failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
 
@@ -2062,24 +2062,24 @@ bool Sx126x::Wakeup() {
   uint8_t status = 0;
   // 直接读取任意命令触发cs引脚变化唤醒设备
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoGetStatus), &status)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   DelayMs(1);
   if (!CheckBusy()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "CheckBusy failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "CheckBusy failed\n");
     return false;
   }
 
   if (config_.enable_retention_list && !InitRetentionList()) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "InitRetentionList failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "InitRetentionList failed\n");
     return false;
   }
 
   if (!ApplyWorkaroundsAfterWakeup()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ApplyWorkaroundsAfterWakeup failed\n");
     return false;
   }
@@ -2089,11 +2089,11 @@ bool Sx126x::Wakeup() {
 
 bool Sx126x::WriteCommand(Cmd command, const uint8_t* data, size_t length) {
   if ((length > 0) && (data == nullptr)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
   if ((length + 1) > kMaxSpiFrameSize) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -2107,7 +2107,7 @@ bool Sx126x::WriteCommand(Cmd command, const uint8_t* data, size_t length) {
     return false;
   }
   if (!bus_->Write(buffer.data(), length + 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -2116,11 +2116,11 @@ bool Sx126x::WriteCommand(Cmd command, const uint8_t* data, size_t length) {
 
 bool Sx126x::ReadCommand(Cmd command, uint8_t* data, size_t length) {
   if ((length > 0) && (data == nullptr)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
   if ((length + 2) > kMaxSpiFrameSize) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -2133,7 +2133,7 @@ bool Sx126x::ReadCommand(Cmd command, uint8_t* data, size_t length) {
     return false;
   }
   if (!bus_->WriteRead(write_buffer.data(), read_buffer.data(), length + 2)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
@@ -2147,11 +2147,11 @@ bool Sx126x::ReadCommand(Cmd command, uint8_t* data, size_t length) {
 bool Sx126x::WriteRegister(
     uint16_t address, const uint8_t* data, size_t length) {
   if ((length > 0) && (data == nullptr)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
   if ((length + 3) > kMaxSpiFrameSize) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -2167,7 +2167,7 @@ bool Sx126x::WriteRegister(
     return false;
   }
   if (!bus_->Write(buffer.data(), length + 3)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -2176,11 +2176,11 @@ bool Sx126x::WriteRegister(
 
 bool Sx126x::ReadRegister(uint16_t address, uint8_t* data, size_t length) {
   if ((length > 0) && (data == nullptr)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
   if ((length + 4) > kMaxSpiFrameSize) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -2195,7 +2195,7 @@ bool Sx126x::ReadRegister(uint16_t address, uint8_t* data, size_t length) {
     return false;
   }
   if (!bus_->WriteRead(write_buffer.data(), read_buffer.data(), length + 4)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
@@ -2209,11 +2209,11 @@ bool Sx126x::ReadRegister(uint16_t address, uint8_t* data, size_t length) {
 bool Sx126x::WriteBufferRaw(
     uint8_t offset, const uint8_t* data, size_t length) {
   if ((length > 0) && (data == nullptr)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
   if ((length + 2) > kMaxSpiFrameSize) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -2228,7 +2228,7 @@ bool Sx126x::WriteBufferRaw(
     return false;
   }
   if (!bus_->Write(buffer.data(), length + 2)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -2237,11 +2237,11 @@ bool Sx126x::WriteBufferRaw(
 
 bool Sx126x::ReadBufferRaw(uint8_t offset, uint8_t* data, size_t length) {
   if ((length > 0) && (data == nullptr)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
   if ((length + 3) > kMaxSpiFrameSize) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -2255,7 +2255,7 @@ bool Sx126x::ReadBufferRaw(uint8_t offset, uint8_t* data, size_t length) {
     return false;
   }
   if (!bus_->WriteRead(write_buffer.data(), read_buffer.data(), length + 3)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
@@ -2394,20 +2394,20 @@ bool Sx126x::AddRegistersToRetentionList(
 
   if (((register_count > 0) && (register_address == nullptr)) ||
       (register_count > kMaxRetentionRegisterCount)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   std::array<uint8_t, kRetentionListSize> buffer = {};
   if (!ReadRegister(static_cast<uint16_t>(Reg::kRwRetentionListBaseAddress),
           buffer.data(), buffer.size())) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
   const uint8_t initial_count = buffer[0];
   if (initial_count > kMaxRetentionRegisterCount) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -2425,7 +2425,7 @@ bool Sx126x::AddRegistersToRetentionList(
 
     if (should_add) {
       if (buffer[0] >= kMaxRetentionRegisterCount) {
-        LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         return false;
       }
       list[2 * buffer[0]] = static_cast<uint8_t>(register_address[i] >> 8);
@@ -2440,7 +2440,7 @@ bool Sx126x::AddRegistersToRetentionList(
 
   if (!WriteRegister(static_cast<uint16_t>(Reg::kRwRetentionListBaseAddress),
           buffer.data(), buffer.size())) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
 
@@ -2460,32 +2460,32 @@ bool Sx126x::InitRetentionList() {
 
 bool Sx126x::ApplyWorkaroundsAfterWakeup() {
   if (config_.enable_tx_clamp_workaround && !FixTxClamp(true)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "FixTxClamp failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "FixTxClamp failed\n");
     return false;
   }
 
   if (param_.packet_type == PacketType::kLora) {
     if (!FixLoraInvertedIq(param_.lora.invert_iq)) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "FixLoraInvertedIq failed\n");
+          LogLevel::kError, __FILE__, __LINE__, "FixLoraInvertedIq failed\n");
       return false;
     }
     if (!FixBw500KhzSensitivity(
             param_.lora.band_width == LoraBw::kBw500000Hz)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "FixBw500KhzSensitivity failed\n");
       return false;
     }
   } else {
     if (!FixBw500KhzSensitivity(false)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "FixBw500KhzSensitivity failed\n");
       return false;
     }
   }
 
   if (param_.rx_boosted && !SetRxBoosted(true)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRxBoosted failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRxBoosted failed\n");
     return false;
   }
 
@@ -2497,12 +2497,12 @@ bool Sx126x::StopRxTimeoutTimer() {
 
   if (!WriteRegister(
           static_cast<uint16_t>(Reg::kRwRtcControl), &reg_value, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
 
   if (!ReadRegister(static_cast<uint16_t>(Reg::kRwEventClear), &reg_value, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
@@ -2510,7 +2510,7 @@ bool Sx126x::StopRxTimeoutTimer() {
   reg_value |= kTimeoutEventClearMask;
   if (!WriteRegister(
           static_cast<uint16_t>(Reg::kRwEventClear), &reg_value, 1)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
 

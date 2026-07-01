@@ -118,7 +118,7 @@ The chip-layer `Deinit()` releases the bus device used by the chip first, and sw
 
 ### Log Configuration
 
-`cpp_bus_driver` provides log level configuration for controlling debug messages, general messages, bus errors, and chip errors.
+`cpp_bus_driver` provides log level configuration for controlling debug messages, general messages, warning messages, and error messages.
 
 In an ESP-IDF project, run:
 

@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2026-04-29 14:20:15
+ * @LastEditTime: 2026-07-01 11:48:25
  * @License: GPL 3.0
  */
 #include "bus_guide.h"
@@ -10,60 +10,60 @@
 namespace cpp_bus_driver {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 i2c_cmd_handle_t BusI2cGuide::CmdLinkCreate() {
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "CmdLinkCreate failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "CmdLinkCreate failed\n");
   return nullptr;
 }
 
 bool BusI2cGuide::StartTransmit(
     i2c_cmd_handle_t cmd_handle, i2c_rw_t rw, bool ack_en) {
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "StartTransmit failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "StartTransmit failed\n");
   return false;
 }
 
 bool BusI2cGuide::Write(
     i2c_cmd_handle_t cmd_handle, uint8_t data, bool ack_en) {
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
   return false;
 }
 
 bool BusI2cGuide::Write(i2c_cmd_handle_t cmd_handle, const uint8_t* data,
     size_t data_len, bool ack_en) {
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
   return false;
 }
 
 bool BusI2cGuide::Read(i2c_cmd_handle_t cmd_handle, uint8_t* data,
     size_t data_len, i2c_ack_type_t ack) {
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Read failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
   return false;
 }
 
 bool BusI2cGuide::StopTransmit(i2c_cmd_handle_t cmd_handle) {
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "StopTransmit failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "StopTransmit failed\n");
   return false;
 }
 
 bool BusI2cGuide::StartTransmit() {
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "StartTransmit failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "StartTransmit failed\n");
   return false;
 }
 
 bool BusI2cGuide::StopTransmit() {
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "StopTransmit failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "StopTransmit failed\n");
   return false;
 }
 
 #endif
 
 bool BusI2cGuide::Deinit(bool delete_bus) {
-  LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Deinit failed\n");
+  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
   return false;
 }
 
 bool BusI2cGuide::Read(
     const uint8_t write_c8, uint8_t* read_data, size_t read_data_length) {
   if (!WriteRead(&write_c8, 1, read_data, read_data_length)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -77,7 +77,7 @@ bool BusI2cGuide::Read(
       static_cast<uint8_t>(write_c16),
   };
   if (!WriteRead(buffer, 2, read_data, read_data_length)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
@@ -94,7 +94,7 @@ bool BusI2cGuide::Read(
   };
 
   if (!WriteRead(buffer, 4, read_data, read_data_length)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
@@ -104,7 +104,7 @@ bool BusI2cGuide::Read(
 bool BusI2cGuide::Write(const uint8_t write_c8, const uint8_t write_d8) {
   const uint8_t buffer[] = {write_c8, write_d8};
   if (!Write(buffer, 2)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -130,7 +130,7 @@ bool BusI2cGuide::Write(
   }
 
   if (!Write(buffer, 3)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -141,7 +141,7 @@ bool BusI2cGuide::Write(const uint16_t write_c16, const uint8_t write_d8) {
   const uint8_t buffer[] = {static_cast<uint8_t>(write_c16 >> 8),
       static_cast<uint8_t>(write_c16), write_d8};
   if (!Write(buffer, 3)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -151,7 +151,7 @@ bool BusI2cGuide::Write(const uint16_t write_c16, const uint8_t write_d8) {
 bool BusI2cGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
     size_t write_data_length) {
   if (write_data == nullptr && write_data_length != 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -162,7 +162,7 @@ bool BusI2cGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
   }
 
   if (!Write(buffer.data(), buffer.size())) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -172,7 +172,7 @@ bool BusI2cGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
 bool BusI2cGuide::Write(const uint32_t write_c32, const uint8_t* write_data,
     size_t write_data_length) {
   if (write_data == nullptr && write_data_length != 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -186,7 +186,7 @@ bool BusI2cGuide::Write(const uint32_t write_c32, const uint8_t* write_data,
   }
 
   if (!Write(buffer.data(), buffer.size())) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -195,7 +195,7 @@ bool BusI2cGuide::Write(const uint32_t write_c32, const uint8_t* write_data,
 
 bool BusI2cGuide::Scan7bitAddress(std::vector<uint8_t>* address) {
   if (address == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -209,7 +209,7 @@ bool BusI2cGuide::Scan7bitAddress(std::vector<uint8_t>* address) {
 
   if (address_buffer.empty()) {
     LogMessage(
-        LogLevel::kInfo, __FILE__, __LINE__, "address_buffer is empty\n");
+        LogLevel::kWarning, __FILE__, __LINE__, "address_buffer is empty\n");
     return false;
   }
 
@@ -219,7 +219,7 @@ bool BusI2cGuide::Scan7bitAddress(std::vector<uint8_t>* address) {
 
 bool BusSpiGuide::Read(const uint8_t write_c8, uint8_t* read_d8) {
   if (read_d8 == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -227,7 +227,7 @@ bool BusSpiGuide::Read(const uint8_t write_c8, uint8_t* read_d8) {
   uint8_t buffer_read[2] = {0};
 
   if (!WriteRead(buffer_write, buffer_read, 2)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
@@ -239,7 +239,7 @@ bool BusSpiGuide::Read(const uint8_t write_c8, uint8_t* read_d8) {
 bool BusSpiGuide::Read(
     const uint8_t write_c8, uint8_t* read_data, size_t read_data_length) {
   if (read_data == nullptr && read_data_length != 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -249,7 +249,7 @@ bool BusSpiGuide::Read(
 
   if (!WriteRead(
           buffer_write.data(), buffer_read.data(), buffer_write.size())) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
@@ -262,7 +262,7 @@ bool BusSpiGuide::Read(
 
 bool BusSpiGuide::Write(const uint8_t write_c8) {
   if (!Write(&write_c8, 1)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -273,7 +273,7 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint8_t write_d8) {
   const uint8_t buffer[] = {write_c8, write_d8};
 
   if (!Write(buffer, 2)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -283,7 +283,7 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint8_t write_d8) {
 bool BusSpiGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
     size_t write_data_length) {
   if (write_data == nullptr && write_data_length != 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -294,7 +294,7 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
   }
 
   if (!Write(buffer.data(), buffer.size())) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -304,7 +304,7 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
 bool BusSpiGuide::Read(const uint8_t write_c8, const uint16_t write_c16,
     uint8_t* read_data, size_t read_data_length) {
   if (read_data == nullptr && read_data_length != 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -316,7 +316,7 @@ bool BusSpiGuide::Read(const uint8_t write_c8, const uint16_t write_c16,
 
   if (!WriteRead(
           buffer_write.data(), buffer_read.data(), buffer_write.size())) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
@@ -330,7 +330,7 @@ bool BusSpiGuide::Read(const uint8_t write_c8, const uint16_t write_c16,
 bool BusSpiGuide::Read(const uint8_t write_c8_1, const uint8_t write_c8_2,
     uint8_t* read_data, size_t read_data_length) {
   if (read_data == nullptr && read_data_length != 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -341,7 +341,7 @@ bool BusSpiGuide::Read(const uint8_t write_c8_1, const uint8_t write_c8_2,
 
   if (!WriteRead(
           buffer_write.data(), buffer_read.data(), buffer_write.size())) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
@@ -355,7 +355,7 @@ bool BusSpiGuide::Read(const uint8_t write_c8_1, const uint8_t write_c8_2,
 bool BusSpiGuide::Read(
     const uint8_t write_c8, const uint16_t write_c16, uint8_t* read_data) {
   if (read_data == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -368,7 +368,7 @@ bool BusSpiGuide::Read(
   uint8_t buffer_read[4] = {0};
 
   if (!WriteRead(buffer_write, buffer_read, 4)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "WriteRead failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
 
@@ -380,7 +380,7 @@ bool BusSpiGuide::Read(
 bool BusSpiGuide::Write(const uint8_t write_c8, const uint16_t write_c16,
     const uint8_t* write_data, size_t write_data_length) {
   if (write_data == nullptr && write_data_length != 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -393,7 +393,7 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint16_t write_c16,
   }
 
   if (!Write(buffer.data(), buffer.size())) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -403,7 +403,7 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint16_t write_c16,
 bool BusSpiGuide::Write(const uint8_t write_c8_1, const uint8_t write_c8_2,
     const uint8_t* write_data, size_t write_data_length) {
   if (write_data == nullptr && write_data_length != 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -415,7 +415,7 @@ bool BusSpiGuide::Write(const uint8_t write_c8_1, const uint8_t write_c8_2,
   }
 
   if (!Write(buffer.data(), buffer.size())) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -433,7 +433,7 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint16_t write_c16,
   std::memcpy(&buffer[3], &write_data, 1);
 
   if (!Write(buffer, 4)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -442,7 +442,7 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint16_t write_c16,
 
 bool BusMipiGuide::Write(const uint8_t write_c8) {
   if (!Write(static_cast<uint8_t>(write_c8), nullptr, 0)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -453,7 +453,7 @@ bool BusMipiGuide::Write(const uint8_t write_c8, const uint8_t write_d8) {
   uint8_t buffer = write_d8;
 
   if (!Write(static_cast<uint8_t>(write_c8), &buffer, 1)) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 

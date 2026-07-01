@@ -19,25 +19,25 @@ bool Ecx336cn::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipSpiGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
   if (!InitSequence(
           kInitSequence640x400_60Hz_, sizeof(kInitSequence640x400_60Hz_))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "InitSequence failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
     return false;
   }
 
   if (!SetPowerSaveMode(false)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetPowerSaveMode failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetPowerSaveMode failed\n");
     return false;
   }
 
@@ -48,7 +48,7 @@ bool Ecx336cn::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!ChipSpiGuide::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -62,12 +62,12 @@ bool Ecx336cn::Deinit(bool delete_bus) {
 bool Ecx336cn::SetPowerSaveMode(bool enable) {
   if (enable) {
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kWoPowerSaveMode), 0x0E)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   } else {
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kWoPowerSaveMode), 0x0F)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   }

@@ -20,13 +20,13 @@ bool Aw21009::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipI2cGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
@@ -40,14 +40,14 @@ bool Aw21009::Init(int32_t freq_hz) {
       "Get aw21009 id success (id: %#X)\n", device_id);
 
   if (!SoftwareReset()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SoftwareReset failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SoftwareReset failed\n");
     return false;
   }
 
   if (!SetGlobalControl(true, ClockFrequency::k16Mhz,
           PwmResolution::k12BitWithDither, true)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetGlobalControl failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetGlobalControl failed\n");
     return false;
   }
   DelayMs(1);
@@ -58,7 +58,7 @@ bool Aw21009::Init(int32_t freq_hz) {
   result &= SetBrightness(LedChannel::kAll, 0, false);
   result &= Update();
   if (!result) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Default config failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Default config failed\n");
     return false;
   }
 
@@ -71,7 +71,7 @@ bool Aw21009::Deinit(bool delete_bus) {
   result &= SetChipEnable(false);
 
   if (!ChipI2cGuide::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -84,12 +84,12 @@ bool Aw21009::Deinit(bool delete_bus) {
 
 bool Aw21009::ReadRegister(uint8_t reg, uint8_t* value) {
   if (value == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   if (!bus_->Read(reg, value)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -98,7 +98,7 @@ bool Aw21009::ReadRegister(uint8_t reg, uint8_t* value) {
 
 bool Aw21009::WriteRegister(uint8_t reg, uint8_t value) {
   if (!bus_->Write(reg, value)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -108,12 +108,12 @@ bool Aw21009::WriteRegister(uint8_t reg, uint8_t value) {
 bool Aw21009::WriteRegisters(
     uint8_t start_reg, const uint8_t* data, size_t length) {
   if (data == nullptr && length != 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   if (!bus_->Write(start_reg, data, length)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -123,13 +123,13 @@ bool Aw21009::WriteRegisters(
 bool Aw21009::WriteMaskedRegister(uint8_t reg, uint8_t mask, uint8_t value) {
   uint8_t buffer = 0;
   if (!ReadRegister(reg, &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
   buffer = (buffer & ~mask) | (value & mask);
   if (!WriteRegister(reg, buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
 
@@ -138,7 +138,7 @@ bool Aw21009::WriteMaskedRegister(uint8_t reg, uint8_t mask, uint8_t value) {
 
 bool Aw21009::SoftwareReset() {
   if (!WriteRegister(RegisterValue(Register::kReset), 0x00)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "WriteRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
 
@@ -150,7 +150,7 @@ uint8_t Aw21009::GetDeviceId() {
   uint8_t buffer = 0;
 
   if (!ReadRegister(RegisterValue(Register::kReset), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return static_cast<uint8_t>(-1);
   }
 
@@ -196,7 +196,7 @@ bool Aw21009::SetChipEnable(bool enable) {
 bool Aw21009::SetBrightness(
     LedChannel channel, uint16_t value, bool update) {
   if (value > kBrightnessMax) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     value = kBrightnessMax;
   }
 
@@ -212,13 +212,13 @@ bool Aw21009::SetBrightness(
   } else if (IsSingleChannel(channel)) {
     result = WriteBrightnessByIndex(ChannelIndex(channel), value);
   } else {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   if (!result) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "Write brightness failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "Write brightness failed\n");
     return false;
   }
 
@@ -227,7 +227,7 @@ bool Aw21009::SetBrightness(
 
 bool Aw21009::GetBrightness(LedChannel channel, uint16_t* value) {
   if (value == nullptr || !IsSingleChannel(channel)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -235,7 +235,7 @@ bool Aw21009::GetBrightness(LedChannel channel, uint16_t* value) {
       RegisterValue(Register::kBrightnessStart) + (ChannelIndex(channel) * 2);
   uint8_t buffer[2] = {0};
   if (!bus_->Read(reg, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -259,12 +259,12 @@ bool Aw21009::SetSingleByteBrightness(
         RegisterValue(Register::kBrightnessStart) + ChannelIndex(channel),
         value);
   } else {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   if (!result) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Write single byte brightness failed\n");
     return false;
   }
@@ -275,7 +275,7 @@ bool Aw21009::SetSingleByteBrightness(
 bool Aw21009::SetRgbBrightness(
     LedGroup group, uint16_t value, bool update) {
   if (value > kBrightnessMax) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     value = kBrightnessMax;
   }
 
@@ -287,12 +287,12 @@ bool Aw21009::SetRgbBrightness(
   } else if (IsSingleGroup(group)) {
     result = WriteBrightnessByIndex(static_cast<uint8_t>(group), value);
   } else {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   if (!result) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Write RGB brightness failed\n");
     return false;
   }
@@ -314,12 +314,12 @@ bool Aw21009::SetCurrentLimit(
   } else if (IsSingleChannel(channel)) {
     result = WriteCurrentLimitByIndex(ChannelIndex(channel), value);
   } else {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   if (!result) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Write current limit failed\n");
     return false;
   }
@@ -329,7 +329,7 @@ bool Aw21009::SetCurrentLimit(
 
 bool Aw21009::GetCurrentLimit(LedChannel channel, uint8_t* value) {
   if (value == nullptr || !IsSingleChannel(channel)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -353,7 +353,7 @@ bool Aw21009::SetPhaseDelay(bool enable) {
 bool Aw21009::SetPhaseInvert(LedGroup group, bool enable) {
   const uint8_t mask = GroupMask(group);
   if (mask == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -384,14 +384,14 @@ bool Aw21009::SetOpenShortDetection(OpenShortDetectMode mode,
 
 bool Aw21009::GetOpenShortStatus(uint16_t* status) {
   if (status == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   uint8_t buffer[2] = {0};
   if (!bus_->Read(RegisterValue(Register::kOpenShortStatus0), buffer,
           sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -425,14 +425,14 @@ bool Aw21009::SetOverTemperatureProtection(
 
 bool Aw21009::GetThermalStatus(ThermalStatus* status) {
   if (status == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   uint8_t buffer = 0;
   if (!ReadRegister(RegisterValue(Register::kOverTemperatureControl),
           &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
@@ -487,13 +487,13 @@ bool Aw21009::SetOcpThreshold(OcpThreshold threshold) {
 
 bool Aw21009::GetUvStatus(UvStatus* status) {
   if (status == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   uint8_t buffer = 0;
   if (!ReadRegister(RegisterValue(Register::kUvControl), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
@@ -541,7 +541,7 @@ bool Aw21009::SetSlewRate(
 
 bool Aw21009::SetGroupBrightness(uint16_t value) {
   if (value > kBrightnessMax) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     value = kBrightnessMax;
   }
 
@@ -572,7 +572,7 @@ bool Aw21009::SetGroupConfig(
 bool Aw21009::SetGroupEnable(LedGroup group, bool enable) {
   const uint8_t mask = GroupMask(group);
   if (mask == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -599,7 +599,7 @@ bool Aw21009::SetManualPatternSwitch(
 bool Aw21009::SetPatternTiming(const PatternTiming& timing) {
   uint16_t repeat = timing.repeat;
   if (repeat > 0x0FFF) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     repeat = 0x0FFF;
   }
 
@@ -643,13 +643,13 @@ bool Aw21009::StopPattern() {
 
 bool Aw21009::GetPatternStatus(PatternStatus* status) {
   if (status == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   uint8_t buffer = 0;
   if (!ReadRegister(RegisterValue(Register::kPatternGo), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "ReadRegister failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
@@ -688,7 +688,7 @@ bool Aw21009::IsSingleGroup(LedGroup group) {
 
 bool Aw21009::WriteBrightnessByIndex(uint8_t index, uint16_t value) {
   if (index >= kLedCount) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -704,7 +704,7 @@ bool Aw21009::WriteBrightnessByIndex(uint8_t index, uint16_t value) {
 
 bool Aw21009::WriteCurrentLimitByIndex(uint8_t index, uint8_t value) {
   if (index >= kLedCount) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 

@@ -16,7 +16,7 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
       (device_handle_ != nullptr)) {
     if (!Deinit()) {
       LogMessage(
-          LogLevel::kBus, __FILE__, __LINE__, "HardwareMipi deinit failed\n");
+          LogLevel::kError, __FILE__, __LINE__, "HardwareMipi deinit failed\n");
       return false;
     }
   }
@@ -70,7 +70,7 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
 
   esp_err_t result = esp_lcd_new_dsi_bus(&bus_config, &bus_handle_);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "esp_lcd_new_dsi_bus failed (error code: %#X)\n", result);
     return false;
   }
@@ -100,7 +100,7 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
   };
   result = esp_lcd_new_panel_io_dbi(bus_handle_, &io_config, &io_handle_);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "esp_lcd_new_panel_io_dbi failed (error code: %#X)\n", result);
     Deinit();
     return false;
@@ -169,7 +169,7 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
 
   result = esp_lcd_new_panel_dpi(bus_handle_, &panel_config, &device_handle_);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "esp_lcd_new_panel_dpi failed (error code: %#X)\n", result);
     Deinit();
     return false;
@@ -181,7 +181,7 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
 bool HardwareMipi::StartTransmit() {
   esp_err_t result = esp_lcd_panel_init(device_handle_);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "esp_lcd_panel_init failed (error code: %#X)\n", result);
     return false;
   }
@@ -195,7 +195,7 @@ bool HardwareMipi::Deinit() {
   if (device_handle_ != nullptr) {
     esp_err_t ret = esp_lcd_panel_del(device_handle_);
     if (ret != ESP_OK) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "esp_lcd_panel_del failed (error code: %#X)\n", ret);
       result = false;
     } else {
@@ -206,7 +206,7 @@ bool HardwareMipi::Deinit() {
   if (io_handle_ != nullptr) {
     esp_err_t ret = esp_lcd_panel_io_del(io_handle_);
     if (ret != ESP_OK) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "esp_lcd_panel_io_del failed (error code: %#X)\n", ret);
       result = false;
     } else {
@@ -217,7 +217,7 @@ bool HardwareMipi::Deinit() {
   if (bus_handle_ != nullptr) {
     esp_err_t ret = esp_lcd_del_dsi_bus(bus_handle_);
     if (ret != ESP_OK) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "esp_lcd_del_dsi_bus failed (error code: %#X)\n", ret);
       result = false;
     } else {
@@ -231,7 +231,7 @@ bool HardwareMipi::Deinit() {
 bool HardwareMipi::Read(int32_t cmd, void* data, size_t byte) {
   esp_err_t result = esp_lcd_panel_io_rx_param(io_handle_, cmd, data, byte);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "esp_lcd_panel_io_rx_param failed (error code: %#X)\n", result);
     return false;
   }
@@ -242,7 +242,7 @@ bool HardwareMipi::Read(int32_t cmd, void* data, size_t byte) {
 bool HardwareMipi::Write(int32_t cmd, const void* data, size_t byte) {
   esp_err_t result = esp_lcd_panel_io_tx_param(io_handle_, cmd, data, byte);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "esp_lcd_panel_io_tx_param failed (error code: %#X)\n", result);
     return false;
   }
@@ -252,7 +252,7 @@ bool HardwareMipi::Write(int32_t cmd, const void* data, size_t byte) {
 
 bool HardwareMipi::set_device_handle(esp_lcd_panel_handle_t handle) {
   if (handle == nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -268,7 +268,7 @@ bool HardwareMipi::Write(
   esp_err_t result = esp_lcd_panel_draw_bitmap(
       device_handle_, x_start, y_start, x_end, y_end, data);
   if (result != ESP_OK) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "esp_lcd_panel_draw_bitmap failed\n");
     return false;
   }

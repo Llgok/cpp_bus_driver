@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-26 11:13:26
- * @LastEditTime: 2026-06-30 17:31:30
+ * @LastEditTime: 2026-07-01 14:22:46
  * @License: GPL 3.0
  */
 #include "aw862xx.h"
@@ -206,13 +206,13 @@ bool Aw862xx::Init(int32_t freq_hz) {
     result &= GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Rst failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
       return false;
     }
   }
 
   if (!ChipI2cGuide::Init(freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
@@ -230,7 +230,7 @@ bool Aw862xx::Init(int32_t freq_hz) {
 
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceId), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Get aw862xx id failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Get aw862xx id failed\n");
     return false;
   }
 
@@ -243,7 +243,7 @@ bool Aw862xx::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!ChipI2cGuide::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
@@ -257,7 +257,7 @@ Aw862xx::ChipType Aw862xx::GetDeviceId() {
   uint8_t buffer = 0;
 
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceId), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     chip_type_ = ChipType::kUnknown;
     return chip_type_;
   }
@@ -320,7 +320,7 @@ Aw862xx::ChipType Aw862xx::GetDeviceId() {
   if (buffer == 0x00) {
     uint8_t ef_id = 0;
     if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoEfId), &ef_id)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read ef id failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read ef id failed\n");
       chip_type_ = ChipType::kUnknown;
       return chip_type_;
     }
@@ -357,7 +357,7 @@ Aw862xx::ChipType Aw862xx::GetDeviceId() {
 bool Aw862xx::SoftwareReset() {
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kWoSrst), static_cast<uint8_t>(0xAA))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return -1;
   }
 
@@ -368,43 +368,43 @@ float Aw862xx::GetInputVoltage() {
   uint8_t buffer[2] = {0};
 
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSysctrl1), &buffer[0])) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
   buffer[0] |= 0B00001000;
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSysctrl1), buffer[0])) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return -1;
   }
 
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwDetcfg2), &buffer[0])) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
   buffer[0] |= 0B00000010;
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwDetcfg2), buffer[0])) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return -1;
   }
 
   DelayMs(3);
 
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSysctrl1), &buffer[0])) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
   buffer[0] &= 0B11110111;
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSysctrl1), buffer[0])) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return -1;
   }
 
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwDetVbat), &buffer[0])) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwDetLo), &buffer[1])) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
   buffer[1] = (buffer[1] & 0B00110000) >> 4;
@@ -415,12 +415,12 @@ float Aw862xx::GetInputVoltage() {
 bool Aw862xx::SetPlayMode(PlayMode mode) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwPlaycfg3), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11111100) | static_cast<uint8_t>(mode);
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwPlaycfg3), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -430,12 +430,12 @@ bool Aw862xx::SetPlayMode(PlayMode mode) {
 bool Aw862xx::SetGoFlag() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwPlaycfg4), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11111110) | 0B00000001;
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwPlaycfg4), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -445,7 +445,7 @@ bool Aw862xx::SetGoFlag() {
 Aw862xx::GlobalStatus Aw862xx::GetGlobalStatus() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoGlbrd5), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return GlobalStatus::kFalse;
   }
 
@@ -466,7 +466,7 @@ Aw862xx::GlobalStatus Aw862xx::GetGlobalStatus() {
       break;
 
     default:
-      LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return GlobalStatus::kFalse;
   }
 
@@ -476,12 +476,12 @@ Aw862xx::GlobalStatus Aw862xx::GetGlobalStatus() {
 bool Aw862xx::RunRtpPlaybackWaveform(
     const uint8_t* waveform_data, size_t length) {
   if (!SetPlayMode(PlayMode::kRtp)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetPlayMode failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetPlayMode failed\n");
     return false;
   }
 
   if (!SetGoFlag()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetGoFlag failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetGoFlag failed\n");
     return false;
   }
 
@@ -496,7 +496,7 @@ bool Aw862xx::RunRtpPlaybackWaveform(
     timeout_count_buffer++;
     if (timeout_count_buffer > 100) {
       LogMessage(
-          LogLevel::kChip, __FILE__, __LINE__, "Rtp mode switch timeout\n");
+          LogLevel::kError, __FILE__, __LINE__, "Rtp mode switch timeout\n");
       return false;
     }
     DelayUs(1000);
@@ -504,7 +504,7 @@ bool Aw862xx::RunRtpPlaybackWaveform(
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwRtpdata), waveform_data, length)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -514,12 +514,12 @@ bool Aw862xx::RunRtpPlaybackWaveform(
 bool Aw862xx::SetWaveformDataSampleRate(SampleRate rate) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSysctrl2), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11111100) | static_cast<uint8_t>(rate);
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSysctrl2), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -529,12 +529,12 @@ bool Aw862xx::SetWaveformDataSampleRate(SampleRate rate) {
 bool Aw862xx::SetPlayingChangedGainBypass(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSysctrl7), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B10111111) | (static_cast<uint8_t>(enable) << 6);
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSysctrl7), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -544,12 +544,12 @@ bool Aw862xx::SetPlayingChangedGainBypass(bool enable) {
 bool Aw862xx::SetD2sGain(D2sGain gain) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSysctrl7), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11000000) | (static_cast<uint8_t>(gain));
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSysctrl7), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -558,11 +558,11 @@ bool Aw862xx::SetD2sGain(D2sGain gain) {
 
 bool Aw862xx::SetLraOscFrequency(uint8_t freq_hz) {
   if (freq_hz > 63) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     freq_hz = 63;
   }
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwTrimcfg3), freq_hz)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -572,12 +572,12 @@ bool Aw862xx::SetLraOscFrequency(uint8_t freq_hz) {
 bool Aw862xx::SetF0DetectionMode(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwContcfg1), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11110111) | (static_cast<uint8_t>(enable) << 3);
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwContcfg1), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -587,12 +587,12 @@ bool Aw862xx::SetF0DetectionMode(bool enable) {
 bool Aw862xx::SetTrackSwitch(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwContcfg6), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B01111111) | (static_cast<uint8_t>(enable) << 7);
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwContcfg6), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -602,12 +602,12 @@ bool Aw862xx::SetTrackSwitch(bool enable) {
 bool Aw862xx::SetAutoBrakeStop(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwPlaycfg3), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11111011) | (static_cast<uint8_t>(enable) << 2);
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwPlaycfg3), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -616,17 +616,17 @@ bool Aw862xx::SetAutoBrakeStop(bool enable) {
 
 bool Aw862xx::SetContDrive1Level(uint8_t level) {
   if (level > 127) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     level = 127;
   }
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwContcfg6), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B10000000) | level;
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwContcfg6), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -635,17 +635,17 @@ bool Aw862xx::SetContDrive1Level(uint8_t level) {
 
 bool Aw862xx::SetContDrive2Level(uint8_t level) {
   if (level > 127) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     level = 127;
   }
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwContcfg7), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B10000000) | level;
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwContcfg7), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -654,7 +654,7 @@ bool Aw862xx::SetContDrive2Level(uint8_t level) {
 
 bool Aw862xx::SetContDrive1Times(uint8_t times) {
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwContcfg8), times)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -663,7 +663,7 @@ bool Aw862xx::SetContDrive1Times(uint8_t times) {
 
 bool Aw862xx::SetContDrive2Times(uint8_t times) {
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwContcfg9), times)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -672,7 +672,7 @@ bool Aw862xx::SetContDrive2Times(uint8_t times) {
 
 bool Aw862xx::SetContTrackMargin(uint8_t value) {
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwContcfg11), value)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -681,7 +681,7 @@ bool Aw862xx::SetContTrackMargin(uint8_t value) {
 
 bool Aw862xx::SetContDriveWidth(uint8_t value) {
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwContcfg3), value)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -698,41 +698,41 @@ uint32_t Aw862xx::GetF0Detection() {
 
   // 使用f0校验必须进行一次软件复位保证稳定触发校验流程
   if (!SoftwareReset()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SoftwareReset failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SoftwareReset failed\n");
     return -1;
   }
 
   if (!SetLraOscFrequency(0)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetLraOscFrequency failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetLraOscFrequency failed\n");
     return -1;
   }
 
   if (!SetPlayMode(PlayMode::kCont)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetPlayMode failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetPlayMode failed\n");
     return -1;
   }
 
   if (!SetF0DetectionMode(true)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetF0DetectionMode failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetF0DetectionMode failed\n");
     return -1;
   }
 
   if (!SetTrackSwitch(true)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetTrackSwitch failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetTrackSwitch failed\n");
     return -1;
   }
 
   if (!SetAutoBrakeStop(true)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetAutoBrakeStop failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetAutoBrakeStop failed\n");
     return -1;
   }
 
   if (!SetContDrive1Level(kContDrv1Level)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "set_cont_drive_1_level failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "set_cont_drive_1_level failed\n");
     return -1;
   }
 
@@ -745,25 +745,25 @@ uint32_t Aw862xx::GetF0Detection() {
 
   if (!SetContDrive2Level(static_cast<uint8_t>(cont_drive_2_level_buffer))) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "set_cont_drive_2_level failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "set_cont_drive_2_level failed\n");
     return -1;
   }
 
   if (!SetContDrive1Times(kContDrv1Time)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "set_cont_drive_1_times failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "set_cont_drive_1_times failed\n");
     return -1;
   }
 
   if (!SetContDrive2Times(kContDrv2Time)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "set_cont_drive_2_times failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "set_cont_drive_2_times failed\n");
     return -1;
   }
 
   if (!SetContTrackMargin(kContTrackMargin)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetContTrackMargin failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetContTrackMargin failed\n");
     return -1;
   }
 
@@ -771,21 +771,21 @@ uint32_t Aw862xx::GetF0Detection() {
       240000 / f0_value_ - kContTrackMargin - kContBrakeGain - 8;
 
   if (cont_drive_width_buffer < 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     cont_drive_width_buffer = 0;
   } else if (cont_drive_width_buffer > 255) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     cont_drive_width_buffer = 255;
   }
 
   if (!SetContDriveWidth(cont_drive_width_buffer)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetContDriveWidth failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetContDriveWidth failed\n");
     return -1;
   }
 
   if (!SetGoFlag()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetGoFlag failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetGoFlag failed\n");
     return -1;
   }
 
@@ -797,20 +797,20 @@ uint32_t Aw862xx::GetF0Detection() {
     if (!bus_->Read(
             static_cast<uint8_t>(static_cast<uint8_t>(Cmd::kRoContrd14) + i),
             &buffer[i])) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return -1;
     }
   }
 
   if (!SetF0DetectionMode(false)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetF0DetectionMode failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetF0DetectionMode failed\n");
     return -1;
   }
 
   if (!SetAutoBrakeStop(false)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetAutoBrakeStop failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetAutoBrakeStop failed\n");
     return -1;
   }
 
@@ -819,7 +819,7 @@ uint32_t Aw862xx::GetF0Detection() {
 
 bool Aw862xx::SetF0Preset(uint32_t f0_0p1_hz) {
   if (f0_0p1_hz == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -833,7 +833,7 @@ bool Aw862xx::SetF0Calibrate(uint32_t f0_value) {
 
   if (f0_value < f0_calibrate_value_min_buffer ||
       f0_value > f0_calibrate_value_max_buffer) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetF0Calibrate failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetF0Calibrate failed\n");
     return false;
   }
 
@@ -868,7 +868,7 @@ bool Aw862xx::SetF0Calibrate(uint32_t f0_value) {
 
   if (!SetLraOscFrequency(f0_calibrate_lra_buffer)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetLraOscFrequency failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetLraOscFrequency failed\n");
     return false;
   }
 
@@ -881,7 +881,7 @@ bool Aw862xx::GetSystemStatus(SystemStatus& status) {
   uint8_t buffer = 0;
 
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoSysst), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
 
@@ -900,12 +900,12 @@ bool Aw862xx::SetClock(bool enable) { return SetRamInit(enable); }
 bool Aw862xx::SetRamInit(bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSysctrl1), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11110111) | (static_cast<uint8_t>(enable) << 3);
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSysctrl1), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -915,7 +915,7 @@ bool Aw862xx::SetRamInit(bool enable) {
 bool Aw862xx::SetRrtModeGain(uint8_t gain) {
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwPlaycfg2), static_cast<uint8_t>(gain))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1000,19 +1000,19 @@ bool Aw862xx::SetRamBaseAddress(uint16_t base_addr) {
   // RTPCFG1[3:0]和RTPCFG2用于保存RAM base地址。
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwRtpcfg1), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = (buffer & 0xF0) | static_cast<uint8_t>((base_addr >> 8) & 0x0F);
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwRtpcfg1), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwRtpcfg2),
           static_cast<uint8_t>(base_addr & 0xFF))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1032,7 +1032,7 @@ bool Aw862xx::SetRamFifoThreshold(uint16_t base_addr) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwRtpcfg3), buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1045,7 +1045,7 @@ bool Aw862xx::SetRamAddress(uint16_t ram_addr) {
 
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwRamaddrh), buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1063,7 +1063,7 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
   uint16_t base_addr = 0;
   uint8_t waveform_count = 0;
   if (!ParseRamHeader(waveform_data, length, base_addr, waveform_count)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Invalid AW862xx RAM waveform container\n");
     return false;
   }
@@ -1071,13 +1071,13 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
   // container_update流程：停止播放、进入raminit、配置地址/FIFO、
   // 写入RAM数据，然后退出raminit。
   if (!StopRamPlaybackWaveform()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "StopRamPlaybackWaveform failed\n");
     return false;
   }
 
   if (!SetRamInit(true)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRamInit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRamInit failed\n");
     return false;
   }
 
@@ -1085,18 +1085,18 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
 
   if (!SetRamBaseAddress(base_addr)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetRamBaseAddress failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetRamBaseAddress failed\n");
     return false;
   }
 
   if (!SetRamFifoThreshold(base_addr)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetRamFifoThreshold failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetRamFifoThreshold failed\n");
     return false;
   }
 
   if (!SetRamAddress(base_addr)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRamAddress failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRamAddress failed\n");
     return false;
   }
 
@@ -1109,7 +1109,7 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
     const size_t chunk_length = std::min(kRamWriteChunkSize, length - offset);
     if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwRamadata),
             waveform_data + offset, chunk_length)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "Write ram data failed (offset: %u size: %u)\n",
           static_cast<unsigned int>(offset),
           static_cast<unsigned int>(chunk_length));
@@ -1121,13 +1121,13 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
   // 写入RAM波形数据，上电时只需写入一次。
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwRamadata), waveform_data, length)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 #endif
 
   if (!SetRamInit(false)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRamInit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRamInit failed\n");
     return false;
   }
 
@@ -1139,7 +1139,7 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
 
   if (!has_waveform_info) {
     LogMessage(
-        LogLevel::kInfo, __FILE__, __LINE__, "Unknown AW862xx RAM waveform\n");
+        LogLevel::kError, __FILE__, __LINE__, "Unknown AW862xx RAM waveform\n");
     return true;
   }
 
@@ -1158,13 +1158,13 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
 bool Aw862xx::InitRamMode(RamWaveformLibrary library) {
   const RamWaveformInfo info = GetRamWaveformInfo(library);
   if (info.data == nullptr || info.length == 0 || info.waveform_count == 0) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Invalid AW862xx RAM waveform library\n");
     return false;
   }
 
   if (!SetWaveformDataSampleRate(info.sample_rate)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "SetWaveformDataSampleRate failed\n");
     return false;
   }
@@ -1180,14 +1180,14 @@ bool Aw862xx::InitRamMode(RamWaveformLibrary library) {
 bool Aw862xx::SetRamWaveformSequence(
     uint8_t slot, uint8_t waveform_sequence_number) {
   if (slot >= 8 || waveform_sequence_number > 127) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
   if (!bus_->Write(
           static_cast<uint8_t>(static_cast<uint8_t>(Cmd::kRwWavcfg1) + slot),
           waveform_sequence_number)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1196,19 +1196,19 @@ bool Aw862xx::SetRamWaveformSequence(
 
 bool Aw862xx::SetRamWaveformLoop(uint8_t slot, uint8_t loop_count) {
   if (slot >= 8) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
   if (loop_count > 15) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     loop_count = 15;
   }
 
   uint8_t buffer = 0;
   const uint8_t loop_reg = static_cast<uint8_t>(Cmd::kRwWavcfg9) + (slot / 2);
   if (!bus_->Read(loop_reg, &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1219,7 +1219,7 @@ bool Aw862xx::SetRamWaveformLoop(uint8_t slot, uint8_t loop_count) {
   }
 
   if (!bus_->Write(loop_reg, buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1229,7 +1229,7 @@ bool Aw862xx::SetRamWaveformLoop(uint8_t slot, uint8_t loop_count) {
 bool Aw862xx::PlayRamWaveform(uint8_t waveform_sequence_number,
     uint8_t loop_count, uint8_t gain, bool auto_brake, bool gain_bypass) {
   if (loop_count == 0) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     loop_count = 1;
   }
 
@@ -1256,61 +1256,61 @@ bool Aw862xx::ConfigureRamPlaybackWaveform(uint8_t waveform_sequence_number,
     uint8_t loop_count, uint8_t gain, bool auto_brake, bool gain_bypass) {
   if (waveform_sequence_number == 0 ||
       waveform_sequence_number > ram_waveform_info_.waveform_count) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
   if (loop_count > 15) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     loop_count = 15;
   }
 
   // 设置RAM #x(x=waveform_sequence_number) waveform
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwWavcfg1),
           static_cast<uint8_t>(waveform_sequence_number))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   // 设置停止
   if (!bus_->Write(
           static_cast<uint8_t>(Cmd::kRwWavcfg2), static_cast<uint8_t>(0))) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   uint8_t buffer = 0;
   // 设置播放次数（15为无限循环）
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwWavcfg9), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B00001111) | (static_cast<uint8_t>(loop_count) << 4);
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwWavcfg9), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!SetPlayMode(PlayMode::kRam)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetPlayMode failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetPlayMode failed\n");
     return false;
   }
 
   // 自动制动
   if (!SetAutoBrakeStop(auto_brake)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetAutoBrakeStop failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetAutoBrakeStop failed\n");
     return false;
   }
 
   if (!SetPlayingChangedGainBypass(gain_bypass)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "SetPlayingChangedGainBypass failed\n");
     return false;
   }
 
   if (!SetRrtModeGain(gain)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetRrtModeGain failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRrtModeGain failed\n");
     return false;
   }
 
@@ -1319,7 +1319,7 @@ bool Aw862xx::ConfigureRamPlaybackWaveform(uint8_t waveform_sequence_number,
 
 bool Aw862xx::StartRamPlaybackWaveform() {
   if (!SetGoFlag()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetGoFlag failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetGoFlag failed\n");
     return false;
   }
   return true;
@@ -1328,12 +1328,12 @@ bool Aw862xx::StartRamPlaybackWaveform() {
 bool Aw862xx::SetStopFlag() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwPlaycfg4), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11111101) | 0B00000010;
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwPlaycfg4), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1343,7 +1343,7 @@ bool Aw862xx::SetStopFlag() {
 bool Aw862xx::SetForceEnterMode(ForceMode mode, bool enable) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwSysctrl2), &buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -1360,7 +1360,7 @@ bool Aw862xx::SetForceEnterMode(ForceMode mode, bool enable) {
   }
 
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwSysctrl2), buffer)) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -1370,13 +1370,13 @@ bool Aw862xx::SetForceEnterMode(ForceMode mode, bool enable) {
 bool Aw862xx::StopRamPlaybackWaveform() {
   // 停止播放
   if (!SetStopFlag()) {
-    LogMessage(LogLevel::kChip, __FILE__, __LINE__, "SetStopFlag failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetStopFlag failed\n");
     return false;
   }
 
   if (!SetForceEnterMode(ForceMode::kStandby, true)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetForceEnterMode failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetForceEnterMode failed\n");
     return false;
   }
 
@@ -1388,12 +1388,12 @@ bool Aw862xx::StopRamPlaybackWaveform() {
 
     timeout_count_buffer++;
     if (timeout_count_buffer > 100) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "Force enter standby mode timeout\n");
 
       if (!SetForceEnterMode(ForceMode::kStandby, false)) {
         LogMessage(
-            LogLevel::kChip, __FILE__, __LINE__, "SetForceEnterMode failed\n");
+            LogLevel::kError, __FILE__, __LINE__, "SetForceEnterMode failed\n");
         return false;
       }
 
@@ -1405,7 +1405,7 @@ bool Aw862xx::StopRamPlaybackWaveform() {
 
   if (!SetForceEnterMode(ForceMode::kStandby, false)) {
     LogMessage(
-        LogLevel::kChip, __FILE__, __LINE__, "SetForceEnterMode failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "SetForceEnterMode failed\n");
     return false;
   }
 

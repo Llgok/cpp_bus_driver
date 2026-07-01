@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-05-19 11:27:02
+ * @LastEditTime: 2026-07-01 11:46:31
  * @License: GPL 3.0
  */
 #include "hardware_qspi.h"
@@ -11,7 +11,7 @@ namespace cpp_bus_driver {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
   if (spi_device_ != nullptr) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "HardwareQspi has been initialized\n");
     return true;
   }
@@ -78,7 +78,7 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
   if (!bus_init_flag_) {
     ret = spi_bus_initialize(port_, &bus_config, SPI_DMA_CH_AUTO);
     if (ret != ESP_OK) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "spi_bus_initialize failed (error code: %#X)\n", ret);
       Deinit();
       return false;
@@ -109,7 +109,7 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
 
   ret = spi_bus_add_device(port_, &device_config, &spi_device_);
   if (ret != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "spi_bus_add_device failed (error code: %#X)\n", ret);
     Deinit();
     return false;
@@ -118,7 +118,7 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
   size_t buffer = 0;
   ret = spi_bus_get_max_transaction_len(port_, &buffer);
   if (ret != ESP_OK) {
-    LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "spi_bus_get_max_transaction_len failed (error code: %#X)\n", ret);
     max_transfer_size_ = kQspiMaxTransferSize;
   } else {
@@ -138,7 +138,7 @@ bool HardwareQspi::Deinit(bool delete_bus) {
   if (spi_device_ != nullptr) {
     esp_err_t ret = spi_bus_remove_device(spi_device_);
     if (ret != ESP_OK) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "spi_bus_remove_device failed (error code: %#X)\n", ret);
       result = false;
     } else {
@@ -149,7 +149,7 @@ bool HardwareQspi::Deinit(bool delete_bus) {
   if (delete_bus && bus_init_flag_) {
     esp_err_t ret = spi_bus_free(port_);
     if (ret != ESP_OK) {
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "spi_bus_free failed (error code: %#X)\n", ret);
       result = false;
     } else {
@@ -204,7 +204,7 @@ bool HardwareQspi::Write(
       esp_err_t ret = spi_device_polling_transmit(spi_device_, &buffer);
       if (ret != ESP_OK) {
         result &= SetCs(1);
-        LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        LogMessage(LogLevel::kError, __FILE__, __LINE__,
             "spi_device_polling_transmit failed (error code: %#X)\n", ret);
         return false;
       }
@@ -218,7 +218,7 @@ bool HardwareQspi::Write(
       esp_err_t ret = spi_device_polling_transmit(spi_device_, &buffer);
       if (ret != ESP_OK) {
         result &= SetCs(1);
-        LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+        LogMessage(LogLevel::kError, __FILE__, __LINE__,
             "spi_device_polling_transmit failed (error code: %#X)\n", ret);
         return false;
       }
@@ -235,7 +235,7 @@ bool HardwareQspi::Write(
     esp_err_t ret = spi_device_polling_transmit(spi_device_, &buffer);
     if (ret != ESP_OK) {
       result &= SetCs(1);
-      LogMessage(LogLevel::kBus, __FILE__, __LINE__,
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "spi_device_polling_transmit failed (error code: %#X)\n", ret);
       return false;
     }
@@ -250,7 +250,7 @@ bool HardwareQspi::Write(
 bool HardwareQspi::SetCs(bool value) {
   if (cs_ != kDefaultValue) {
     if (!GpioWrite(cs_, value)) {
-      LogMessage(LogLevel::kChip, __FILE__, __LINE__, "GpioWrite failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
       return false;
     }
   }
