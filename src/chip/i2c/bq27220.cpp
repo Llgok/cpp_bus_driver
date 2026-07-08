@@ -2,7 +2,7 @@
  * @Description: BQ27220 single-cell CEDV fuel gauge driver
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-07-01 11:51:13
+ * @LastEditTime: 2026-07-08 09:32:19
  * @License: GPL 3.0
  */
 #include "bq27220.h"
@@ -38,8 +38,8 @@ bool Bq27220::Init(int32_t freq_hz) {
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "Get bq27220 device id success (id: %#X)\n", device_id);
-  LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "bq27220 fw: %#X, hw: %#X\n",
-      GetFirmwareVersion(), GetHardwareVersion());
+  // LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "bq27220 fw: %#X, hw: %#X\n",
+  //     GetFirmwareVersion(), GetHardwareVersion());
   return true;
 }
 
