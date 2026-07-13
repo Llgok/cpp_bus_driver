@@ -1,6 +1,6 @@
 <h1 align="center">cpp_bus_driver</h1>
 
-## **[English](./README.md) | 中文**
+## **[英文](./README.md) | 中文**
 
 [![Release](https://img.shields.io/github/v/release/Llgok/cpp_bus_driver?style=flat-square)](https://github.com/Llgok/cpp_bus_driver/releases)
 [![License](https://img.shields.io/github/license/Llgok/cpp_bus_driver?style=flat-square)](./LICENSE)
