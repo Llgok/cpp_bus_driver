@@ -38,6 +38,7 @@
 #include "./chip/mipi/rm69a10.h"
 #include "./chip/sdio/esp_at.h"
 #include "./chip/spi/co5300.h"
+#include "./chip/spi/cc1101.h"
 #include "./chip/spi/ecx336cn.h"
 #include "./chip/spi/sh8601.h"
 #include "./chip/spi/sx126x.h"

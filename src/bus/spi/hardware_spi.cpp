@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-07-01 11:47:34
+ * @LastEditTime: 2026-07-13 17:07:45
  * @License: GPL 3.0
  */
 #include "hardware_spi.h"
@@ -175,7 +175,10 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
   spi_handle_ = std::make_unique<SPIClass>(port_, static_cast<uint8_t>(miso_),
       static_cast<uint8_t>(sclk_), static_cast<uint8_t>(mosi_));
   bool result = true;
-  result &= SetGpioMode(cs, GpioMode::kOutput);
+  if (cs != kDefaultValue) {
+    result &= SetGpioMode(cs, GpioMode::kOutput);
+    result &= GpioWrite(cs, 1);
+  }
   if (!result) {
     return false;
   }
@@ -207,7 +210,9 @@ bool HardwareSpi::Deinit(bool delete_bus) {
     } else {
       spi_device_ = nullptr;
       device_init_flag_ = false;
-      result &= ResetGpio(cs_);
+      if (cs_ != kDefaultValue) {
+        result &= ResetGpio(cs_);
+      }
       cs_ = kDefaultValue;
     }
   }
@@ -233,6 +238,17 @@ bool HardwareSpi::Deinit(bool delete_bus) {
     }
   }
 
+  return result;
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+  bool result = true;
+  if (spi_handle_ != nullptr) {
+    spi_handle_->end();
+    spi_handle_.reset();
+  }
+  if (cs_ != kDefaultValue) {
+    result &= ResetGpio(cs_);
+  }
+  cs_ = kDefaultValue;
   return result;
 #else
   LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
@@ -266,11 +282,15 @@ bool HardwareSpi::Write(const void* data, size_t byte) {
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   bool result = true;
   spi_handle_->beginTransaction(spi_settings_);
-  result &= GpioWrite(cs_, 0);
+  if (cs_ != kDefaultValue) {
+    result &= GpioWrite(cs_, 0);
+  }
   if (result) {
     spi_handle_->transfer(const_cast<void*>(data), byte);
   }
-  result &= GpioWrite(cs_, 1);
+  if (cs_ != kDefaultValue) {
+    result &= GpioWrite(cs_, 1);
+  }
   spi_handle_->endTransaction();
 
   return result;
@@ -307,11 +327,15 @@ bool HardwareSpi::Read(void* data, size_t byte) {
 
   bool result = true;
   spi_handle_->beginTransaction(spi_settings_);
-  result &= GpioWrite(cs_, 0);
+  if (cs_ != kDefaultValue) {
+    result &= GpioWrite(cs_, 0);
+  }
   if (result) {
     spi_handle_->transfer(buffer.data(), data, byte);
   }
-  result &= GpioWrite(cs_, 1);
+  if (cs_ != kDefaultValue) {
+    result &= GpioWrite(cs_, 1);
+  }
   spi_handle_->endTransaction();
 
   return result;
@@ -347,11 +371,15 @@ bool HardwareSpi::WriteRead(
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   bool result = true;
   spi_handle_->beginTransaction(spi_settings_);
-  result &= GpioWrite(cs_, 0);
+  if (cs_ != kDefaultValue) {
+    result &= GpioWrite(cs_, 0);
+  }
   if (result) {
     spi_handle_->transfer(write_data, read_data, data_byte);
   }
-  result &= GpioWrite(cs_, 1);
+  if (cs_ != kDefaultValue) {
+    result &= GpioWrite(cs_, 1);
+  }
   spi_handle_->endTransaction();
 
   return result;
