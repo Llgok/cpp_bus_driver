@@ -171,8 +171,12 @@ bool HardwareI2c1::Deinit(bool delete_bus) {
       bus_handle_ = nullptr;
       delete_bus_on_deinit_ = false;
       bus_init_state_.store(BusInitState::kNotStarted);
-      result &= ResetGpio(sda_);
-      result &= ResetGpio(scl_);
+      if (sda_ != kDefaultValue) {
+        result &= ResetGpio(sda_);
+      }
+      if (scl_ != kDefaultValue) {
+        result &= ResetGpio(scl_);
+      }
     }
   }
 

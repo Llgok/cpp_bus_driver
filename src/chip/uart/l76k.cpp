@@ -143,8 +143,12 @@ bool L76k::Deinit() {
   }
 
   bool result = true;
-  result &= ResetGpio(wake_up_);
-  result &= ResetGpio(rst_);
+  if (wake_up_ != kDefaultValue) {
+    result &= ResetGpio(wake_up_);
+  }
+  if (rst_ != kDefaultValue) {
+    result &= ResetGpio(rst_);
+  }
 
   return result;
 }

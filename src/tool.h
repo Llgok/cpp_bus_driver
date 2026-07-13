@@ -94,9 +94,9 @@ class Tool {
       size_t* search_index = nullptr);
 
   bool SetGpioMode(
-      uint32_t pin, GpioMode mode, GpioStatus status = GpioStatus::kDisable);
-  bool GpioWrite(uint32_t pin, bool value);
-  bool GpioRead(uint32_t pin);
+      int32_t pin, GpioMode mode, GpioStatus status = GpioStatus::kDisable);
+  bool GpioWrite(int32_t pin, bool value);
+  bool GpioRead(int32_t pin);
   bool ResetGpio(int32_t pin);
 
   void DelayMs(uint32_t value);

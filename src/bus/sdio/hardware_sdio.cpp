@@ -156,16 +156,36 @@ bool HardwareSdio::Deinit() {
       result = false;
     } else {
       host_init_flag_ = false;
-      result &= ResetGpio(clk_);
-      result &= ResetGpio(cmd_);
-      result &= ResetGpio(d0_);
-      result &= ResetGpio(d1_);
-      result &= ResetGpio(d2_);
-      result &= ResetGpio(d3_);
-      result &= ResetGpio(d4_);
-      result &= ResetGpio(d5_);
-      result &= ResetGpio(d6_);
-      result &= ResetGpio(d7_);
+      if (clk_ != kDefaultValue) {
+        result &= ResetGpio(clk_);
+      }
+      if (cmd_ != kDefaultValue) {
+        result &= ResetGpio(cmd_);
+      }
+      if (d0_ != kDefaultValue) {
+        result &= ResetGpio(d0_);
+      }
+      if (d1_ != kDefaultValue) {
+        result &= ResetGpio(d1_);
+      }
+      if (d2_ != kDefaultValue) {
+        result &= ResetGpio(d2_);
+      }
+      if (d3_ != kDefaultValue) {
+        result &= ResetGpio(d3_);
+      }
+      if (d4_ != kDefaultValue) {
+        result &= ResetGpio(d4_);
+      }
+      if (d5_ != kDefaultValue) {
+        result &= ResetGpio(d5_);
+      }
+      if (d6_ != kDefaultValue) {
+        result &= ResetGpio(d6_);
+      }
+      if (d7_ != kDefaultValue) {
+        result &= ResetGpio(d7_);
+      }
     }
   }
 

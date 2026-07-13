@@ -232,9 +232,15 @@ bool HardwareSpi::Deinit(bool delete_bus) {
     } else {
       bus_init_state_.store(BusInitState::kNotStarted);
       delete_bus_on_deinit_ = false;
-      result &= ResetGpio(mosi_);
-      result &= ResetGpio(miso_);
-      result &= ResetGpio(sclk_);
+      if (mosi_ != kDefaultValue) {
+        result &= ResetGpio(mosi_);
+      }
+      if (miso_ != kDefaultValue) {
+        result &= ResetGpio(miso_);
+      }
+      if (sclk_ != kDefaultValue) {
+        result &= ResetGpio(sclk_);
+      }
     }
   }
 

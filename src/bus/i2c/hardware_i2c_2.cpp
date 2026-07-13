@@ -85,8 +85,12 @@ bool HardwareI2c2::Deinit(bool delete_bus) {
   }
 
   bool gpio_result = true;
-  gpio_result &= ResetGpio(sda_);
-  gpio_result &= ResetGpio(scl_);
+  if (sda_ != kDefaultValue) {
+    gpio_result &= ResetGpio(sda_);
+  }
+  if (scl_ != kDefaultValue) {
+    gpio_result &= ResetGpio(scl_);
+  }
 
   return gpio_result;
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)

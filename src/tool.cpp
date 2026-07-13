@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2026-07-01 11:53:34
+ * @LastEditTime: 2026-07-13 22:36:55
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -227,11 +227,17 @@ bool Tool::Search(const char* search_library, size_t search_library_length,
   return true;
 }
 
-bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  if (pin >= static_cast<uint32_t>(GPIO_NUM_MAX)) {
+bool Tool::SetGpioMode(int32_t pin, GpioMode mode, GpioStatus status) {
+  if (pin < 0) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Value out of range (gpio pin: %u)\n", pin);
+        "Value out of range (gpio pin: %d)\n", pin);
+    return false;
+  }
+
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+  if (pin >= static_cast<int32_t>(GPIO_NUM_MAX)) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Value out of range (gpio pin: %d)\n", pin);
     return false;
   }
 
@@ -287,7 +293,7 @@ bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
   esp_err_t result = gpio_config(&config);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "gpio_config failed (error gpio pin: %u, error code: %#X)\n", pin,
+        "gpio_config failed (error gpio pin: %d, error code: %#X)\n", pin,
         result);
     return false;
   }
@@ -332,12 +338,24 @@ bool Tool::SetGpioMode(uint32_t pin, GpioMode mode, GpioStatus status) {
 #endif
 }
 
-bool Tool::GpioWrite(uint32_t pin, bool value) {
+bool Tool::GpioWrite(int32_t pin, bool value) {
+  if (pin < 0) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Value out of range (gpio pin: %d)\n", pin);
+    return false;
+  }
+
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+  if (pin >= static_cast<int32_t>(GPIO_NUM_MAX)) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Value out of range (gpio pin: %d)\n", pin);
+    return false;
+  }
+
   esp_err_t result = gpio_set_level(static_cast<gpio_num_t>(pin), value);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "gpio_set_level failed (error gpio pin: %u, error code: %#X)\n", pin,
+        "gpio_set_level failed (error gpio pin: %d, error code: %#X)\n", pin,
         result);
     return false;
   }
@@ -351,8 +369,20 @@ bool Tool::GpioWrite(uint32_t pin, bool value) {
 #endif
 }
 
-bool Tool::GpioRead(uint32_t pin) {
+bool Tool::GpioRead(int32_t pin) {
+  if (pin < 0) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Value out of range (gpio pin: %d)\n", pin);
+    return false;
+  }
+
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+  if (pin >= static_cast<int32_t>(GPIO_NUM_MAX)) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Value out of range (gpio pin: %d)\n", pin);
+    return false;
+  }
+
   return gpio_get_level(static_cast<gpio_num_t>(pin));
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   return digitalRead(pin);
@@ -362,10 +392,6 @@ bool Tool::GpioRead(uint32_t pin) {
 }
 
 bool Tool::ResetGpio(int32_t pin) {
-  if (pin == kDefaultValue) {
-    return true;
-  }
-
   if (pin < 0) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Value out of range (gpio pin: %d)\n", pin);

@@ -182,10 +182,18 @@ bool HardwareUart::Deinit() {
   init_flag_ = false;
 
   bool gpio_result = true;
-  gpio_result &= ResetGpio(tx_);
-  gpio_result &= ResetGpio(rx_);
-  gpio_result &= ResetGpio(rts_);
-  gpio_result &= ResetGpio(cts_);
+  if (tx_ != kDefaultValue) {
+    gpio_result &= ResetGpio(tx_);
+  }
+  if (rx_ != kDefaultValue) {
+    gpio_result &= ResetGpio(rx_);
+  }
+  if (rts_ != kDefaultValue) {
+    gpio_result &= ResetGpio(rts_);
+  }
+  if (cts_ != kDefaultValue) {
+    gpio_result &= ResetGpio(cts_);
+  }
 
   return gpio_result;
 }

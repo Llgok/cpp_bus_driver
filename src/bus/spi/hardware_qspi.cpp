@@ -154,11 +154,21 @@ bool HardwareQspi::Deinit(bool delete_bus) {
       result = false;
     } else {
       bus_init_flag_ = false;
-      result &= ResetGpio(data0_);
-      result &= ResetGpio(data1_);
-      result &= ResetGpio(data2_);
-      result &= ResetGpio(data3_);
-      result &= ResetGpio(sclk_);
+      if (data0_ != kDefaultValue) {
+        result &= ResetGpio(data0_);
+      }
+      if (data1_ != kDefaultValue) {
+        result &= ResetGpio(data1_);
+      }
+      if (data2_ != kDefaultValue) {
+        result &= ResetGpio(data2_);
+      }
+      if (data3_ != kDefaultValue) {
+        result &= ResetGpio(data3_);
+      }
+      if (sclk_ != kDefaultValue) {
+        result &= ResetGpio(sclk_);
+      }
     }
   }
 

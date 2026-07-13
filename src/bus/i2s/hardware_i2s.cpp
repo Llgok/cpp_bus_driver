@@ -1294,11 +1294,21 @@ bool HardwareI2s::Deinit() {
   }
 
   if ((tx_handle_ == nullptr) && (rx_handle_ == nullptr)) {
-    result &= ResetGpio(data_in_);
-    result &= ResetGpio(data_out_);
-    result &= ResetGpio(ws_lrck_);
-    result &= ResetGpio(bclk_);
-    result &= ResetGpio(mclk_);
+    if (data_in_ != kDefaultValue) {
+      result &= ResetGpio(data_in_);
+    }
+    if (data_out_ != kDefaultValue) {
+      result &= ResetGpio(data_out_);
+    }
+    if (ws_lrck_ != kDefaultValue) {
+      result &= ResetGpio(ws_lrck_);
+    }
+    if (bclk_ != kDefaultValue) {
+      result &= ResetGpio(bclk_);
+    }
+    if (mclk_ != kDefaultValue) {
+      result &= ResetGpio(mclk_);
+    }
   }
 
   return result;
