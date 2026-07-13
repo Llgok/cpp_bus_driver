@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <array>
+
 #include "../chip_guide.h"
 
 namespace cpp_bus_driver {
@@ -450,8 +452,12 @@ class Sx126x final : public ChipSpiGuide {
     uint16_t length_error = 0;
   };
 
+  struct DeviceId {
+    std::array<uint8_t, 6> bytes = {};
+  };
+
   // SX126x板级初始化配置
-  struct Config {
+  struct HardwareConfig {
     bool enable_dio3_tcxo = true;
     Dio3TcxoVoltage tcxo_voltage = Dio3TcxoVoltage::kOutput1600Mv;
     uint32_t tcxo_startup_time_us = 5000;
@@ -461,37 +467,109 @@ class Sx126x final : public ChipSpiGuide {
     bool enable_retention_list = true;
   };
 
+  struct LoraConfig {
+    double frequency_mhz = 868.0;
+    LoraBw bandwidth = LoraBw::kBw125000Hz;
+    float current_limit = 140.0f;  // OCP限制，单位mA
+    int8_t power = 14;
+    Sf spreading_factor = Sf::kSf7;
+    Cr coding_rate = Cr::kCr45;
+    LoraCrcType crc_type = LoraCrcType::kOff;
+    uint16_t preamble_length = 8;
+    uint8_t symbol_timeout = 0;  // LoRa符号超时；0表示关闭
+    bool stop_timer_on_preamble = false;  // 检测到前导后停止RX计时器
+    uint16_t sync_word = 0x1424;
+    LoraHeaderType header_type = LoraHeaderType::kVariableLengthPacket;
+    uint8_t payload_length = 255;
+    InvertIq invert_iq = InvertIq::kStandardIqSetup;
+    RampTime ramp_time = RampTime::kRamp40Us;
+    bool rx_boosted = false;
+    bool configure_cad = false;  // true时才写入下面的CAD参数
+    CadSymbolNum cad_symbol_num = CadSymbolNum::kOn2Symb;
+    uint8_t cad_det_peak = 22;
+    uint8_t cad_det_min = 10;
+    CadExitMode cad_exit_mode = CadExitMode::kOnly;
+    uint32_t cad_timeout_us = 0;
+  };
+
+  struct GfskConfig {
+    double frequency_mhz = 868.0;
+    double bit_rate_kbps = 50.0;
+    GfskBw bandwidth = GfskBw::kBw117300Hz;
+    float current_limit = 140.0f;
+    int8_t power = 14;
+    double frequency_deviation_khz = 25.0;
+    // 收发两端总频率误差，用于检查接收带宽是否足够
+    double frequency_error_khz = 0.0;
+    std::array<uint8_t, 8> sync_word = {
+        0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
+    uint8_t sync_word_length = 5;  // 有效长度，单位Byte，允许0~8
+    PulseShape pulse_shape = PulseShape::kGaussianBt1;
+    GfskCrcType crc_type = GfskCrcType::kCrc2ByteInv;
+    uint16_t crc_initial = 0x1D0F;
+    uint16_t crc_polynomial = 0x1021;
+    uint16_t preamble_length = 32;
+    bool stop_timer_on_preamble = false;  // 检测到前导后停止RX计时器
+    GfskHeaderType header_type = GfskHeaderType::kVariablePacket;
+    Whitening whitening = Whitening::kEnable;
+    AddrComp address_comparison = AddrComp::kFilteringDisable;
+    uint8_t node_address = 0x05;
+    uint8_t broadcast_address = 0xAB;
+    uint16_t whitening_seed = 0x01FF;
+    PreambleDetector preamble_detector = PreambleDetector::kLength16bit;
+    uint8_t payload_length = 255;
+    RampTime ramp_time = RampTime::kRamp40Us;
+    bool rx_boosted = false;
+  };
+
+  static constexpr uint32_t kTimeoutDisabled = 0x000000;
+  // SetRx的芯片连续接收特殊值；接口中该值不再解释为普通微秒数
+  static constexpr uint32_t kTimeoutContinuous = 0xFFFFFF;
+
   explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
       int32_t busy, int32_t cs = kDefaultValue,
       int32_t rst = kDefaultValue)
-      : Sx126x(bus, chip_type, busy, cs, rst, Config{}) {}
+      : Sx126x(bus, chip_type, busy, cs, rst, HardwareConfig{}) {}
 
   explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
-      int32_t busy, int32_t cs, int32_t rst, const Config& config)
+      int32_t busy, int32_t cs, int32_t rst,
+      const HardwareConfig& hardware_config)
       : ChipSpiGuide(bus, cs),
         chip_type_(chip_type),
-        config_(config),
+        hardware_config_(hardware_config),
         rst_(rst),
         busy_(busy) {}
 
   explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
       bool (*busy_wait_callback)(), int32_t cs = kDefaultValue,
       int32_t rst = kDefaultValue)
-      : Sx126x(bus, chip_type, busy_wait_callback, cs, rst, Config{}) {}
+      : Sx126x(bus, chip_type, busy_wait_callback, cs, rst,
+            HardwareConfig{}) {}
 
   explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
       bool (*busy_wait_callback)(), int32_t cs, int32_t rst,
-      const Config& config)
+      const HardwareConfig& hardware_config)
       : ChipSpiGuide(bus, cs),
         chip_type_(chip_type),
-        config_(config),
+        hardware_config_(hardware_config),
         rst_(rst),
         busy_wait_callback_(busy_wait_callback) {}
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
 
-  std::string GetDeviceId();
+  bool GetDeviceId(DeviceId& device_id);
+
+  bool IsInitialized() const { return initialized_; }
+  bool IsSleeping() const { return sleeping_; }
+  bool IsConfigured() const { return configured_; }
+  PacketType GetConfiguredPacketType() const {
+    return configured_ ? param_.packet_type : PacketType::kFalse;
+  }
+  const HardwareConfig& GetHardwareConfig() const { return hardware_config_; }
+  // 返回最后一次成功Configure()的快照；后续底层setter不会改写该快照。
+  bool GetConfig(LoraConfig& config) const;
+  bool GetConfig(GfskConfig& config) const;
 
   /**
    * @brief 检查设备忙
@@ -502,31 +580,31 @@ class Sx126x final : public ChipSpiGuide {
 
   /**
    * @brief 返回设备的状态，主机可以直接获取芯片状态
-   * @return 状态数据，读取错误返回(-1)
+   * @param status 输出芯片状态字节
+   * @return 读取成功返回 true，失败返回 false
    */
-  uint8_t GetStatus();
+  bool GetStatus(uint8_t& status);
 
   /**
    * @brief 命令解析，详细请参考SX126x手册 13-76: Status Bytes Definition
    * @param parse_status 解析状态字节，由 GetStatus() 函数获取
    * @return CmdStatus 命令状态
    */
-  CmdStatus ParseCmdStatus(uint8_t parse_status);
+  static CmdStatus ParseCmdStatus(uint8_t parse_status);
 
   /**
    * @brief 芯片模式解析，详细请参考SX126x手册 13-76: Status Bytes Definition
    * @param parse_status 解析状态字节，由 GetStatus() 函数获取
    * @return ChipModeStatus 芯片模式状态
    */
-  ChipModeStatus ParseChipModeStatus(uint8_t parse_status);
+  static ChipModeStatus ParseChipModeStatus(uint8_t parse_status);
 
   /**
    * @brief 中断解析，详细请参考SX126x手册 13-29: IRQ registers
    * @param irq_flag IRQ状态字，由 GetIrqFlag() 函数获取
-   * @param status 使用 IrqStatus 结构体保存解析后的IRQ状态
-   * @return 解析成功返回 true，失败返回 false
+   * @return 解析后的 IrqStatus
    */
-  bool ParseIrqStatus(uint16_t irq_flag, IrqStatus& status);
+  static IrqStatus ParseIrqStatus(uint16_t irq_flag);
 
   /**
    * @brief 配置功耗模式，应用程序如果对时间要求严格需要切换到 kStdbyXosc
@@ -648,7 +726,7 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 获取当前使用的数据包类型
    * @return PacketType 包类型
    */
-  PacketType GetPacketType();
+  bool GetPacketType(PacketType& packet_type);
 
   /**
    * @brief 设置LDO/DC-DC供电调节模式
@@ -661,16 +739,17 @@ class Sx126x final : public ChipSpiGuide {
 
   /**
    * @brief 设置电流限制
-   * @param current （0mA ~ 140mA）步长为2.5mA，有越界校正
+   * @param current （0mA ~ 157.5mA）步长为2.5mA，有越界校正
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetCurrentLimit(float current);
 
   /**
    * @brief 获取电流限制
-   * @return 返回读取到的数值
+   * @param current_ma 输出电流限制，单位mA
+   * @return 读取成功返回 true，失败返回 false
    */
-  uint8_t GetCurrentLimit();
+  bool GetCurrentLimit(float& current_ma);
 
   /**
    * @brief 配置DIO2的模式功能，IRQ或者控制外部RF开关
@@ -722,9 +801,10 @@ class Sx126x final : public ChipSpiGuide {
 
   /**
    * @brief 获取当前设置的同步字
-   * @return 返回读取到的数值
+   * @param sync_word 输出16-bit同步字
+   * @return 读取成功返回 true，失败返回 false
    */
-  uint16_t GetLoraSyncWord();
+  bool GetLoraSyncWord(uint16_t& sync_word);
 
   /**
    * @brief 修复LoRa模式反转 IQ 配置 （SX126x手册第15.4节）
@@ -757,7 +837,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param cr 使用 Cr::
    * 配置，LoRa有效载荷使用前向纠错机制，该机制有多个编码级别
    * @param ldro 使用 Ldro::
-   * 配置，低数据速率优化，通常由 ConfigLoraParams() 按Semtech官方示例表自动计算
+   * 配置，低数据速率优化，通常由 Configure() 按符号时长自动计算
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetLoraModulationParams(Sf sf, LoraBw bw, Cr cr, Ldro ldro);
@@ -767,7 +847,8 @@ class Sx126x final : public ChipSpiGuide {
    * @param power SX1262为（-9 ~ 22），SX1261为（-17 ~ 14），有越界校正
    * @return 设置成功返回 true，失败返回 false
    */
-  bool SetOutputPower(int8_t power);
+  bool SetOutputPower(
+      int8_t power, RampTime ramp_time = RampTime::kRamp40Us);
 
   /**
    * @brief 校准设备在其工作频段内的镜像抑制
@@ -806,24 +887,10 @@ class Sx126x final : public ChipSpiGuide {
 
   /**
    * @brief 配置LoRa模式的传输参数
-   * @param freq_mhz （150 ~ 960）频率设置
-   * @param bw 使用 LoraBw:: 配置，带宽设置
-   * @param current_limit （0 ~ 140）电流限制
-   * @param power SX1262为（-9 ~ 22），SX1261为（-17 ~ 14），设置功率
-   * @param crc_type 使用 LoraCrcType::
-   * 配置，Crc校验，默认关闭并对齐Semtech官方示例
-   * @param sf 使用 Sf:: 配置，扩频因子设置，默认SF7并对齐Semtech官方示例
-   * @param cr 使用 Cr:: 配置，纠错编码级别，默认4/5并对齐Semtech官方示例
-   * @param sync_word
-   * 支持官方示例的8-bit同步字（0x12专用网络，0x34公共网络），也支持直接写入寄存器的16-bit同步字
-   * （0x1424专用网络，0x3444公共网络）
-   * @param preamble_length 前导长度，表示无线电将发送的LoRa符号数量
+   * @param config LoRa传输配置
    * @return 成功返回 true，失败返回 false
    */
-  bool ConfigLoraParams(double freq_mhz, LoraBw bw, float current_limit,
-      int8_t power, Sf sf = Sf::kSf7, Cr cr = Cr::kCr45,
-      LoraCrcType crc_type = LoraCrcType::kOff, uint16_t preamble_length = 8,
-      uint16_t sync_word = 0x1424);
+  bool Configure(const LoraConfig& config);
 
   /**
    * @brief 设置接收占空比模式
@@ -860,7 +927,8 @@ class Sx126x final : public ChipSpiGuide {
    * @param preamble_length 前导长度，表示无线电将发送的LoRa符号数量
    * @return 操作成功返回 true，失败返回 false
    */
-  bool StartLora(ChipMode chip_mode, uint32_t time_out_us = 0xFFFFFF,
+  bool StartLora(ChipMode chip_mode,
+      uint32_t timeout_us = kTimeoutContinuous,
       FallbackMode fallback_mode = FallbackMode::kStdbyRc,
       uint16_t preamble_length = 8);
 
@@ -885,9 +953,10 @@ class Sx126x final : public ChipSpiGuide {
 
   /**
    * @brief 获取中断请求状态
-   * @return 中断状态，读取错误返回(-1)
+   * @param irq_flags 输出中断状态位
+   * @return 读取成功返回 true，失败返回 false
    */
-  uint16_t GetIrqFlag();
+  bool GetIrqFlag(uint16_t& irq_flags);
 
   /**
    * @brief 获取接收缓冲区状态
@@ -898,9 +967,10 @@ class Sx126x final : public ChipSpiGuide {
 
   /**
    * @brief 获取接收到的数据长度
-   * @return 接收的数据长度，如果接收错误或者接收长度为0都返回0
+   * @param length 输出接收数据长度
+   * @return 读取成功返回 true，失败返回 false
    */
-  uint8_t GetRxBufferLength();
+  bool GetRxBufferLength(uint8_t& length);
 
   /**
    * @brief 读取数据
@@ -915,7 +985,7 @@ class Sx126x final : public ChipSpiGuide {
    * @brief 读取并解析接收相关状态
    * @param status 使用 ReceiveStatus 结构体保存IRQ、GFSK包状态和RX FIFO状态
    * @note 该函数会在RxDone后按Semtech官方流程停止RX超时计时器；
-   * 该函数不清除IRQ，ReceiveData() 会在处理完成后清除已处理的IRQ标志
+   * 该函数不清除IRQ，ReadReceivedPacket()会在处理完成后清除IRQ标志
    * @return 读取成功返回 true，失败返回 false
    */
   bool GetReceiveStatus(ReceiveStatus& status);
@@ -923,14 +993,14 @@ class Sx126x final : public ChipSpiGuide {
   /**
    * @brief 接收数据
    * @param data 接收数据的指针
-   * @param length
-   * 接收数据的长度，如果等于0将默认读取RX FIFO中的完整payload
+   * @param capacity 接收缓冲区容量
+   * @param received_length 输出实际payload长度；容量不足时输出所需容量
    * @param status
    * 可选的接收状态输出指针；为 nullptr 时只接收数据，不输出状态
-   * @return 接收的数据长度，如果接收错误或者接收长度为0都返回0
+   * @return 接收成功返回 true，失败返回 false
    */
-  uint8_t ReceiveData(
-      uint8_t* data, uint8_t length = 0, ReceiveStatus* status = nullptr);
+  bool ReadReceivedPacket(uint8_t* data, size_t capacity,
+      size_t& received_length, ReceiveStatus* status = nullptr);
 
   /**
    * @brief 获取LoRa模式的包的指标信息
@@ -961,9 +1031,10 @@ class Sx126x final : public ChipSpiGuide {
 
   /**
    * @brief 获取芯片内部设备错误状态
-   * @return 设备错误状态位，读取失败返回0xFFFF
+   * @param errors 输出设备错误状态位
+   * @return 读取成功返回 true，失败返回 false
    */
-  uint16_t GetDeviceErrors();
+  bool GetDeviceErrors(uint16_t& errors);
 
   /**
    * @brief 清除芯片内部设备错误状态
@@ -1016,15 +1087,27 @@ class Sx126x final : public ChipSpiGuide {
   bool GetSendStatus(SendStatus& status);
 
   /**
-   * @brief 发送数据
+   * @brief 配置发送IRQ、写入payload并启动异步发送
    * @param data 发送数据的指针
    * @param length 发送数据的长度，最大255
-   * @param time_out_us
+   * @param timeout_us
    * TX超时时间，单位us，内部转换为15.625us
    * RTC步进；0x000000和0xFFFFFF按芯片手册特殊值保留
+   * @param fallback_mode 发送结束后的芯片模式
    * @return 操作成功返回 true，失败返回 false
    */
-  bool SendData(const uint8_t* data, uint8_t length, uint32_t time_out_us = 0);
+  bool StartTransmit(const uint8_t* data, size_t length,
+      uint32_t timeout_us = 0,
+      FallbackMode fallback_mode = FallbackMode::kStdbyRc);
+
+  /**
+   * @brief 按当前 Configure() 的包类型配置IRQ并启动异步接收
+   * @param timeout_us RX超时时间；kTimeoutContinuous 表示连续接收
+   * @param fallback_mode 接收结束后的芯片模式
+   * @return 操作成功返回 true，失败返回 false
+   */
+  bool StartReceive(uint32_t timeout_us = kTimeoutContinuous,
+      FallbackMode fallback_mode = FallbackMode::kStdbyRc);
 
   /**
    * @brief 设置LoRa模式的CRC
@@ -1036,7 +1119,7 @@ class Sx126x final : public ChipSpiGuide {
   /**
    * @brief 设置GFSK同步字寄存器；改变有效同步字长度时还需要同步更新GFSK包参数
    * @param sync_word 同步字数据，最大8个字节
-   * @param length 同步字数据长度，单位Byte，范围1~8
+   * @param length 同步字数据长度，单位Byte，范围0~8；0表示禁用同步字
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetGfskSyncWord(const uint8_t* sync_word, uint8_t length);
@@ -1103,94 +1186,58 @@ class Sx126x final : public ChipSpiGuide {
 
   /**
    * @brief 配置GFSK模式的传输参数
-   * @param freq_mhz （150 ~ 960）频率设置
-   * @param br （0.6 ~ 300）传输比特率，单位kbps
-   * @param bw 使用 GfskBw:: 配置，带宽设置
-   * @param current_limit （0 ~ 140）电流限制
-   * @param power SX1262为（-9 ~ 22），SX1261为（-17 ~ 14），设置功率
-   * @param freq_deviation_khz （0.6 ~ 200）频率偏移
-   * @param sync_word 设置同步字数据指针；为空时使用官方示例默认同步字
-   * @param sync_word_length
-   * 同步字有效长度，单位Byte；为0时使用官方示例默认40bit同步字
-   * @param ps 使用 PulseShape:: 配置，高斯滤波器的滚降因子
-   * @param crc_type 使用 GfskCrcType:: 配置，Crc校验
-   * @param crc_initial CRC参数1，官方示例宏为0x01234567，芯片写入低16位0x4567
-   * @param crc_polynomial
-   * CRC参数2，官方示例宏为0x01234567，芯片写入低16位0x4567
-   * @param preamble_length 实际发送/接收的GFSK前导长度，单位Bit
-   * @param header_type 使用 GfskHeaderType:: 配置，固定包或可变长度包
-   * @param whitening 使用 Whitening:: 配置，是否启用数据白化
-   * @param addr_comp 使用 AddrComp:: 配置，是否启用节点/广播地址过滤
-   * @param node_address GFSK地址过滤的节点地址，默认0x05并对齐Semtech官方示例
-   * @param broadcast_address
-   * GFSK地址过滤的广播地址，默认0xAB并对齐Semtech官方示例
-   * @param whitening_seed GFSK白化种子，官方示例默认值为0x0123
-   * @param preamble_detector
-   * 前导检测门限，和 preamble_length
-   * 不是同一个配置；默认kLength16bit对齐官方示例
+   * @param config GFSK传输配置
    * @return 配置成功返回 true，失败返回 false
    */
-  bool ConfigGfskParams(double freq_mhz, double br, GfskBw bw,
-      float current_limit, int8_t power, double freq_deviation_khz = 25.0,
-      const uint8_t* sync_word = nullptr, uint8_t sync_word_length = 0,
-      PulseShape ps = PulseShape::kNoFilter,
-      GfskCrcType crc_type = GfskCrcType::kCrc1ByteInv,
-      uint16_t crc_initial = 0x4567, uint16_t crc_polynomial = 0x4567,
-      uint16_t preamble_length = 32,
-      GfskHeaderType header_type = GfskHeaderType::kVariablePacket,
-      Whitening whitening = Whitening::kNoEncoding,
-      AddrComp addr_comp = AddrComp::kFilteringDisable,
-      uint8_t node_address = 0x05, uint8_t broadcast_address = 0xAB,
-      uint16_t whitening_seed = 0x0123,
-      PreambleDetector preamble_detector = PreambleDetector::kLength16bit);
+  bool Configure(const GfskConfig& config);
 
   /**
    * @brief 开始GFSK模式传输
    * @param chip_mode 使用 ChipMode:: 配置，芯片的模式
    * @param fallback_mode
    * 从RX或TX模式退出返回的模式设定，默认STDBY_RC并对齐Semtech官方示例
-   * @param time_out_us
+   * @param timeout_us
    * TX/RX超时时间，单位us，内部转换为15.625us
    * RTC步进；0x000000和0xFFFFFF按芯片手册特殊值保留
    * @param preamble_length
    * 实际发送/接收的GFSK前导长度，单位Bit；前导检测门限使用当前配置，必要时仅按此前导长度压到合法范围
    * @return 操作成功返回 true，失败返回 false
    */
-  bool StartGfsk(ChipMode chip_mode, uint32_t time_out_us = 0xFFFFFF,
+  bool StartGfsk(ChipMode chip_mode,
+      uint32_t timeout_us = kTimeoutContinuous,
       FallbackMode fallback_mode = FallbackMode::kStdbyRc,
       uint16_t preamble_length = 32);
 
   /**
    * @brief 获取GFSK模式包的状态
-   * @return uint32_t 值的排序为
+   * @param status 输出值的排序为
    * [未使用(8bit)|RxStatus(8bit)|RssiSync(8bit)|RssiAvg(8bit)]
+   * @return 读取成功返回 true，失败返回 false
    */
-  uint32_t GetGfskPacketStatus();
+  bool GetGfskPacketStatus(uint32_t& status);
 
   /**
    * @brief GFSK模式数据接收解析
    * @param parse_status
    * 需要解析的状态数据，使用 GetGfskPacketStatus() 函数的返回值配置
    * （[RxStatus(8bit)]数据）
-   * @param status 由 GfskPacketStatus 结构体保存包状态
-   * @return 解析成功返回 true，失败返回 false
+   * @return 解析后的 GfskPacketStatus
    */
-  bool ParseGfskPacketStatus(uint32_t parse_status, GfskPacketStatus& status);
+  static GfskPacketStatus ParseGfskPacketStatus(uint32_t parse_status);
 
   /**
    * @brief 解析GFSK模式的包的指标信息
    * @param parse_metrics
    * 需要解析的指标数据，使用 GetGfskPacketStatus() 函数的返回值配置
    * （[RssiSync(8bit)|RssiAvg(8bit)]数据）
-   * @param metrics 使用 PacketMetrics 结构体保存包指标信息
-   * @return 解析成功返回 true，失败返回 false
+   * @return 解析后的 PacketMetrics
    */
-  bool ParseGfskPacketMetrics(uint32_t parse_metrics, PacketMetrics& metrics);
+  static PacketMetrics ParseGfskPacketMetrics(uint32_t parse_metrics);
 
   /**
    * @brief 设置GFSK同步字寄存器，并同步更新GFSK包参数中的同步字有效长度
    * @param sync_word 设置同步字数据指针
-   * @param sync_word_length 同步字有效长度，单位Byte，范围1~8
+   * @param sync_word_length 同步字有效长度，单位Byte，范围0~8；0表示关闭
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetGfskSyncWordPacketParams(
@@ -1199,9 +1246,8 @@ class Sx126x final : public ChipSpiGuide {
   /**
    * @brief 设置GFSK CRC类型、seed和polynomial，并同步更新GFSK包参数中的CRC类型
    * @param crc_type 使用 GfskCrcType:: 配置，Crc校验
-   * @param crc_initial CRC参数1，官方示例宏为0x01234567，芯片写入低16位0x4567
-   * @param crc_polynomial
-   * CRC参数2，官方示例宏为0x01234567，芯片写入低16位0x4567
+   * @param crc_initial CRC初始值，Semtech GFSK示例使用0x1D0F
+   * @param crc_polynomial CRC多项式，Semtech GFSK示例使用0x1021
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetGfskCrcPacketParams(
@@ -1328,12 +1374,16 @@ class Sx126x final : public ChipSpiGuide {
     kRwCrcValueProgrammingStart = 0x06BC,
     kRwCrcPolynomialStart = 0x06BE,
     kRwSyncWordProgrammingStart = 0x06C0,
+    kRwGfskWorkaround4 = 0x06AC,
     kRwGfskNodeAddress = 0x06CD,
+    kRwGfskWorkaround1 = 0x06D1,
     kRwLoraSymbolTimeout = 0x0706,
     kRwIqPolaritySetup = 0x0736,
     kRwLoraSyncWordStart = 0x0740,
     kRwTxModulation = 0x0889,
+    kRwGfskWorkaround2 = 0x089B,
     kRwRxGain = 0x08AC,
+    kRwGfskWorkaround3 = 0x08B8,
     kRwTxClampConfig = 0x08D8,
     kRwOcpConfiguration = 0x08E7,
     kRwRtcControl = 0x0902,
@@ -1350,26 +1400,27 @@ class Sx126x final : public ChipSpiGuide {
     struct {
       double bit_rate = 50.0;
       GfskBw band_width = GfskBw::kBw117300Hz;
-      float freq_deviation_khz = 25.0;
+      double freq_deviation_khz = 25.0;
 
       struct {
-        const uint8_t* data = nullptr;
-        uint8_t length = 0;
+        std::array<uint8_t, 8> data = {
+            0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
+        uint8_t length = 5;
       } sync_word;
 
       PreambleDetector preamble_detector = PreambleDetector::kLength16bit;
       AddrComp address_comparison = AddrComp::kFilteringDisable;
       GfskHeaderType header_type = GfskHeaderType::kVariablePacket;
       uint8_t payload_length = kMaxPayloadSize;
-      PulseShape pulse_shape = PulseShape::kNoFilter;
+      PulseShape pulse_shape = PulseShape::kGaussianBt1;
 
       struct {
-        GfskCrcType type = GfskCrcType::kCrc1ByteInv;
-        uint16_t initial = 0x4567;
-        uint16_t polynomial = 0x4567;
+        GfskCrcType type = GfskCrcType::kCrc2ByteInv;
+        uint16_t initial = 0x1D0F;
+        uint16_t polynomial = 0x1021;
       } crc;
 
-      Whitening whitening = Whitening::kNoEncoding;
+      Whitening whitening = Whitening::kEnable;
 
       uint16_t preamble_length = 32;
     } gfsk;
@@ -1391,9 +1442,8 @@ class Sx126x final : public ChipSpiGuide {
   };
 
   // SX1262的ID为SX1261
-  static constexpr const char* kDeviceId = "SX1261";
-  static constexpr uint32_t kTimeoutDisabled = 0x000000;
-  static constexpr uint32_t kTimeoutContinuous = 0xFFFFFF;
+  static constexpr std::array<uint8_t, 6> kDeviceId = {
+      'S', 'X', '1', '2', '6', '1'};
   static constexpr uint16_t kBusyPinTimeoutCount = 10000;
   static constexpr uint16_t kBusyFunctionTimeoutCount = kBusyPinTimeoutCount;
   static constexpr uint8_t kCalibrateAll = 0x7F;
@@ -1469,6 +1519,16 @@ class Sx126x final : public ChipSpiGuide {
    */
   uint32_t TimeoutMicrosecondsToRtcStep(uint32_t time_us) const;
 
+  bool ValidateConfig(const LoraConfig& config) const;
+  bool ValidateConfig(const GfskConfig& config) const;
+  bool ValidateHardwareConfig() const;
+  bool ApplyHardwareConfig(bool calibrate_tcxo);
+  float GetGfskBandwidthKhz(GfskBw bandwidth) const;
+  bool ReadModifyWriteRegister(
+      Reg reg, uint8_t mask, uint8_t value);
+  bool ResetGfskLowRateWorkaround();
+  bool ApplyGfskLowRateWorkaround(const GfskConfig& config);
+
   /**
    * @brief 获取LoRa带宽对应的Hz数值
    * @param bw 使用 LoraBw:: 配置
@@ -1491,15 +1551,14 @@ class Sx126x final : public ChipSpiGuide {
    * @param cad_det_peak CAD峰值检测门限
    * @param cad_det_min CAD最小峰值门限
    */
-  void GetLoraCadParams(Sf sf, CadSymbolNum& symbol_num, uint8_t& cad_det_peak,
-      uint8_t& cad_det_min) const;
-
   /**
-   * @brief 根据GFSK实际前导长度获取最大合法前导检测器配置
+   * @brief 根据GFSK前导及同步字长度获取最大合法前导检测器配置
    * @param preamble_length 实际发送/接收的GFSK前导长度，单位Bit
+   * @param sync_word_length GFSK同步字长度，单位Byte
    * @return 使用 PreambleDetector:: 配置
    */
-  PreambleDetector GetGfskMaxPreambleDetector(uint16_t preamble_length) const;
+  PreambleDetector GetGfskMaxPreambleDetector(
+      uint16_t preamble_length, uint8_t sync_word_length) const;
 
   /**
    * @brief 将手册勘误相关寄存器加入Sleep warm start保留列表
@@ -1529,10 +1588,19 @@ class Sx126x final : public ChipSpiGuide {
   bool StopRxTimeoutTimer();
 
   ChipType chip_type_;
-  Config config_;
+  HardwareConfig hardware_config_;
   Param param_;
+  LoraConfig lora_config_;
+  GfskConfig gfsk_config_;
   int32_t rst_;
   int32_t busy_ = kDefaultValue;
   bool (*busy_wait_callback_)() = nullptr;
+  SleepMode sleep_mode_ = SleepMode::kWarmStart;
+  bool initialized_ = false;
+  bool sleeping_ = false;
+  bool configured_ = false;
+  bool gfsk_low_rate_workaround_active_ = false;
+  uint16_t image_calibration_start_mhz_ = 902;
+  uint16_t image_calibration_end_mhz_ = 928;
 };
 }  // namespace cpp_bus_driver
