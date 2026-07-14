@@ -1821,7 +1821,7 @@ uint32_t Cc1101::CalculateFifoPollIntervalUs() const {
       4000.0 /
       (std::max(0.6, config_.data_rate_kbaud) * bits_per_symbol);
   const double status_read_us = 32000000.0 /
-      static_cast<double>(std::max(1, spi_frequency_hz_));
+      static_cast<double>(std::max(int32_t{1}, spi_frequency_hz_));
   const double interval_us =
       std::max(0.0, maximum_interval_us - status_read_us);
   return static_cast<uint32_t>(

@@ -587,14 +587,14 @@ class Sx126x final : public ChipSpiGuide {
    * @param parse_status 解析状态字节，由 GetStatus() 函数获取
    * @return CmdStatus 命令状态
    */
-  static CmdStatus ParseCmdStatus(uint8_t parse_status);
+  CmdStatus ParseCmdStatus(uint8_t parse_status);
 
   /**
    * @brief 芯片模式解析，详细请参考SX126x手册 13-76: Status Bytes Definition
    * @param parse_status 解析状态字节，由 GetStatus() 函数获取
    * @return ChipModeStatus 芯片模式状态
    */
-  static ChipModeStatus ParseChipModeStatus(uint8_t parse_status);
+  ChipModeStatus ParseChipModeStatus(uint8_t parse_status);
 
   /**
    * @brief 中断解析，详细请参考SX126x手册 13-29: IRQ registers
