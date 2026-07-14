@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: SGM38121 多通道 LDO 稳压器驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
  * @LastEditTime: 2026-04-20 15:10:33

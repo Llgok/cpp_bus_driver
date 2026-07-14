@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 跨平台硬件 SPI 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
  * @LastEditTime: 2026-06-01 15:00:41

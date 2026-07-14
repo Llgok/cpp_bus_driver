@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: CST2xxSE 电容触摸控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-04-30 13:43:08
@@ -32,7 +32,6 @@ class Cst2xxse final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-
   uint8_t GetDeviceId();
 
   /**
@@ -43,7 +42,7 @@ class Cst2xxse final : public ChipI2cGuide {
 
   /**
    * @brief 获取单指触控的触摸点信息
-   * @param &tp 使用结构体Touch_Point::配置触摸点结构体
+   * @param tp 用于保存触摸点的 TouchPoint 结构体
    * @param finger_num 要获取的触摸点
    * @return [true]：获取的触摸点和finger_num相同
    * [false]：获取错误或者获取的触摸点和finger_num不相同
@@ -52,7 +51,7 @@ class Cst2xxse final : public ChipI2cGuide {
 
   /**
    * @brief 获取多个触控的触摸点信息
-   * @param &tp 使用结构体Touch_Point::配置触摸点结构体
+   * @param tp 用于保存触摸点的 TouchPoint 结构体
    * @return  [true]：获取的手指数大于0 [false]：获取错误或者获取的手指数为0
    */
   bool GetMultipleTouchPoint(TouchPoint& tp);

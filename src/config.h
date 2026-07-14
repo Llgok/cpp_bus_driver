@@ -1,8 +1,8 @@
 /*
- * @Description: None
+ * @Description: cpp_bus_driver 编译配置、平台选择与公共依赖声明
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2026-05-17 19:48:23
+ * @LastEditTime: 2026-07-14 01:41:50
  * @License: GPL 3.0
  */
 #pragma once
@@ -131,7 +131,7 @@ template <typename T,
     typename = typename std::enable_if<std::is_array<T>::value>::type>
 std::unique_ptr<T> make_unique(size_t size) {
   using U = typename std::remove_extent<T>::type;  // 获取数组元素类型
-  return std::unique_ptr<T>(new U[size]());        // Value initialization
+  return std::unique_ptr<T>(new U[size]());        // 值初始化
 }
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_CPP14_SUPPORT)
 // C++ 14
@@ -146,7 +146,7 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 template <typename T, typename = std::enable_if_t<std::is_array<T>::value> >
 std::unique_ptr<T> make_unique(size_t size) {
   using U = typename std::remove_extent<T>::type;  // 获取数组元素类型
-  return std::unique_ptr<T>(new U[size]());        // Value initialization
+  return std::unique_ptr<T>(new U[size]());        // 值初始化
 }
 
 #else

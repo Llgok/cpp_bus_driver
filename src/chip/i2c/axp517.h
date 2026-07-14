@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: AXP517 电源管理芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-02-03 15:06:34
  * @LastEditTime: 2026-05-16 09:49:10
@@ -151,29 +151,28 @@ class Axp517 final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-
   uint8_t GetDeviceId();
 
   /**
    * @brief 获取芯片状态0
-   * @param &status 使用Chip_Status_0::配置
+   * @param status 用于保存结果的 ChipStatus0 结构体
    * @return 读取成功返回 true，失败返回 false
    */
   bool GetChipStatus0(ChipStatus0& status);
 
   /**
    * @brief 获取芯片状态1
-   * @param &status 使用Chip_Status_1::配置
+   * @param status 用于保存结果的 ChipStatus1 结构体
    * @return 读取成功返回 true，失败返回 false
    */
   bool GetChipStatus1(ChipStatus1& status);
 
   /**
    * @brief 获取所有中断状态
-   * @param &status0 中断状态0
-   * @param &status1 中断状态1
-   * @param &status2 中断状态2
-   * @param &status3 中断状态3
+   * @param status0 中断状态 0
+   * @param status1 中断状态 1
+   * @param status2 中断状态 2
+   * @param status3 中断状态 3
    * @return 读取成功返回 true，失败返回 false
    */
   bool GetIrqStatus(IrqStatus0& status0, IrqStatus1& status1,
@@ -229,7 +228,7 @@ class Axp517 final : public ChipI2cGuide {
 
   /**
    * @brief 获取电池健康度
-   * @return 电池健康度(0-100)int16_t
+   * @return 电池健康度，范围为 0～100
    */
   uint8_t GetBatteryHealth();
 
@@ -241,7 +240,7 @@ class Axp517 final : public ChipI2cGuide {
 
   /**
    * @brief 设置ADC通道
-   * @param channel 使用Adc_Channel::配置
+   * @param channel ADC 通道
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcChannel(AdcChannel channel);
@@ -278,6 +277,7 @@ class Axp517 final : public ChipI2cGuide {
 
   /**
    * @brief 设置adc数据输出选择
+   * @param data_select ADC 数据输出类型
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcDataSelect(AdcData data_select);
@@ -325,28 +325,28 @@ class Axp517 final : public ChipI2cGuide {
 
   /**
    * @brief 设置GPIO输出源选择
-   * @param source 使用Gpio_Source::配置
+   * @param source GPIO 信号源
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetGpioSource(GpioSource source);
 
   /**
    * @brief 设置GPIO模式
-   * @param mode 使用Gpio_Mode::配置
+   * @param mode GPIO 工作模式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetGpioMode(GpioMode mode);
 
   /**
    * @brief 写GPIO状态
-   * @param config 使用Gpio_Status::配置
+   * @param status GPIO 输出状态
    * @return 成功返回 true，失败返回 false
    */
   bool GpioWrite(GpioStatus status);
 
   /**
    * @brief 读取GPIO状态
-   * @return 使用Gpio_Status::配置
+   * @return GPIO 当前状态
    */
   GpioStatus GpioRead();
 
@@ -359,14 +359,14 @@ class Axp517 final : public ChipI2cGuide {
 
   /**
    * @brief 强制设置batfet（电池开关）启动或者关闭
-   * @param mode 使用Force_Batfet::配置
+   * @param mode BATFET 强制控制模式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetForceBatfetMode(ForceBatfet mode);
 
   /**
    * @brief 强制设置rbfet（vbus反向供电开关）启动或者关闭
-   * @param enable enable [true]：强制开启 [false]：强制关闭
+   * @param enable true 表示强制开启，false 表示强制关闭
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetForceRbfetEnable(bool enable);
@@ -408,7 +408,7 @@ class Axp517 final : public ChipI2cGuide {
 
   /**
    * @brief 获取BC1.2检测结果
-   * @param &result BC检测结果
+   * @param result BC1.2 检测结果
    * @return 读取成功返回 true，失败返回 false
    */
   bool GetBc12DetectResult(BcDetectResult& result);

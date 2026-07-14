@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 软件模拟 I2C 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
  * @LastEditTime: 2026-04-29 14:22:26
@@ -265,7 +265,6 @@ bool SoftwareI2c::Probe(const uint16_t address) {
     return false;
   }
   if (!WaitAck()) {
-    // LogMessage(LogLevel::kError, __FILE__, __LINE__, "WaitAck failed\n");
     return false;
   }
 

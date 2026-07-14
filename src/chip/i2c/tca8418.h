@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: TCA8418 键盘扫描与 GPIO 扩展芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-06-01 17:30:00
@@ -283,14 +283,14 @@ class Tca8418 final : public ChipI2cGuide {
   bool ClearEventFifo();
 
   /**
-   * @brief 读取并清除 GPIO 中断状态。
+   * @brief 读取并通过输出参数返回已清除的 GPIO 中断状态。
    * @param status 输出 18 位 GPIO 中断状态掩码。
    * @return 读取成功返回 true。
    */
   bool GetClearGpioIrqFlag(uint32_t* status);
 
   /**
-   * @brief 读取并清除 GPIO 中断状态。
+   * @brief 读取并直接返回已清除的 GPIO 中断状态。
    * @return 成功返回 18 位 GPIO 中断状态掩码，失败返回 0。
    */
   uint32_t GetClearGpioIrqFlag();

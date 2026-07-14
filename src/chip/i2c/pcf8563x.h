@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: PCF8563 系列实时时钟芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-04-30 13:43:38
@@ -75,18 +75,17 @@ class Pcf8563x final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-
   uint8_t GetDeviceId();
   /**
    * @brief 设置CLKOUT引脚输出频率
-   * @param freq_hz 使用Clock_Frequency::配置
+   * @param freq_hz 时钟输出频率
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetClockFrequencyOutput(OutFreq freq_hz);
 
   /**
    * @brief 设置时钟启动
-   *  @param enable [true]：启动，[false]：关闭
+   * @param enalbe true 表示启动，false 表示停止
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetClock(bool enalbe);
@@ -102,7 +101,6 @@ class Pcf8563x final : public ChipI2cGuide {
    * @return 操作成功返回 true，失败返回 false
    */
   bool ClearClockIntegrityFlag();
-
   uint8_t GetSecond();
   uint8_t GetMinute();
   uint8_t GetHour();
@@ -111,7 +109,6 @@ class Pcf8563x final : public ChipI2cGuide {
   uint8_t GetMonth();
   uint8_t GetYear();
   bool GetTime(Time& time);
-
   bool SetSecond(uint8_t second);
   bool SetMinute(uint8_t minute);
   bool SetHour(uint8_t hour);
@@ -131,7 +128,7 @@ class Pcf8563x final : public ChipI2cGuide {
    * @brief 开启定时器
    * @param n_value 定时器值，与freq搭配使用（定时的值 （单位：秒） = n_value /
    * freq（单位：赫兹））
-   * @param freq_hz 使用Timer_Freq::配置，选择的频率越高定时的时间越精准
+   * @param freq_hz 定时器时钟频率；频率越高，定时精度越高
    * @return 操作成功返回 true，失败返回 false
    */
   bool RunTimer(uint8_t n_value, TimerFreq freq_hz);
@@ -156,7 +153,7 @@ class Pcf8563x final : public ChipI2cGuide {
 
   /**
    * @brief 开启预定时间报警
-   * @param alarm 使用Time_Alarm::配置
+   * @param alarm 定时闹钟配置
    * @return 操作成功返回 true，失败返回 false
    */
   bool RunScheduledAlarm(TimeAlarm alarm);

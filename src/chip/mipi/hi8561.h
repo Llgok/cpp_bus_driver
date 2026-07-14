@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: HI8561 MIPI-DSI 显示面板驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-04-22 17:36:09
@@ -38,7 +38,6 @@ class Hi8561 final : public ChipMipiGuide {
   bool Init(float freq_mhz = kDefaultValue,
       float lane_bit_rate_mbps = kDefaultValue) override;
   bool Deinit() override;
-
   uint16_t GetDeviceId();
 
   /**
@@ -57,7 +56,7 @@ class Hi8561 final : public ChipMipiGuide {
 
   /**
    * @brief 设置屏幕镜像
-   * @param mode 使用Mirror_Mode::配置
+   * @param mode 镜像模式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetMirror(MirrorMode mode);
@@ -78,14 +77,14 @@ class Hi8561 final : public ChipMipiGuide {
 
   /**
    * @brief 设置颜色顺序
-   * @param order 使用Color_Order::配置
+   * @param order 颜色通道顺序
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetColorOrder(ColorOrder order);
 
   /**
    * @brief 设置CABC（内容自适应亮度控制）模式
-   * @param mode 使用Cabc_Mode::配置
+   * @param mode 内容自适应背光控制模式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetCabcMode(CabcMode mode);
@@ -96,7 +95,7 @@ class Hi8561 final : public ChipMipiGuide {
    * @param y_start y坐标开始点
    * @param x_end x坐标结束点
    * @param y_end y坐标结束点
-   * @param *data 颜色数据
+   * @param data 像素数据指针
    * @return 操作成功返回 true，失败返回 false
    */
   bool SendColorStreamCoordinate(

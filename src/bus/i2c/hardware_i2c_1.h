@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 基于 ESP-IDF 新版主机接口的硬件 I2C 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
  * @LastEditTime: 2026-04-30 13:44:59
@@ -20,7 +20,6 @@ class HardwareI2c1 final : public BusI2cGuide {
         scl_(bus == nullptr ? kDefaultValue : bus->scl_),
         port_(bus == nullptr ? I2C_NUM_0 : bus->port_),
         shared_bus_provider_(bus) {}
-
   bool InitBus(uint32_t freq_hz = kDefaultValue);
   bool Init(uint32_t freq_hz = kDefaultValue,
       uint16_t address = kDefaultValue) override;
@@ -31,9 +30,7 @@ class HardwareI2c1 final : public BusI2cGuide {
       uint8_t* read_data, size_t read_length) override;
 
   bool Probe(const uint16_t address) override;
-
   bool set_bus_handle(i2c_master_bus_handle_t bus_handle);
-
   i2c_master_bus_handle_t bus_handle();
 
  private:

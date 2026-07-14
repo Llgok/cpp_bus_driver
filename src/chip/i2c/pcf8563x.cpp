@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: PCF8563 系列实时时钟芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
  * @LastEditTime: 2026-04-20 15:08:31

@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: SGM41562 系列电池充电管理芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-04-30 13:44:29
@@ -54,7 +54,6 @@ class Sgm41562xx final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-
   uint8_t GetDeviceId();
 
   /**
@@ -64,9 +63,9 @@ class Sgm41562xx final : public ChipI2cGuide {
   uint8_t GetIrqFlag();
 
   /**
-   * @brief 中断解析，详细请参考SGM41562手册 Table 13. kReg09 Register Details
-   * @param irq_flag 解析状态语句，由get_irq_flag()函数获取
-   * @param &status 使用Irq_Status结构体配置，相应位自动置位
+   * @brief 解析中断状态，详见 SGM41562 手册表 13 的 kReg09 寄存器说明
+   * @param irq_flag GetIrqFlag() 返回的中断状态值
+   * @param status 用于保存各中断状态位的 IrqStatus 结构体
    * @return 解析成功返回 true，失败返回 false
    */
   bool ParseIrqStatus(uint8_t irq_flag, IrqStatus& status);
@@ -85,10 +84,9 @@ class Sgm41562xx final : public ChipI2cGuide {
   uint8_t GetChipStatus();
 
   /**
-   * @brief 芯片状态解析，详细请参考SGM41562手册表格 Table 12. kReg08 Register
-   * Details
-   * @param chip_flag 解析状态语句，由get_chip_status()函数获取
-   * @param &status 使用Chip_Status结构体配置，相应位自动置位
+   * @brief 解析芯片状态，详见 SGM41562 手册表 12 的 kReg08 寄存器说明
+   * @param chip_flag GetChipStatus() 返回的状态值
+   * @param status 用于保存各状态位的 ChipStatus 结构体
    * @return 解析成功返回 true，失败返回 false
    */
   bool ParseChipStatus(uint8_t chip_flag, ChipStatus& status);
@@ -102,7 +100,7 @@ class Sgm41562xx final : public ChipI2cGuide {
 
   /**
    * @brief 设置进入运输模式的时间
-   * @param time 使用Enter_Shipping_Time::进行配置
+   * @param time 进入运输模式前的等待时间
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetEnterShippingTime(EnterShippingTime time);
@@ -128,9 +126,7 @@ class Sgm41562xx final : public ChipI2cGuide {
   static constexpr uint8_t kDeviceId = 0x04;
   static constexpr uint8_t kInitSequence[] = {
 
-      // 重置寄存器
-      // static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      // static_cast<uint8_t>(Cmd::kRwChargeCurrentControl), 0B11001111,
+      // 如需复位，可将充电电流控制寄存器设置为 0B11001111。
 
       static_cast<uint8_t>(InitSequenceFormat::kDelayMs), 120,
 
@@ -142,15 +138,9 @@ class Sgm41562xx final : public ChipI2cGuide {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl), 0B01000000,
 
-      // 屏蔽INT
-      // static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      // static_cast<uint8_t>(Cmd::kRwMiscellaneousOperationControl),
-      // 0B11011111,
+      // 如需屏蔽中断，可将杂项操作控制寄存器设置为 0B11011111。
 
-      // 充电电流权重限制
-      // static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      // static_cast<uint8_t>(Cmd::kRwI2cAddressMiscellaneousConfiguration),
-      // 0B01100001,
+      // 充电电流权重限制可通过 I2C 地址及杂项寄存器的 0B01100001 配置。
 
       // 关闭看门狗功能
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
@@ -160,17 +150,13 @@ class Sgm41562xx final : public ChipI2cGuide {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), 0B10100100,
 
-      // 关闭电池充电功能
-      // static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      // static_cast<uint8_t>(Cmd::kRwPowerOnConfiguration), 0B10101100,
+      // 关闭充电可将上电配置寄存器设置为 0B10101100。
 
       // 关闭输入电流限制
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Cmd::kRdSystemStatus), 0B01000000
 
-      // 添加200ma电流阈值到输入电流限制中（仅在电流限制模式有效）
-      // static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      // static_cast<uint8_t>(Cmd::kRdSystemStatus), 0B00100000,
+      // 电流限制模式下，0B00100000 可增加 200 mA 输入电流阈值。
 
   };
 

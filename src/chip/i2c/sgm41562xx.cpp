@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: SGM41562 系列电池充电管理芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
  * @LastEditTime: 2026-04-20 17:06:28

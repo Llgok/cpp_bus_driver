@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: SY6970 电池充电与电源路径管理芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-05-16 10:19:51
@@ -71,7 +71,6 @@ class Sy6970 final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-
   uint8_t GetDeviceId();
 
   /**
@@ -132,7 +131,7 @@ class Sy6970 final : public ChipI2cGuide {
 
   /**
    * @brief 设置升压模式频率
-   * @param high_freq true:1.5MHz, false:500kHz
+   * @param high_freq true 表示 1.5 MHz，false 表示 500 kHz
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetBoostFrequency(bool high_freq);
@@ -153,7 +152,7 @@ class Sy6970 final : public ChipI2cGuide {
 
   /**
    * @brief 设置HVDCP电压类型
-   * @param high_voltage true:12V, false:9V
+   * @param high_voltage true 表示 12 V，false 表示 9 V
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetHvdcpVoltageType(bool high_voltage);
@@ -244,14 +243,14 @@ class Sy6970 final : public ChipI2cGuide {
 
   /**
    * @brief 设置电池低压阈值
-   * @param high_threshold true:3.0V, false:2.8V
+   * @param high_threshold true 表示 3.0 V，false 表示 2.8 V
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetBatteryLowVoltageThreshold(bool high_threshold);
 
   /**
    * @brief 设置电池再充电阈值
-   * @param high_threshold true:200mV, false:100mV
+   * @param high_threshold true 表示 200 mV，false 表示 100 mV
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetBatteryRechargeThreshold(bool high_threshold);
@@ -293,7 +292,7 @@ class Sy6970 final : public ChipI2cGuide {
 
   /**
    * @brief 设置JEITA低温电流设置
-   * @param low_current true:20%, false:50%
+   * @param low_current true 表示 20%，false 表示 50%
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetJeitaLowTempCurrent(bool low_current);

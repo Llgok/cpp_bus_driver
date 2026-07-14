@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: ESP-IDF 硬件 QSPI 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
  * @LastEditTime: 2026-05-16 23:35:05
@@ -32,12 +32,10 @@ class HardwareQspi final : public BusQspiGuide {
   bool Deinit(bool delete_bus = true) override;
   bool Write(const void* data, size_t byte,
       uint32_t flags = 0, bool cs_keep_active = false) override;
-
   bool SetCs(bool value);
 
  private:
-  // 这里设置最大传输尺寸
-  // esp32s3的dma最大尺寸是32k
+  // ESP32-S3 的 DMA 单次最大传输长度为 32 KiB。
   static constexpr int32_t kQspiMaxTransferSize = 32 * 1024;
 
   int32_t data0_, data1_, data2_, data3_, sclk_;

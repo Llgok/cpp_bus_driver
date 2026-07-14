@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: GZ030PCC0X 显示面板辅助控制驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-04-30 13:43:21
@@ -51,21 +51,21 @@ class Gz030pcc0x final : public ChipI2cGuide {
 
   /**
    * @brief 设置数据模式
-   * @param format 使用Data_Format::配置
+   * @param format 数据格式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetDataFormat(DataFormat format);
 
   /**
    * @brief 内部测试模式
-   * @param mode 使用Internal_Test_Mode::配置
+   * @param mode 内部测试模式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetInternalTestMode(InternalTestMode mode);
 
   /**
    * @brief 设置显示方向
-   * @param direction 使用Show_Direction::配置
+   * @param direction 显示方向
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetShowDirection(ShowDirection direction);
@@ -92,11 +92,10 @@ class Gz030pcc0x final : public ChipI2cGuide {
       static_cast<uint16_t>(InitSequenceFormat::kWriteC16D8), 0x6C00, 0x00,
       static_cast<uint16_t>(InitSequenceFormat::kWriteC16D8), 0x6900, 0x08,
 
-      // Mipi 总线的 lane 数量设置为 4 lane
+      // 将 MIPI 总线的数据通道数设置为 4。
       static_cast<uint16_t>(InitSequenceFormat::kWriteC16D8), 0x6901, 0x00,
 
-      // Mipi 总线的 lane 数量设置为 2 lane
-      // static_cast<uint16_t>(InitSequenceFormat::kWriteC16D8), 0x6800, 0x03,
+      // 使用 2 条数据通道时，可将寄存器 0x6800 设置为 0x03。
 
       static_cast<uint16_t>(InitSequenceFormat::kWriteC16D8), 0x6800, 0x01,
       static_cast<uint16_t>(InitSequenceFormat::kWriteC16D8), 0x5F00, 0x22,

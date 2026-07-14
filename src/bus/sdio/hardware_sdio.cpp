@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: ESP-IDF SDIO 主机通信驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
  * @LastEditTime: 2026-07-01 13:56:02
@@ -136,8 +136,6 @@ bool HardwareSdio::Init(int32_t freq_hz) {
     return false;
   }
 
-  // sdmmc_card_print_info(stdout, sdio_handle_.get());
-
   freq_hz_ = freq_hz;
 
   return true;
@@ -196,8 +194,6 @@ bool HardwareSdio::WaitInterrupt(uint32_t timeout_ms) {
   esp_err_t result =
       sdmmc_io_wait_int(sdio_handle_.get(), pdMS_TO_TICKS(timeout_ms));
   if (result == ESP_ERR_TIMEOUT) {
-    // LogMessage(LogLevel::kError, __FILE__, __LINE__, "sdmmc_io_wait_int timeout
-    // \n");
     return false;
   } else if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,

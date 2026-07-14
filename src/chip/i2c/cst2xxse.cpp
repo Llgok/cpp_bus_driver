@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: CST2xxSE 电容触摸控制器驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
  * @LastEditTime: 2026-05-16 23:45:48

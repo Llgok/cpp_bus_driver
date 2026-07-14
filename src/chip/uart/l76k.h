@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: L76K GNSS 定位模块驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-05-15 17:00:38
@@ -99,7 +99,6 @@ class L76k final : public ChipUartGuide, public GnssParser {
 
   bool Init(int32_t baud_rate = 9600) override;
   bool Deinit() override;
-
   bool GetDeviceId(size_t* search_index = nullptr);
 
   /**
@@ -111,7 +110,7 @@ class L76k final : public ChipUartGuide, public GnssParser {
 
   /**
    * @brief 直接读取数据
-   * @param *data 读取数据的指针
+   * @param data 接收数据指针
    * @param length 要读取数据的长度
    * @return 接收的数据长度，如果接收错误或者接收长度为0都返回0
    */
@@ -131,8 +130,8 @@ class L76k final : public ChipUartGuide, public GnssParser {
 
   /**
    * @brief 获取信息数据
-   * @param &data 获取数据的指针
-   * @param *length 获取长度的指针
+   * @param data 接收数据指针
+   * @param length 实际数据长度输出指针
    * @param max_length 获取数据的最大长度
    * @param timeout_count 超时计数
    * @return 读取成功返回 true，失败返回 false

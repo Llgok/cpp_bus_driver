@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 基于 ESP-IDF 新版主机接口的硬件 I2C 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
  * @LastEditTime: 2026-07-01 13:50:41

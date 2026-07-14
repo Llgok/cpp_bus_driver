@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: ESP-IDF SDIO 主机通信驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
  * @LastEditTime: 2026-05-15 22:29:35
@@ -48,7 +48,7 @@ class HardwareSdio final : public BusSdioGuide {
    * @brief 使用 IO_RW_EXTENDED (kCmd53) 的字节模式读多个字节
    * @param function 作用号
    * @param write_c32 读取的命令或地址
-   * @param *data 读取的数据
+   * @param data 接收数据指针
    * @param byte 读取的数据长度，数据长度必须小于512个字节，且每4位内存要对齐
    * @return 读取成功返回 true，失败返回 false
    */
@@ -59,7 +59,7 @@ class HardwareSdio final : public BusSdioGuide {
    * @brief 使用 IO_RW_DIRECT (kCmd52) 读单个字节
    * @param function 作用号
    * @param write_c32 读取的命令或地址
-   * @param *data 读取的数据
+   * @param data 接收数据指针
    * @return 读取成功返回 true，失败返回 false
    */
   bool Read(uint32_t function, uint32_t write_c32, uint8_t* data) override;
@@ -68,7 +68,7 @@ class HardwareSdio final : public BusSdioGuide {
    * @brief 块模式下，使用 IO_RW_EXTENDED (kCmd53) 读数据块
    * @param function 作用号
    * @param write_c32 读取的命令或地址
-   * @param *data 读取的块数据
+   * @param data 接收数据块指针
    * @param byte 读取的块数据长度，目前支持以最大512个字节每块数据传输
    * @return 读取成功返回 true，失败返回 false
    */
@@ -79,7 +79,7 @@ class HardwareSdio final : public BusSdioGuide {
    * @brief 使用 IO_RW_EXTENDED (kCmd53) 的字节模式写多个字节
    * @param function 作用号
    * @param write_c32 写入的命令或地址
-   * @param *data 写入的数据
+   * @param data 待写入数据指针
    * @param byte 写入的数据长度，数据长度必须小于512个字节，且每4位内存要对齐
    * @return 写入成功返回 true，失败返回 false
    */
@@ -90,8 +90,8 @@ class HardwareSdio final : public BusSdioGuide {
    * @brief 使用 IO_RW_DIRECT (kCmd52) 写单个字节
    * @param function 作用号
    * @param write_c32 写入的命令或地址
-   * @param *data 写入的数据
-   * @param *read_d8_verify 用于校验的再次读取的数据，填NULL为禁用
+   * @param data 待写入字节
+   * @param read_d8_verify 可选的回读校验结果指针，填 nullptr 表示禁用
    * @return 写入成功返回 true，失败返回 false
    */
   bool Write(uint32_t function, uint32_t write_c32, uint8_t data,
@@ -101,7 +101,7 @@ class HardwareSdio final : public BusSdioGuide {
    * @brief 块模式下，使用 IO_RW_EXTENDED (kCmd53) 写数据块
    * @param function 作用号
    * @param write_c32 写入的命令或地址
-   * @param *data 写入的块数据
+   * @param data 待写入数据块指针
    * @param byte 写入的块数据长度，目前支持以最大512个字节每块数据传输
    * @return 写入成功返回 true，失败返回 false
    */

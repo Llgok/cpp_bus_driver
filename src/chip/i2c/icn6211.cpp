@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: ICN6211 MIPI-DSI 转 RGB 桥接芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-01-16 11:57:07
  * @LastEditTime: 2026-04-23 17:15:51

@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 芯片公共驱动基类的初始化序列实现
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
  * @LastEditTime: 2026-04-30 13:37:40

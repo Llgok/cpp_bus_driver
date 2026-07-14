@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 各类总线抽象接口的公共辅助实现
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
  * @LastEditTime: 2026-07-01 11:48:25

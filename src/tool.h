@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 通用日志、GPIO、延时与数据处理工具接口
  * @Author: LILYGO_L
  * @Date: 2024-12-17 17:58:03
  * @LastEditTime: 2026-04-30 13:47:39
@@ -41,7 +41,7 @@ bool SafeStringToDouble(const std::string& input, double* output);
 class Tool {
  public:
   enum class LogLevel {
-    kDebug,    // debug信息
+    kDebug,    // 调试信息
     kInfo,     // 普通信息
     kWarning,  // 警告信息
     kError,    // 错误信息
@@ -58,11 +58,11 @@ class Tool {
 
   enum class GpioMode {
     kDisable,
-    kInput,          // input only
-    kOutput,         // output only mode
-    kOutputOd,       // output only with open-drain mode
-    kInputOutputOd,  // output and input with open-drain mode
-    kInputOutput,    // output and input mode
+    kInput,          // 仅输入
+    kOutput,         // 仅推挽输出
+    kOutputOd,       // 仅开漏输出
+    kInputOutputOd,  // 开漏输入输出
+    kInputOutput,    // 推挽输入输出
   };
 
   enum class GpioStatus {
@@ -72,18 +72,18 @@ class Tool {
   };
 
   Tool() = default;
-  virtual ~Tool() = default;
 
+  virtual ~Tool() = default;
   void LogMessage(LogLevel level, const char* file_name, size_t line_number,
       const char* format, ...);
 
   /**
-   * @brief 搜索函数
-   * @param *search_library 需要使用的搜索库
-   * @param search_library_length 需要使用的搜索库长度
-   * @param *search_sample 需要搜索的样本
-   * @param sample_length 需要搜索的样本长度
-   * @param *search_index 搜索成功的的样本中第一个搜索成功字符位置的引索
+   * @brief 在字节缓冲区中搜索指定文本样本。
+   * @param search_library 待搜索的字节缓冲区
+   * @param search_library_length 缓冲区长度
+   * @param search_sample 搜索样本
+   * @param sample_length 样本长度
+   * @param search_index 可选的首次匹配位置输出参数
    * @return 成功返回 true，失败返回 false
    */
   bool Search(const uint8_t* search_library, size_t search_library_length,
@@ -92,20 +92,17 @@ class Tool {
   bool Search(const char* search_library, size_t search_library_length,
       const char* search_sample, size_t sample_length,
       size_t* search_index = nullptr);
-
   bool SetGpioMode(
       int32_t pin, GpioMode mode, GpioStatus status = GpioStatus::kDisable);
   bool GpioWrite(int32_t pin, bool value);
   bool GpioRead(int32_t pin);
   bool ResetGpio(int32_t pin);
-
   void DelayMs(uint32_t value);
   void DelayUs(uint32_t value);
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   int64_t GetSystemTimeUs();
   int64_t GetSystemTimeMs();
-
   bool InitGpioInterrupt(uint32_t pin, InterruptMode mode,
       void (*interrupt)(void* arg), void* args = nullptr);
   bool DeinitGpioInterrupt(uint32_t pin);
@@ -135,7 +132,6 @@ class Tool {
 class Pwm : public virtual Tool {
  public:
   explicit Pwm(int32_t pin) : pin_(pin) {}
-
   bool Init(ledc_timer_t timer_num, ledc_channel_t channel, uint32_t freq_hz,
       uint32_t duty = 0,
       ledc_mode_t speed_mode = ledc_mode_t::LEDC_LOW_SPEED_MODE,
@@ -144,15 +140,15 @@ class Pwm : public virtual Tool {
           ledc_sleep_mode_t::LEDC_SLEEP_MODE_NO_ALIVE_NO_PD);
 
   /**
-   * @brief 设置pwm占空比
+   * @brief 设置 PWM 占空比
    * @param duty 值范围 0~100
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetDuty(uint8_t duty);
 
   /**
-   * @brief 设置pwm频率
-   * @param freq_hz pwm频率
+   * @brief 设置 PWM 频率
+   * @param freq_hz PWM 频率
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetFrequency(uint32_t freq_hz);
@@ -166,8 +162,8 @@ class Pwm : public virtual Tool {
   bool StartGradientTime(uint8_t target_duty, int32_t time_ms);
 
   /**
-   * @brief 停止pwm
-   * @param idle_level pwm停止后空闲状态下pwm的输出电平
+   * @brief 停止 PWM
+   * @param idle_level PWM 停止后的空闲输出电平
    * @return 操作成功返回 true，失败返回 false
    */
   bool Stop(uint32_t idle_level = 0);
@@ -350,19 +346,19 @@ class GnssParser : public virtual Tool {
   GnssParser() = default;
 
   /**
-   * @brief 解析rmc信息
+   * @brief 解析 RMC 信息
    * @param data 要解析的数据
    * @param length 要解析的数据长度
-   * @param &rmc 返回的解析结构体
+   * @param rmc 返回的解析结构体
    * @return 解析成功返回 true，失败返回 false
    */
   bool ParseRmcInfo(const uint8_t* data, size_t length, Rmc& rmc);
 
   /**
-   * @brief 解析gga信息
+   * @brief 解析 GGA 信息
    * @param data 要解析的数据
    * @param length 要解析的数据长度
-   * @param &gga 返回的解析结构体
+   * @param gga 返回的解析结构体
    * @return 解析成功返回 true，失败返回 false
    */
   bool ParseGgaInfo(const uint8_t* data, size_t length, Gga& gga);

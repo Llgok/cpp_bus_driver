@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: S023MSAFJF10111E1 显示面板辅助控制驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-03-14 11:11:19
  * @LastEditTime: 2026-04-30 13:44:20
@@ -43,21 +43,21 @@ class S023msafjf10111e1 final : public ChipI2cGuide {
 
   /**
    * @brief 设置数据模式
-   * @param format 使用Data_Format::配置
+   * @param format 数据格式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetDataFormat(DataFormat format);
 
   /**
    * @brief 内部测试模式
-   * @param mode 使用Internal_Test_Mode::配置
+   * @param mode 内部测试模式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetInternalTestMode(InternalTestMode mode);
 
   /**
    * @brief 设置显示方向
-   * @param direction 使用Show_Direction::配置
+   * @param direction 显示方向
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetShowDirection(ShowDirection direction);

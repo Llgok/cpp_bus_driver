@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: L76K GNSS 定位模块驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
  * @LastEditTime: 2026-04-30 14:32:02

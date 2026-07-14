@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: XL95x5 GPIO 扩展芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
  * @LastEditTime: 2026-05-26 17:40:38

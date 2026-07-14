@@ -1,5 +1,5 @@
 /*
- * @Description: BQ27220 single-cell CEDV fuel gauge driver
+ * @Description: BQ27220 单节电池 CEDV 电量计驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-05-12 18:35:00
@@ -167,12 +167,6 @@ class Bq27220 final : public ChipI2cGuide {
     uint16_t dod100 = 3490;               // DOD 100% 对应电压，mV
   };
 
-  /**
-   * @brief 构造 BQ27220 电量计驱动对象
-   * @param bus I2C 总线对象
-   * @param address BQ27220 7bit I2C 地址
-   * @param rst 可选复位引脚，不使用时保持 kDefaultValue
-   */
   explicit Bq27220(std::shared_ptr<BusI2cGuide> bus,
       int16_t address = kDeviceI2cAddressDefault,
       int32_t rst = kDefaultValue)
@@ -272,13 +266,13 @@ class Bq27220 final : public ChipI2cGuide {
   uint16_t GetTemperatureRaw();
 
   /**
-   * @brief 读取电池温度
+   * @brief 以开尔文读取电池温度
    * @return 温度(K)
    */
   float GetTemperatureKelvin();
 
   /**
-   * @brief 读取电池温度
+   * @brief 以摄氏度读取电池温度
    * @return 温度(摄氏度)
    */
   float GetTemperatureCelsius();
@@ -366,13 +360,13 @@ class Bq27220 final : public ChipI2cGuide {
   uint16_t GetChipTemperatureRaw();
 
   /**
-   * @brief 读取芯片内部温度
+   * @brief 以开尔文读取芯片内部温度
    * @return 温度(K)
    */
   float GetChipTemperatureKelvin();
 
   /**
-   * @brief 读取芯片内部温度
+   * @brief 以摄氏度读取芯片内部温度
    * @return 温度(摄氏度)
    */
   float GetChipTemperatureCelsius();
@@ -524,7 +518,7 @@ class Bq27220 final : public ChipI2cGuide {
   bool ToggleCalibration();
 
   /**
-   * @brief 读取 16bit Data Memory 数据
+   * @brief 按地址枚举读取 16 位 Data Memory 数据
    * @param address Data Memory 地址枚举
    * @param value 输出数据
    * @return 读取成功返回 true，失败返回 false
@@ -532,7 +526,7 @@ class Bq27220 final : public ChipI2cGuide {
   bool ReadDataMemory(DataMemoryAddress address, uint16_t* value);
 
   /**
-   * @brief 读取 8bit Data Memory 数据
+   * @brief 按地址枚举读取 8 位 Data Memory 数据
    * @param address Data Memory 地址枚举
    * @param value 输出数据
    * @return 读取成功返回 true，失败返回 false
@@ -540,7 +534,7 @@ class Bq27220 final : public ChipI2cGuide {
   bool ReadDataMemory(DataMemoryAddress address, uint8_t* value);
 
   /**
-   * @brief 读取 16bit Data Memory 数据
+   * @brief 按绝对地址读取 16 位 Data Memory 数据
    * @param address Data Memory 绝对地址
    * @param value 输出数据
    * @return 读取成功返回 true，失败返回 false
@@ -548,7 +542,7 @@ class Bq27220 final : public ChipI2cGuide {
   bool ReadDataMemory(uint16_t address, uint16_t* value);
 
   /**
-   * @brief 读取 8bit Data Memory 数据
+   * @brief 按绝对地址读取 8 位 Data Memory 数据
    * @param address Data Memory 绝对地址
    * @param value 输出数据
    * @return 读取成功返回 true，失败返回 false
@@ -556,7 +550,7 @@ class Bq27220 final : public ChipI2cGuide {
   bool ReadDataMemory(uint16_t address, uint8_t* value);
 
   /**
-   * @brief 写入 16bit Data Memory 数据
+   * @brief 按地址枚举写入 16 位 Data Memory 数据
    * @param address Data Memory 地址枚举
    * @param value 写入数据
    * @return 写入成功返回 true，失败返回 false
@@ -564,7 +558,7 @@ class Bq27220 final : public ChipI2cGuide {
   bool WriteDataMemory(DataMemoryAddress address, uint16_t value);
 
   /**
-   * @brief 写入 8bit Data Memory 数据
+   * @brief 按地址枚举写入 8 位 Data Memory 数据
    * @param address Data Memory 地址枚举
    * @param value 写入数据
    * @return 写入成功返回 true，失败返回 false
@@ -572,7 +566,7 @@ class Bq27220 final : public ChipI2cGuide {
   bool WriteDataMemory(DataMemoryAddress address, uint8_t value);
 
   /**
-   * @brief 写入 16bit Data Memory 数据
+   * @brief 按绝对地址写入 16 位 Data Memory 数据
    * @param address Data Memory 绝对地址
    * @param value 写入数据
    * @return 写入成功返回 true，失败返回 false
@@ -580,7 +574,7 @@ class Bq27220 final : public ChipI2cGuide {
   bool WriteDataMemory(uint16_t address, uint16_t value);
 
   /**
-   * @brief 写入 8bit Data Memory 数据
+   * @brief 按绝对地址写入 8 位 Data Memory 数据
    * @param address Data Memory 绝对地址
    * @param value 写入数据
    * @return 写入成功返回 true，失败返回 false

@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: AW862xx 触觉反馈驱动芯片接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-06-03 09:45:41
@@ -106,6 +106,7 @@ class Aw862xx final : public ChipI2cGuide {
   struct RamWaveformInfo {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
     RamWaveformInfo() = default;
+
     RamWaveformInfo(const char* name, const uint8_t* data, size_t length,
         SampleRate sample_rate, uint16_t rated_f0_hz, uint8_t waveform_count)
         : name(name),
@@ -151,7 +152,7 @@ class Aw862xx final : public ChipI2cGuide {
 
   /**
    * @brief 设置GO TRIG的波形播放模式，kRam/kRtp/kCont/NO kPlay 模式
-   * @param mode 使用Play_Mode::配置
+   * @param mode 播放模式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetPlayMode(PlayMode mode);
@@ -170,23 +171,23 @@ class Aw862xx final : public ChipI2cGuide {
   GlobalStatus GetGlobalStatus();
 
   /**
-   * @brief RTP模式播放waveform库文件
-   * @param *waveform_data 波形数据指针
+   * @brief 在 RTP 模式下播放波形库数据
+   * @param waveform_data 波形数据指针
    * @param length 波形输出长度
    * @return 操作成功返回 true，失败返回 false
    */
   bool RunRtpPlaybackWaveform(const uint8_t* waveform_data, size_t length);
 
   /**
-   * @brief 设置播放waveform库文件的采样率
-   * @param rate
+   * @brief 设置波形库数据的播放采样率
+   * @param rate 目标采样率
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetWaveformDataSampleRate(SampleRate rate);
 
   /**
-   * @brief 获取内置RAM波形库信息
-   * @param library 使用RamWaveformLibrary配置
+   * @brief 获取内置 RAM 波形库信息
+   * @param library RAM 波形库类型
    * @return 返回信息结构体
    */
   static RamWaveformInfo GetRamWaveformInfo(RamWaveformLibrary library);
@@ -199,8 +200,8 @@ class Aw862xx final : public ChipI2cGuide {
   bool SetPlayingChangedGainBypass(bool enable);
 
   /**
-   * @brief 设置D2S增益
-   * @param gain 使用D2s_Gain::配置
+   * @brief 设置 D2S 增益
+   * @param gain D2S 增益档位
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetD2sGain(D2sGain gain);
@@ -234,16 +235,14 @@ class Aw862xx final : public ChipI2cGuide {
   bool SetAutoBrakeStop(bool enable);
 
   /**
-   * @brief
-   * 用于控制第1个连续驱动器的输出电压级别，它通过设置寄存器的值来调节输出电压
+   * @brief 设置第一个连续驱动阶段的输出电压级别
    * @param level 值范围：0~127
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetContDrive1Level(uint8_t level);
 
   /**
-   * @brief
-   * 用于控制第2个连续驱动器的输出电压级别，它通过设置寄存器的值来调节输出电压
+   * @brief 设置第二个连续驱动阶段的输出电压级别
    * @param level 值范围：0~127
    * @return 设置成功返回 true，失败返回 false
    */
@@ -334,39 +333,36 @@ class Aw862xx final : public ChipI2cGuide {
   bool SetRrtModeGain(uint8_t gain);
 
   /**
-   * @brief 初始化RAM模式
-   * @param *waveform_data 波形数据指针
+   * @brief 初始化 RAM 模式
+   * @param waveform_data 波形数据指针
    * @param length 波形输出长度
    * @return 初始化成功返回 true，失败返回 false
    */
   bool InitRamMode(const uint8_t* waveform_data, size_t length);
 
   /**
-   * @brief 初始化内置RAM波形库
-   * @param library 使用RamWaveformLibrary配置
+   * @brief 初始化内置 RAM 波形库
+   * @param library RAM 波形库类型
    * @return 初始化成功返回 true，失败返回 false
    */
   bool InitRamMode(RamWaveformLibrary library);
 
   /**
-   * @brief 获取RAM波形数据中的sequence数量
-   * @param *waveform_data RAM波形数据指针
-   * @param length RAM波形数据长度
+   * @brief 获取 RAM 波形数据中的序列数量
+   * @param waveform_data RAM 波形数据指针
+   * @param length RAM 波形数据长度
    * @return 返回读取到的数值
    */
   static uint8_t GetRamWaveformCount(
       const uint8_t* waveform_data, size_t length);
 
   /**
-   * @brief 设置RAM模式播放waveform数据
-   * @param waveform_sequence_number
-   * 值范围0~127，波形的序列号（该序列号为波形数据库里的序列号）
-   * @param loop_count
-   * 值范围0~15，波形的回放次数，当设置为15的时候为无限循环播放，当设置为无限循环播放的时候需要使用函数xxx进行停止播放
+   * @brief 设置 RAM 模式的波形数据并启动播放
+   * @param waveform_sequence_number 波形库序列号，范围为 0～127
+   * @param loop_count 循环次数，范围为 0～15；15 表示无限循环
    * @param gain 值范围0~255，配置增益
    * @param auto_brake [true]：启动，[false]：关闭，自动制动
-   * @param gain_bypass
-   * [true]：在播放的时候改变增益，[false]：在播放的时候不改变增益，设置在播放的时候改变增益
+   * @param gain_bypass 是否允许播放期间改变增益
    * @return 操作成功返回 true，失败返回 false
    */
   bool RunRamPlaybackWaveform(uint8_t waveform_sequence_number,
@@ -439,7 +435,7 @@ class Aw862xx final : public ChipI2cGuide {
 
   /**
    * @brief 设置强制进入的模式
-   * @param mode 使用Force_Mode::配置
+   * @param mode 强制控制模式
    * @param enable [true]：启动，[false]：关闭
    * @return 设置成功返回 true，失败返回 false
    */
@@ -543,7 +539,7 @@ class Aw862xx final : public ChipI2cGuide {
 
   /**
    * @brief 解析RAM波形头，获取base地址和sequence数量
-   * @param *waveform_data RAM波形数据指针
+   * @param waveform_data RAM 波形数据指针
    * @param length RAM波形数据长度
    * @param base_addr 返回RAM base地址
    * @param waveform_count 返回sequence数量

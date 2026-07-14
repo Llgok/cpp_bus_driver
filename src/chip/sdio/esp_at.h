@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 基于 SDIO 的 ESP-AT 通信驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-05-15 00:03:48
@@ -56,7 +56,7 @@ class EspAt final : public ChipSdioGuide {
 
   /**
    * @brief 设置睡眠
-   * @param mode 使用Sleep_Mode::配置，睡眠模式
+   * @param mode 睡眠模式
    * @param timeout_ms 超时时间，单位ms
    * @return 设置成功返回 true，失败返回 false
    */
@@ -81,7 +81,6 @@ class EspAt final : public ChipSdioGuide {
    * @return 初始化成功返回 true，失败返回 false
    */
   bool InitConnect();
-
   bool GetDeviceId();
 
   /**
@@ -117,8 +116,8 @@ class EspAt final : public ChipSdioGuide {
 
   /**
    * @brief 解析接收到新包标志
-   * @param flag 使用函数get_irq_flag()写入
-   * @return [true]: 有接收到新的数据包，[false]: 没有接收到新的数据包
+   * @param flag GetIrqFlag() 返回的中断标志
+   * @return true 表示收到新数据包，false 表示没有新数据包
    */
   bool ParseRxNewPacketFlag(uint32_t flag);
 
@@ -129,44 +128,44 @@ class EspAt final : public ChipSdioGuide {
   uint32_t GetRxDataLength();
 
   /**
-   * @brief 接收包（只能进行小容量数据读取）
-   * @param *data 包的数据容器
+   * @brief 使用字节容器接收小容量数据包
+   * @param data 数据包容器
    * @return 操作成功返回 true，失败返回 false
    */
   bool ReceivePacket(std::vector<uint8_t>& data);
 
   /**
-   * @brief 接收包（配合heap_caps_malloc使用可以进行大容量数据读取）
-   * @param *data 获取的数据指针
-   * @param *byte 获取的数据长度
+   * @brief 使用调用方提供的缓冲区接收数据包
+   * @param data 接收数据指针
+   * @param byte 缓冲区容量及实际数据长度指针
    * @return 操作成功返回 true，失败返回 false
    */
   bool ReceivePacket(uint8_t* data, size_t* byte);
 
   /**
-   * @brief 接收包（只能进行小容量数据读取）
-   * @param &data 获取的数据指针
-   * @param *byte 获取的数据长度
+   * @brief 分配智能指针缓冲区并接收数据包
+   * @param data 接收数据的智能指针
+   * @param byte 实际数据长度输出指针
    * @return 操作成功返回 true，失败返回 false
    */
   bool ReceivePacket(std::unique_ptr<uint8_t[]>& data, size_t* byte);
 
   /**
-   * @brief 获取发送block数据缓冲区的长度
+   * @brief 获取发送块缓冲区长度
    * @return 返回读取到的数值
    */
   uint32_t GetTxBlockBufferLength();
 
   /**
-   * @brief 发送包
-   * @param *data 数据指针
+   * @brief 发送指定长度的字符数据包
+   * @param data 待发送数据指针
    * @param byte 数据字节长度
    * @return 操作成功返回 true，失败返回 false
    */
   bool SendPacket(const char* data, size_t byte);
 
   /**
-   * @brief 发送包
+   * @brief 发送字符串数据包
    * @param data 需要发送的数据字符串
    * @return 操作成功返回 true，失败返回 false
    */
@@ -174,30 +173,30 @@ class EspAt final : public ChipSdioGuide {
 
   /**
    * @brief 设置wifi模式
-   * @param mode 使用Wifi_Mode::配置
+   * @param mode Wi-Fi 工作模式
    * @param timeout_ms 超时时间，单位ms
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetWifiMode(WifiMode mode, int16_t timeout_ms = 100);
 
   /**
-   * @brief
-   * wifi扫描，使用之前需要调用函数set_wifi_mode()先将wifi模式设置为STATION模式
-   * @param &data wifi_scan值的数据指针
-   * @param timeout_ms 超时时间，单位ms
+   * @brief 扫描 Wi-Fi；调用前需通过 SetWifiMode() 设置为站点模式
+   * @param data 用于保存扫描响应数据的容器
+   * @param timeout_ms 超时时间，单位为毫秒
    * @return 成功返回 true，失败返回 false
    */
   bool WifiScan(std::vector<uint8_t>& data, int16_t timeout_ms = 5000);
 
   /**
    * @brief 等待SDIO总线中断（使用前需要线开启SDIO总线中断）
+   * @param timeout_ms 等待超时时间，单位为毫秒
    * @return 等待成功返回 true，失败返回 false
    */
   bool WaitInterrupt(uint32_t timeout_ms);
 
   /**
    * @brief 设置保存到flash中
-   * @param enable [true]：开启保存到falsh中 [false]：关闭保存到falsh中
+   * @param enable true 表示保存到闪存，false 表示不保存到闪存
    * @param timeout_ms 超时时间，单位ms
    * @return 设置成功返回 true，失败返回 false
    */
@@ -215,7 +214,7 @@ class EspAt final : public ChipSdioGuide {
 
   /**
    * @brief 获取实时时间
-   * @param &time 使用Real_Time结构体配置
+   * @param time 用于保存结果的 RealTime 结构体
    * @param timeout_ms 超时时间
    * @return 读取成功返回 true，失败返回 false
    */
@@ -248,7 +247,7 @@ class EspAt final : public ChipSdioGuide {
     bool status = true;
     int8_t error_count = 0;
 
-    // 从从机那里接收到的总长度引索，初始化为0，如果该值和从机内部定义的不对应，将与从机失去连接，需要重新初始化
+    // 从设备接收的总长度索引；与从设备内部值不一致时需重新初始化连接。
     uint32_t receive_total_length_index = 0;
   };
 

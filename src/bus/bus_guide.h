@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: I2C、SPI、I2S、UART、SDIO 与 MIPI 总线抽象接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
  * @LastEditTime: 2026-05-17 12:15:06
@@ -13,14 +13,12 @@ namespace cpp_bus_driver {
 class BusI2cGuide : public virtual Tool {
  public:
   BusI2cGuide() = default;
-
   virtual bool Init(uint32_t freq_hz, uint16_t address) = 0;
   virtual bool Read(uint8_t* data, size_t length) = 0;
   virtual bool Write(const uint8_t* data, size_t length) = 0;
   virtual bool WriteRead(const uint8_t* write_data, size_t write_length,
       uint8_t* read_data, size_t read_length) = 0;
   virtual bool Probe(const uint16_t address) = 0;
-
   virtual bool Deinit(bool delete_bus);
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
@@ -34,11 +32,9 @@ class BusI2cGuide : public virtual Tool {
   virtual bool Read(i2c_cmd_handle_t cmd_handle, uint8_t* data, size_t data_len,
       i2c_ack_type_t ack);
   virtual bool StopTransmit(i2c_cmd_handle_t cmd_handle);
-
   virtual bool StartTransmit();
   virtual bool StopTransmit();
 #endif
-
   bool Read(
       const uint8_t write_c8, uint8_t* read_data, size_t read_data_length = 1);
   bool Read(const uint16_t write_c16, uint8_t* read_data,
@@ -53,7 +49,6 @@ class BusI2cGuide : public virtual Tool {
       size_t write_data_length);
   bool Write(const uint32_t write_c32, const uint8_t* write_data,
       size_t write_data_length);
-
   bool Scan7bitAddress(std::vector<uint8_t>* address);
 };
 
@@ -64,7 +59,7 @@ class BusI2sGuide : public virtual Tool {
     kInput,   // 输入模式
     kOutput,  // 输出模式
 
-    kInputOutput,  // 输入输出共有
+    kInputOutput,  // 同时输入和输出
   };
 #endif
 
@@ -73,10 +68,8 @@ class BusI2sGuide : public virtual Tool {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   virtual bool Init(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz,
       i2s_data_bit_width_t data_bit_width) = 0;
-
   virtual size_t Read(void* data, size_t byte) = 0;
   virtual size_t Write(const void* data, size_t byte) = 0;
-
   virtual bool SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
       uint32_t sample_rate_hz, DataMode data_mode) = 0;
   virtual bool SetChannelEnable(bool enable, DataMode data_mode) = 0;
@@ -86,10 +79,8 @@ class BusI2sGuide : public virtual Tool {
 
   /**
    * @brief 数据流传输开始
-   * @param *write_data
-   * 写数据流缓存指针，如果为nullptr表示不写入数据，*write_data需要使用ram分配的内存
-   * @param *read_data
-   * 读数据流缓存指针，如果为nullptr表示不读取数据，*read_data需要使用ram分配的内存
+   * @param write_data 写数据缓冲区；为空时不发送数据，缓冲区必须位于 RAM
+   * @param read_data 读数据缓冲区；为空时不接收数据，缓冲区必须位于 RAM
    * @param max_data_length 数据流缓存最大长度
    * @return 操作成功返回 true，失败返回 false
    */
@@ -103,14 +94,14 @@ class BusI2sGuide : public virtual Tool {
 
   /**
    * @brief 设置下一个读取的指针
-   * @param *data 数据指针
+   * @param data 数据指针
    * @return 设置成功返回 true，失败返回 false
    */
   virtual bool SetNextRead(uint32_t* data) = 0;
 
   /**
    * @brief 设置下一个写入的指针
-   * @param *data 数据指针
+   * @param data 数据指针
    * @return 设置成功返回 true，失败返回 false
    */
   virtual bool SetNextWrite(uint32_t* data) = 0;
@@ -127,21 +118,18 @@ class BusI2sGuide : public virtual Tool {
    */
   virtual bool GetWriteEventFlag() = 0;
 #endif
-
   virtual bool Deinit() = 0;
 };
 
 class BusSpiGuide : public virtual Tool {
  public:
   BusSpiGuide() = default;
-
   virtual bool Init(int32_t freq_hz, int32_t cs) = 0;
   virtual bool Write(const void* data, size_t byte) = 0;
   virtual bool Read(void* data, size_t byte) = 0;
   virtual bool WriteRead(
       const void* write_data, void* read_data, size_t data_byte) = 0;
   virtual bool Deinit(bool delete_bus) = 0;
-
   bool Read(const uint8_t write_c8, uint8_t* read_d8);
   bool Read(
       const uint8_t write_c8, uint8_t* read_data, size_t read_data_length);
@@ -156,16 +144,14 @@ class BusSpiGuide : public virtual Tool {
    * bit)(要读出的数据) | ReadData(8 bit)(要读出的数据) | ......]
    * @param write_c8 一般为命令位
    * @param write_c16 一般为寄存器地址位
-   * @param *read_data 要读出数据的指针
+   * @param read_data 接收数据指针
    * @param read_data_length 要读出的数据长度
    * @return 读取成功返回 true，失败返回 false
    */
   bool Read(const uint8_t write_c8, const uint16_t write_c16,
       uint8_t* read_data, size_t read_data_length);
-
   bool Read(const uint8_t write_c8_1, const uint8_t write_c8_2,
       uint8_t* read_data, size_t read_data_length);
-
   bool Read(
       const uint8_t write_c8, const uint16_t write_c16, uint8_t* read_data);
 
@@ -174,16 +160,14 @@ class BusSpiGuide : public virtual Tool {
    * bit)(要写入的数据) | WriteData(8 bit)(要写入的数据) | ......]
    * @param write_c8 一般为命令位
    * @param write_c16 一般为寄存器地址位
-   * @param *write_data 要写入数据的指针
+   * @param write_data 待写入数据指针
    * @param write_data_length 要写入的数据长度
    * @return 写入成功返回 true，失败返回 false
    */
   bool Write(const uint8_t write_c8, const uint16_t write_c16,
       const uint8_t* write_data, size_t write_data_length);
-
   bool Write(const uint8_t write_c8_1, const uint8_t write_c8_2,
       const uint8_t* write_data, size_t write_data_length);
-
   bool Write(const uint8_t write_c8, const uint16_t write_c16,
       const uint8_t write_data);
 };
@@ -191,7 +175,6 @@ class BusSpiGuide : public virtual Tool {
 class BusQspiGuide : public virtual Tool {
  public:
   BusQspiGuide() = default;
-
   virtual bool Init(int32_t freq_hz, int32_t cs) = 0;
   virtual bool Deinit(bool delete_bus) = 0;
   virtual bool Write(
@@ -201,12 +184,9 @@ class BusQspiGuide : public virtual Tool {
 class BusUartGuide : public virtual Tool {
  public:
   BusUartGuide() = default;
-
   virtual bool Init(int32_t baud_rate) = 0;
-
   virtual int32_t Read(void* data, uint32_t length) = 0;
   virtual int32_t Write(const void* data, size_t length) = 0;
-
   virtual size_t GetRxBufferLength() = 0;
   virtual bool ClearRxBufferData() = 0;
   virtual bool SetBaudRate(uint32_t baud_rate) = 0;
@@ -217,7 +197,6 @@ class BusUartGuide : public virtual Tool {
 class BusSdioGuide : public virtual Tool {
  public:
   BusSdioGuide() = default;
-
   virtual bool Init(int32_t freq_hz) = 0;
   virtual bool Deinit() = 0;
   virtual bool WaitInterrupt(uint32_t timeout_ms) = 0;
@@ -237,7 +216,6 @@ class BusSdioGuide : public virtual Tool {
 class BusMipiGuide : public virtual Tool {
  public:
   BusMipiGuide() = default;
-
   virtual bool Init(float freq_mhz, float lane_bit_rate_mbps,
       InitSequenceFormat init_sequence_format) = 0;
   virtual bool StartTransmit() = 0;
@@ -246,7 +224,6 @@ class BusMipiGuide : public virtual Tool {
   virtual bool Write(
       int x_start, int y_start, int x_end, int y_end, const void* data) = 0;
   virtual bool Deinit() = 0;
-
   bool Write(const uint8_t write_c8);
   bool Write(const uint8_t write_c8, const uint8_t write_d8);
 };

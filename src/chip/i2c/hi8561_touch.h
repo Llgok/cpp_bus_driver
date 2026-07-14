@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: HI8561 配套触摸控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-04-30 13:43:27
@@ -41,7 +41,7 @@ class Hi8561Touch final : public ChipI2cGuide {
 
   /**
    * @brief 获取单指触控的触摸点信息
-   * @param &tp 使用结构体Touch_Point::配置触摸点结构体
+   * @param tp 用于保存触摸点的 TouchPoint 结构体
    * @param finger_num 要获取的触摸点
    * @return [true]：获取的触摸点和finger_num相同
    * [false]：获取错误或者获取的触摸点和finger_num不相同
@@ -50,7 +50,7 @@ class Hi8561Touch final : public ChipI2cGuide {
 
   /**
    * @brief 获取多个触控的触摸点信息
-   * @param &tp 使用结构体Touch_Point::配置触摸点结构体
+   * @param tp 用于保存触摸点的 TouchPoint 结构体
    * @return  [true]：获取的手指数大于0 [false]：获取错误或者获取的手指数为0
    */
   bool GetMultipleTouchPoint(TouchPoint& tp);
@@ -67,8 +67,7 @@ class Hi8561Touch final : public ChipI2cGuide {
   static constexpr uint8_t kMaxDsramNum = 25;
   static constexpr uint32_t kDsramSectionInfoStartAddress =
       kMemoryAddressEram + 4;
-  // 乘8bytes 是因为一共有两个数据，uint32_t数据（uint32_t地址（4
-  // bytes）和uint32_t长度（4 bytes））
+  // 每项占 8 字节，包含一个 4 字节地址和一个 4 字节长度。
   static constexpr uint32_t kEsramNumStartAddress =
       kDsramSectionInfoStartAddress + kMaxDsramNum * 8;
   static constexpr uint32_t kEsramSectionInfoStartAddress =
@@ -77,7 +76,6 @@ class Hi8561Touch final : public ChipI2cGuide {
   static constexpr uint8_t kMaxTouchFingerCount = 10;
   static constexpr uint8_t kTouchPointAddressOffset = 3;
   static constexpr uint8_t kSingleTouchPointDataSize = 5;
-
   bool InitAddressInfo();
 
   int32_t rst_;

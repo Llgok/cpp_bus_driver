@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: AW862xx 触觉反馈驱动芯片实现
  * @Author: LILYGO_L
  * @Date: 2024-12-26 11:13:26
  * @LastEditTime: 2026-07-01 14:22:46
@@ -216,18 +216,7 @@ bool Aw862xx::Init(int32_t freq_hz) {
     return false;
   }
 
-  // GetDeviceId
-  // 有可能会在正常工作状态下读取到芯片ID失败，导致无法识别芯片类型，所以这边直接读取寄存器来判断芯片是否存在
-  // const ChipType chip_type = GetDeviceId();
-  // if (chip_type == ChipType::kUnknown) {
-  //   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-  //       "Get aw862xx id failed (chip: %s)\n", ChipTypeToString(chip_type));
-  //   return false;
-  // }
-
-  // LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Get %s id success\n",
-  //     ChipTypeToString(chip_type));
-
+  // 正常工作时芯片标识可能暂时不可读，因此用状态寄存器确认设备存在。
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceId), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Get aw862xx id failed\n");
@@ -484,8 +473,6 @@ bool Aw862xx::RunRtpPlaybackWaveform(
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetGoFlag failed\n");
     return false;
   }
-
-  // DelayUs(1000);
 
   uint8_t timeout_count_buffer = 0;
   while (1) {
@@ -973,7 +960,7 @@ bool Aw862xx::ParseRamHeader(const uint8_t* waveform_data, size_t length,
   }
 
   // 部分官方波形库的地址表有效，但最后一个结束地址不会覆盖完整数据长度。
-  // 这里按官方 first_wave_addr 推导方式回退解析 base 地址和 sequence 数量。
+  // 按官方首波形地址的推导方式回退解析基地址和序列数量。
   const uint16_t header_bytes =
       static_cast<uint16_t>(header_waveform_count) * 4 + 1;
   if (first_wave_addr > header_bytes &&
@@ -1265,7 +1252,7 @@ bool Aw862xx::ConfigureRamPlaybackWaveform(uint8_t waveform_sequence_number,
     loop_count = 15;
   }
 
-  // 设置RAM #x(x=waveform_sequence_number) waveform
+  // 设置指定序列号的 RAM 波形。
   if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwWavcfg1),
           static_cast<uint8_t>(waveform_sequence_number))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");

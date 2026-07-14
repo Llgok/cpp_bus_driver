@@ -1,5 +1,5 @@
 /*
- * @Description: AW21009
+ * @Description: AW21009 九通道 LED 驱动芯片实现
  * @Author: LILYGO_L
  * @Date: 2025-09-24 10:47:30
  * @LastEditTime: 2026-06-01 00:00:00

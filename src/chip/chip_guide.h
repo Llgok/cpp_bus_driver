@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 基于不同总线访问芯片的公共驱动基类
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
  * @LastEditTime: 2026-05-17 21:22:14
@@ -14,10 +14,8 @@ class ChipI2cGuide : public virtual Tool {
  public:
   ChipI2cGuide(std::shared_ptr<BusI2cGuide> bus, int16_t address)
       : bus_(bus), address_(address) {}
-
   virtual bool Init(int32_t freq_hz);
   virtual bool Deinit(bool delete_bus);
-
   bool InitSequence(const uint8_t* sequence, size_t length);
   bool InitSequence(const uint16_t* sequence, size_t length);
 
@@ -33,10 +31,8 @@ class ChipSpiGuide : public virtual Tool {
   ChipSpiGuide(std::shared_ptr<BusSpiGuide> bus,
       int32_t cs = kDefaultValue)
       : bus_(bus), cs_(cs) {}
-
   virtual bool Init(int32_t freq_hz);
   virtual bool Deinit(bool delete_bus);
-
   bool InitSequence(const uint8_t* sequence, size_t length);
 
  protected:
@@ -50,10 +46,8 @@ class ChipQspiGuide : public virtual Tool {
   ChipQspiGuide(std::shared_ptr<BusQspiGuide> bus,
       int32_t cs = kDefaultValue)
       : bus_(bus), cs_(cs) {}
-
   virtual bool Init(int32_t freq_hz);
   virtual bool Deinit();
-
   bool InitSequence(const uint32_t* sequence, size_t length);
 
  protected:
@@ -97,7 +91,6 @@ class ChipQspiGuide : public virtual Tool {
 class ChipUartGuide : public virtual Tool {
  public:
   ChipUartGuide(std::shared_ptr<BusUartGuide> bus) : bus_(bus) {}
-
   virtual bool Init(int32_t baud_rate);
   virtual bool Deinit();
 
@@ -108,7 +101,6 @@ class ChipUartGuide : public virtual Tool {
 class ChipI2sGuide : public virtual Tool {
  public:
   ChipI2sGuide(std::shared_ptr<BusI2sGuide> bus) : bus_(bus) {}
-
   virtual bool Init(uint16_t mclk_multiple, uint32_t sample_rate_hz,
       uint8_t data_bit_width) = 0;
   virtual bool Deinit();
@@ -125,7 +117,6 @@ class ChipI2sGuide : public virtual Tool {
 class ChipSdioGuide : public virtual Tool {
  public:
   ChipSdioGuide(std::shared_ptr<BusSdioGuide> bus) : bus_(bus) {}
-
   virtual bool Init(int32_t freq_hz);
   virtual bool Deinit();
 
@@ -138,10 +129,8 @@ class ChipMipiGuide : public virtual Tool {
   ChipMipiGuide(std::shared_ptr<BusMipiGuide> bus,
       InitSequenceFormat init_sequence_format = InitSequenceFormat::kWriteC8D8)
       : bus_(bus), init_sequence_format_(init_sequence_format) {}
-
   virtual bool Init(float freq_mhz, float lane_bit_rate_mbps);
   virtual bool Deinit();
-
   bool InitSequence(const uint8_t* sequence, size_t length);
 
  protected:

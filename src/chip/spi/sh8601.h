@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: SH8601 QSPI 显示控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-04-30 13:46:58
@@ -65,7 +65,7 @@ class Sh8601 final : public ChipQspiGuide {
 
   /**
    * @brief 设置写入流的模式
-   * @param mode 使用Write_Stream_Mode::配置
+   * @param mode 写入流模式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetWriteStreamMode(WriteStreamMode mode);
@@ -76,7 +76,7 @@ class Sh8601 final : public ChipQspiGuide {
    * @param y 绘制点y坐标
    * @param w 绘制长度
    * @param h 绘制高度
-   * @param *data 颜色数据
+   * @param data 像素数据指针
    * @return 操作成功返回 true，失败返回 false
    */
   bool SendColorStream(
@@ -105,14 +105,14 @@ class Sh8601 final : public ChipQspiGuide {
 
   /**
    * @brief 设置颜色增强模式
-   * @param enable 使用Color_Enhance::配置
+   * @param enable 色彩增强档位
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetColorEnhance(ColorEnhance enable);
 
   /**
    * @brief 设置颜色格式
-   * @param format 使用Color_Format::配置
+   * @param format 像素颜色格式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetColorFormat(ColorFormat format);
@@ -162,72 +162,56 @@ class Sh8601 final : public ChipQspiGuide {
       static_cast<uint8_t>(InitSequenceFormat::kDelayMs),
       120,
 
-      // normal display mode on
+      // 开启正常显示模式
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24),
       static_cast<uint8_t>(Cmd::kWoWriteRegister),
       0x001300,
 
-      // RGB
+      // RGB 色序
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
       static_cast<uint8_t>(Cmd::kWoWriteRegister),
       0x003600,
       0x00,
 
-      // BGR
-      // static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      // static_cast<uint8_t>(Cmd::kWoWriteRegister), 0x003600, 0x08,
+      // BGR 色序可将寄存器 0x003600 设置为 0x08。
 
-      // interface pixel format 16bit/pixel
+      // 接口像素格式：16 位/像素
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
       static_cast<uint8_t>(Cmd::kWoWriteRegister),
       0x003A00,
       0x55,
 
-      // interface pixel format 18bit/pixel
-      // static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      // static_cast<uint8_t>(Cmd::kWoWriteRegister), 0x003A00, 0x66,
+      // 18 位像素格式可将寄存器 0x003A00 设置为 0x66。
 
-      // interface pixel format 24bit/pixel
-      // static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      // static_cast<uint8_t>(Cmd::kWoWriteRegister), 0x003A00, 0x77,
+      // 24 位像素格式可将寄存器 0x003A00 设置为 0x77。
 
-      // brightness control on and display dimming on
+      // 开启亮度控制和显示调光
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
       static_cast<uint8_t>(Cmd::kWoWriteRegister),
       0x005300,
       0x28,
 
-      // write display brightness value in hbm mode
+      // 写入 HBM 模式下的显示亮度
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
       static_cast<uint8_t>(Cmd::kWoWriteRegister),
       0x006300,
       0xFF,
 
-      // brightness adjustment
+      // 亮度调节
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
       static_cast<uint8_t>(Cmd::kWoWriteRegister),
       0x005100,
       0x00,
 
-      // sunlight readability enhancement off
+      // 关闭阳光下可读性增强
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
       static_cast<uint8_t>(Cmd::kWoWriteRegister),
       0x005800,
       0x00,
 
-      // sunlight readability enhancement low
-      // static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      // static_cast<uint8_t>(Cmd::kWoWriteRegister), 0x005800, 0x04,
+      // 阳光下可读性增强的低、中、高档分别为 0x04、0x05、0x06。
 
-      // sunlight readability enhancement medium
-      // static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      // static_cast<uint8_t>(Cmd::kWoWriteRegister), 0x005800, 0x05,
-
-      // sunlight readability enhancement high
-      // static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      // static_cast<uint8_t>(Cmd::kWoWriteRegister), 0x005800, 0x06,
-
-      // display on
+      // 开启显示
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24),
       static_cast<uint8_t>(Cmd::kWoWriteRegister),
       0x002900,
@@ -235,9 +219,7 @@ class Sh8601 final : public ChipQspiGuide {
       static_cast<uint8_t>(InitSequenceFormat::kDelayMs),
       10,
 
-      // brightness adjustment
-      // static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      // static_cast<uint8_t>(Cmd::kWoWriteRegister), 0x005100, 0xFF,
+      // 全亮度可将寄存器 0x005100 设置为 0xFF。
 
   };
 

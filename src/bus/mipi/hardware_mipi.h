@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: ESP-IDF MIPI-DSI 显示总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
  * @LastEditTime: 2026-04-30 13:45:24
@@ -50,9 +50,7 @@ class HardwareMipi final : public BusMipiGuide {
   bool Write(
       int x_start, int y_start, int x_end, int y_end, const void* data) override;
   bool Deinit() override;
-
   bool set_device_handle(esp_lcd_panel_handle_t handle);
-
   esp_lcd_panel_handle_t device_handle();
 
  private:

@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 跨平台硬件 I2C 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
  * @LastEditTime: 2026-07-01 12:01:12
@@ -225,11 +225,8 @@ bool HardwareI2c2::WriteRead(const uint8_t* write_data, size_t write_length,
           LogLevel::kError, __FILE__, __LINE__, "nack on transmit of address\n");
       return false;
     case 3:
-      // LogMessage(LogLevel::kError, __FILE__, __LINE__, "nack on transmit of
-      // data\n"); return false;
     case 4:
-      // LogMessage(LogLevel::kError, __FILE__, __LINE__, "other error\n");
-      // return false;
+      // 兼容现有行为：数据无应答或其他错误时仍尝试后续读取。
     default:
       break;
   }
@@ -268,18 +265,12 @@ bool HardwareI2c2::Probe(const uint16_t address) {
   uint8_t result = i2c_handle_->endTransmission();
   switch (result) {
     case 1:
-      // LogMessage(LogLevel::kError, __FILE__, __LINE__, "data too long\n");
       return false;
     case 2:
-      // LogMessage(LogLevel::kError, __FILE__, __LINE__, "nack on transmit of
-      // address\n");
       return false;
     case 3:
-      // LogMessage(LogLevel::kError, __FILE__, __LINE__, "nack on transmit of
-      // data\n");
       return false;
     case 4:
-      // LogMessage(LogLevel::kError, __FILE__, __LINE__, "other error\n");
       return false;
     default:
       break;

@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 通用日志、GPIO、延时与数据处理工具实现
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
  * @LastEditTime: 2026-07-13 22:36:55
@@ -440,7 +440,6 @@ bool Tool::ResetGpio(int32_t pin) {
 void Tool::DelayMs(uint32_t value) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   // 默认状态下 vTaskDelay 在小于 10ms 延时时不精确
-  // vTaskDelay(pdMS_TO_TICKS(value));
   usleep(value * 1000);
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   delay(value);

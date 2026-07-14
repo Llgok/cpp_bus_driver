@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: RM69A10 MIPI-DSI 显示面板驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-04-30 13:46:44
@@ -19,7 +19,6 @@ class Rm69a10 final : public ChipMipiGuide {
   bool Init(float freq_mhz = kDefaultValue,
       float lane_bit_rate_mbps = kDefaultValue) override;
   bool Deinit() override;
-
   uint8_t GetDeviceId();
 
   /**
@@ -56,7 +55,7 @@ class Rm69a10 final : public ChipMipiGuide {
    * @param y_start y坐标开始点
    * @param x_end x坐标结束点
    * @param y_end y坐标结束点
-   * @param *data 颜色数据
+   * @param data 像素数据指针
    * @return 操作成功返回 true，失败返回 false
    */
   bool SendColorStreamCoordinate(

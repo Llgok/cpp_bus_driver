@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 软件模拟 I2C 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
  * @LastEditTime: 2026-04-30 13:45:12
@@ -33,14 +33,13 @@ class SoftwareI2c final : public BusI2cGuide {
   bool StopTransmit() override;
 
   bool Probe(const uint16_t address) override;
-
   bool WriteByte(uint8_t data);
   bool ReadByte(uint8_t* data);
   bool WaitAck();
 
   /**
    * @brief 写应答
-   * @param ack 使用Ack_Bit::进行配置
+   * @param ack 要发送的应答位
    * @return 写入成功返回 true，失败返回 false
    */
   bool WriteAck(AckBit ack);

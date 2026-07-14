@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 跨平台硬件 I2S 音频总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
  * @LastEditTime: 2026-04-30 13:45:19
@@ -18,7 +18,6 @@ class HardwareI2s final : public BusI2sGuide {
     kPdm,  // pdm模式
   };
 
-  // 配置输入和输出设备
   explicit HardwareI2s(int32_t data_in, int32_t data_out, int32_t ws_lrck,
       int32_t bclk, int32_t mclk, i2s_port_t port = I2S_NUM_0,
       DataMode data_mode = DataMode::kInputOutput,
@@ -55,13 +54,11 @@ class HardwareI2s final : public BusI2sGuide {
       DataMode data_mode = DataMode::kInputOutput) override;
   bool SetChannelEnable(
       bool enable, DataMode data_mode = DataMode::kInputOutput) override;
-
   i2s_port_t port() const { return port_; }
   i2s_chan_handle_t rx_handle() const { return rx_handle_; }
   i2s_chan_handle_t tx_handle() const { return tx_handle_; }
 
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  // 配置输入和输出设备
   HardwareI2s(int32_t data_in, int32_t data_out, int32_t ws_lrck, int32_t bclk,
       int32_t mclk,
       nrf_i2s_channels_t channel = nrf_i2s_channels_t::NRF_I2S_CHANNELS_STEREO)

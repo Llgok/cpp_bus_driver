@@ -1,5 +1,5 @@
 /*
- * @Description: Texas Instruments CC1101 transceiver driver
+ * @Description: TI CC1101 亚 GHz 无线收发芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-12
  * @LastEditTime: 2026-07-12

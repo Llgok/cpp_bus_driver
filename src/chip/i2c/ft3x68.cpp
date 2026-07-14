@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: FT3x68 电容触摸控制器驱动实现
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
  * @LastEditTime: 2026-05-16 23:47:09

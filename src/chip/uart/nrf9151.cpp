@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: nRF9151 蜂窝通信与 GNSS 模块驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-11 11:58:39
  * @LastEditTime: 2026-07-11 14:39:16

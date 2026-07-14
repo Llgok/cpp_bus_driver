@@ -1,5 +1,5 @@
 /*
- * @Description: gt9895
+ * @Description: GT9895 电容触摸控制器驱动实现
  * @Author: LILYGO_L
  * @Date 2025-07-09 09:15:31
  * @LastEditTime: 2026-05-16 23:47:03

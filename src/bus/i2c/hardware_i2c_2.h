@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 跨平台硬件 I2C 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
  * @LastEditTime: 2026-04-30 13:45:04

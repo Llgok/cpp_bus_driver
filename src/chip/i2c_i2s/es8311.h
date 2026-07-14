@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: ES8311 音频编解码芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:42:57
  * @LastEditTime: 2026-04-30 13:44:48
@@ -139,27 +139,26 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
   bool Deinit(bool delete_bus = true) override;
   bool Init(uint16_t mclk_multiple, uint32_t sample_rate_hz,
       uint8_t data_bit_width) override;
-
   uint16_t GetDeviceId();
 
   /**
    * @brief 软件复位
    * ，在编解码器准备好待机或睡眠时，将所有复位位设置为“1”，并将CSM_ON清除为“0”，以最大限度地降低功耗
-   * @param enalbe [true]：启动，[false]：关闭
+   * @param enable true 表示复位，false 表示解除复位
    * @return 成功返回 true，失败返回 false
    */
   bool SoftwareReset(bool enable);
 
   /**
    * @brief 设置主时钟源
-   * @param clock 使用Clock_Source::配置
+   * @param clock 时钟源
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetMasterClockSource(ClockSource clock);
 
   /**
    * @brief 设置时钟启动
-   * @param clock 使用Clock_Source::配置，时钟源
+   * @param clock 时钟源
    * @param enalbe [true]：启动，[false]：关闭
    * @param invert [true]：反转，[false]：不反转
    * @return 设置成功返回 true，失败返回 false
@@ -174,8 +173,7 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
   bool SetDacVolume(uint8_t volume);
 
   /**
-   * @brief
-   * 设置ADC的音量，如果开启了自动音量控制（调用函数set_adc_auto_volume_control()）那么此设置音量函数无效
+   * @brief 设置 ADC 音量；启用自动音量控制后该设置不生效
    * @param volume 值范围0~255，增益范围 -95.5dB 到 +32dB，步进0.5dB，0dB为191
    * @return 设置成功返回 true，失败返回 false
    */
@@ -190,7 +188,8 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
 
   /**
    * @brief 设置MIC1P引脚的麦克风使用类型
-   * @param type 使用Mic_Type::配置
+   * @param type 麦克风类型
+   * @param input 麦克风输入通道
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetMic(MicType type, MicInput input);
@@ -203,17 +202,15 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
   bool SetPowerStatus(PowerStatus status);
 
   /**
-   * @brief
-   * 设置低功耗电压状态，在正常模式下，如果设置了低功率控制，功耗将显著降低，音频性能，例如THD+N和信噪比，将略有下降
+   * @brief 设置低功耗状态；启用后可降低功耗，但会略微降低音频性能
    * @param status 使用 LowPowerStatus 结构体配置
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetLowPowerStatus(LowPowerStatus status);
 
   /**
-   * @brief
-   * 通过所输入的mclk_multiple和sample_rate_hz参数查找kClockCoeffTable_列表里的最佳系数值来设置时钟系数
-   * @param mclk_multiple mclk倍速
+   * @brief 根据主时钟倍频和采样率选择最佳时钟系数
+   * @param mclk_multiple 主时钟倍频
    * @param sample_rate_hz 采样率
    * @return 设置成功返回 true，失败返回 false
    */
@@ -221,8 +218,8 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
 
   /**
    * @brief 设置SDP字节长度
-   * @param dsp 使用Sdp::配置
-   * @param length 使用Bits_Per_Sample::配置
+   * @param sdp 串行数据端口
+   * @param length 每个采样的数据位数
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetSdpDataBitLength(Sdp sdp, BitsPerSample length);
@@ -242,8 +239,8 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
   bool SetAdcPower(bool enable);
 
   /**
-   * @brief 设置DAC电源
-   * @param enable
+   * @brief 设置 DAC 电源
+   * @param enable true 表示启用，false 表示关闭
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetDacPower(bool enable);
@@ -257,7 +254,7 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
 
   /**
    * @brief 设置ADC处理信号中的直流偏置和高频噪声的模式
-   * @param offset_freeze 使用Adc_Offset_Freeze::配置
+   * @param offset_freeze ADC 直流偏置冻结模式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcOffsetFreeze(AdcOffsetFreeze offset_freeze);
@@ -279,17 +276,17 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   /**
    * @brief 读取I2s数据
-   * @param *data 数据指针
+   * @param data 接收数据指针
    * @param byte 字节长度
-   * @return size_t 实际读取到的字节数
+   * @return 实际读取到的字节数
    */
   size_t ReadI2s(void* data, size_t byte);
 
   /**
    * @brief 写入I2s数据
-   * @param *data 数据指针
+   * @param data 待写入数据指针
    * @param byte 字节长度
-   * @return size_t 实际写入的字节数
+   * @return 实际写入的字节数
    */
   size_t WriteI2s(const void* data, size_t byte);
 
@@ -310,11 +307,9 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
 
   /**
-   * @brief I2s数据流传输开始
-   * @param *write_buffer
-   * 写数据流缓存指针，如果为nullptr表示不写入数据，*write_buffer需要使用ram分配的内存
-   * @param *read_buffer
-   * 读数据流缓存指针，如果为nullptr表示不读取数据，*read_buffer需要使用ram分配的内存
+   * @brief 开始 I2S 数据流传输
+   * @param write_buffer 写数据缓冲区；为空时不发送，且必须位于 RAM
+   * @param read_buffer 读数据缓冲区；为空时不接收，且必须位于 RAM
    * @param max_buffer_length 数据流缓存最大长度
    * @return 操作成功返回 true，失败返回 false
    */
@@ -328,14 +323,14 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
 
   /**
    * @brief 设置下一个读取的I2s指针
-   * @param *data 数据指针
+   * @param data 数据指针
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetNextReadI2s(uint32_t* data);
 
   /**
    * @brief 设置下一个写入的I2s指针
-   * @param *data 数据指针
+   * @param data 数据指针
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetNextWriteI2s(uint32_t* data);
@@ -356,7 +351,7 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
 
   /**
    * @brief ADC增益
-   * @param gain 使用Adc_Gain::配置
+   * @param gain ADC 增益
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcGain(AdcGain gain);
@@ -370,21 +365,21 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
 
   /**
    * @brief ADC的PGA增益
-   * @param gain 使用Adc_Pga_Gain::配置
+   * @param gain ADC PGA 增益
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcPgaGain(AdcPgaGain gain);
 
   /**
    * @brief 设置串行模式
-   * @param mode 使用Serial_Port_Mode::配置
+   * @param mode 串行音频端口模式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetSerialPortMode(SerialPortMode mode);
 
   /**
    * @brief 设置ADC数据传输格式，用于回声消除
-   * @param format 使用Adc_Data_Format::配置
+   * @param format ADC 数据格式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcDataFormat(AdcDataFormat format);
@@ -446,21 +441,9 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
   static constexpr uint16_t kDeviceId = 0x8311;
   // 时钟分配系数列表
   static constexpr ClockCoeff kClockCoeffTable_[] = {
-      // 按照如下顺序查找系数并填充ClockCoeff结构体
-      // uint32_t mclk_multiple;     // mclk倍数
-      // uint32_t sample_rate;     // 采样率
-      // uint8_t pre_div;   // 前分频器，范围从1到8
-      // uint8_t pre_multi; // 前倍频器选择，0: 1x, 1: 2x, 2: 4x, 3: 8x
-      // uint8_t adc_div;   // adcclk分频器
-      // uint8_t dac_div;   // dacclk分频器
-      // uint8_t fs_mode;   // 双速或单速，=0, 单速, =1, 双速
-      // uint8_t lrck_h;    // adclrck分频器和daclrck分频器高字节
-      // uint8_t lrck_l;    // adclrck分频器和daclrck分频器低字节
-      // uint8_t bclk_div;  // sclk分频器
-      // uint8_t adc_osr;   // adc过采样率
-      // uint8_t dac_osr;   // dac过采样率
+      // 每项字段的排列顺序与 ClockCoeff 声明一致。
 
-      // 8khz
+      // 8 kHz 采样率
       {2304, 8000, 0x03, 0x01, 0x03, 0x03, 0x00, 0x05, 0xff, 0x18, 0x10, 0x10},
       {2048, 8000, 0x08, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {1536, 8000, 0x06, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
@@ -472,19 +455,19 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
       {192, 8000, 0x03, 0x02, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {128, 8000, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
 
-      // 11.025khz
+      // 11.025 kHz 采样率
       {1024, 11025, 0x04, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {512, 11025, 0x02, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {256, 11025, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {128, 11025, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
 
-      // 12khz
+      // 12 kHz 采样率
       {1024, 12000, 0x04, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {512, 12000, 0x02, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {256, 12000, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {128, 12000, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
 
-      // 16khz
+      // 16 kHz 采样率
       {1152, 16000, 0x03, 0x01, 0x03, 0x03, 0x00, 0x02, 0xff, 0x0c, 0x10, 0x10},
       {1024, 16000, 0x04, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {768, 16000, 0x03, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
@@ -496,21 +479,21 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
       {96, 16000, 0x03, 0x03, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {64, 16000, 0x01, 0x02, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
 
-      // 22.05khz
+      // 22.05 kHz 采样率
       {512, 22050, 0x02, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {256, 22050, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {128, 22050, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {64, 22050, 0x01, 0x02, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {32, 22050, 0x01, 0x03, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
 
-      // 24khz
+      // 24 kHz 采样率
       {768, 24000, 0x03, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {512, 24000, 0x02, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {256, 24000, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {128, 24000, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {64, 24000, 0x01, 0x02, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
 
-      // 32khz
+      // 32 kHz 采样率
       {576, 32000, 0x03, 0x02, 0x03, 0x03, 0x00, 0x02, 0xff, 0x0c, 0x10, 0x10},
       {512, 32000, 0x02, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {384, 32000, 0x03, 0x01, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
@@ -522,20 +505,20 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
       {48, 32000, 0x03, 0x03, 0x01, 0x01, 0x01, 0x00, 0x7f, 0x02, 0x10, 0x10},
       {32, 32000, 0x01, 0x03, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
 
-      // 44.1khz
+      // 44.1 kHz 采样率
       {256, 44100, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {128, 44100, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {64, 44100, 0x01, 0x02, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {32, 44100, 0x01, 0x03, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
 
-      // 48khz
+      // 48 kHz 采样率
       {384, 48000, 0x03, 0x01, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {256, 48000, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {128, 48000, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {64, 48000, 0x01, 0x02, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {32, 48000, 0x01, 0x03, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
 
-      // 64khz
+      // 64 kHz 采样率
       {288, 64000, 0x03, 0x02, 0x03, 0x03, 0x01, 0x01, 0x7f, 0x06, 0x10, 0x10},
       {256, 64000, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {192, 64000, 0x03, 0x02, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
@@ -547,13 +530,13 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
       {24, 64000, 0x01, 0x03, 0x01, 0x01, 0x01, 0x00, 0xbf, 0x03, 0x18, 0x18},
       {16, 64000, 0x01, 0x03, 0x01, 0x01, 0x01, 0x00, 0x7f, 0x02, 0x10, 0x10},
 
-      // 88.2khz
+      // 88.2 kHz 采样率
       {128, 88200, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {64, 88200, 0x01, 0x02, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {32, 88200, 0x01, 0x03, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {16, 88200, 0x01, 0x03, 0x01, 0x01, 0x01, 0x00, 0x7f, 0x02, 0x10, 0x10},
 
-      // 96khz
+      // 96 kHz 采样率
       {192, 96000, 0x03, 0x02, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {128, 96000, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
       {64, 96000, 0x01, 0x02, 0x01, 0x01, 0x00, 0x00, 0xff, 0x04, 0x10, 0x10},
@@ -565,9 +548,9 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * @brief 搜索时钟系数
    * @param mclk_multiple mclk倍速
    * @param sample_rate_hz 采样率
-   * @param *library 需要查找的库，使用Clock_Coeff类型的库写入
+   * @param library 待搜索的 ClockCoeff 系数表
    * @param library_length 查找的库的长度
-   * @param search_index 搜索引索
+   * @param search_index 搜索结果索引
    * @return 成功返回 true，失败返回 false
    */
   bool SearchClockCoeff(uint16_t mclk_multiple, uint32_t sample_rate_hz,

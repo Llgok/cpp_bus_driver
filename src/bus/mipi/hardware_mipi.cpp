@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: ESP-IDF MIPI-DSI 显示总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
  * @LastEditTime: 2026-05-15 23:11:14

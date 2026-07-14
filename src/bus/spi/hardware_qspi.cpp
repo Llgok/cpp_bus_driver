@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: ESP-IDF 硬件 QSPI 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
  * @LastEditTime: 2026-07-01 11:46:31

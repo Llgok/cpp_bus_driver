@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: nRF9151 蜂窝通信与 GNSS 模块驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-07-11 11:58:39
  * @LastEditTime: 2026-07-11 14:48:32
@@ -30,10 +30,6 @@ class Nrf9151 final : public ChipUartGuide {
     kIoError,  // UART 读写失败
   };
 
-  /**
-   * @brief 创建 nRF9151 UART 芯片驱动
-   * @param bus UART 总线驱动
-   */
   explicit Nrf9151(std::shared_ptr<BusUartGuide> bus) : ChipUartGuide(bus) {}
 
   /**

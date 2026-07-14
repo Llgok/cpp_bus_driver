@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: SGM38121 多通道 LDO 稳压器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
  * @LastEditTime: 2026-04-30 13:44:25
@@ -31,7 +31,6 @@ class Sgm38121 final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-
   uint8_t GetDeviceId();
 
   /**

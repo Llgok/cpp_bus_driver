@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: ICN6211 MIPI-DSI 转 RGB 桥接芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-01-16 11:57:07
  * @LastEditTime: 2026-04-30 13:43:33
@@ -74,20 +74,18 @@ class Icn6211 final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-
   uint16_t GetDeviceId();
 
   /**
    * @brief 检查接口参数是否正确
-   * @param &params
-   * 输入Interface_Params配置的接口参数，超出范围自动修改为极限值并返回false
+   * @param params 接口参数；超出范围时会被限制到边界值并返回 false
    * @return 操作成功返回 true，失败返回 false
    */
   bool CheckInterfaceParamsOutOfRange(InterfaceParams& params);
 
   /**
    * @brief 配置接口参数
-   * @param params 使用Interface_Params::配置
+   * @param params 显示接口时序参数
    * @return 成功返回 true，失败返回 false
    */
   bool ConfigInterfaceParams(InterfaceParams params);
@@ -110,8 +108,8 @@ class Icn6211 final : public ChipI2cGuide {
 
   /**
    * @brief 设置rgb输出格式
-   * @param format 使用Rgb_Format::配置
-   * @param order 使用Rgb_Order::配置
+   * @param format RGB 数据格式
+   * @param order RGB 通道顺序
    * @param rfc_enable [true]：开启，[false]：关闭
    * @return 设置成功返回 true，失败返回 false
    */
@@ -120,7 +118,7 @@ class Icn6211 final : public ChipI2cGuide {
 
   /**
    * @brief 设置测试模式
-   * @param mode 使用Test_Mode::配置
+   * @param mode 内部测试图模式
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetTestMode(TestMode mode);

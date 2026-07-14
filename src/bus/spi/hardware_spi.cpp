@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 跨平台硬件 SPI 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
  * @LastEditTime: 2026-07-13 17:07:45

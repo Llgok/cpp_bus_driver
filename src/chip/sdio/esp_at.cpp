@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: 基于 SDIO 的 ESP-AT 通信驱动实现
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
  * @LastEditTime: 2026-07-01 11:52:21
@@ -155,8 +155,6 @@ bool EspAt::SetSleep(SleepMode mode, int16_t timeout_ms) {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
-        // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nOK\r\n";
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
@@ -221,8 +219,6 @@ bool EspAt::SetDeepSleep(uint32_t sleep_time_ms, int16_t timeout_ms) {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
-        // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nOK\r\n";
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
@@ -261,7 +257,7 @@ bool EspAt::SetDeepSleep(uint32_t sleep_time_ms, int16_t timeout_ms) {
 }
 
 bool EspAt::InitSequence() {
-  // enable function 1
+  // 启用功能 1
   if (!bus_->Write(
       0, static_cast<uint32_t>(Cmd::kSdIoCccrFnEnable), 6, nullptr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
@@ -273,7 +269,7 @@ bool EspAt::InitSequence() {
     return false;
   }
 
-  // enable interrupts for function 1&2 and master enable
+  // 启用功能 1、功能 2 和主中断
   if (!bus_->Write(
       0, static_cast<uint32_t>(Cmd::kSdIoCccrIntEnable), 7, nullptr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
@@ -295,7 +291,7 @@ bool EspAt::InitSequence() {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
-  // Set block size 512 (0x200)
+  // 将块大小设置为 512 字节（0x200）
   if (!bus_->Write(0, static_cast<uint32_t>(0x111), 2, nullptr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -326,8 +322,6 @@ bool EspAt::InitConnect() {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
-        // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nready\r\n";
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
@@ -374,14 +368,10 @@ bool EspAt::GetDeviceId() {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
-        // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nOK\r\n";
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
                 std::strlen(buffer_cmd))) {
-          // LogMessage(LogLevel::kError, __FILE__, __LINE__, "Connect
-          // success\n");
           break;
         }
       }
@@ -471,7 +461,6 @@ bool EspAt::ParseRxNewPacketFlag(uint32_t flag) {
   }
 
   if (!((flag & static_cast<uint32_t>(IrqFlag::kRxNewPacket)) >> 23)) {
-    // LogMessage(LogLevel::kError, __FILE__, __LINE__, "kRxNewPacket failed\n");
     return false;
   }
 
@@ -862,8 +851,6 @@ bool EspAt::SetWifiMode(WifiMode mode, int16_t timeout_ms) {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
-        // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nOK\r\n";
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
@@ -915,8 +902,6 @@ bool EspAt::WifiScan(std::vector<uint8_t>& data, int16_t timeout_ms) {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
-        // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "+CWLAP:";
         size_t buffer_index = 0;
@@ -957,8 +942,6 @@ bool EspAt::WifiScan(std::vector<uint8_t>& data, int16_t timeout_ms) {
 
 bool EspAt::WaitInterrupt(uint32_t timeout_ms) {
   if (!bus_->WaitInterrupt(timeout_ms)) {
-    // LogMessage(LogLevel::kError, __FILE__, __LINE__, "WaitInterrupt
-    // failed\n");
     return false;
   }
 
@@ -992,8 +975,6 @@ bool EspAt::SetFlashSave(bool enable, int16_t timeout_ms) {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
-        // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nOK\r\n";
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
@@ -1052,8 +1033,6 @@ bool EspAt::SetWifiConnect(
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
-        // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = "\r\nOK\r\n";
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
@@ -1106,8 +1085,6 @@ bool EspAt::GetRealTime(RealTime& time, int16_t timeout_ms) {
       if (ReceivePacket(buffer)) {
         // 获取的字符末尾必须要加'\0'才能进行search否则会触发非法输入
         buffer.push_back('\0');
-        // LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReceivePacket
-        // lenght: [%d] receive: \n[%s]\n", buffer.size(), buffer.data());
 
         const char* buffer_cmd = ",Date: ";
         size_t buffer_index = 0;
@@ -1151,15 +1128,10 @@ bool EspAt::GetRealTime(RealTime& time, int16_t timeout_ms) {
     DelayMs(10);
   }
 
-  // LogMessage(LogLevel::kError, __FILE__, __LINE__, "buffer_data: [%s]\n",
-  // buffer_data.data());
-
   const char* buffer_cmd = " ";
   size_t buffer_index = 0;
   size_t buffer_Index_used = 0;
   if (buffer_data.size() == 0) {
-    // LogMessage(LogLevel::kError, __FILE__, __LINE__, "search fail
-    // (buffer_data.size() == 0)\n");
     return false;
   }
   if (Search(buffer_data.data(), buffer_data.size(), buffer_cmd,

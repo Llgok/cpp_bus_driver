@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: AXP517 电源管理芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-02-03 15:06:34
  * @LastEditTime: 2026-04-29 10:21:32

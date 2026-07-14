@@ -1,5 +1,5 @@
 /*
- * @Description: None
+ * @Description: GZ030PCC0X 显示面板辅助控制驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
  * @LastEditTime: 2026-04-20 14:50:19

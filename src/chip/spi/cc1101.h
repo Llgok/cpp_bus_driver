@@ -1,5 +1,5 @@
 /*
- * @Description: Texas Instruments CC1101 transceiver driver
+ * @Description: TI CC1101 亚 GHz 无线收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-07-12
  * @LastEditTime: 2026-07-12 13:27:05
@@ -218,28 +218,11 @@ class Cc1101 final : public ChipSpiGuide {
     bool crc_valid = false;  // 硬件 CRC 校验结果
   };
 
-  /**
-   * @brief 创建采用默认射频配置的 CC1101 驱动。
-   * @param bus SPI 总线对象，必须配置为模式 0。
-   * @param cs CC1101 CS 引脚。
-   * @param miso SPI MISO 引脚，同时用于读取 CHIP_RDYn。
-   * @param gdo0 可选 GDO0 引脚，用于阻塞收发和接收中断。
-   * @param gdo2 可选 GDO2 引脚，保留给板级状态信号使用。
-   */
   explicit Cc1101(std::shared_ptr<BusSpiGuide> bus, int32_t cs,
       int32_t miso, int32_t gdo0 = kDefaultValue,
       int32_t gdo2 = kDefaultValue)
       : Cc1101(bus, cs, miso, gdo0, gdo2, Config{}) {}
 
-  /**
-   * @brief 创建采用指定射频配置的 CC1101 驱动。
-   * @param bus SPI 总线对象，必须配置为模式 0。
-   * @param cs CC1101 CS 引脚。
-   * @param miso SPI MISO 引脚，同时用于读取 CHIP_RDYn。
-   * @param gdo0 可选 GDO0 引脚。
-   * @param gdo2 可选 GDO2 引脚。
-   * @param config 初始化时应用的射频及数据包配置。
-   */
   explicit Cc1101(std::shared_ptr<BusSpiGuide> bus, int32_t cs,
       int32_t miso, int32_t gdo0, int32_t gdo2,
       const Config& config)
@@ -826,13 +809,13 @@ class Cc1101 final : public ChipSpiGuide {
   bool RestoreAfterWakeup();
 
   /**
-   * @brief 获取当前单调系统时间。
+   * @brief 获取当前单调系统微秒时间。
    * @return 当前系统时间，单位 us。
    */
   int64_t CurrentTimeUs() const;
 
   /**
-   * @brief 获取当前单调系统时间。
+   * @brief 获取当前单调系统毫秒时间。
    * @return 当前系统时间，单位 ms。
    */
   int64_t CurrentTimeMs() const;
