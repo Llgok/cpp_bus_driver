@@ -541,6 +541,20 @@ bool Tool::InitGpioInterrupt(
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_intr_enable failed (error code: %#X)\n", result);
+
+    // 中断使能失败时撤销已经注册的处理函数，避免留下半初始化状态。
+    esp_err_t cleanup_result =
+        gpio_isr_handler_remove(static_cast<gpio_num_t>(pin));
+    if (cleanup_result != ESP_OK) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "gpio_isr_handler_remove failed (error code: %#X)\n",
+          cleanup_result);
+    }
+    cleanup_result = gpio_reset_pin(static_cast<gpio_num_t>(pin));
+    if (cleanup_result != ESP_OK) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "gpio_reset_pin failed (error code: %#X)\n", cleanup_result);
+    }
     return false;
   }
 
@@ -548,36 +562,38 @@ bool Tool::InitGpioInterrupt(
 }
 
 bool Tool::DeinitGpioInterrupt(uint32_t pin) {
-  esp_err_t result =
+  bool deinit_ok = true;
+  esp_err_t result = gpio_intr_disable(static_cast<gpio_num_t>(pin));
+  if (result != ESP_OK) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "gpio_intr_disable failed (error code: %#X)\n", result);
+    deinit_ok = false;
+  }
+
+  result =
       gpio_set_intr_type(static_cast<gpio_num_t>(pin), GPIO_INTR_DISABLE);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_set_intr_type failed (error code: %#X)\n", result);
-    return false;
+    deinit_ok = false;
   }
 
+  // 即使前面的硬件操作失败，也继续移除 ISR，避免回调参数悬空。
   result = gpio_isr_handler_remove(static_cast<gpio_num_t>(pin));
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_isr_handler_remove failed (error code: %#X)\n", result);
-    return false;
-  }
-
-  result = gpio_intr_disable(static_cast<gpio_num_t>(pin));
-  if (result != ESP_OK) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "gpio_intr_disable failed (error code: %#X)\n", result);
-    return false;
+    deinit_ok = false;
   }
 
   result = gpio_reset_pin(static_cast<gpio_num_t>(pin));
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_reset_pin failed (error code: %#X)\n", result);
-    return false;
+    deinit_ok = false;
   }
 
-  return true;
+  return deinit_ok;
 }
 
 bool Pwm::Init(ledc_timer_t timer_num, ledc_channel_t channel, uint32_t freq_hz,
