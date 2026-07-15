@@ -2717,12 +2717,16 @@ bool Sx126x::ValidateConfig(const LoraConfig& config) {
   const uint8_t cad_exit = static_cast<uint8_t>(config.cad_exit_mode);
   const bool valid_cad_exit =
       (cad_exit == 0) || (cad_exit == 1) || (cad_exit == 0x10);
+  const char* power_range =
+      (chip_type_ == ChipType::kSx1261) ? "[-17, 14]" : "[-9, 22]";
 
   bool valid = true;
-  const auto check = [this, &valid](bool condition, const char* reason) {
+  const auto check = [this, &valid](bool condition, const char* name,
+                         double actual, const char* expected) {
     if (!condition) {
       LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-          "Invalid LoRa config: %s\n", reason);
+          "Invalid LoRa config: %s=%g, expected %s\n", name, actual,
+          expected);
       valid = false;
     }
   };
@@ -2730,51 +2734,32 @@ bool Sx126x::ValidateConfig(const LoraConfig& config) {
   check(std::isfinite(config.frequency_mhz) &&
           (config.frequency_mhz >= 150.0) &&
           (config.frequency_mhz <= 960.0),
-      "frequency_mhz must be finite and within [150, 960]");
+      "frequency_mhz", config.frequency_mhz, "finite value in [150, 960]");
   check(std::isfinite(config.current_limit) &&
           (config.current_limit >= 0.0f) &&
           (config.current_limit <= 157.5f),
-      "current_limit must be finite and within [0, 157.5] mA");
+      "current_limit_ma", config.current_limit,
+      "finite value in [0, 157.5]");
   check((config.power >= min_power) && (config.power <= max_power),
-      "power is outside the selected chip's supported range");
-  check((sf >= 5) && (sf <= 12),
-      "spreading_factor must be within [5, 12]");
+      "power_dbm", config.power, power_range);
+  check((sf >= 5) && (sf <= 12), "spreading_factor", sf, "[5, 12]");
   check(GetLoraBandwidthHz(config.bandwidth) > 0.0f,
-      "bandwidth enum value is invalid");
-  check((cr >= 1) && (cr <= 4), "coding_rate enum value is invalid");
-  check(config.preamble_length > 0, "preamble_length must be greater than 0");
-  check(config.symbol_timeout <= 248, "symbol_timeout must not exceed 248");
-  check(header <= 1, "header_type enum value is invalid");
-  check(crc <= 1, "crc_type enum value is invalid");
-  check(iq <= 1, "invert_iq enum value is invalid");
-  check(ramp <= 7, "ramp_time enum value is invalid");
+      "bandwidth", static_cast<uint8_t>(config.bandwidth),
+      "a supported enum value");
+  check((cr >= 1) && (cr <= 4), "coding_rate", cr, "[1, 4]");
+  check(config.preamble_length > 0, "preamble_length",
+      config.preamble_length, "> 0");
+  check(config.symbol_timeout <= 248, "symbol_timeout",
+      config.symbol_timeout, "<= 248");
+  check(header <= 1, "header_type", header, "[0, 1]");
+  check(crc <= 1, "crc_type", crc, "[0, 1]");
+  check(iq <= 1, "invert_iq", iq, "[0, 1]");
+  check(ramp <= 7, "ramp_time", ramp, "[0, 7]");
   if (config.configure_cad) {
-    check(cad_symbols <= 4, "cad_symbol_num enum value is invalid");
-    check(valid_cad_exit, "cad_exit_mode enum value is invalid");
+    check(cad_symbols <= 4, "cad_symbol_num", cad_symbols, "[0, 4]");
+    check(valid_cad_exit, "cad_exit_mode", cad_exit, "0, 1, or 16");
     check(config.cad_timeout_us <= 262143984U,
-        "cad_timeout_us must not exceed 262143984");
-  }
-
-  if (!valid) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "LoRa values: frequency=%.3f MHz, current_limit=%.1f mA, "
-        "power=%d dBm, sf=%u, bandwidth=%u, coding_rate=%u\n",
-        config.frequency_mhz, config.current_limit, config.power,
-        static_cast<unsigned int>(sf),
-        static_cast<unsigned int>(config.bandwidth),
-        static_cast<unsigned int>(cr));
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "LoRa packet values: preamble=%u, symbol_timeout=%u, header=%u, "
-        "crc=%u, invert_iq=%u, ramp=%u, configure_cad=%u, "
-        "cad_symbols=%u, cad_exit=%u, cad_timeout_us=%lu\n",
-        static_cast<unsigned int>(config.preamble_length),
-        static_cast<unsigned int>(config.symbol_timeout),
-        static_cast<unsigned int>(header), static_cast<unsigned int>(crc),
-        static_cast<unsigned int>(iq), static_cast<unsigned int>(ramp),
-        static_cast<unsigned int>(config.configure_cad),
-        static_cast<unsigned int>(cad_symbols),
-        static_cast<unsigned int>(cad_exit),
-        static_cast<unsigned long>(config.cad_timeout_us));
+        "cad_timeout_us", config.cad_timeout_us, "<= 262143984");
   }
   return valid;
 }
@@ -2818,9 +2803,11 @@ bool Sx126x::ValidateConfig(const GfskConfig& config) {
       static_cast<uint8_t>(config.address_comparison);
   const uint8_t whitening = static_cast<uint8_t>(config.whitening);
   const uint8_t ramp = static_cast<uint8_t>(config.ramp_time);
+  const char* power_range =
+      (chip_type_ == ChipType::kSx1261) ? "[-17, 14]" : "[-9, 22]";
   const double required_bandwidth = config.bit_rate_kbps +
-                                    (2.0 * config.frequency_deviation_khz) +
-                                    config.frequency_error_khz;
+                                     (2.0 * config.frequency_deviation_khz) +
+                                     config.frequency_error_khz;
   const uint16_t sync_word_bits =
       static_cast<uint16_t>(config.sync_word_length) * 8U;
   const double modulation_index =
@@ -2829,10 +2816,12 @@ bool Sx126x::ValidateConfig(const GfskConfig& config) {
       : 0.0;
 
   bool valid = true;
-  const auto check = [this, &valid](bool condition, const char* reason) {
+  const auto check = [this, &valid](bool condition, const char* name,
+                         double actual, const char* expected) {
     if (!condition) {
       LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-          "Invalid GFSK config: %s\n", reason);
+          "Invalid GFSK config: %s=%g, expected %s\n", name, actual,
+          expected);
       valid = false;
     }
   };
@@ -2840,76 +2829,60 @@ bool Sx126x::ValidateConfig(const GfskConfig& config) {
   check(std::isfinite(config.frequency_mhz) &&
           (config.frequency_mhz >= 150.0) &&
           (config.frequency_mhz <= 960.0),
-      "frequency_mhz must be finite and within [150, 960]");
+      "frequency_mhz", config.frequency_mhz, "finite value in [150, 960]");
   check(std::isfinite(config.current_limit) &&
           (config.current_limit >= 0.0f) &&
           (config.current_limit <= 157.5f),
-      "current_limit must be finite and within [0, 157.5] mA");
+      "current_limit_ma", config.current_limit,
+      "finite value in [0, 157.5]");
   check((config.power >= min_power) && (config.power <= max_power),
-      "power is outside the selected chip's supported range");
+      "power_dbm", config.power, power_range);
   check(std::isfinite(config.bit_rate_kbps) &&
           (config.bit_rate_kbps >= 0.6) &&
           (config.bit_rate_kbps <= 300.0),
-      "bit_rate_kbps must be finite and within [0.6, 300]");
+      "bit_rate_kbps", config.bit_rate_kbps,
+      "finite value in [0.6, 300]");
   check(std::isfinite(config.frequency_deviation_khz) &&
           (config.frequency_deviation_khz >= 0.6) &&
           (config.frequency_deviation_khz <= 200.0),
-      "frequency_deviation_khz must be finite and within [0.6, 200]");
+      "frequency_deviation_khz", config.frequency_deviation_khz,
+      "finite value in [0.6, 200]");
   check((config.frequency_deviation_khz +
             (config.bit_rate_kbps / 2.0)) <= 250.0,
-      "frequency_deviation_khz + bit_rate_kbps / 2 must not exceed 250");
+      "deviation_plus_half_bit_rate_khz",
+      config.frequency_deviation_khz + (config.bit_rate_kbps / 2.0),
+      "<= 250");
   check(std::isfinite(modulation_index) && (modulation_index >= 0.5),
-      "modulation index (2 * deviation / bit rate) must be at least 0.5");
+      "modulation_index", modulation_index, ">= 0.5");
   check(std::isfinite(config.frequency_error_khz) &&
           (config.frequency_error_khz >= 0.0),
-      "frequency_error_khz must be finite and non-negative");
+      "frequency_error_khz", config.frequency_error_khz,
+      "finite value >= 0");
   check((bandwidth_khz > 0.0f) && std::isfinite(required_bandwidth) &&
           (bandwidth_khz >= required_bandwidth),
-      "bandwidth must cover bit rate + 2 * deviation + frequency error");
+      "bandwidth_margin_khz", bandwidth_khz - required_bandwidth, ">= 0");
   check(config.sync_word_length <= config.sync_word.size(),
-      "sync_word_length must not exceed the sync_word buffer size");
-  check(config.preamble_length > 0, "preamble_length must be greater than 0");
-  check(valid_detector, "preamble_detector enum value is invalid");
+      "sync_word_length", config.sync_word_length,
+      "<= sync_word buffer size (8)");
+  check(config.preamble_length > 0, "preamble_length",
+      config.preamble_length, "> 0");
+  check(valid_detector, "preamble_detector",
+      static_cast<uint8_t>(config.preamble_detector),
+      "a supported enum value");
   check(!valid_detector || (detector_bits <= config.preamble_length),
-      "preamble detector length must not exceed preamble_length");
+      "preamble_detector_bits", detector_bits, "<= preamble_length");
   check(!valid_detector || (detector_bits == 0) ||
           (detector_bits < sync_word_bits),
-      "preamble detector must be off or shorter than the sync word");
-  check(valid_pulse_shape, "pulse_shape enum value is invalid");
-  check(valid_crc, "crc_type enum value is invalid");
-  check(header <= 1, "header_type enum value is invalid");
-  check(address <= 2, "address_comparison enum value is invalid");
-  check(whitening <= 1, "whitening enum value is invalid");
+      "preamble_detector_bits", detector_bits, "0 or < sync_word_bits");
+  check(valid_pulse_shape, "pulse_shape", pulse_shape,
+      "0 or a supported Gaussian enum value");
+  check(valid_crc, "crc_type", crc, "0, 1, 2, 4, or 6");
+  check(header <= 1, "header_type", header, "[0, 1]");
+  check(address <= 2, "address_comparison", address, "[0, 2]");
+  check(whitening <= 1, "whitening", whitening, "[0, 1]");
   check(config.whitening_seed <= 0x01FF,
-      "whitening_seed must not exceed 0x01FF");
-  check(ramp <= 7, "ramp_time enum value is invalid");
-
-  if (!valid) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "GFSK radio values: frequency=%.3f MHz, current_limit=%.1f mA, "
-        "power=%d dBm, bit_rate=%.3f kbps, deviation=%.3f kHz, "
-        "frequency_error=%.3f kHz\n",
-        config.frequency_mhz, config.current_limit, config.power,
-        config.bit_rate_kbps, config.frequency_deviation_khz,
-        config.frequency_error_khz);
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "GFSK derived values: bandwidth=%.3f kHz, required_bandwidth=%.3f "
-        "kHz, modulation_index=%.3f\n",
-        bandwidth_khz, required_bandwidth, modulation_index);
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "GFSK packet values: sync_word_length=%u bytes, preamble=%u bits, "
-        "preamble_detector=%u (%u bits), pulse_shape=%u, crc=%u, header=%u, "
-        "address=%u, whitening=%u, whitening_seed=%#X, ramp=%u\n",
-        static_cast<unsigned int>(config.sync_word_length),
-        static_cast<unsigned int>(config.preamble_length),
-        static_cast<unsigned int>(config.preamble_detector),
-        static_cast<unsigned int>(detector_bits),
-        static_cast<unsigned int>(pulse_shape), static_cast<unsigned int>(crc),
-        static_cast<unsigned int>(header), static_cast<unsigned int>(address),
-        static_cast<unsigned int>(whitening),
-        static_cast<unsigned int>(config.whitening_seed),
-        static_cast<unsigned int>(ramp));
-  }
+      "whitening_seed", config.whitening_seed, "<= 511 (0x01FF)");
+  check(ramp <= 7, "ramp_time", ramp, "[0, 7]");
   return valid;
 }
 
