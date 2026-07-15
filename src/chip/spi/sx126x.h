@@ -2,7 +2,7 @@
  * @Description: Semtech SX1261/SX1262 无线收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-05-14 16:28:41
+ * @LastEditTime: 2026-07-15 16:30:00
  * @License: GPL 3.0
  */
 #pragma once
@@ -1502,8 +1502,8 @@ class Sx126x final : public ChipSpiGuide {
    * @return RTC步进值
    */
   uint32_t TimeoutMicrosecondsToRtcStep(uint32_t time_us) const;
-  bool ValidateConfig(const LoraConfig& config) const;
-  bool ValidateConfig(const GfskConfig& config) const;
+  bool ValidateConfig(const LoraConfig& config);
+  bool ValidateConfig(const GfskConfig& config);
   bool ValidateHardwareConfig() const;
   bool ApplyHardwareConfig(bool calibrate_tcxo);
   float GetGfskBandwidthKhz(GfskBw bandwidth) const;

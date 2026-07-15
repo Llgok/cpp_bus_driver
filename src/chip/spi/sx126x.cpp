@@ -2,7 +2,7 @@
  * @Description: Semtech SX1261/SX1262 无线收发芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-06-30 17:09:45
+ * @LastEditTime: 2026-07-15 16:30:00
  * @License: GPL 3.0
  */
 #include "sx126x.h"
@@ -1043,9 +1043,19 @@ bool Sx126x::SetLoraSymbolTimeout(uint8_t symbol_count) {
 }
 
 bool Sx126x::Configure(const LoraConfig& config) {
-  if (!initialized_ || sleeping_ || !ValidateConfig(config)) {
+  if (!initialized_) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Invalid state/config\n");
+        "Configure LoRa failed: driver is not initialized\n");
+    return false;
+  }
+  if (sleeping_) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Configure LoRa failed: device is sleeping\n");
+    return false;
+  }
+  if (!ValidateConfig(config)) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Configure LoRa failed: invalid config; see validation logs above\n");
     return false;
   }
   configured_ = false;
@@ -1926,9 +1936,19 @@ bool Sx126x::SetGfskWhiteningSeed(uint16_t seed) {
 }
 
 bool Sx126x::Configure(const GfskConfig& config) {
-  if (!initialized_ || sleeping_ || !ValidateConfig(config)) {
+  if (!initialized_) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Invalid state/config\n");
+        "Configure GFSK failed: driver is not initialized\n");
+    return false;
+  }
+  if (sleeping_) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Configure GFSK failed: device is sleeping\n");
+    return false;
+  }
+  if (!ValidateConfig(config)) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Configure GFSK failed: invalid config; see validation logs above\n");
     return false;
   }
   configured_ = false;
@@ -2681,7 +2701,7 @@ bool Sx126x::ValidateHardwareConfig() const {
                  (hardware_config_.tcxo_startup_time_us <= 262143984U)));
 }
 
-bool Sx126x::ValidateConfig(const LoraConfig& config) const {
+bool Sx126x::ValidateConfig(const LoraConfig& config) {
   const int8_t min_power =
       (chip_type_ == ChipType::kSx1261) ? -17 : -9;
   const int8_t max_power =
@@ -2698,30 +2718,75 @@ bool Sx126x::ValidateConfig(const LoraConfig& config) const {
   const bool valid_cad_exit =
       (cad_exit == 0) || (cad_exit == 1) || (cad_exit == 0x10);
 
-  return std::isfinite(config.frequency_mhz) &&
-         (config.frequency_mhz >= 150.0) &&
-         (config.frequency_mhz <= 960.0) &&
-         std::isfinite(config.current_limit) &&
-         (config.current_limit >= 0.0f) &&
-         (config.current_limit <= 157.5f) &&
-         (config.power >= min_power) && (config.power <= max_power) &&
-         (sf >= 5) && (sf <= 12) &&
-         (GetLoraBandwidthHz(config.bandwidth) > 0.0f) &&
-         (cr >= 1) && (cr <= 4) && (config.preamble_length > 0) &&
-         (config.symbol_timeout <= 248) &&
-         (header <= 1) && (crc <= 1) && (iq <= 1) && (ramp <= 7) &&
-         (!config.configure_cad ||
-             ((cad_symbols <= 4) && valid_cad_exit &&
-                 (config.cad_timeout_us <= 262143984U)));
+  bool valid = true;
+  const auto check = [this, &valid](bool condition, const char* reason) {
+    if (!condition) {
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+          "Invalid LoRa config: %s\n", reason);
+      valid = false;
+    }
+  };
+
+  check(std::isfinite(config.frequency_mhz) &&
+          (config.frequency_mhz >= 150.0) &&
+          (config.frequency_mhz <= 960.0),
+      "frequency_mhz must be finite and within [150, 960]");
+  check(std::isfinite(config.current_limit) &&
+          (config.current_limit >= 0.0f) &&
+          (config.current_limit <= 157.5f),
+      "current_limit must be finite and within [0, 157.5] mA");
+  check((config.power >= min_power) && (config.power <= max_power),
+      "power is outside the selected chip's supported range");
+  check((sf >= 5) && (sf <= 12),
+      "spreading_factor must be within [5, 12]");
+  check(GetLoraBandwidthHz(config.bandwidth) > 0.0f,
+      "bandwidth enum value is invalid");
+  check((cr >= 1) && (cr <= 4), "coding_rate enum value is invalid");
+  check(config.preamble_length > 0, "preamble_length must be greater than 0");
+  check(config.symbol_timeout <= 248, "symbol_timeout must not exceed 248");
+  check(header <= 1, "header_type enum value is invalid");
+  check(crc <= 1, "crc_type enum value is invalid");
+  check(iq <= 1, "invert_iq enum value is invalid");
+  check(ramp <= 7, "ramp_time enum value is invalid");
+  if (config.configure_cad) {
+    check(cad_symbols <= 4, "cad_symbol_num enum value is invalid");
+    check(valid_cad_exit, "cad_exit_mode enum value is invalid");
+    check(config.cad_timeout_us <= 262143984U,
+        "cad_timeout_us must not exceed 262143984");
+  }
+
+  if (!valid) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "LoRa values: frequency=%.3f MHz, current_limit=%.1f mA, "
+        "power=%d dBm, sf=%u, bandwidth=%u, coding_rate=%u\n",
+        config.frequency_mhz, config.current_limit, config.power,
+        static_cast<unsigned int>(sf),
+        static_cast<unsigned int>(config.bandwidth),
+        static_cast<unsigned int>(cr));
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "LoRa packet values: preamble=%u, symbol_timeout=%u, header=%u, "
+        "crc=%u, invert_iq=%u, ramp=%u, configure_cad=%u, "
+        "cad_symbols=%u, cad_exit=%u, cad_timeout_us=%lu\n",
+        static_cast<unsigned int>(config.preamble_length),
+        static_cast<unsigned int>(config.symbol_timeout),
+        static_cast<unsigned int>(header), static_cast<unsigned int>(crc),
+        static_cast<unsigned int>(iq), static_cast<unsigned int>(ramp),
+        static_cast<unsigned int>(config.configure_cad),
+        static_cast<unsigned int>(cad_symbols),
+        static_cast<unsigned int>(cad_exit),
+        static_cast<unsigned long>(config.cad_timeout_us));
+  }
+  return valid;
 }
 
-bool Sx126x::ValidateConfig(const GfskConfig& config) const {
+bool Sx126x::ValidateConfig(const GfskConfig& config) {
   const int8_t min_power =
       (chip_type_ == ChipType::kSx1261) ? -17 : -9;
   const int8_t max_power =
       (chip_type_ == ChipType::kSx1261) ? 14 : 22;
   const float bandwidth_khz = GetGfskBandwidthKhz(config.bandwidth);
   uint8_t detector_bits = 0;
+  bool valid_detector = true;
   switch (config.preamble_detector) {
     case PreambleDetector::kLengthOff:
       break;
@@ -2738,7 +2803,8 @@ bool Sx126x::ValidateConfig(const GfskConfig& config) const {
       detector_bits = 32;
       break;
     default:
-      return false;
+      valid_detector = false;
+      break;
   }
 
   const uint8_t pulse_shape = static_cast<uint8_t>(config.pulse_shape);
@@ -2757,34 +2823,94 @@ bool Sx126x::ValidateConfig(const GfskConfig& config) const {
                                     config.frequency_error_khz;
   const uint16_t sync_word_bits =
       static_cast<uint16_t>(config.sync_word_length) * 8U;
+  const double modulation_index =
+      (config.bit_rate_kbps > 0.0)
+      ? ((2.0 * config.frequency_deviation_khz) / config.bit_rate_kbps)
+      : 0.0;
 
-  return std::isfinite(config.frequency_mhz) &&
-         (config.frequency_mhz >= 150.0) &&
-         (config.frequency_mhz <= 960.0) &&
-         std::isfinite(config.current_limit) &&
-         (config.current_limit >= 0.0f) &&
-         (config.current_limit <= 157.5f) &&
-         (config.power >= min_power) && (config.power <= max_power) &&
-         std::isfinite(config.bit_rate_kbps) &&
-         (config.bit_rate_kbps >= 0.6) &&
-         (config.bit_rate_kbps <= 300.0) &&
-         std::isfinite(config.frequency_deviation_khz) &&
-         (config.frequency_deviation_khz >= 0.6) &&
-         (config.frequency_deviation_khz <= 200.0) &&
-         ((config.frequency_deviation_khz +
-              (config.bit_rate_kbps / 2.0)) <= 250.0) &&
-         (((2.0 * config.frequency_deviation_khz) /
-              config.bit_rate_kbps) >= 0.5) &&
-         std::isfinite(config.frequency_error_khz) &&
-         (config.frequency_error_khz >= 0.0) &&
-         (bandwidth_khz >= required_bandwidth) &&
-         (config.sync_word_length <= config.sync_word.size()) &&
-         (config.preamble_length > 0) &&
-         (detector_bits <= config.preamble_length) &&
-         ((detector_bits == 0) || (detector_bits < sync_word_bits)) &&
-         valid_pulse_shape && valid_crc && (header <= 1) &&
-         (address <= 2) && (whitening <= 1) &&
-         (config.whitening_seed <= 0x01FF) && (ramp <= 7);
+  bool valid = true;
+  const auto check = [this, &valid](bool condition, const char* reason) {
+    if (!condition) {
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+          "Invalid GFSK config: %s\n", reason);
+      valid = false;
+    }
+  };
+
+  check(std::isfinite(config.frequency_mhz) &&
+          (config.frequency_mhz >= 150.0) &&
+          (config.frequency_mhz <= 960.0),
+      "frequency_mhz must be finite and within [150, 960]");
+  check(std::isfinite(config.current_limit) &&
+          (config.current_limit >= 0.0f) &&
+          (config.current_limit <= 157.5f),
+      "current_limit must be finite and within [0, 157.5] mA");
+  check((config.power >= min_power) && (config.power <= max_power),
+      "power is outside the selected chip's supported range");
+  check(std::isfinite(config.bit_rate_kbps) &&
+          (config.bit_rate_kbps >= 0.6) &&
+          (config.bit_rate_kbps <= 300.0),
+      "bit_rate_kbps must be finite and within [0.6, 300]");
+  check(std::isfinite(config.frequency_deviation_khz) &&
+          (config.frequency_deviation_khz >= 0.6) &&
+          (config.frequency_deviation_khz <= 200.0),
+      "frequency_deviation_khz must be finite and within [0.6, 200]");
+  check((config.frequency_deviation_khz +
+            (config.bit_rate_kbps / 2.0)) <= 250.0,
+      "frequency_deviation_khz + bit_rate_kbps / 2 must not exceed 250");
+  check(std::isfinite(modulation_index) && (modulation_index >= 0.5),
+      "modulation index (2 * deviation / bit rate) must be at least 0.5");
+  check(std::isfinite(config.frequency_error_khz) &&
+          (config.frequency_error_khz >= 0.0),
+      "frequency_error_khz must be finite and non-negative");
+  check((bandwidth_khz > 0.0f) && std::isfinite(required_bandwidth) &&
+          (bandwidth_khz >= required_bandwidth),
+      "bandwidth must cover bit rate + 2 * deviation + frequency error");
+  check(config.sync_word_length <= config.sync_word.size(),
+      "sync_word_length must not exceed the sync_word buffer size");
+  check(config.preamble_length > 0, "preamble_length must be greater than 0");
+  check(valid_detector, "preamble_detector enum value is invalid");
+  check(!valid_detector || (detector_bits <= config.preamble_length),
+      "preamble detector length must not exceed preamble_length");
+  check(!valid_detector || (detector_bits == 0) ||
+          (detector_bits < sync_word_bits),
+      "preamble detector must be off or shorter than the sync word");
+  check(valid_pulse_shape, "pulse_shape enum value is invalid");
+  check(valid_crc, "crc_type enum value is invalid");
+  check(header <= 1, "header_type enum value is invalid");
+  check(address <= 2, "address_comparison enum value is invalid");
+  check(whitening <= 1, "whitening enum value is invalid");
+  check(config.whitening_seed <= 0x01FF,
+      "whitening_seed must not exceed 0x01FF");
+  check(ramp <= 7, "ramp_time enum value is invalid");
+
+  if (!valid) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "GFSK radio values: frequency=%.3f MHz, current_limit=%.1f mA, "
+        "power=%d dBm, bit_rate=%.3f kbps, deviation=%.3f kHz, "
+        "frequency_error=%.3f kHz\n",
+        config.frequency_mhz, config.current_limit, config.power,
+        config.bit_rate_kbps, config.frequency_deviation_khz,
+        config.frequency_error_khz);
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "GFSK derived values: bandwidth=%.3f kHz, required_bandwidth=%.3f "
+        "kHz, modulation_index=%.3f\n",
+        bandwidth_khz, required_bandwidth, modulation_index);
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "GFSK packet values: sync_word_length=%u bytes, preamble=%u bits, "
+        "preamble_detector=%u (%u bits), pulse_shape=%u, crc=%u, header=%u, "
+        "address=%u, whitening=%u, whitening_seed=%#X, ramp=%u\n",
+        static_cast<unsigned int>(config.sync_word_length),
+        static_cast<unsigned int>(config.preamble_length),
+        static_cast<unsigned int>(config.preamble_detector),
+        static_cast<unsigned int>(detector_bits),
+        static_cast<unsigned int>(pulse_shape), static_cast<unsigned int>(crc),
+        static_cast<unsigned int>(header), static_cast<unsigned int>(address),
+        static_cast<unsigned int>(whitening),
+        static_cast<unsigned int>(config.whitening_seed),
+        static_cast<unsigned int>(ramp));
+  }
+  return valid;
 }
 
 bool Sx126x::ApplyHardwareConfig(bool calibrate_tcxo) {
