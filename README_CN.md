@@ -59,6 +59,12 @@ your_project/
 └── CMakeLists.txt
 ```
 
+克隆命令：
+
+```bash
+git clone https://github.com/Llgok/cpp_bus_driver.git
+```
+
 然后在代码中包含统一入口：
 
 ```cpp
