@@ -14,8 +14,6 @@ bool Tca8418::Init(int32_t freq_hz) {
     bool result = true;
     result &= SetGpioMode(
         rst_, Tool::GpioMode::kOutput, Tool::GpioStatus::kPullup);
-    result &= GpioWrite(rst_, 1);
-    DelayMs(10);
     result &= GpioWrite(rst_, 0);
     DelayMs(10);
     result &= GpioWrite(rst_, 1);

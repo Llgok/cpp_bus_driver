@@ -13,8 +13,6 @@ bool Aw21009::Init(int32_t freq_hz) {
   if (rst_ != kDefaultValue) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
-    result &= GpioWrite(rst_, 1);
-    DelayMs(10);
     result &= GpioWrite(rst_, 0);
     DelayMs(10);
     result &= GpioWrite(rst_, 1);

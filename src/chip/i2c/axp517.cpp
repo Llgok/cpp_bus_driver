@@ -13,8 +13,6 @@ bool Axp517::Init(int32_t freq_hz) {
     bool result = true;
     result &= Tool::SetGpioMode(
         rst_, Tool::GpioMode::kOutput, Tool::GpioStatus::kPullup);
-    result &= Tool::GpioWrite(rst_, 1);
-    DelayMs(10);
     result &= Tool::GpioWrite(rst_, 0);
     DelayMs(10);
     result &= Tool::GpioWrite(rst_, 1);

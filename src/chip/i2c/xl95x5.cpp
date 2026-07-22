@@ -12,8 +12,6 @@ bool Xl95x5::Init(int32_t freq_hz) {
   if (rst_ != kDefaultValue) {
     bool result = true;
     result &= Tool::SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
-    result &= Tool::GpioWrite(rst_, 1);
-    DelayMs(10);
     result &= Tool::GpioWrite(rst_, 0);
     DelayMs(10);
     result &= Tool::GpioWrite(rst_, 1);

@@ -40,8 +40,6 @@ bool EspAt::Init(int32_t freq_hz) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
-    result &= GpioWrite(rst_, 1);
-    DelayMs(50);
     result &= GpioWrite(rst_, 0);
     DelayMs(50);
     result &= GpioWrite(rst_, 1);
@@ -51,8 +49,6 @@ bool EspAt::Init(int32_t freq_hz) {
       return false;
     }
   } else if (rst_callback_ != nullptr) {
-    rst_callback_(1);
-    DelayMs(50);
     rst_callback_(0);
     DelayMs(50);
     rst_callback_(1);

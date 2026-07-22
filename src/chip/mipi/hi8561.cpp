@@ -12,8 +12,6 @@ bool Hi8561::Init(float freq_mhz, float lane_bit_rate_mbps) {
   if (rst_ != kDefaultValue) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
-    result &= GpioWrite(rst_, 1);
-    DelayMs(5);
     result &= GpioWrite(rst_, 0);
     DelayMs(10);
     result &= GpioWrite(rst_, 1);

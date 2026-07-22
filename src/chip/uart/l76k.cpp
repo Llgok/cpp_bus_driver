@@ -88,8 +88,6 @@ bool L76k::Init(int32_t baud_rate) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
-    result &= GpioWrite(rst_, 1);
-    DelayMs(10);
     result &= GpioWrite(rst_, 0);
     DelayMs(10);
     result &= GpioWrite(rst_, 1);
