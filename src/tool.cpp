@@ -2,7 +2,7 @@
  * @Description: 通用日志、GPIO、延时与数据处理工具实现
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2026-07-13 22:36:55
+ * @LastEditTime: 2026-07-25 16:57:06
  * @License: GPL 3.0
  */
 #include "tool.h"
@@ -454,12 +454,23 @@ void Tool::DelayUs(uint32_t value) {
 #endif
 }
 
+int64_t Tool::GetSystemTimeUs() {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+  return esp_timer_get_time();
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+  return static_cast<int64_t>(micros());
+#endif
+}
 
-int64_t Tool::GetSystemTimeUs() { return esp_timer_get_time(); }
+int64_t Tool::GetSystemTimeMs() {
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+  return esp_timer_get_time() / 1000;
+#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+  return static_cast<int64_t>(millis());
+#endif
+}
 
-int64_t Tool::GetSystemTimeMs() { return esp_timer_get_time() / 1000; }
-
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool Tool::InitGpioInterrupt(
     uint32_t pin, InterruptMode mode, void (*interrupt)(void*), void* args) {
   if (pin >= static_cast<uint32_t>(GPIO_NUM_MAX)) {

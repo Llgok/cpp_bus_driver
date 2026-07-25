@@ -229,10 +229,12 @@ Nrf9151::CommandResult Nrf9151::SendCommand(
     return CommandResult::kIoError;
   }
 
-  const int64_t deadline_ms = GetSystemTimeMs() + timeout_ms;
+  const uint32_t start_time_ms =
+      static_cast<uint32_t>(GetSystemTimeMs());
   size_t parsed_length = 0;
 
-  while (GetSystemTimeMs() < deadline_ms) {
+  while (static_cast<uint32_t>(GetSystemTimeMs()) -
+             start_time_ms < timeout_ms) {
     const size_t available = bus_->GetRxBufferLength();
     if (available == 0) {
       DelayMs(10);

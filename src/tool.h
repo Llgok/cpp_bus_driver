@@ -100,9 +100,19 @@ class Tool {
   void DelayMs(uint32_t value);
   void DelayUs(uint32_t value);
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+  /**
+   * @brief 获取当前系统微秒时间
+   * @return 当前系统时间，单位为微秒
+   */
   int64_t GetSystemTimeUs();
+
+  /**
+   * @brief 获取当前系统毫秒时间
+   * @return 当前系统时间，单位为毫秒
+   */
   int64_t GetSystemTimeMs();
+
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   bool InitGpioInterrupt(uint32_t pin, InterruptMode mode,
       void (*interrupt)(void* arg), void* args = nullptr);
   bool DeinitGpioInterrupt(uint32_t pin);
