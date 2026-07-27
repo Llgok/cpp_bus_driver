@@ -71,6 +71,33 @@ git clone https://github.com/Llgok/cpp_bus_driver.git
 #include "cpp_bus_driver_library.h"
 ```
 
+#### 在 Arduino IDE 中使用（nRF52840）
+
+本库被 Arduino Library Manager 收录后，可在 **库管理器** 中搜索并安装
+`cpp_bus_driver`。收录前，可将本仓库克隆到 Arduino Sketchbook 的
+`libraries/cpp_bus_driver` 目录。
+
+在开发板管理器中安装 **Adafruit nRF52** 开发板包并选择 nRF52840 开发板。
+Adafruit nRF52 1.6.1 默认不会链接完整的 C++ 标准库。请在开发板包目录中新建
+`platform.local.txt`（Windows 路径：`C:\Users\<用户名>\AppData\Local\Arduino15\packages\adafruit\hardware\nrf52\1.6.1\platform.local.txt`），
+写入以下内容，然后重启 Arduino IDE：
+
+```properties
+compiler.libraries.ldflags=-lstdc++
+```
+
+`cpp_bus_driver` 使用了 `std::string`、`std::vector` 等 C++ 标准库类型，因此
+需要此链接配置。如果升级或重新安装 Adafruit nRF52 开发板包后该文件被删除，
+需要重新创建。然后包含统一入口头文件：
+
+```cpp
+#include <cpp_bus_driver_library.h>
+```
+
+> [!IMPORTANT]
+> 当前 Arduino 实现只支持定义了 `NRF52840_XXAA` 的 nRF52840 构建。ESP32 等
+> 其他 Arduino 架构暂不支持。
+
 #### 作为 Git submodule 使用
 
 ```bash

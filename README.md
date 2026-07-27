@@ -71,6 +71,36 @@ Then include the unified entry header in your code:
 #include "cpp_bus_driver_library.h"
 ```
 
+#### Use with Arduino IDE (nRF52840)
+
+After the library is indexed by Arduino Library Manager, install
+`cpp_bus_driver` from **Library Manager**. Before it is indexed, clone this
+repository into your sketchbook's `libraries/cpp_bus_driver` directory.
+
+Install the **Adafruit nRF52** board package from Boards Manager and select an
+nRF52840 board. Adafruit nRF52 1.6.1 does not link the full C++ standard library
+by default. Create `platform.local.txt` in the board package directory (on
+Windows: `C:\Users\<username>\AppData\Local\Arduino15\packages\adafruit\hardware\nrf52\1.6.1\platform.local.txt`)
+with the following content, then restart Arduino IDE:
+
+```properties
+compiler.libraries.ldflags=-lstdc++
+```
+
+This setting is required because `cpp_bus_driver` uses C++ standard library
+types such as `std::string` and `std::vector`. Recreate the file if an Adafruit
+nRF52 board package upgrade or reinstall removes it. Then include the unified
+entry header:
+
+```cpp
+#include <cpp_bus_driver_library.h>
+```
+
+> [!IMPORTANT]
+> The Arduino implementation currently supports only builds that define
+> `NRF52840_XXAA` (nRF52840). Other Arduino architectures, including ESP32,
+> are not supported.
+
 #### Use as a Git Submodule
 
 ```bash
