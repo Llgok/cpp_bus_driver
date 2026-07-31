@@ -40,6 +40,7 @@
 #include "./chip/spi/co5300.h"
 #include "./chip/spi/cc1101.h"
 #include "./chip/spi/ecx336cn.h"
+#include "./chip/spi/nrf24l01x.h"
 #include "./chip/spi/sh8601.h"
 #include "./chip/spi/sx126x.h"
 #include "./chip/uart/l76k.h"
