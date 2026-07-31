@@ -13,75 +13,8 @@ namespace cpp_bus_driver {
 
 class Cc1101 final : public ChipSpiGuide {
  public:
-  // CC1101 配置、状态、PATABLE 和 FIFO 寄存器地址
-  enum class Register : uint8_t {
-    kIocfg2 = 0x00,
-    kIocfg1 = 0x01,
-    kIocfg0 = 0x02,
-    kFifothr = 0x03,
-    kSync1 = 0x04,
-    kSync0 = 0x05,
-    kPktlen = 0x06,
-    kPktctrl1 = 0x07,
-    kPktctrl0 = 0x08,
-    kAddr = 0x09,
-    kChannr = 0x0A,
-    kFsctrl1 = 0x0B,
-    kFsctrl0 = 0x0C,
-    kFreq2 = 0x0D,
-    kFreq1 = 0x0E,
-    kFreq0 = 0x0F,
-    kMdmcfg4 = 0x10,
-    kMdmcfg3 = 0x11,
-    kMdmcfg2 = 0x12,
-    kMdmcfg1 = 0x13,
-    kMdmcfg0 = 0x14,
-    kDeviatn = 0x15,
-    kMcsm2 = 0x16,
-    kMcsm1 = 0x17,
-    kMcsm0 = 0x18,
-    kFoccfg = 0x19,
-    kBscfg = 0x1A,
-    kAgcctrl2 = 0x1B,
-    kAgcctrl1 = 0x1C,
-    kAgcctrl0 = 0x1D,
-    kWorevt1 = 0x1E,
-    kWorevt0 = 0x1F,
-    kWorctrl = 0x20,
-    kFrend1 = 0x21,
-    kFrend0 = 0x22,
-    kFscal3 = 0x23,
-    kFscal2 = 0x24,
-    kFscal1 = 0x25,
-    kFscal0 = 0x26,
-    kRcctrl1 = 0x27,
-    kRcctrl0 = 0x28,
-    kFstest = 0x29,
-    kPtest = 0x2A,
-    kAgctest = 0x2B,
-    kTest2 = 0x2C,
-    kTest1 = 0x2D,
-    kTest0 = 0x2E,
-    kPartnum = 0x30,
-    kVersion = 0x31,
-    kFreqest = 0x32,
-    kLqi = 0x33,
-    kRssi = 0x34,
-    kMarcstate = 0x35,
-    kWortime1 = 0x36,
-    kWortime0 = 0x37,
-    kPktstatus = 0x38,
-    kVcoVcDac = 0x39,
-    kTxbytes = 0x3A,
-    kRxbytes = 0x3B,
-    kRcctrl1Status = 0x3C,
-    kRcctrl0Status = 0x3D,
-    kPatable = 0x3E,
-    kFifo = 0x3F,
-  };
-
   // CC1101 SPI 命令选通指令
-  enum class Command : uint8_t {
+  enum class StrobeCmd : uint8_t {
     kReset = 0x30,
     kFrequencySynthesizerOn = 0x31,
     kCrystalOff = 0x32,
@@ -162,10 +95,16 @@ class Cc1101 final : public ChipSpiGuide {
     kRssiBelowThresholdUnlessReceiving = 3,
   };
 
+  // 可配置内部信号映射的 GDO 引脚
+  enum class GdoPin : uint8_t {
+    kGdo0,
+    kGdo2,
+  };
+
   // 用于批量应用 SmartRF Studio 导出值的寄存器配置项
   struct RegisterSetting {
-    Register address;  // 配置寄存器地址
-    uint8_t value;     // 写入值
+    uint8_t address;  // 配置寄存器地址
+    uint8_t value;    // 写入值
   };
 
   // CC1101 初始化及射频数据包配置
@@ -274,54 +213,12 @@ class Cc1101 final : public ChipSpiGuide {
       const Config& config);
 
   /**
-   * @brief 写入单个配置寄存器。
-   * @param address 目标配置寄存器地址。
-   * @param value 需要写入的值。
-   * @return 写入成功返回 true，失败返回 false。
-   */
-  bool WriteRegister(Register address, uint8_t value);
-
-  /**
-   * @brief 读取单个配置寄存器或 FIFO 字节。
-   * @param address 目标寄存器地址。
-   * @param value 读取结果输出地址。
-   * @return 读取成功返回 true，失败返回 false。
-   */
-  bool ReadRegister(Register address, uint8_t* value);
-
-  /**
-   * @brief 从指定地址开始执行 SPI 连续写入。
-   * @param address 连续写入的起始地址。
-   * @param data 需要写入的数据。
-   * @param length 写入字节数。
-   * @return 连续写入成功返回 true，失败返回 false。
-   */
-  bool WriteBurst(Register address, const uint8_t* data, size_t length);
-
-  /**
-   * @brief 从指定地址开始执行 SPI 连续读取。
-   * @param address 连续读取的起始地址。
-   * @param data 读取数据输出缓冲区。
-   * @param length 读取字节数。
-   * @return 连续读取成功返回 true，失败返回 false。
-   */
-  bool ReadBurst(Register address, uint8_t* data, size_t length);
-
-  /**
-   * @brief 读取状态寄存器。
-   * @param address 目标状态寄存器地址。
-   * @param value 读取结果输出地址。
-   * @return 读取成功返回 true，失败返回 false。
-   */
-  bool ReadStatusRegister(Register address, uint8_t* value);
-
-  /**
    * @brief 发送命令选通指令并可选返回 SPI 状态字节。
    * @param command 需要发送的命令。
    * @param status 可选状态输出，允许为 nullptr。
    * @return 命令发送成功返回 true，失败返回 false。
    */
-  bool Strobe(Command command, ChipStatus* status = nullptr);
+  bool Strobe(StrobeCmd command, ChipStatus* status = nullptr);
 
   /**
    * @brief 设置射频中心频率。
@@ -487,12 +384,12 @@ class Cc1101 final : public ChipSpiGuide {
 
   /**
    * @brief 设置 GDO0 或 GDO2 的内部信号映射。
-   * @param output 仅允许 Register::kIocfg0 或 Register::kIocfg2。
+   * @param pin 需要配置的 GDO 引脚。
    * @param signal GDOx_CFG 信号编号，范围 0x00~0x3F。
    * @param inverted true 输出反相，false 正常输出。
    * @return 参数有效且设置成功返回 true，否则返回 false。
    */
-  bool SetGdoMapping(Register output, uint8_t signal, bool inverted = false);
+  bool SetGdoMapping(GdoPin pin, uint8_t signal, bool inverted = false);
 
   /**
    * @brief 进入 IDLE 状态。
@@ -631,6 +528,73 @@ class Cc1101 final : public ChipSpiGuide {
   const Config& config() const { return config_; }
 
  private:
+  // CC1101 配置、状态、PATABLE 和 FIFO 寄存器地址
+  enum class Cmd : uint8_t {
+    kIocfg2 = 0x00,
+    kIocfg1 = 0x01,
+    kIocfg0 = 0x02,
+    kFifothr = 0x03,
+    kSync1 = 0x04,
+    kSync0 = 0x05,
+    kPktlen = 0x06,
+    kPktctrl1 = 0x07,
+    kPktctrl0 = 0x08,
+    kAddr = 0x09,
+    kChannr = 0x0A,
+    kFsctrl1 = 0x0B,
+    kFsctrl0 = 0x0C,
+    kFreq2 = 0x0D,
+    kFreq1 = 0x0E,
+    kFreq0 = 0x0F,
+    kMdmcfg4 = 0x10,
+    kMdmcfg3 = 0x11,
+    kMdmcfg2 = 0x12,
+    kMdmcfg1 = 0x13,
+    kMdmcfg0 = 0x14,
+    kDeviatn = 0x15,
+    kMcsm2 = 0x16,
+    kMcsm1 = 0x17,
+    kMcsm0 = 0x18,
+    kFoccfg = 0x19,
+    kBscfg = 0x1A,
+    kAgcctrl2 = 0x1B,
+    kAgcctrl1 = 0x1C,
+    kAgcctrl0 = 0x1D,
+    kWorevt1 = 0x1E,
+    kWorevt0 = 0x1F,
+    kWorctrl = 0x20,
+    kFrend1 = 0x21,
+    kFrend0 = 0x22,
+    kFscal3 = 0x23,
+    kFscal2 = 0x24,
+    kFscal1 = 0x25,
+    kFscal0 = 0x26,
+    kRcctrl1 = 0x27,
+    kRcctrl0 = 0x28,
+    kFstest = 0x29,
+    kPtest = 0x2A,
+    kAgctest = 0x2B,
+    kTest2 = 0x2C,
+    kTest1 = 0x2D,
+    kTest0 = 0x2E,
+    kPartnum = 0x30,
+    kVersion = 0x31,
+    kFreqest = 0x32,
+    kLqi = 0x33,
+    kRssi = 0x34,
+    kMarcstate = 0x35,
+    kWortime1 = 0x36,
+    kWortime0 = 0x37,
+    kPktstatus = 0x38,
+    kVcoVcDac = 0x39,
+    kTxbytes = 0x3A,
+    kRxbytes = 0x3B,
+    kRcctrl1Status = 0x3C,
+    kRcctrl0Status = 0x3D,
+    kPatable = 0x3E,
+    kFifo = 0x3F,
+  };
+
   static constexpr size_t kFifoSize = 64;
   static constexpr size_t kMaximumPacketLength = 255;
   static constexpr uint8_t kReadSingle = 0x80;
@@ -643,6 +607,48 @@ class Cc1101 final : public ChipSpiGuide {
   static constexpr uint8_t kStatusFifoErrorMask = 0x80;
   static constexpr uint8_t kCrcValidMask = 0x80;
   static constexpr uint32_t kReadyTimeoutUs = 5000;
+
+  /**
+   * @brief 写入单个配置寄存器。
+   * @param cmd 目标配置寄存器命令。
+   * @param value 需要写入的值。
+   * @return 写入成功返回 true，失败返回 false。
+   */
+  bool WriteRegister(Cmd cmd, uint8_t value);
+
+  /**
+   * @brief 读取单个配置寄存器或 FIFO 字节。
+   * @param cmd 目标寄存器命令。
+   * @param value 读取结果输出地址。
+   * @return 读取成功返回 true，失败返回 false。
+   */
+  bool ReadRegister(Cmd cmd, uint8_t* value);
+
+  /**
+   * @brief 从指定命令开始执行 SPI 连续写入。
+   * @param cmd 连续写入的起始命令。
+   * @param data 需要写入的数据。
+   * @param length 写入字节数。
+   * @return 连续写入成功返回 true，失败返回 false。
+   */
+  bool WriteBurst(Cmd cmd, const uint8_t* data, size_t length);
+
+  /**
+   * @brief 从指定命令开始执行 SPI 连续读取。
+   * @param cmd 连续读取的起始命令。
+   * @param data 读取数据输出缓冲区。
+   * @param length 读取字节数。
+   * @return 连续读取成功返回 true，失败返回 false。
+   */
+  bool ReadBurst(Cmd cmd, uint8_t* data, size_t length);
+
+  /**
+   * @brief 读取状态寄存器。
+   * @param cmd 目标状态寄存器命令。
+   * @param value 读取结果输出地址。
+   * @return 读取成功返回 true，失败返回 false。
+   */
+  bool ReadStatusRegister(Cmd cmd, uint8_t* value);
 
   /**
    * @brief 执行一次满足 CC1101 CHIP_RDYn 时序要求的 SPI 传输。
@@ -686,21 +692,20 @@ class Cc1101 final : public ChipSpiGuide {
 
   /**
    * @brief 按 TI 勘误要求稳定读取连续变化的状态寄存器。
-   * @param address 需要读取的状态寄存器地址。
+   * @param cmd 需要读取的状态寄存器命令。
    * @param value 两次连续读数一致后的输出值。
    * @return 获得稳定读数返回 true，失败返回 false。
    */
-  bool ReadStableStatus(Register address, uint8_t* value);
+  bool ReadStableStatus(Cmd cmd, uint8_t* value);
 
   /**
    * @brief 读取、修改并写回配置寄存器中的指定位。
-   * @param address 配置寄存器地址。
+   * @param cmd 配置寄存器命令。
    * @param mask 需要更新的位掩码。
    * @param value 掩码范围内的新值。
    * @return 寄存器更新成功返回 true，失败返回 false。
    */
-  bool UpdateRegisterBits(
-      Register address, uint8_t mask, uint8_t value);
+  bool UpdateRegisterBits(Cmd cmd, uint8_t mask, uint8_t value);
 
   /**
    * @brief 从 RX FIFO 解析并读取一个已完整到达的数据包。
@@ -734,10 +739,10 @@ class Cc1101 final : public ChipSpiGuide {
 
   /**
    * @brief 返回指定 SPI 起始地址允许的最大连续访问长度。
-   * @param address 连续访问起始地址。
+   * @param cmd 连续访问起始命令。
    * @return 允许长度；返回 0 表示不支持连续访问。
    */
-  size_t GetMaximumBurstLength(Register address) const;
+  size_t GetMaximumBurstLength(Cmd cmd) const;
 
   /**
    * @brief 按当前频段选择 TI 推荐的 PATABLE 值。
