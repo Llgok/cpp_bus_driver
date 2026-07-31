@@ -1,8 +1,8 @@
 /*
  * @Description: TI CC1101 亚 GHz 无线收发芯片驱动接口
  * @Author: LILYGO_L
- * @Date: 2026-07-12
- * @LastEditTime: 2026-07-12 13:27:05
+ * @Date: 2026-07-12 00:00:00
+ * @LastEditTime: 2026-07-31 00:18:28
  * @License: GPL 3.0
  */
 #pragma once
@@ -218,6 +218,9 @@ class Cc1101 final : public ChipSpiGuide {
     bool crc_valid = false;  // 硬件 CRC 校验结果
   };
 
+  // 当前 SPI 总线连续传输字节间没有 100 ns 间隔，按 TI DN503 限制为 6.5 MHz。
+  static constexpr int32_t kMaximumSpiFrequencyHz = 6500000;
+
   explicit Cc1101(std::shared_ptr<BusSpiGuide> bus, int32_t cs,
       int32_t miso, int32_t gdo0 = kDefaultValue,
       int32_t gdo2 = kDefaultValue)
@@ -234,10 +237,10 @@ class Cc1101 final : public ChipSpiGuide {
 
   /**
    * @brief 初始化 SPI、复位芯片、检查型号并应用 Config。
-   * @param freq_hz SPI 时钟，CC1101 最大支持 10 MHz。
+   * @param freq_hz SPI 时钟；连续突发访问最大为 6.5 MHz。
    * @return 初始化成功返回 true，失败返回 false。
    */
-  bool Init(int32_t freq_hz = 10000000) override;
+  bool Init(int32_t freq_hz = kMaximumSpiFrequencyHz) override;
 
   /**
    * @brief 使芯片进入掉电模式并释放 SPI 设备和专用 GPIO。
@@ -841,11 +844,13 @@ class Cc1101 final : public ChipSpiGuide {
   PacketMetrics last_metrics_;
   uint8_t pa_table_cache_[8] = {0xC6};
   size_t pa_table_length_ = 1;
+  uint8_t test2_value_ = 0x81;
+  uint8_t test1_value_ = 0x35;
   uint8_t test0_value_ = 0x0B;
   uint8_t fscal2_value_ = 0x0A;
   bool sleeping_ = false;
   bool initialized_ = false;
-  int32_t spi_frequency_hz_ = 10000000;
+  int32_t spi_frequency_hz_ = kMaximumSpiFrequencyHz;
   mutable uint32_t last_micros_ = 0;
   mutable uint64_t micros_epoch_ = 0;
 };

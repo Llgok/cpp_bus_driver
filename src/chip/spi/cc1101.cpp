@@ -1,8 +1,8 @@
 /*
  * @Description: TI CC1101 亚 GHz 无线收发芯片驱动实现
  * @Author: LILYGO_L
- * @Date: 2026-07-12
- * @LastEditTime: 2026-07-12
+ * @Date: 2026-07-12 00:00:00
+ * @LastEditTime: 2026-07-31 00:18:28
  * @License: GPL 3.0
  */
 #include "cc1101.h"
@@ -13,6 +13,13 @@ constexpr uint8_t kGdoHighImpedance = 0x2E;
 constexpr uint8_t kGdoSyncWord = 0x06;
 constexpr uint8_t kGdoRxFifoThresholdOrPacketEnd = 0x01;
 constexpr uint8_t kRxFifoThresholdMaximum = 0x0F;
+constexpr uint8_t kFifoThresholdMask = 0x0F;
+constexpr uint8_t kAdcRetentionMask = 0x40;
+constexpr double kAdcRetentionBandwidthLimitKhz = 325.0;
+constexpr uint8_t kWideBandwidthTest2 = 0x88;
+constexpr uint8_t kWideBandwidthTest1 = 0x31;
+constexpr uint8_t kNarrowBandwidthTest2 = 0x81;
+constexpr uint8_t kNarrowBandwidthTest1 = 0x35;
 constexpr uint8_t kAppendStatusMask = 0x04;
 constexpr uint8_t kCrcAutoflushMask = 0x08;
 constexpr uint8_t kCrcMask = 0x04;
@@ -78,9 +85,9 @@ bool Cc1101::Init(int32_t freq_hz) {
   }
 
   if (freq_hz == kDefaultValue) {
-    freq_hz = 10000000;
+    freq_hz = kMaximumSpiFrequencyHz;
   }
-  if (freq_hz <= 0 || freq_hz > 10000000) {
+  if (freq_hz <= 0 || freq_hz > kMaximumSpiFrequencyHz) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Invalid SPI frequency (frequency: %d)\n", freq_hz);
     return false;
@@ -275,7 +282,11 @@ bool Cc1101::WriteRegister(Register address, uint8_t value) {
   if (!Transfer(buffer, status, sizeof(buffer))) {
     return false;
   }
-  if (address == Register::kTest0) {
+  if (address == Register::kTest2) {
+    test2_value_ = value;
+  } else if (address == Register::kTest1) {
+    test1_value_ = value;
+  } else if (address == Register::kTest0) {
     test0_value_ = value;
   } else if (address == Register::kFscal2) {
     fscal2_value_ = value;
@@ -534,6 +545,22 @@ bool Cc1101::SetReceiveBandwidth(double bandwidth_khz) {
   const uint8_t value = static_cast<uint8_t>(
       (best_exponent << 6) | (best_mantissa << 4));
   if (!UpdateRegisterBits(Register::kMdmcfg4, 0xF0, value)) {
+    return false;
+  }
+  const double actual_bandwidth_khz = crystal_hz /
+      (8.0 * static_cast<double>(4 + best_mantissa) *
+          static_cast<double>(1UL << best_exponent)) /
+      1000.0;
+  const bool narrow_bandwidth =
+      actual_bandwidth_khz <= kAdcRetentionBandwidthLimitKhz;
+  bool result = UpdateRegisterBits(Register::kFifothr,
+      kAdcRetentionMask,
+      narrow_bandwidth ? kAdcRetentionMask : 0);
+  result &= WriteRegister(Register::kTest2,
+      narrow_bandwidth ? kNarrowBandwidthTest2 : kWideBandwidthTest2);
+  result &= WriteRegister(Register::kTest1,
+      narrow_bandwidth ? kNarrowBandwidthTest1 : kWideBandwidthTest1);
+  if (!result) {
     return false;
   }
   config_.receive_bandwidth_khz = bandwidth_khz;
@@ -801,7 +828,7 @@ bool Cc1101::SetPacketLengthMode(
       (config_.append_status ? 2 : 0);
   if (!supported || maximum_length == 0 ||
       (config_.fec_enabled &&
-          (mode != PacketLengthMode::kFixed || maximum_length < 2))) {
+          mode != PacketLengthMode::kFixed)) {
     return false;
   }
   if (config_.crc_autoflush && maximum_length > autoflush_limit) {
@@ -875,10 +902,9 @@ bool Cc1101::SetCrcAutoflush(bool enabled) {
 bool Cc1101::SetFec(bool enabled) {
   if (enabled &&
       (config_.packet_length_mode != PacketLengthMode::kFixed ||
-          config_.encoding == Encoding::kManchester ||
-          config_.maximum_packet_length < 2)) {
+          config_.encoding == Encoding::kManchester)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "FEC requires fixed length, at least 2 bytes, and no Manchester\n");
+        "FEC requires fixed length and no Manchester\n");
     return false;
   }
   if (!EnsureIdle()) {
@@ -975,6 +1001,14 @@ bool Cc1101::Sleep() {
     return false;
   }
   uint8_t value = 0;
+  if (!ReadRegister(Register::kTest2, &value)) {
+    return false;
+  }
+  test2_value_ = value;
+  if (!ReadRegister(Register::kTest1, &value)) {
+    return false;
+  }
+  test1_value_ = value;
   if (!ReadRegister(Register::kTest0, &value)) {
     return false;
   }
@@ -1005,10 +1039,18 @@ bool Cc1101::StartReceive() {
   if (config_.packet_length_mode == PacketLengthMode::kInfinite) {
     return false;
   }
+  const size_t fifo_usage = config_.maximum_packet_length +
+      (config_.packet_length_mode == PacketLengthMode::kVariable ? 1 : 0) +
+      (config_.append_status ? 2 : 0);
+  if (fifo_usage > kFifoSize) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Packet exceeds asynchronous RX FIFO capacity\n");
+    return false;
+  }
   bool result = Standby();
   result &= FlushRx();
-  result &= WriteRegister(Register::kFifothr,
-      kRxFifoThresholdMaximum);
+  result &= UpdateRegisterBits(Register::kFifothr,
+      kFifoThresholdMask, kRxFifoThresholdMaximum);
   result &= WriteRegister(Register::kIocfg0,
       kGdoRxFifoThresholdOrPacketEnd);
   result &= Strobe(Command::kReceive);
@@ -1036,8 +1078,7 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length,
   const size_t air_length = length + (has_address ? 1 : 0);
   if (data == nullptr || length == 0 ||
       air_length > kMaximumPacketLength ||
-      air_length > config_.maximum_packet_length ||
-      (config_.fec_enabled && air_length < 2)) {
+      air_length > config_.maximum_packet_length) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Invalid packet length (length: %zu)\n", length);
     return false;
@@ -1103,18 +1144,38 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length,
     return false;
   }
   const int64_t deadline = CurrentTimeMs() + timeout_ms;
-  if (config_.cca_mode != CcaMode::kAlways &&
-      !WaitForState(State::kTransmit,
-          std::min<uint32_t>(10, timeout_ms))) {
-    Standby();
-    FlushTx();
-    return false;
-  }
-  if (gdo0_ != kDefaultValue &&
-      !WaitForGdo0(true, timeout_ms)) {
-    Standby();
-    FlushTx();
-    return false;
+  if (gdo0_ != kDefaultValue) {
+    bool started_or_completed = GpioRead(gdo0_);
+    while (!started_or_completed) {
+      uint8_t tx_bytes = 0;
+      if (!ReadStableStatus(Register::kTxbytes, &tx_bytes) ||
+          (tx_bytes & kStatusFifoErrorMask) != 0) {
+        result = false;
+        break;
+      }
+      if ((tx_bytes & kStatusFifoCountMask) == 0) {
+        State state = State::kSleep;
+        if (!GetState(&state)) {
+          result = false;
+          break;
+        }
+        started_or_completed = state == State::kIdle;
+      }
+      if (started_or_completed) {
+        break;
+      }
+      if (CurrentTimeMs() >= deadline) {
+        result = false;
+        break;
+      }
+      DelayUs(10);
+      started_or_completed = GpioRead(gdo0_);
+    }
+    if (!result) {
+      Standby();
+      FlushTx();
+      return false;
+    }
   }
   size_t written = initial_payload;
   while (written < length) {
@@ -1192,7 +1253,8 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity,
 
   bool result = Standby();
   result &= FlushRx();
-  result &= WriteRegister(Register::kFifothr, 0x07);
+  result &= UpdateRegisterBits(Register::kFifothr,
+      kFifoThresholdMask, 0x07);
   result &= WriteRegister(Register::kIocfg0, kGdoSyncWord);
   result &= Strobe(Command::kReceive);
   if (!result || !WaitForGdo0(true, timeout_ms)) {
@@ -1724,8 +1786,7 @@ bool Cc1101::ValidateConfig(const Config& config) const {
       ValidateOutputPower(config.output_power_dbm) &&
       config.maximum_packet_length != 0 && !manchester_conflict &&
       (!config.fec_enabled ||
-          (config.packet_length_mode == PacketLengthMode::kFixed &&
-              config.maximum_packet_length >= 2)) &&
+          config.packet_length_mode == PacketLengthMode::kFixed) &&
       (!config.crc_autoflush ||
           (config.crc_enabled &&
               config.maximum_packet_length <= autoflush_limit)) &&
@@ -1806,7 +1867,14 @@ bool Cc1101::ValidateFrequency(
 }
 
 uint32_t Cc1101::CalculatePacketTimeoutMs(size_t length) const {
-  const double data_rate_bps = config_.data_rate_kbaud * 1000.0;
+  double data_rate_bps = config_.data_rate_kbaud * 1000.0 *
+      static_cast<double>(GetBitsPerSymbol());
+  if (config_.encoding == Encoding::kManchester) {
+    data_rate_bps /= 2.0;
+  }
+  if (config_.fec_enabled) {
+    data_rate_bps /= 2.0;
+  }
   const double air_time_ms =
       static_cast<double>((length + 16) * 8) * 1000.0 /
       data_rate_bps;
@@ -1829,7 +1897,9 @@ uint32_t Cc1101::CalculateFifoPollIntervalUs() const {
 }
 
 bool Cc1101::RestoreAfterWakeup() {
-  bool result = WriteRegister(Register::kTest0, test0_value_);
+  bool result = WriteRegister(Register::kTest2, test2_value_);
+  result &= WriteRegister(Register::kTest1, test1_value_);
+  result &= WriteRegister(Register::kTest0, test0_value_);
   result &= WriteRegister(Register::kFscal2, fscal2_value_);
   result &= WriteBurst(Register::kPatable,
       pa_table_cache_, pa_table_length_);
