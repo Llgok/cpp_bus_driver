@@ -2,7 +2,7 @@
  * @Description: SGM41562 系列电池充电管理芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-07-25 16:20:43
+ * @LastEditTime: 2026-07-31 14:00:26
  * @License: GPL 3.0
  */
 #pragma once
@@ -188,8 +188,6 @@ class Sgm41562xx final : public ChipI2cGuide {
 
   // SGM41562、SGM41562A和SGM41562B寄存器初始化序列
   static constexpr uint8_t kInitSequenceAb[] = {
-      static_cast<uint8_t>(InitSequenceFormat::kDelayMs), 120,
-
       // 禁用PCB过温保护，保持输入电压环路和默认系统调节参数
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Cmd::kSystemVoltageRegulation), 0xB7,
@@ -213,8 +211,6 @@ class Sgm41562xx final : public ChipI2cGuide {
 
   // SGM41562S和SGM41562SA寄存器初始化序列
   static constexpr uint8_t kInitSequenceS[] = {
-      static_cast<uint8_t>(InitSequenceFormat::kDelayMs), 120,
-
       // 保持输入电压环路和默认热调节、系统调节参数
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Cmd::kSystemVoltageRegulation), 0x73,
