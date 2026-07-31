@@ -33,6 +33,7 @@
 #include "./chip/i2c/sy6970.h"
 #include "./chip/i2c/tca8418.h"
 #include "./chip/i2c/xl95x5.h"
+#include "./chip/i2c_spi/icm20948.h"
 #include "./chip/i2c_i2s/es8311.h"
 #include "./chip/mipi/hi8561.h"
 #include "./chip/mipi/rm69a10.h"
