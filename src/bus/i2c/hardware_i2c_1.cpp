@@ -2,7 +2,7 @@
  * @Description: 基于 ESP-IDF 新版主机接口的硬件 I2C 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-07-01 13:50:41
+ * @LastEditTime: 2026-08-03 16:10:38
  * @License: GPL 3.0
  */
 #include "hardware_i2c_1.h"
@@ -19,8 +19,8 @@ bool HardwareI2c1::InitBus(uint32_t freq_hz) {
       return true;
     }
     if (!shared_bus_provider_->InitBus(freq_hz)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "Init shared i2c bus failed\n");
+      LogMessage(
+          LogLevel::kError, __FILE__, __LINE__, "Init shared i2c bus failed\n");
       return false;
     }
 
@@ -125,8 +125,8 @@ bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
             },
     };
 
-    esp_err_t result = i2c_master_bus_add_device(
-        bus_handle_, &device_config, &device_handle_);
+    esp_err_t result =
+        i2c_master_bus_add_device(bus_handle_, &device_config, &device_handle_);
     if (result != ESP_OK) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "i2c_master_bus_add_device failed (error code: %#X)\n", result);
@@ -185,8 +185,7 @@ bool HardwareI2c1::Deinit(bool delete_bus) {
 
 bool HardwareI2c1::Read(uint8_t* data, size_t length) {
   esp_err_t result = i2c_master_receive(
-      device_handle_, data, length,
-      kDefaultI2cWaitTimeoutMs);
+      device_handle_, data, length, kDefaultI2cWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "i2c_master_receive failed (error code: %#X)\n", result);
@@ -198,8 +197,7 @@ bool HardwareI2c1::Read(uint8_t* data, size_t length) {
 
 bool HardwareI2c1::Write(const uint8_t* data, size_t length) {
   esp_err_t result = i2c_master_transmit(
-      device_handle_, data, length,
-      kDefaultI2cWaitTimeoutMs);
+      device_handle_, data, length, kDefaultI2cWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "i2c_master_transmit failed (error code: %#X)\n", result);
@@ -211,9 +209,8 @@ bool HardwareI2c1::Write(const uint8_t* data, size_t length) {
 
 bool HardwareI2c1::WriteRead(const uint8_t* write_data, size_t write_length,
     uint8_t* read_data, size_t read_length) {
-  esp_err_t result =
-      i2c_master_transmit_receive(device_handle_, write_data, write_length,
-          read_data, read_length, kDefaultI2cWaitTimeoutMs);
+  esp_err_t result = i2c_master_transmit_receive(device_handle_, write_data,
+      write_length, read_data, read_length, kDefaultI2cWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "i2c_master_transmit_receive failed (error code: %#X)\n", result);
@@ -224,8 +221,8 @@ bool HardwareI2c1::WriteRead(const uint8_t* write_data, size_t write_length,
 }
 
 bool HardwareI2c1::Probe(const uint16_t address) {
-  esp_err_t result = i2c_master_probe(
-      bus_handle_, address, kDefaultI2cWaitTimeoutMs);
+  esp_err_t result =
+      i2c_master_probe(bus_handle_, address, kDefaultI2cWaitTimeoutMs);
   if (result != ESP_OK) {
     return false;
   }

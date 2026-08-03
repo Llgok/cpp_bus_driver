@@ -2,7 +2,7 @@
  * @Description: CO5300 QSPI 显示控制器驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-05-15 09:41:59
+ * @LastEditTime: 2026-08-03 16:11:50
  * @License: GPL 3.0
  */
 #include "co5300.h"
@@ -144,7 +144,8 @@ bool Co5300::SendColorStream(
   // 13, 14，所以 x_end 应该是 14（即 x + w - 1） 如果不 -1，x_end 会是
   // 15，可能超出实际范围或导致多写一个像素
   if (!SetRenderWindow(x, y, x + w - 1, y + h - 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRenderWindow failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SetRenderWindow failed\n");
     return false;
   }
 
@@ -155,8 +156,8 @@ bool Co5300::SendColorStream(
   }
 
   if (color_format_ == ColorFormat::kRgb666) {
-    if (!bus_->Write(data, w * h * 3,
-            static_cast<uint32_t>(SpiTrans::kModeQio), false)) {
+    if (!bus_->Write(data, w * h * 3, static_cast<uint32_t>(SpiTrans::kModeQio),
+            false)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }

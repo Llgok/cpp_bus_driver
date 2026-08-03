@@ -2,7 +2,7 @@
  * @Description: 芯片公共驱动基类的初始化序列实现
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-04-30 13:37:40
+ * @LastEditTime: 2026-08-03 16:10:31
  * @License: GPL 3.0
  */
 #include "chip_guide.h"
@@ -382,7 +382,8 @@ bool ChipI2sGuide::Init(
   }
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  i2s_mclk_multiple_t resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
+  i2s_mclk_multiple_t resolved_mclk_multiple =
+      i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
   if (mclk_multiple <= 128) {
     resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
   } else if (mclk_multiple <= 192) {
@@ -422,7 +423,7 @@ bool ChipI2sGuide::Init(
   }
 
   if (!bus_->Init(
-      resolved_mclk_multiple, sample_rate_hz, resolved_data_bit_width)) {
+          resolved_mclk_multiple, sample_rate_hz, resolved_data_bit_width)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -465,8 +466,7 @@ bool ChipI2sGuide::Init(
     resolved_swidth = nrf_i2s_swidth_t::NRF_I2S_SWIDTH_16BIT;
   }
 
-  if (!bus_->Init(
-      resolved_ratio, sample_rate_hz, resolved_swidth)) {
+  if (!bus_->Init(resolved_ratio, sample_rate_hz, resolved_swidth)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -498,7 +498,8 @@ bool ChipI2sGuide::SetClockReconfig(uint16_t mclk_multiple,
     return false;
   }
 
-  i2s_mclk_multiple_t resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
+  i2s_mclk_multiple_t resolved_mclk_multiple =
+      i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
   if (mclk_multiple <= 128) {
     resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
   } else if (mclk_multiple <= 192) {
@@ -523,7 +524,7 @@ bool ChipI2sGuide::SetClockReconfig(uint16_t mclk_multiple,
   }
 
   if (!bus_->SetClockReconfig(
-      resolved_mclk_multiple, sample_rate_hz, data_mode)) {
+          resolved_mclk_multiple, sample_rate_hz, data_mode)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }

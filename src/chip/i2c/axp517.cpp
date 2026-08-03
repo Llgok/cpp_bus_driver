@@ -2,7 +2,7 @@
  * @Description: AXP517 电源管理芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-02-03 15:06:34
- * @LastEditTime: 2026-04-29 10:21:32
+ * @LastEditTime: 2026-08-03 16:11:01
  * @License: GPL 3.0
  */
 #include "axp517.h"
@@ -143,8 +143,8 @@ bool Axp517::GetIrqStatus(IrqStatus0& status0, IrqStatus1& status1,
     IrqStatus2& status2, IrqStatus3& status3) {
   uint8_t buffer[4] = {0};
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwIrqStatus0), buffer,
-          sizeof(buffer))) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Cmd::kRwIrqStatus0), buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -168,25 +168,18 @@ bool Axp517::GetIrqStatus(IrqStatus0& status0, IrqStatus1& status1,
 
   status2.battery_over_voltage_flag = (buffer[2] & 0B00000001) >> 0;
   status2.charger_safety_timer_expire_flag = (buffer[2] & 0B00000010) >> 1;
-  status2.die_over_temperature_level1_flag =
-      (buffer[2] & 0B00000100) >> 2;
+  status2.die_over_temperature_level1_flag = (buffer[2] & 0B00000100) >> 2;
   status2.charger_start_flag = (buffer[2] & 0B00001000) >> 3;
   status2.battery_charge_done_flag = (buffer[2] & 0B00010000) >> 4;
   status2.batfet_over_current_flag = (buffer[2] & 0B00100000) >> 5;
   status2.watchdog_expire_flag = (buffer[2] & 0B10000000) >> 7;
 
-  status3.battery_under_temperature_work_flag =
-      (buffer[3] & 0B00000001) >> 0;
-  status3.battery_over_temperature_work_flag =
-      (buffer[3] & 0B00000010) >> 1;
-  status3.battery_under_temperature_charge_flag =
-      (buffer[3] & 0B00000100) >> 2;
-  status3.battery_over_temperature_charge_flag =
-      (buffer[3] & 0B00001000) >> 3;
-  status3.battery_over_temperature_quit_flag =
-      (buffer[3] & 0B00010000) >> 4;
-  status3.bc1_2_detect_result_change_flag =
-      (buffer[3] & 0B01000000) >> 6;
+  status3.battery_under_temperature_work_flag = (buffer[3] & 0B00000001) >> 0;
+  status3.battery_over_temperature_work_flag = (buffer[3] & 0B00000010) >> 1;
+  status3.battery_under_temperature_charge_flag = (buffer[3] & 0B00000100) >> 2;
+  status3.battery_over_temperature_charge_flag = (buffer[3] & 0B00001000) >> 3;
+  status3.battery_over_temperature_quit_flag = (buffer[3] & 0B00010000) >> 4;
+  status3.bc1_2_detect_result_change_flag = (buffer[3] & 0B01000000) >> 6;
   status3.bc1_2_detect_finished_flag = (buffer[3] & 0B10000000) >> 7;
 
   return true;
@@ -376,8 +369,8 @@ bool Axp517::SetAdcChannel(AdcChannel channel) {
 uint16_t Axp517::GetBatteryVoltage() {
   uint8_t buffer[2] = {0};
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoVbatH), buffer,
-          sizeof(buffer))) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Cmd::kRoVbatH), buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
@@ -388,8 +381,8 @@ uint16_t Axp517::GetBatteryVoltage() {
 float Axp517::GetBatteryCurrent() {
   uint8_t buffer[2] = {0};
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoIbatH), buffer,
-          sizeof(buffer))) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Cmd::kRoIbatH), buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
@@ -402,23 +395,21 @@ float Axp517::GetBatteryCurrent() {
 float Axp517::GetTsVoltage() {
   uint8_t buffer[2] = {0};
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoTsH), buffer,
-          sizeof(buffer))) {
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoTsH), buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
 
   return static_cast<float>(
-             (static_cast<uint16_t>(buffer[0] & 0B00111111) << 8) |
-             buffer[1]) /
+             (static_cast<uint16_t>(buffer[0] & 0B00111111) << 8) | buffer[1]) /
          2.0;
 }
 
 uint16_t Axp517::GetVbusCurrent() {
   uint8_t buffer[2] = {0};
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoVbusCurrentH), buffer,
-          sizeof(buffer))) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Cmd::kRoVbusCurrentH), buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
@@ -429,15 +420,13 @@ uint16_t Axp517::GetVbusCurrent() {
 uint16_t Axp517::GetVbusVoltage() {
   uint8_t buffer[2] = {0};
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoVbusVoltageH), buffer,
-          sizeof(buffer))) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Cmd::kRoVbusVoltageH), buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
 
-  return ((static_cast<uint16_t>(buffer[0] & 0B00111111) << 8) |
-          buffer[1]) *
-         2;
+  return ((static_cast<uint16_t>(buffer[0] & 0B00111111) << 8) | buffer[1]) * 2;
 }
 
 bool Axp517::SetAdcDataSelect(AdcData data_select) {
@@ -453,8 +442,8 @@ bool Axp517::SetAdcDataSelect(AdcData data_select) {
 uint16_t Axp517::GetAdcData() {
   uint8_t buffer[2] = {0};
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoAdcDataH), buffer,
-          sizeof(buffer))) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Cmd::kRoAdcDataH), buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
@@ -738,30 +727,30 @@ bool Axp517::SetWatchdog(bool enable, uint8_t timeout_s) {
 
   const uint8_t enable_value = enable ? 0B00000001 : 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwModuleEnableControl0),
-          &buffer)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Cmd::kRwModuleEnableControl0), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = static_cast<uint8_t>((buffer & 0B11111110) | enable_value);
 
-  if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwModuleEnableControl0),
-          buffer)) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Cmd::kRwModuleEnableControl0), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwModuleEnableControl1),
-          &buffer)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Cmd::kRwModuleEnableControl1), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = static_cast<uint8_t>((buffer & 0B11111110) | enable_value);
 
-  if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwModuleEnableControl1),
-          buffer)) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Cmd::kRwModuleEnableControl1), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -788,8 +777,8 @@ bool Axp517::FeedWatchdog() {
 
 bool Axp517::SetJeitaEnable(bool enable) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwJeitaStandardEnableControl),
-          &buffer)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Cmd::kRwJeitaStandardEnableControl), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -800,8 +789,8 @@ bool Axp517::SetJeitaEnable(bool enable) {
     buffer &= 0B11111110;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwJeitaStandardEnableControl),
-          buffer)) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Cmd::kRwJeitaStandardEnableControl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -811,8 +800,8 @@ bool Axp517::SetJeitaEnable(bool enable) {
 
 bool Axp517::SetBc12DetectEnable(bool enable) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwModuleEnableControl0),
-          &buffer)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Cmd::kRwModuleEnableControl0), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -823,8 +812,8 @@ bool Axp517::SetBc12DetectEnable(bool enable) {
     buffer &= 0B11101111;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwModuleEnableControl0),
-          buffer)) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Cmd::kRwModuleEnableControl0), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -891,9 +880,8 @@ bool Axp517::SetPdRole(bool is_source, bool is_drp) {
     return false;
   }
 
-  if (is_drp &&
-      !bus_->Write(static_cast<uint8_t>(Cmd::kRwCommand),
-          static_cast<uint8_t>(0x99))) {
+  if (is_drp && !bus_->Write(static_cast<uint8_t>(Cmd::kRwCommand),
+                    static_cast<uint8_t>(0x99))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

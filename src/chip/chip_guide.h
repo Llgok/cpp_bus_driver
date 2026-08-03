@@ -2,7 +2,7 @@
  * @Description: 基于不同总线访问芯片的公共驱动基类
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-05-17 21:22:14
+ * @LastEditTime: 2026-08-03 16:10:32
  * @License: GPL 3.0
  */
 #pragma once
@@ -28,8 +28,7 @@ class ChipI2cGuide : public virtual Tool {
 
 class ChipSpiGuide : public virtual Tool {
  public:
-  ChipSpiGuide(std::shared_ptr<BusSpiGuide> bus,
-      int32_t cs = kDefaultValue)
+  ChipSpiGuide(std::shared_ptr<BusSpiGuide> bus, int32_t cs = kDefaultValue)
       : bus_(bus), cs_(cs) {}
   virtual bool Init(int32_t freq_hz);
   virtual bool Deinit(bool delete_bus);
@@ -43,8 +42,7 @@ class ChipSpiGuide : public virtual Tool {
 
 class ChipQspiGuide : public virtual Tool {
  public:
-  ChipQspiGuide(std::shared_ptr<BusQspiGuide> bus,
-      int32_t cs = kDefaultValue)
+  ChipQspiGuide(std::shared_ptr<BusQspiGuide> bus, int32_t cs = kDefaultValue)
       : bus_(bus), cs_(cs) {}
   virtual bool Init(int32_t freq_hz);
   virtual bool Deinit();

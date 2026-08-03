@@ -2,7 +2,7 @@
  * @Description: Nordic nRF24L01 系列 2.4 GHz 射频收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-07-31 10:00:00
- * @LastEditTime: 2026-07-31 10:15:21
+ * @LastEditTime: 2026-08-03 16:11:55
  * @License: GPL 3.0
  */
 #pragma once
@@ -743,8 +743,8 @@ class Nrf24l01x final : public ChipSpiGuide {
    * @param status 可选 STATUS 输出。
    * @return 长度在内部事务缓冲区范围内且传输完成时为 true。
    */
-  bool ReadBuffer(Cmd cmd, uint8_t* data, std::size_t length,
-      uint8_t* status = nullptr);
+  bool ReadBuffer(
+      Cmd cmd, uint8_t* data, std::size_t length, uint8_t* status = nullptr);
 
   /**
    * @brief 向多字节寄存器连续写入地址或其他原始数据。

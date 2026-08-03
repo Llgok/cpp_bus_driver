@@ -2,7 +2,7 @@
  * @Description: FT3x68 电容触摸控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-17 14:01:44
+ * @LastEditTime: 2026-08-03 16:11:09
  * @License: GPL 3.0
  */
 #pragma once
@@ -24,8 +24,7 @@ class Ft3x68 final : public ChipI2cGuide {
   };
 
   explicit Ft3x68(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kDefaultValue)
+      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
@@ -57,8 +56,8 @@ class Ft3x68 final : public ChipI2cGuide {
 
  private:
   enum class Cmd {
-  // 设备标识映射：0x00 为 kFt6456，0x04 为 kFt3268，
-  // 0x01 为 kFt3067，0x05 为 kFt3368，0x02 为 kFt3068，0x03 为 kFt3168。
+    // 设备标识映射：0x00 为 kFt6456，0x04 为 kFt3268，
+    // 0x01 为 kFt3067，0x05 为 kFt3368，0x02 为 kFt3068，0x03 为 kFt3168。
     kRoDeviceId = 0xA0,
 
     kRoTdStatus = 0x02,  // 触摸手指数

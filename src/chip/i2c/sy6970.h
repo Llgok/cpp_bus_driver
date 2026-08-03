@@ -2,7 +2,7 @@
  * @Description: SY6970 电池充电与电源路径管理芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-05-16 10:19:51
+ * @LastEditTime: 2026-08-03 16:11:30
  * @License: GPL 3.0
  */
 #pragma once
@@ -65,8 +65,7 @@ class Sy6970 final : public ChipI2cGuide {
   };
 
   explicit Sy6970(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kDefaultValue)
+      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = kDefaultValue) override;

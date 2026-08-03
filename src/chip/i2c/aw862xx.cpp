@@ -2,7 +2,7 @@
  * @Description: AW862xx 触觉反馈驱动芯片实现
  * @Author: LILYGO_L
  * @Date: 2024-12-26 11:13:26
- * @LastEditTime: 2026-07-01 14:22:46
+ * @LastEditTime: 2026-08-03 16:10:56
  * @License: GPL 3.0
  */
 #include "aw862xx.h"
@@ -453,7 +453,8 @@ Aw862xx::GlobalStatus Aw862xx::GetGlobalStatus() {
       break;
 
     default:
-      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(
+          LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return GlobalStatus::kFalse;
   }
 
@@ -716,8 +717,8 @@ uint32_t Aw862xx::GetF0Detection() {
   }
 
   if (!SetContDrive1Level(kContDrv1Level)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "set_cont_drive_1_level failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "set_cont_drive_1_level failed\n");
     return -1;
   }
 
@@ -729,20 +730,20 @@ uint32_t Aw862xx::GetF0Detection() {
   }
 
   if (!SetContDrive2Level(static_cast<uint8_t>(cont_drive_2_level_buffer))) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "set_cont_drive_2_level failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "set_cont_drive_2_level failed\n");
     return -1;
   }
 
   if (!SetContDrive1Times(kContDrv1Time)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "set_cont_drive_1_times failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "set_cont_drive_1_times failed\n");
     return -1;
   }
 
   if (!SetContDrive2Times(kContDrv2Time)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "set_cont_drive_2_times failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "set_cont_drive_2_times failed\n");
     return -1;
   }
 

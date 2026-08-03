@@ -2,7 +2,7 @@
  * @Description: ESP-IDF 硬件 UART 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-04-30 13:42:21
+ * @LastEditTime: 2026-08-03 16:10:51
  * @License: GPL 3.0
  */
 #pragma once
@@ -14,8 +14,7 @@ namespace cpp_bus_driver {
 class HardwareUart final : public BusUartGuide {
  public:
   explicit HardwareUart(int32_t tx, int32_t rx,
-      uart_port_t port = uart_port_t::UART_NUM_1,
-      int32_t rts = kDefaultValue,
+      uart_port_t port = uart_port_t::UART_NUM_1, int32_t rts = kDefaultValue,
       int32_t cts = kDefaultValue)
       : tx_(tx), rx_(rx), port_(port), rts_(rts), cts_(cts) {}
 

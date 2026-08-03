@@ -2,7 +2,7 @@
  * @Description: PCF8563 系列实时时钟芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2026-04-20 15:08:31
+ * @LastEditTime: 2026-08-03 16:11:18
  * @License: GPL 3.0
  */
 #include "pcf8563x.h"
@@ -560,7 +560,8 @@ bool Pcf8563x::RunScheduledAlarm(TimeAlarm alarm) {
 
   if (alarm.minute.alarm_flag) {
     if (alarm.minute.value > 59) {
-      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(
+          LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       alarm.minute.value = 59;
     }
     buffer = (((alarm.minute.value / 10) << 4) | (alarm.minute.value % 10));
@@ -574,7 +575,8 @@ bool Pcf8563x::RunScheduledAlarm(TimeAlarm alarm) {
 
   if (alarm.hour.alarm_flag) {
     if (alarm.hour.value > 23) {
-      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(
+          LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       alarm.hour.value = 23;
     }
     buffer = (((alarm.hour.value / 10) << 4) | (alarm.hour.value % 10));
@@ -588,7 +590,8 @@ bool Pcf8563x::RunScheduledAlarm(TimeAlarm alarm) {
 
   if (alarm.day.alarm_flag) {
     if (alarm.day.value > 31) {
-      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(
+          LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       alarm.day.value = 31;
     } else if (alarm.day.value < 1) {
       alarm.day.value = 1;

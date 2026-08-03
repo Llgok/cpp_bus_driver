@@ -2,7 +2,7 @@
  * @Description: ESP-IDF SDIO 主机通信驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-05-15 22:29:35
+ * @LastEditTime: 2026-08-03 16:10:43
  * @License: GPL 3.0
  */
 #pragma once
@@ -19,14 +19,10 @@ class HardwareSdio final : public BusSdioGuide {
   };
 
   explicit HardwareSdio(int32_t clk, int32_t cmd, int32_t d0,
-      int32_t d1 = kDefaultValue,
-      int32_t d2 = kDefaultValue,
-      int32_t d3 = kDefaultValue,
-      int32_t d4 = kDefaultValue,
-      int32_t d5 = kDefaultValue,
-      int32_t d6 = kDefaultValue,
-      int32_t d7 = kDefaultValue,
-      SdioPort port = SdioPort::kSlot1)
+      int32_t d1 = kDefaultValue, int32_t d2 = kDefaultValue,
+      int32_t d3 = kDefaultValue, int32_t d4 = kDefaultValue,
+      int32_t d5 = kDefaultValue, int32_t d6 = kDefaultValue,
+      int32_t d7 = kDefaultValue, SdioPort port = SdioPort::kSlot1)
       : clk_(clk),
         cmd_(cmd),
         d0_(d0),

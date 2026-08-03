@@ -2,7 +2,7 @@
  * @Description: BQ27220 单节电池 CEDV 电量计驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-07-08 09:32:19
+ * @LastEditTime: 2026-08-03 16:11:04
  * @License: GPL 3.0
  */
 #include "bq27220.h"
@@ -57,8 +57,8 @@ bool Bq27220::Deinit(bool delete_bus) {
 uint16_t Bq27220::GetDeviceId() {
   uint16_t value = 0;
   if (!ReadControlSubcommand(ControlSubcommand::kDeviceNumber, &value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "ReadControlSubcommand failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "ReadControlSubcommand failed\n");
   }
   return value;
 }
@@ -66,8 +66,8 @@ uint16_t Bq27220::GetDeviceId() {
 uint16_t Bq27220::GetFirmwareVersion() {
   uint16_t value = 0;
   if (!ReadControlSubcommand(ControlSubcommand::kFirmwareVersion, &value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "ReadControlSubcommand failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "ReadControlSubcommand failed\n");
   }
   return value;
 }
@@ -75,8 +75,8 @@ uint16_t Bq27220::GetFirmwareVersion() {
 uint16_t Bq27220::GetHardwareVersion() {
   uint16_t value = 0;
   if (!ReadControlSubcommand(ControlSubcommand::kHardwareVersion, &value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "ReadControlSubcommand failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "ReadControlSubcommand failed\n");
   }
   return value;
 }
@@ -176,8 +176,7 @@ bool Bq27220::SetTemperatureMode(TemperatureMode mode) {
   uint16_t operation_config = 0;
   if (!ReadDataMemory(
           DataMemoryAddress::kOperationConfigA, &operation_config)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "ReadDataMemory failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadDataMemory failed\n");
     return false;
   }
 
@@ -193,8 +192,8 @@ bool Bq27220::SetTemperatureMode(TemperatureMode mode) {
 
   if (!WriteDataMemory(
           DataMemoryAddress::kOperationConfigA, operation_config)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "WriteDataMemory failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "WriteDataMemory failed\n");
     return false;
   }
   return true;
@@ -244,8 +243,8 @@ bool Bq27220::GetOperationStatus(OperationStatus& status) {
 
 bool Bq27220::SetDesignCapacity(uint16_t capacity) {
   if (!WriteDataMemory(DataMemoryAddress::kDesignCapacity, capacity)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "WriteDataMemory failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "WriteDataMemory failed\n");
     return false;
   }
   return true;
@@ -421,14 +420,13 @@ uint16_t Bq27220::GetRawInternalTemperature() {
 
 bool Bq27220::SetSleepCurrentThreshold(uint16_t threshold) {
   if (threshold > 100) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     threshold = 100;
   }
 
   if (!WriteDataMemory(DataMemoryAddress::kSleepCurrent, threshold)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "WriteDataMemory failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "WriteDataMemory failed\n");
     return false;
   }
   return true;
@@ -449,8 +447,8 @@ bool Bq27220::ReadControlSubcommand(
     return false;
   }
   if (!SendControlSubcommand(subcommand)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SendControlSubcommand failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SendControlSubcommand failed\n");
     return false;
   }
   DelayMs(15);
@@ -463,16 +461,16 @@ bool Bq27220::ReadControlSubcommand(
 
 bool Bq27220::Seal() {
   if (!SendControlSubcommand(ControlSubcommand::kSeal)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SendControlSubcommand failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SendControlSubcommand failed\n");
     return false;
   }
   DelayMs(10);
 
   OperationStatus status;
   if (!GetOperationStatus(status)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "GetOperationStatus failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "GetOperationStatus failed\n");
     return false;
   }
   if (status.security != SecurityMode::kSealed) {
@@ -502,8 +500,8 @@ bool Bq27220::Unseal() {
   DelayMs(10);
 
   if (!GetOperationStatus(status)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "GetOperationStatus failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "GetOperationStatus failed\n");
     return false;
   }
   if (status.security != SecurityMode::kUnsealed &&
@@ -537,8 +535,8 @@ bool Bq27220::FullAccess() {
   DelayMs(10);
 
   if (!GetOperationStatus(status)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "GetOperationStatus failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "GetOperationStatus failed\n");
     return false;
   }
   if (status.security != SecurityMode::kFullAccess) {
@@ -550,8 +548,8 @@ bool Bq27220::FullAccess() {
 
 bool Bq27220::Reset() {
   if (!SendControlSubcommand(ControlSubcommand::kReset)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SendControlSubcommand failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SendControlSubcommand failed\n");
     return false;
   }
   DelayMs(100);
@@ -565,8 +563,8 @@ bool Bq27220::Reset() {
 bool Bq27220::SetBatteryInserted(bool inserted) {
   if (!SendControlSubcommand(inserted ? ControlSubcommand::kBatteryInsert
                                       : ControlSubcommand::kBatteryRemove)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SendControlSubcommand failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SendControlSubcommand failed\n");
     return false;
   }
   return true;
@@ -574,8 +572,7 @@ bool Bq27220::SetBatteryInserted(bool inserted) {
 
 bool Bq27220::SetBatteryProfile(uint8_t profile) {
   if (profile < 1 || profile > 6) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -588,8 +585,8 @@ bool Bq27220::SetBatteryProfile(uint8_t profile) {
       ControlSubcommand::kSetProfile6,
   };
   if (!SendControlSubcommand(subcommands[profile - 1])) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SendControlSubcommand failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SendControlSubcommand failed\n");
     return false;
   }
   return true;
@@ -597,8 +594,8 @@ bool Bq27220::SetBatteryProfile(uint8_t profile) {
 
 bool Bq27220::EnterCalibration() {
   if (!SendControlSubcommand(ControlSubcommand::kEnterCalibration)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SendControlSubcommand failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SendControlSubcommand failed\n");
     return false;
   }
   return true;
@@ -606,8 +603,8 @@ bool Bq27220::EnterCalibration() {
 
 bool Bq27220::ExitCalibration() {
   if (!SendControlSubcommand(ControlSubcommand::kExitCalibration)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SendControlSubcommand failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SendControlSubcommand failed\n");
     return false;
   }
   return true;
@@ -615,8 +612,8 @@ bool Bq27220::ExitCalibration() {
 
 bool Bq27220::ToggleCalibration() {
   if (!SendControlSubcommand(ControlSubcommand::kCalibrationToggle)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SendControlSubcommand failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SendControlSubcommand failed\n");
     return false;
   }
   return true;
@@ -624,8 +621,7 @@ bool Bq27220::ToggleCalibration() {
 
 bool Bq27220::ReadDataMemory(DataMemoryAddress address, uint16_t* value) {
   if (!ReadDataMemory(static_cast<uint16_t>(address), value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "ReadDataMemory failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadDataMemory failed\n");
     return false;
   }
   return true;
@@ -633,8 +629,7 @@ bool Bq27220::ReadDataMemory(DataMemoryAddress address, uint16_t* value) {
 
 bool Bq27220::ReadDataMemory(DataMemoryAddress address, uint8_t* value) {
   if (!ReadDataMemory(static_cast<uint16_t>(address), value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "ReadDataMemory failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadDataMemory failed\n");
     return false;
   }
   return true;
@@ -648,8 +643,8 @@ bool Bq27220::ReadDataMemory(uint16_t address, uint16_t* value) {
 
   uint8_t data[2] = {};
   if (!ReadDataMemoryBytes(address, data, 2)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "ReadDataMemoryBytes failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "ReadDataMemoryBytes failed\n");
     return false;
   }
   *value = (static_cast<uint16_t>(data[0]) << 8) | data[1];
@@ -662,8 +657,8 @@ bool Bq27220::ReadDataMemory(uint16_t address, uint8_t* value) {
     return false;
   }
   if (!ReadDataMemoryBytes(address, value, 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "ReadDataMemoryBytes failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "ReadDataMemoryBytes failed\n");
     return false;
   }
   return true;
@@ -671,8 +666,8 @@ bool Bq27220::ReadDataMemory(uint16_t address, uint8_t* value) {
 
 bool Bq27220::WriteDataMemory(DataMemoryAddress address, uint16_t value) {
   if (!WriteDataMemory(static_cast<uint16_t>(address), value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "WriteDataMemory failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "WriteDataMemory failed\n");
     return false;
   }
   return true;
@@ -680,8 +675,8 @@ bool Bq27220::WriteDataMemory(DataMemoryAddress address, uint16_t value) {
 
 bool Bq27220::WriteDataMemory(DataMemoryAddress address, uint8_t value) {
   if (!WriteDataMemory(static_cast<uint16_t>(address), value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "WriteDataMemory failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "WriteDataMemory failed\n");
     return false;
   }
   return true;
@@ -693,8 +688,8 @@ bool Bq27220::WriteDataMemory(uint16_t address, uint16_t value) {
       static_cast<uint8_t>(value),
   };
   if (!WriteDataMemoryBytes(address, data, 2)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "WriteDataMemoryBytes failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "WriteDataMemoryBytes failed\n");
     return false;
   }
   return true;
@@ -702,8 +697,8 @@ bool Bq27220::WriteDataMemory(uint16_t address, uint16_t value) {
 
 bool Bq27220::WriteDataMemory(uint16_t address, uint8_t value) {
   if (!WriteDataMemoryBytes(address, &value, 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "WriteDataMemoryBytes failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "WriteDataMemoryBytes failed\n");
     return false;
   }
   return true;
@@ -712,15 +707,14 @@ bool Bq27220::WriteDataMemory(uint16_t address, uint8_t value) {
 bool Bq27220::ApplyBatteryProfile(
     const CedvProfile& profile, const GaugingConfig& config) {
   if (!EnterConfigUpdate()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "EnterConfigUpdate failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "EnterConfigUpdate failed\n");
     return false;
   }
 
   bool result = true;
-  result &=
-      WriteDataMemory(DataMemoryAddress::kGaugingConfiguration,
-          config.raw_value);
+  result &= WriteDataMemory(
+      DataMemoryAddress::kGaugingConfiguration, config.raw_value);
   result &= WriteDataMemory(
       DataMemoryAddress::kFullChargeCapacity, profile.full_charge_capacity);
   result &= WriteDataMemory(
@@ -784,8 +778,8 @@ bool Bq27220::ApplyBatteryProfileIfNeeded(
   }
 
   if (!ApplyBatteryProfile(profile, config)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "ApplyBatteryProfile failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "ApplyBatteryProfile failed\n");
     return false;
   }
   return true;
@@ -798,14 +792,14 @@ bool Bq27220::EnterConfigUpdate() {
   }
 
   if (!SendControlSubcommand(ControlSubcommand::kEnterConfigUpdate)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SendControlSubcommand failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SendControlSubcommand failed\n");
     return false;
   }
   DelayMs(10);
   if (!WaitConfigUpdate(true)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "WaitConfigUpdate failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "WaitConfigUpdate failed\n");
     return false;
   }
   return true;
@@ -814,14 +808,14 @@ bool Bq27220::EnterConfigUpdate() {
 bool Bq27220::ExitConfigUpdate(bool reinit) {
   if (!SendControlSubcommand(reinit ? ControlSubcommand::kExitConfigUpdateReinit
                                     : ControlSubcommand::kExitConfigUpdate)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SendControlSubcommand failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SendControlSubcommand failed\n");
     return false;
   }
   DelayMs(10);
   if (!WaitConfigUpdate(false)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "WaitConfigUpdate failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "WaitConfigUpdate failed\n");
     return false;
   }
   return true;
@@ -839,7 +833,8 @@ bool Bq27220::WaitConfigUpdate(bool enabled, uint32_t timeout_ms) {
     elapsed_ms += 10;
   }
 
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "WaitConfigUpdate timeout\n");
+  LogMessage(
+      LogLevel::kError, __FILE__, __LINE__, "WaitConfigUpdate timeout\n");
   return false;
 }
 
@@ -880,22 +875,21 @@ bool Bq27220::ReadS16(Cmd cmd, int16_t* value) {
 bool Bq27220::WriteDataMemoryBytes(
     uint16_t address, const uint8_t* data, size_t length) {
   if (data == nullptr || length == 0 || length > 32) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   bool entered_config_update = false;
   OperationStatus status;
   if (!GetOperationStatus(status)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "GetOperationStatus failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "GetOperationStatus failed\n");
     return false;
   }
   if (!status.flag.config_update_mode) {
     if (!EnterConfigUpdate()) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "EnterConfigUpdate failed\n");
+      LogMessage(
+          LogLevel::kError, __FILE__, __LINE__, "EnterConfigUpdate failed\n");
       return false;
     }
     entered_config_update = true;
@@ -933,8 +927,8 @@ bool Bq27220::WriteDataMemoryBytes(
   DelayMs(10);
 
   if (entered_config_update && !ExitConfigUpdate(true)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "ExitConfigUpdate failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "ExitConfigUpdate failed\n");
     return false;
   }
   return true;
@@ -943,8 +937,7 @@ bool Bq27220::WriteDataMemoryBytes(
 bool Bq27220::ReadDataMemoryBytes(
     uint16_t address, uint8_t* data, size_t length) {
   if (data == nullptr || length == 0 || length > 32) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
   if (!Unseal()) {

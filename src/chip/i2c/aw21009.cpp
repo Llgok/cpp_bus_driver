@@ -2,7 +2,7 @@
  * @Description: AW21009 九通道 LED 驱动芯片实现
  * @Author: LILYGO_L
  * @Date: 2025-09-24 10:47:30
- * @LastEditTime: 2026-06-01 00:00:00
+ * @LastEditTime: 2026-08-03 16:10:53
  * @License: GPL 3.0
  */
 #include "aw21009.h"
@@ -162,37 +162,35 @@ bool Aw21009::Update() {
 bool Aw21009::SetGlobalControl(bool auto_power_save,
     ClockFrequency clock_frequency, PwmResolution pwm_resolution,
     bool chip_enable) {
-  const uint8_t value =
-      (static_cast<uint8_t>(auto_power_save) << 7) |
-      (static_cast<uint8_t>(clock_frequency) << 4) |
-      (static_cast<uint8_t>(pwm_resolution) << 1) |
-      static_cast<uint8_t>(chip_enable);
+  const uint8_t value = (static_cast<uint8_t>(auto_power_save) << 7) |
+                        (static_cast<uint8_t>(clock_frequency) << 4) |
+                        (static_cast<uint8_t>(pwm_resolution) << 1) |
+                        static_cast<uint8_t>(chip_enable);
 
   return WriteRegister(RegisterValue(Register::kGlobalControl), value);
 }
 
 bool Aw21009::SetAutoPowerSave(bool enable) {
-  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl),
-      0x80, static_cast<uint8_t>(enable) << 7);
+  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl), 0x80,
+      static_cast<uint8_t>(enable) << 7);
 }
 
 bool Aw21009::SetClockFrequency(ClockFrequency clock_frequency) {
-  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl),
-      0x70, static_cast<uint8_t>(clock_frequency) << 4);
+  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl), 0x70,
+      static_cast<uint8_t>(clock_frequency) << 4);
 }
 
 bool Aw21009::SetPwmResolution(PwmResolution pwm_resolution) {
-  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl),
-      0x06, static_cast<uint8_t>(pwm_resolution) << 1);
+  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl), 0x06,
+      static_cast<uint8_t>(pwm_resolution) << 1);
 }
 
 bool Aw21009::SetChipEnable(bool enable) {
-  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl),
-      0x01, static_cast<uint8_t>(enable));
+  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl), 0x01,
+      static_cast<uint8_t>(enable));
 }
 
-bool Aw21009::SetBrightness(
-    LedChannel channel, uint16_t value, bool update) {
+bool Aw21009::SetBrightness(LedChannel channel, uint16_t value, bool update) {
   if (value > kBrightnessMax) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     value = kBrightnessMax;
@@ -205,8 +203,8 @@ bool Aw21009::SetBrightness(
       buffer[i * 2] = static_cast<uint8_t>(value);
       buffer[(i * 2) + 1] = static_cast<uint8_t>((value >> 8) & 0x0F);
     }
-    result = WriteRegisters(RegisterValue(Register::kBrightnessStart), buffer,
-        sizeof(buffer));
+    result = WriteRegisters(
+        RegisterValue(Register::kBrightnessStart), buffer, sizeof(buffer));
   } else if (IsSingleChannel(channel)) {
     result = WriteBrightnessByIndex(ChannelIndex(channel), value);
   } else {
@@ -250,8 +248,8 @@ bool Aw21009::SetSingleByteBrightness(
     for (uint8_t i = 0; i < kLedCount; i++) {
       buffer[i] = value;
     }
-    result = WriteRegisters(RegisterValue(Register::kBrightnessStart), buffer,
-        sizeof(buffer));
+    result = WriteRegisters(
+        RegisterValue(Register::kBrightnessStart), buffer, sizeof(buffer));
   } else if (IsSingleChannel(channel)) {
     result = WriteRegister(
         RegisterValue(Register::kBrightnessStart) + ChannelIndex(channel),
@@ -270,8 +268,7 @@ bool Aw21009::SetSingleByteBrightness(
   return !update || Update();
 }
 
-bool Aw21009::SetRgbBrightness(
-    LedGroup group, uint16_t value, bool update) {
+bool Aw21009::SetRgbBrightness(LedGroup group, uint16_t value, bool update) {
   if (value > kBrightnessMax) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     value = kBrightnessMax;
@@ -290,25 +287,23 @@ bool Aw21009::SetRgbBrightness(
   }
 
   if (!result) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Write RGB brightness failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "Write RGB brightness failed\n");
     return false;
   }
 
   return !update || Update();
 }
 
-bool Aw21009::SetCurrentLimit(
-    LedChannel channel, uint8_t value, bool update) {
+bool Aw21009::SetCurrentLimit(LedChannel channel, uint8_t value, bool update) {
   bool result = true;
   if (channel == LedChannel::kAll) {
     uint8_t buffer[kLedCount] = {0};
     for (uint8_t i = 0; i < kLedCount; i++) {
       buffer[i] = value;
     }
-    result =
-        WriteRegisters(RegisterValue(Register::kScalingStart), buffer,
-            sizeof(buffer));
+    result = WriteRegisters(
+        RegisterValue(Register::kScalingStart), buffer, sizeof(buffer));
   } else if (IsSingleChannel(channel)) {
     result = WriteCurrentLimitByIndex(ChannelIndex(channel), value);
   } else {
@@ -317,8 +312,8 @@ bool Aw21009::SetCurrentLimit(
   }
 
   if (!result) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Write current limit failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "Write current limit failed\n");
     return false;
   }
 
@@ -344,8 +339,8 @@ bool Aw21009::GetGlobalCurrentLimit(uint8_t* value) {
 }
 
 bool Aw21009::SetPhaseDelay(bool enable) {
-  return WriteMaskedRegister(RegisterValue(Register::kPhaseControl),
-      0x80, static_cast<uint8_t>(enable) << 7);
+  return WriteMaskedRegister(RegisterValue(Register::kPhaseControl), 0x80,
+      static_cast<uint8_t>(enable) << 7);
 }
 
 bool Aw21009::SetPhaseInvert(LedGroup group, bool enable) {
@@ -355,16 +350,15 @@ bool Aw21009::SetPhaseInvert(LedGroup group, bool enable) {
     return false;
   }
 
-  return WriteMaskedRegister(RegisterValue(Register::kPhaseControl), mask,
-      enable ? mask : 0);
+  return WriteMaskedRegister(
+      RegisterValue(Register::kPhaseControl), mask, enable ? mask : 0);
 }
 
 bool Aw21009::SetOpenShortDetection(OpenShortDetectMode mode,
     OpenThreshold open_threshold, ShortThreshold short_threshold) {
-  const uint8_t value =
-      (static_cast<uint8_t>(open_threshold) << 3) |
-      (static_cast<uint8_t>(short_threshold) << 2) |
-      static_cast<uint8_t>(mode);
+  const uint8_t value = (static_cast<uint8_t>(open_threshold) << 3) |
+                        (static_cast<uint8_t>(short_threshold) << 2) |
+                        static_cast<uint8_t>(mode);
 
   bool result = true;
   if (mode == OpenShortDetectMode::kDisable) {
@@ -387,8 +381,8 @@ bool Aw21009::GetOpenShortStatus(uint16_t* status) {
   }
 
   uint8_t buffer[2] = {0};
-  if (!bus_->Read(RegisterValue(Register::kOpenShortStatus0), buffer,
-          sizeof(buffer))) {
+  if (!bus_->Read(
+          RegisterValue(Register::kOpenShortStatus0), buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -398,13 +392,13 @@ bool Aw21009::GetOpenShortStatus(uint16_t* status) {
   return true;
 }
 
-bool Aw21009::SetThermalRollOff(ThermalRollOffCurrent current,
-    ThermalRollOffThreshold threshold) {
+bool Aw21009::SetThermalRollOff(
+    ThermalRollOffCurrent current, ThermalRollOffThreshold threshold) {
   const uint8_t value =
       (static_cast<uint8_t>(current) << 6) | static_cast<uint8_t>(threshold);
 
-  return WriteMaskedRegister(RegisterValue(Register::kOverTemperatureControl),
-      0xC0 | 0x03, value);
+  return WriteMaskedRegister(
+      RegisterValue(Register::kOverTemperatureControl), 0xC0 | 0x03, value);
 }
 
 bool Aw21009::SetOverTemperatureProtection(
@@ -417,8 +411,8 @@ bool Aw21009::SetOverTemperatureProtection(
     value |= 0x04;
   }
 
-  return WriteMaskedRegister(RegisterValue(Register::kOverTemperatureControl),
-      0x08 | 0x04, value);
+  return WriteMaskedRegister(
+      RegisterValue(Register::kOverTemperatureControl), 0x08 | 0x04, value);
 }
 
 bool Aw21009::GetThermalStatus(ThermalStatus* status) {
@@ -428,8 +422,8 @@ bool Aw21009::GetThermalStatus(ThermalStatus* status) {
   }
 
   uint8_t buffer = 0;
-  if (!ReadRegister(RegisterValue(Register::kOverTemperatureControl),
-          &buffer)) {
+  if (!ReadRegister(
+          RegisterValue(Register::kOverTemperatureControl), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
@@ -443,18 +437,17 @@ bool Aw21009::GetThermalStatus(ThermalStatus* status) {
 bool Aw21009::SetPwmFullDuty(
     bool led1_to_led6_enable, bool led7_to_led9_enable) {
   const uint8_t value =
-      (led7_to_led9_enable ? 0x40 : 0) |
-      (led1_to_led6_enable ? 0x20 : 0);
+      (led7_to_led9_enable ? 0x40 : 0) | (led1_to_led6_enable ? 0x20 : 0);
 
-  return WriteMaskedRegister(RegisterValue(Register::kSpreadSpectrumControl),
-      0x40 | 0x20, value);
+  return WriteMaskedRegister(
+      RegisterValue(Register::kSpreadSpectrumControl), 0x40 | 0x20, value);
 }
 
-bool Aw21009::SetSpreadSpectrum(bool enable, SpreadSpectrumRange range,
-    SpreadSpectrumPeriod period) {
-  const uint8_t value =
-      (static_cast<uint8_t>(enable) << 4) |
-      (static_cast<uint8_t>(range) << 2) | static_cast<uint8_t>(period);
+bool Aw21009::SetSpreadSpectrum(
+    bool enable, SpreadSpectrumRange range, SpreadSpectrumPeriod period) {
+  const uint8_t value = (static_cast<uint8_t>(enable) << 4) |
+                        (static_cast<uint8_t>(range) << 2) |
+                        static_cast<uint8_t>(period);
 
   return WriteMaskedRegister(RegisterValue(Register::kSpreadSpectrumControl),
       0x10 | 0x0C | 0x03, value);
@@ -469,18 +462,18 @@ bool Aw21009::SetUvProtection(bool detect_enable, bool protect_enable) {
     value |= 0x01;
   }
 
-  return WriteMaskedRegister(RegisterValue(Register::kUvControl),
-      0x02 | 0x01, value);
+  return WriteMaskedRegister(
+      RegisterValue(Register::kUvControl), 0x02 | 0x01, value);
 }
 
 bool Aw21009::SetOcpProtection(bool enable) {
-  return WriteMaskedRegister(RegisterValue(Register::kUvControl),
-      0x04, enable ? 0 : 0x04);
+  return WriteMaskedRegister(
+      RegisterValue(Register::kUvControl), 0x04, enable ? 0 : 0x04);
 }
 
 bool Aw21009::SetOcpThreshold(OcpThreshold threshold) {
-  return WriteMaskedRegister(RegisterValue(Register::kUvControl),
-      0x08, static_cast<uint8_t>(threshold) << 3);
+  return WriteMaskedRegister(RegisterValue(Register::kUvControl), 0x08,
+      static_cast<uint8_t>(threshold) << 3);
 }
 
 bool Aw21009::GetUvStatus(UvStatus* status) {
@@ -495,8 +488,7 @@ bool Aw21009::GetUvStatus(UvStatus* status) {
     return false;
   }
 
-  status->rext_status =
-      static_cast<RextStatus>((buffer & 0xC0) >> 6);
+  status->rext_status = static_cast<RextStatus>((buffer & 0xC0) >> 6);
   status->uvlo = (buffer & 0x20) != 0;
   status->power_up = (buffer & 0x10) != 0;
   status->raw = buffer;
@@ -504,37 +496,36 @@ bool Aw21009::GetUvStatus(UvStatus* status) {
 }
 
 bool Aw21009::SetBroadcastAddressEnable(bool enable) {
-  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl2),
-      0x10, enable ? 0 : 0x10);
+  return WriteMaskedRegister(
+      RegisterValue(Register::kGlobalControl2), 0x10, enable ? 0 : 0x10);
 }
 
 bool Aw21009::SetUpdateMode(UpdateMode mode) {
-  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl2),
-      0x0C, static_cast<uint8_t>(mode) << 2);
+  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl2), 0x0C,
+      static_cast<uint8_t>(mode) << 2);
 }
 
 bool Aw21009::SetSingleByteMode(bool enable) {
-  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl2),
-      0x02, static_cast<uint8_t>(enable) << 1);
+  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl2), 0x02,
+      static_cast<uint8_t>(enable) << 1);
 }
 
 bool Aw21009::SetRgbMode(bool enable) {
-  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl2),
-      0x01, static_cast<uint8_t>(enable));
+  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl2), 0x01,
+      static_cast<uint8_t>(enable));
 }
 
 bool Aw21009::SetPowerSavePwmIs0(bool enable) {
-  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl3),
-      0x08, static_cast<uint8_t>(enable) << 3);
+  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl3), 0x08,
+      static_cast<uint8_t>(enable) << 3);
 }
 
-bool Aw21009::SetSlewRate(
-    SlewRateRising rising, SlewRateFalling falling) {
+bool Aw21009::SetSlewRate(SlewRateRising rising, SlewRateFalling falling) {
   const uint8_t value =
       (static_cast<uint8_t>(rising) << 2) | static_cast<uint8_t>(falling);
 
-  return WriteMaskedRegister(RegisterValue(Register::kGlobalControl3),
-      0x04 | 0x03, value);
+  return WriteMaskedRegister(
+      RegisterValue(Register::kGlobalControl3), 0x04 | 0x03, value);
 }
 
 bool Aw21009::SetGroupBrightness(uint16_t value) {
@@ -558,13 +549,12 @@ bool Aw21009::SetGroupScaling(uint8_t red, uint8_t green, uint8_t blue) {
       RegisterValue(Register::kGroupScalingRed), buffer, sizeof(buffer));
 }
 
-bool Aw21009::SetGroupConfig(
-    uint8_t group_mask, bool use_individual_scaling) {
+bool Aw21009::SetGroupConfig(uint8_t group_mask, bool use_individual_scaling) {
   const uint8_t value =
       (use_individual_scaling ? 0x40 : 0) | (group_mask & 0x07);
 
-  return WriteMaskedRegister(RegisterValue(Register::kGroupConfig),
-      0x40 | 0x07, value);
+  return WriteMaskedRegister(
+      RegisterValue(Register::kGroupConfig), 0x40 | 0x07, value);
 }
 
 bool Aw21009::SetGroupEnable(LedGroup group, bool enable) {
@@ -574,23 +564,22 @@ bool Aw21009::SetGroupEnable(LedGroup group, bool enable) {
     return false;
   }
 
-  return WriteMaskedRegister(RegisterValue(Register::kGroupConfig), mask,
-      enable ? mask : 0);
+  return WriteMaskedRegister(
+      RegisterValue(Register::kGroupConfig), mask, enable ? mask : 0);
 }
 
 bool Aw21009::SetPatternConfig(
     bool enable, PatternMode mode, bool switch_on, bool ramp_enable) {
-  const uint8_t value =
-      (static_cast<uint8_t>(switch_on) << 3) |
-      (static_cast<uint8_t>(ramp_enable) << 2) |
-      (static_cast<uint8_t>(mode) << 1) | static_cast<uint8_t>(enable);
+  const uint8_t value = (static_cast<uint8_t>(switch_on) << 3) |
+                        (static_cast<uint8_t>(ramp_enable) << 2) |
+                        (static_cast<uint8_t>(mode) << 1) |
+                        static_cast<uint8_t>(enable);
 
   return WriteMaskedRegister(RegisterValue(Register::kPatternConfig),
       0x08 | 0x04 | 0x02 | 0x01, value);
 }
 
-bool Aw21009::SetManualPatternSwitch(
-    bool switch_on, bool ramp_enable) {
+bool Aw21009::SetManualPatternSwitch(bool switch_on, bool ramp_enable) {
   return SetPatternConfig(true, PatternMode::kManual, switch_on, ramp_enable);
 }
 
@@ -601,10 +590,9 @@ bool Aw21009::SetPatternTiming(const PatternTiming& timing) {
     repeat = 0x0FFF;
   }
 
-  const uint8_t loop_end =
-      timing.loop_end == PatternLoopEnd::kT3
-          ? 0
-          : static_cast<uint8_t>(PatternLoopEnd::kT1);
+  const uint8_t loop_end = timing.loop_end == PatternLoopEnd::kT3
+                               ? 0
+                               : static_cast<uint8_t>(PatternLoopEnd::kT1);
 
   const uint8_t buffer[] = {
       static_cast<uint8_t>((static_cast<uint8_t>(timing.rise) << 4) |
@@ -694,8 +682,7 @@ bool Aw21009::WriteBrightnessByIndex(uint8_t index, uint16_t value) {
       static_cast<uint8_t>(value),
       static_cast<uint8_t>((value >> 8) & 0x0F),
   };
-  const uint8_t reg =
-      RegisterValue(Register::kBrightnessStart) + (index * 2);
+  const uint8_t reg = RegisterValue(Register::kBrightnessStart) + (index * 2);
 
   return WriteRegisters(reg, buffer, sizeof(buffer));
 }

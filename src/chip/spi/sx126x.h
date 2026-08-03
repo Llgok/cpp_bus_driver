@@ -2,7 +2,7 @@
  * @Description: Semtech SX1261/SX1262 无线收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-07-15 16:30:00
+ * @LastEditTime: 2026-08-03 16:12:01
  * @License: GPL 3.0
  */
 #pragma once
@@ -476,7 +476,7 @@ class Sx126x final : public ChipSpiGuide {
     Cr coding_rate = Cr::kCr45;
     LoraCrcType crc_type = LoraCrcType::kOff;
     uint16_t preamble_length = 8;
-    uint8_t symbol_timeout = 0;  // LoRa符号超时；0表示关闭
+    uint8_t symbol_timeout = 0;           // LoRa符号超时；0表示关闭
     bool stop_timer_on_preamble = false;  // 检测到前导后停止RX计时器
     uint16_t sync_word = 0x1424;
     LoraHeaderType header_type = LoraHeaderType::kVariableLengthPacket;
@@ -527,8 +527,7 @@ class Sx126x final : public ChipSpiGuide {
   static constexpr uint32_t kTimeoutContinuous = 0xFFFFFF;
 
   explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
-      int32_t busy, int32_t cs = kDefaultValue,
-      int32_t rst = kDefaultValue)
+      int32_t busy, int32_t cs = kDefaultValue, int32_t rst = kDefaultValue)
       : Sx126x(bus, chip_type, busy, cs, rst, HardwareConfig{}) {}
 
   explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
@@ -543,8 +542,7 @@ class Sx126x final : public ChipSpiGuide {
   explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
       bool (*busy_wait_callback)(), int32_t cs = kDefaultValue,
       int32_t rst = kDefaultValue)
-      : Sx126x(bus, chip_type, busy_wait_callback, cs, rst,
-            HardwareConfig{}) {}
+      : Sx126x(bus, chip_type, busy_wait_callback, cs, rst, HardwareConfig{}) {}
 
   explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
       bool (*busy_wait_callback)(), int32_t cs, int32_t rst,
@@ -842,8 +840,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param ramp_time 功率放大器的输出斜坡时间
    * @return 设置成功返回 true，失败返回 false
    */
-  bool SetOutputPower(
-      int8_t power, RampTime ramp_time = RampTime::kRamp40Us);
+  bool SetOutputPower(int8_t power, RampTime ramp_time = RampTime::kRamp40Us);
 
   /**
    * @brief 校准设备在其工作频段内的镜像抑制
@@ -920,8 +917,7 @@ class Sx126x final : public ChipSpiGuide {
    * @param preamble_length 前导长度，表示无线电将发送的LoRa符号数量
    * @return 操作成功返回 true，失败返回 false
    */
-  bool StartLora(ChipMode chip_mode,
-      uint32_t timeout_us = kTimeoutContinuous,
+  bool StartLora(ChipMode chip_mode, uint32_t timeout_us = kTimeoutContinuous,
       FallbackMode fallback_mode = FallbackMode::kStdbyRc,
       uint16_t preamble_length = 8);
 
@@ -1189,8 +1185,7 @@ class Sx126x final : public ChipSpiGuide {
    * 前导码检测门限沿用当前配置，必要时限制到合法范围
    * @return 操作成功返回 true，失败返回 false
    */
-  bool StartGfsk(ChipMode chip_mode,
-      uint32_t timeout_us = kTimeoutContinuous,
+  bool StartGfsk(ChipMode chip_mode, uint32_t timeout_us = kTimeoutContinuous,
       FallbackMode fallback_mode = FallbackMode::kStdbyRc,
       uint16_t preamble_length = 32);
 
@@ -1507,8 +1502,7 @@ class Sx126x final : public ChipSpiGuide {
   bool ValidateHardwareConfig() const;
   bool ApplyHardwareConfig(bool calibrate_tcxo);
   float GetGfskBandwidthKhz(GfskBw bandwidth) const;
-  bool ReadModifyWriteRegister(
-      Reg reg, uint8_t mask, uint8_t value);
+  bool ReadModifyWriteRegister(Reg reg, uint8_t mask, uint8_t value);
   bool ResetGfskLowRateWorkaround();
   bool ApplyGfskLowRateWorkaround(const GfskConfig& config);
 

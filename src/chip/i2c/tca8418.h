@@ -2,7 +2,7 @@
  * @Description: TCA8418 键盘扫描与 GPIO 扩展芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-06-01 17:30:00
+ * @LastEditTime: 2026-08-03 16:11:33
  * @License: GPL 3.0
  */
 #pragma once
@@ -125,8 +125,7 @@ class Tca8418 final : public ChipI2cGuide {
   };
 
   explicit Tca8418(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kDefaultValue)
+      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = kDefaultValue) override;

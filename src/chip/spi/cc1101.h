@@ -2,7 +2,7 @@
  * @Description: TI CC1101 亚 GHz 无线收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-07-12 00:00:00
- * @LastEditTime: 2026-07-31 00:18:28
+ * @LastEditTime: 2026-08-03 16:11:48
  * @License: GPL 3.0
  */
 #pragma once
@@ -109,65 +109,60 @@ class Cc1101 final : public ChipSpiGuide {
 
   // CC1101 初始化及射频数据包配置
   struct Config {
-    double crystal_frequency_mhz = 26.0;  // 晶振频率，单位 MHz
-    double frequency_mhz = 868.0;         // 射频中心频率，单位 MHz
-    double data_rate_kbaud = 4.8;         // 符号速率，单位 kBaud
-    double frequency_deviation_khz = 5.0;  // FSK 频偏，单位 kHz
-    uint8_t msk_phase_change_period = 7;   // MSK 相位变化周期
-    double receive_bandwidth_khz = 58.0;   // RX 滤波带宽，单位 kHz
-    double channel_spacing_khz = 199.95;   // 信道间隔，单位 kHz
-    int8_t output_power_dbm = 10;          // 发射功率，单位 dBm
-    uint16_t preamble_length_bits = 32;    // 前导码长度，单位 bit
-    uint8_t preamble_quality_threshold = 0;  // PKTCTRL1.PQT
-    uint8_t sync_word_high = 0x12;         // 同步字高字节
-    uint8_t sync_word_low = 0xAD;          // 同步字低字节
+    double crystal_frequency_mhz = 26.0;        // 晶振频率，单位 MHz
+    double frequency_mhz = 868.0;               // 射频中心频率，单位 MHz
+    double data_rate_kbaud = 4.8;               // 符号速率，单位 kBaud
+    double frequency_deviation_khz = 5.0;       // FSK 频偏，单位 kHz
+    uint8_t msk_phase_change_period = 7;        // MSK 相位变化周期
+    double receive_bandwidth_khz = 58.0;        // RX 滤波带宽，单位 kHz
+    double channel_spacing_khz = 199.95;        // 信道间隔，单位 kHz
+    int8_t output_power_dbm = 10;               // 发射功率，单位 dBm
+    uint16_t preamble_length_bits = 32;         // 前导码长度，单位 bit
+    uint8_t preamble_quality_threshold = 0;     // PKTCTRL1.PQT
+    uint8_t sync_word_high = 0x12;              // 同步字高字节
+    uint8_t sync_word_low = 0xAD;               // 同步字低字节
     Modulation modulation = Modulation::k2Fsk;  // 调制格式
     Encoding encoding = Encoding::kNrz;         // 数据编码
     PacketLengthMode packet_length_mode =
-        PacketLengthMode::kVariable;  // 数据包长度模式
-    AddressCheck address_check =
-        AddressCheck::kDisabled;  // 地址过滤模式
-    SyncMode sync_mode =
-        SyncMode::kSixteenOfSixteen;  // 同步字检测条件
-    uint8_t maximum_packet_length = 255;  // PKTLEN 寄存器值
-    uint8_t device_address = 0;           // 本机地址
-    uint8_t channel = 0;                  // CHANNR 信道编号
-    uint8_t bit_rate_tolerance = 0;        // BSCFG.BS_LIMIT
-    int8_t carrier_sense_threshold = 0;    // 绝对载波侦听阈值
-    uint8_t carrier_sense_relative = 0;    // 相对载波侦听阈值
-    CcaMode cca_mode =
-        CcaMode::kRssiBelowThresholdUnlessReceiving;
-    bool crc_enabled = true;              // 硬件 CRC
-    bool crc_autoflush = false;            // CRC 失败自动清空 RX FIFO
-    bool append_status = true;            // RX FIFO 附加 RSSI/LQI
-    bool fec_enabled = false;             // 卷积编码 FEC
+        PacketLengthMode::kVariable;                       // 数据包长度模式
+    AddressCheck address_check = AddressCheck::kDisabled;  // 地址过滤模式
+    SyncMode sync_mode = SyncMode::kSixteenOfSixteen;      // 同步字检测条件
+    uint8_t maximum_packet_length = 255;                   // PKTLEN 寄存器值
+    uint8_t device_address = 0;                            // 本机地址
+    uint8_t channel = 0;                                   // CHANNR 信道编号
+    uint8_t bit_rate_tolerance = 0;                        // BSCFG.BS_LIMIT
+    int8_t carrier_sense_threshold = 0;                    // 绝对载波侦听阈值
+    uint8_t carrier_sense_relative = 0;                    // 相对载波侦听阈值
+    CcaMode cca_mode = CcaMode::kRssiBelowThresholdUnlessReceiving;
+    bool crc_enabled = true;     // 硬件 CRC
+    bool crc_autoflush = false;  // CRC 失败自动清空 RX FIFO
+    bool append_status = true;   // RX FIFO 附加 RSSI/LQI
+    bool fec_enabled = false;    // 卷积编码 FEC
   };
 
   // SPI 状态字节解析结果
   struct ChipStatus {
-    bool ready = false;                   // CHIP_RDYn 为低
-    uint8_t state = 0;                    // 主状态机状态位
-    uint8_t fifo_bytes_available = 0;     // FIFO 可用字节提示
+    bool ready = false;                // CHIP_RDYn 为低
+    uint8_t state = 0;                 // 主状态机状态位
+    uint8_t fifo_bytes_available = 0;  // FIFO 可用字节提示
   };
 
   // 最近接收数据包的链路质量
   struct PacketMetrics {
-    float rssi_dbm = 0.0F;  // 接收信号强度，单位 dBm
-    uint8_t lqi = 0;        // 链路质量，范围 0~127
+    float rssi_dbm = 0.0F;   // 接收信号强度，单位 dBm
+    uint8_t lqi = 0;         // 链路质量，范围 0~127
     bool crc_valid = false;  // 硬件 CRC 校验结果
   };
 
   // 当前 SPI 总线连续传输字节间没有 100 ns 间隔，按 TI DN503 限制为 6.5 MHz。
   static constexpr int32_t kMaximumSpiFrequencyHz = 6500000;
 
-  explicit Cc1101(std::shared_ptr<BusSpiGuide> bus, int32_t cs,
-      int32_t miso, int32_t gdo0 = kDefaultValue,
-      int32_t gdo2 = kDefaultValue)
+  explicit Cc1101(std::shared_ptr<BusSpiGuide> bus, int32_t cs, int32_t miso,
+      int32_t gdo0 = kDefaultValue, int32_t gdo2 = kDefaultValue)
       : Cc1101(bus, cs, miso, gdo0, gdo2, Config{}) {}
 
-  explicit Cc1101(std::shared_ptr<BusSpiGuide> bus, int32_t cs,
-      int32_t miso, int32_t gdo0, int32_t gdo2,
-      const Config& config)
+  explicit Cc1101(std::shared_ptr<BusSpiGuide> bus, int32_t cs, int32_t miso,
+      int32_t gdo0, int32_t gdo2, const Config& config)
       : ChipSpiGuide(bus, cs),
         config_(config),
         miso_(miso),
@@ -209,8 +204,7 @@ class Cc1101 final : public ChipSpiGuide {
    * @return 全部写入成功返回 true，失败返回 false。
    */
   bool ApplyRegisterSettings(
-      const RegisterSetting* settings, size_t count,
-      const Config& config);
+      const RegisterSetting* settings, size_t count, const Config& config);
 
   /**
    * @brief 发送命令选通指令并可选返回 SPI 状态字节。
@@ -304,8 +298,8 @@ class Cc1101 final : public ChipSpiGuide {
    * @param mode 同步字匹配和载波侦听模式。
    * @return 同步字和检测模式设置成功返回 true，否则返回 false。
    */
-  bool SetSyncWord(uint8_t high, uint8_t low,
-      SyncMode mode = SyncMode::kSixteenOfSixteen);
+  bool SetSyncWord(
+      uint8_t high, uint8_t low, SyncMode mode = SyncMode::kSixteenOfSixteen);
 
   /**
    * @brief 设置前导码长度。
@@ -327,8 +321,7 @@ class Cc1101 final : public ChipSpiGuide {
    * @param maximum_length 写入 PKTLEN 的最大空中包长。
    * @return 数据包长度模式设置成功返回 true，否则返回 false。
    */
-  bool SetPacketLengthMode(PacketLengthMode mode,
-      uint8_t maximum_length = 255);
+  bool SetPacketLengthMode(PacketLengthMode mode, uint8_t maximum_length = 255);
 
   /**
    * @brief 设置接收地址过滤和本机地址。
@@ -448,9 +441,8 @@ class Cc1101 final : public ChipSpiGuide {
    * @param include_destination 是否强制写入目标地址字段。
    * @return 发送完成且状态恢复成功返回 true。
    */
-  bool Transmit(const uint8_t* data, size_t length,
-      uint32_t timeout_ms = 0, uint8_t destination = 0,
-      bool include_destination = false);
+  bool Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms = 0,
+      uint8_t destination = 0, bool include_destination = false);
 
   /**
    * @brief 阻塞等待并接收数据包，长包会自动排空 RX FIFO。
@@ -476,8 +468,8 @@ class Cc1101 final : public ChipSpiGuide {
    * @param metrics 可选 RSSI、LQI 和 CRC 输出。
    * @return 完整包存在且 CRC 有效时返回 true。
    */
-  bool ReadReceivedPacket(uint8_t* data, size_t capacity,
-      size_t* received, PacketMetrics* metrics = nullptr);
+  bool ReadReceivedPacket(uint8_t* data, size_t capacity, size_t* received,
+      PacketMetrics* metrics = nullptr);
 
   /**
    * @brief 读取稳定的 MARCSTATE 主状态机状态。
@@ -658,8 +650,8 @@ class Cc1101 final : public ChipSpiGuide {
    * @param wait_ready CS 拉低后是否等待 CHIP_RDYn 变低。
    * @return 传输成功返回 true，失败返回 false。
    */
-  bool Transfer(const uint8_t* write_data, uint8_t* read_data,
-      size_t length, bool wait_ready = true);
+  bool Transfer(const uint8_t* write_data, uint8_t* read_data, size_t length,
+      bool wait_ready = true);
 
   /**
    * @brief 确保芯片处于允许修改配置寄存器的 IDLE 状态。
@@ -716,8 +708,8 @@ class Cc1101 final : public ChipSpiGuide {
    * @param metrics 可选 RSSI、LQI 和 CRC 输出。
    * @return 数据包完整且 CRC 有效时返回 true，否则返回 false。
    */
-  bool ReadPacketFromFifo(uint8_t* data, size_t capacity,
-      size_t available, size_t* received, PacketMetrics* metrics);
+  bool ReadPacketFromFifo(uint8_t* data, size_t capacity, size_t available,
+      size_t* received, PacketMetrics* metrics);
 
   /**
    * @brief 将指定数量的数据从 RX FIFO 追加到用户缓冲区。
@@ -727,8 +719,8 @@ class Cc1101 final : public ChipSpiGuide {
    * @param bytes_to_read 本次需要从 FIFO 读取的字节数。
    * @return 缓冲区容量足够且读取成功返回 true，否则返回 false。
    */
-  bool DrainReceiveFifo(uint8_t* data, size_t capacity,
-      size_t* copied, size_t bytes_to_read);
+  bool DrainReceiveFifo(
+      uint8_t* data, size_t capacity, size_t* copied, size_t bytes_to_read);
 
   /**
    * @brief 从状态寄存器读取最近数据包的 RSSI、LQI 和 CRC。
@@ -765,8 +757,7 @@ class Cc1101 final : public ChipSpiGuide {
    * @param modulation 目标调制格式。
    * @return 数据速率有效返回 true，否则返回 false。
    */
-  bool ValidateDataRate(
-      double data_rate_kbaud, Modulation modulation) const;
+  bool ValidateDataRate(double data_rate_kbaud, Modulation modulation) const;
 
   /**
    * @brief 获取当前调制格式每个符号携带的原始比特数。

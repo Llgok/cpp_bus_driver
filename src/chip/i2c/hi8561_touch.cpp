@@ -2,7 +2,7 @@
  * @Description: HI8561 配套触摸控制器驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-04-22 17:36:19
+ * @LastEditTime: 2026-08-03 16:11:14
  * @License: GPL 3.0
  */
 #include "hi8561_touch.h"
@@ -31,7 +31,8 @@ bool Hi8561Touch::Init(int32_t freq_hz) {
   }
 
   if (!InitAddressInfo()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitAddressInfo failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "InitAddressInfo failed\n");
     return false;
   } else {
     LogMessage(
@@ -174,8 +175,7 @@ bool Hi8561Touch::GetMultipleTouchPoint(TouchPoint& tp) {
       kMaxTouchFingerCount * kSingleTouchPointDataSize;
   std::vector<uint8_t> buffer_2(buffer_touch_point_size, 0);
 
-  if (!bus_->WriteRead(
-          buffer, 6, buffer_2.data(), buffer_touch_point_size)) {
+  if (!bus_->WriteRead(buffer, 6, buffer_2.data(), buffer_touch_point_size)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }
@@ -228,8 +228,7 @@ bool Hi8561Touch::GetEdgeTouch() {
       kMaxTouchFingerCount * kSingleTouchPointDataSize;
   std::vector<uint8_t> buffer_2(buffer_touch_point_size, 0);
 
-  if (!bus_->WriteRead(
-          buffer, 6, buffer_2.data(), buffer_touch_point_size)) {
+  if (!bus_->WriteRead(buffer, 6, buffer_2.data(), buffer_touch_point_size)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
     return false;
   }

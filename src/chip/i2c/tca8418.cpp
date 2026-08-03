@@ -2,7 +2,7 @@
  * @Description: TCA8418 键盘扫描与 GPIO 扩展芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-06-01 17:30:00
+ * @LastEditTime: 2026-08-03 16:11:31
  * @License: GPL 3.0
  */
 #include "tca8418.h"
@@ -12,8 +12,8 @@ namespace cpp_bus_driver {
 bool Tca8418::Init(int32_t freq_hz) {
   if (rst_ != kDefaultValue) {
     bool result = true;
-    result &= SetGpioMode(
-        rst_, Tool::GpioMode::kOutput, Tool::GpioStatus::kPullup);
+    result &=
+        SetGpioMode(rst_, Tool::GpioMode::kOutput, Tool::GpioStatus::kPullup);
     result &= GpioWrite(rst_, 0);
     DelayMs(10);
     result &= GpioWrite(rst_, 1);
@@ -33,7 +33,8 @@ bool Tca8418::Init(int32_t freq_hz) {
   config.auto_increment = true;
   config.overflow_mode = true;
   if (!SetConfiguration(config)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetConfiguration failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SetConfiguration failed\n");
     return false;
   }
 
@@ -156,12 +157,11 @@ bool Tca8418::SetInterruptEnable(IrqMask mask) {
 
 bool Tca8418::SetInterruptEnable(uint8_t mask) {
   const uint8_t value = mask & kValidInterruptEnableMask;
-  return UpdateRegisterBits(Register::kConfiguration,
-      kValidInterruptEnableMask, value);
+  return UpdateRegisterBits(
+      Register::kConfiguration, kValidInterruptEnableMask, value);
 }
 
-bool Tca8418::SetKeypadScanWindow(
-    uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
+bool Tca8418::SetKeypadScanWindow(uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
   if ((w == 0) || (h == 0) || (x >= kColumnCount) || (y >= kRowCount) ||
       (w > (kColumnCount - x)) || (h > (kRowCount - y))) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
@@ -308,13 +308,9 @@ uint32_t Tca8418::GetClearGpioIrqFlag() {
   return status;
 }
 
-bool Tca8418::SetIrqGpioMode(IrqMask mode) {
-  return SetInterruptEnable(mode);
-}
+bool Tca8418::SetIrqGpioMode(IrqMask mode) { return SetInterruptEnable(mode); }
 
-bool Tca8418::SetIrqGpioMode(uint8_t mode) {
-  return SetInterruptEnable(mode);
-}
+bool Tca8418::SetIrqGpioMode(uint8_t mode) { return SetInterruptEnable(mode); }
 
 bool Tca8418::ParseTouchNum(uint8_t num, TouchPosition& position) {
   if ((num < kKeypadFirstEvent) || (num > kKeypadLastEvent)) {
@@ -347,8 +343,8 @@ bool Tca8418::GetKeyLockInfo(KeyLockInfo* info) {
 }
 
 bool Tca8418::SetKeypadLock(bool enable) {
-  return UpdateRegisterBits(Register::kKeyLockAndEventCounter, 0x40,
-      enable ? 0x40 : 0x00);
+  return UpdateRegisterBits(
+      Register::kKeyLockAndEventCounter, 0x40, enable ? 0x40 : 0x00);
 }
 
 bool Tca8418::SetKeypadLockTimer(
@@ -358,8 +354,7 @@ bool Tca8418::SetKeypadLockTimer(
     return false;
   }
 
-  const uint8_t value =
-      (interrupt_mask_timer_s << 3) | lock_to_lock_timer_s;
+  const uint8_t value = (interrupt_mask_timer_s << 3) | lock_to_lock_timer_s;
   return WriteRegister(Register::kKeypadLockTimer, value);
 }
 
@@ -407,8 +402,7 @@ bool Tca8418::SetGpioOutputMask(uint32_t high_mask) {
 }
 
 bool Tca8418::SetGpioOutputMask(uint32_t gpio_mask, uint32_t high_mask) {
-  return UpdateGpioRegisterBlock(
-      Register::kGpioDataOut1, gpio_mask, high_mask);
+  return UpdateGpioRegisterBlock(Register::kGpioDataOut1, gpio_mask, high_mask);
 }
 
 bool Tca8418::GetGpioOutputMask(uint32_t* high_mask) {
@@ -453,16 +447,15 @@ bool Tca8418::SetGpioInterruptEnable(Gpio gpio, bool enable) {
 }
 
 bool Tca8418::SetGpioInterruptEnableMask(uint32_t gpio_mask, bool enable) {
-  return UpdateGpioRegisterBlock(Register::kGpioInterruptEnable1, gpio_mask,
-      enable ? gpio_mask : 0);
+  return UpdateGpioRegisterBlock(
+      Register::kGpioInterruptEnable1, gpio_mask, enable ? gpio_mask : 0);
 }
 
 bool Tca8418::GetGpioInterruptEnableMask(uint32_t* enable_mask) {
   return ReadGpioRegisterBlock(Register::kGpioInterruptEnable1, enable_mask);
 }
 
-bool Tca8418::SetGpioInterruptTrigger(
-    Gpio gpio, GpioInterruptTrigger trigger) {
+bool Tca8418::SetGpioInterruptTrigger(Gpio gpio, GpioInterruptTrigger trigger) {
   if (!IsValidGpio(gpio)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;

@@ -2,7 +2,7 @@
  * @Description: 跨平台硬件 SPI 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-06-01 15:00:41
+ * @LastEditTime: 2026-08-03 16:10:48
  * @License: GPL 3.0
  */
 #pragma once
@@ -13,8 +13,7 @@ namespace cpp_bus_driver {
 class HardwareSpi final : public BusSpiGuide {
  public:
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  explicit HardwareSpi(int32_t mosi, int32_t sclk,
-      int32_t miso = kDefaultValue,
+  explicit HardwareSpi(int32_t mosi, int32_t sclk, int32_t miso = kDefaultValue,
       spi_host_device_t port = SPI2_HOST, uint8_t mode = 0,
       uint32_t flags = kDefaultValue,
       spi_clock_source_t clock_source = SPI_CLK_SRC_DEFAULT)
@@ -37,8 +36,7 @@ class HardwareSpi final : public BusSpiGuide {
         clock_source_(clock_source),
         shared_bus_provider_(bus) {}
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  HardwareSpi(int32_t mosi, int32_t sclk,
-      int32_t miso = kDefaultValue,
+  HardwareSpi(int32_t mosi, int32_t sclk, int32_t miso = kDefaultValue,
       NRF_SPIM_Type* port = NRF_SPIM3, uint8_t mode = 0,
       BitOrder bit_order = MSBFIRST)
       : mosi_(mosi),
@@ -49,8 +47,8 @@ class HardwareSpi final : public BusSpiGuide {
         bit_order_(bit_order) {}
 #endif
 
-  bool Init(int32_t freq_hz = kDefaultValue,
-      int32_t cs = kDefaultValue) override;
+  bool Init(
+      int32_t freq_hz = kDefaultValue, int32_t cs = kDefaultValue) override;
   bool Write(const void* data, size_t byte) override;
   bool Read(void* data, size_t byte) override;
   bool WriteRead(

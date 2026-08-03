@@ -2,7 +2,7 @@
  * @Description: 跨平台硬件 SPI 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-07-13 17:07:45
+ * @LastEditTime: 2026-08-03 16:10:47
  * @License: GPL 3.0
  */
 #include "hardware_spi.h"
@@ -12,8 +12,8 @@ namespace cpp_bus_driver {
 bool HardwareSpi::InitBus() {
   if (shared_bus_provider_ != nullptr) {
     if (!shared_bus_provider_->InitBus()) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "Init shared spi bus failed\n");
+      LogMessage(
+          LogLevel::kError, __FILE__, __LINE__, "Init shared spi bus failed\n");
       return false;
     }
     bus_init_state_.store(BusInitState::kReady);

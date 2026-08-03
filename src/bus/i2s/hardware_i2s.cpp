@@ -2,7 +2,7 @@
  * @Description: 跨平台硬件 I2S 音频总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-07-01 12:01:57
+ * @LastEditTime: 2026-08-03 16:10:34
  * @License: GPL 3.0
  */
 #include "hardware_i2s.h"
@@ -65,8 +65,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "HardwareI2s config data_out_: %d\n", data_out_);
 
-    esp_err_t result =
-        i2s_new_channel(&chan_config, &tx_handle_, &rx_handle_);
+    esp_err_t result = i2s_new_channel(&chan_config, &tx_handle_, &rx_handle_);
     if (result != ESP_OK) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "i2s_new_channel failed (error code: %#X)\n", result);
@@ -470,8 +469,8 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
 
 size_t HardwareI2s::Read(void* data, size_t byte) {
   size_t buffer = 0;
-  esp_err_t result = i2s_channel_read(rx_handle_, data, byte, &buffer,
-      kDefaultI2sWaitTimeoutMs);
+  esp_err_t result = i2s_channel_read(
+      rx_handle_, data, byte, &buffer, kDefaultI2sWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "i2s_channel_read failed (error code: %#X)\n", result);
@@ -483,8 +482,8 @@ size_t HardwareI2s::Read(void* data, size_t byte) {
 
 size_t HardwareI2s::Write(const void* data, size_t byte) {
   size_t buffer = 0;
-  esp_err_t result = i2s_channel_write(tx_handle_, data, byte, &buffer,
-      kDefaultI2sWaitTimeoutMs);
+  esp_err_t result = i2s_channel_write(
+      tx_handle_, data, byte, &buffer, kDefaultI2sWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "i2s_channel_write failed (error code: %#X)\n", result);
@@ -531,8 +530,8 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
                 .bclk_div = 8,
             };
 
-            esp_err_t result = i2s_channel_reconfig_pdm_rx_clock(
-                rx_handle_, &rx_clk_config);
+            esp_err_t result =
+                i2s_channel_reconfig_pdm_rx_clock(rx_handle_, &rx_clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kError, __FILE__, __LINE__,
                   "i2s_channel_reconfig_pdm_rx_clock failed (error code: "
@@ -582,8 +581,8 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
                 .bclk_div = 8,
             };
 
-            esp_err_t result = i2s_channel_reconfig_pdm_tx_clock(
-                tx_handle_, &tx_clk_config);
+            esp_err_t result =
+                i2s_channel_reconfig_pdm_tx_clock(tx_handle_, &tx_clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kError, __FILE__, __LINE__,
                   "i2s_channel_reconfig_pdm_tx_clock failed (error code: "
@@ -621,8 +620,7 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
               return false;
             }
 
-            result =
-                i2s_channel_reconfig_std_clock(rx_handle_, &clk_config);
+            result = i2s_channel_reconfig_std_clock(rx_handle_, &clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kError, __FILE__, __LINE__,
                   "i2s_channel_reconfig_std_clock failed (error code: %#X)\n",
@@ -650,8 +648,8 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
                 .bclk_div = 8,
             };
 
-            esp_err_t result = i2s_channel_reconfig_pdm_rx_clock(
-                rx_handle_, &rx_clk_config);
+            esp_err_t result =
+                i2s_channel_reconfig_pdm_rx_clock(rx_handle_, &rx_clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kError, __FILE__, __LINE__,
                   "i2s_channel_reconfig_pdm_rx_clock failed (error code: "
@@ -660,8 +658,8 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
               return false;
             }
 
-            result = i2s_channel_reconfig_pdm_tx_clock(
-                tx_handle_, &tx_clk_config);
+            result =
+                i2s_channel_reconfig_pdm_tx_clock(tx_handle_, &tx_clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kError, __FILE__, __LINE__,
                   "i2s_channel_reconfig_pdm_tx_clock failed (error code: "
@@ -733,8 +731,8 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
                 .bclk_div = 8,
             };
 
-            esp_err_t result = i2s_channel_reconfig_pdm_rx_clock(
-                rx_handle_, &rx_clk_config);
+            esp_err_t result =
+                i2s_channel_reconfig_pdm_rx_clock(rx_handle_, &rx_clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kError, __FILE__, __LINE__,
                   "i2s_channel_reconfig_pdm_rx_clock failed (error code: "
@@ -755,8 +753,8 @@ bool HardwareI2s::SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
                 .bclk_div = 8,
             };
 
-            esp_err_t result = i2s_channel_reconfig_pdm_tx_clock(
-                tx_handle_, &tx_clk_config);
+            esp_err_t result =
+                i2s_channel_reconfig_pdm_tx_clock(tx_handle_, &tx_clk_config);
             if (result != ESP_OK) {
               LogMessage(LogLevel::kError, __FILE__, __LINE__,
                   "i2s_channel_reconfig_pdm_tx_clock failed (error code: "

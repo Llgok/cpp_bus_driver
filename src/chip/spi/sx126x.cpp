@@ -2,7 +2,7 @@
  * @Description: Semtech SX1261/SX1262 无线收发芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-07-15 16:30:00
+ * @LastEditTime: 2026-08-03 16:11:59
  * @License: GPL 3.0
  */
 #include "sx126x.h"
@@ -268,10 +268,8 @@ bool Sx126x::SetStandby(StdbyConfig config) {
 }
 
 bool Sx126x::SetDio3AsTcxoCtrl(Dio3TcxoVoltage voltage, uint32_t time_out_us) {
-  if ((static_cast<uint8_t>(voltage) > 7) ||
-      (time_out_us > 262143984U)) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Value out of range\n");
+  if ((static_cast<uint8_t>(voltage) > 7) || (time_out_us > 262143984U)) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
   const uint32_t timeout = MicrosecondsToRtcStep(time_out_us);
@@ -346,8 +344,8 @@ bool Sx126x::SetPacketType(PacketType type) {
 
 bool Sx126x::SetRxTxFallbackMode(FallbackMode mode) {
   const uint8_t buffer = static_cast<uint8_t>(mode);
-  if ((mode != FallbackMode::kStdbyRc) &&
-      (mode != FallbackMode::kStdbyXosc) && (mode != FallbackMode::kFs)) {
+  if ((mode != FallbackMode::kStdbyRc) && (mode != FallbackMode::kStdbyXosc) &&
+      (mode != FallbackMode::kFs)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
@@ -363,8 +361,7 @@ bool Sx126x::SetCadParams(CadSymbolNum num, uint8_t cad_det_peak,
     uint8_t cad_det_min, CadExitMode exit_mode, uint32_t time_out_us) {
   const uint8_t symbol_count = static_cast<uint8_t>(num);
   const uint8_t exit = static_cast<uint8_t>(exit_mode);
-  if ((symbol_count > 4) ||
-      ((exit != 0) && (exit != 1) && (exit != 0x10)) ||
+  if ((symbol_count > 4) || ((exit != 0) && (exit != 1) && (exit != 0x10)) ||
       (time_out_us > 262143984U)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
@@ -488,12 +485,10 @@ bool Sx126x::SetCurrentLimit(float current) {
     return false;
   }
   if (current < 0.0) {
-      LogMessage(
-          LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     current = 0.0;
   } else if (current > 157.5) {
-      LogMessage(
-          LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     current = 157.5;
   }
 
@@ -539,13 +534,11 @@ bool Sx126x::SetDio2AsRfSwitchCtrl(Dio2Mode mode) {
 
 bool Sx126x::SetPaConfig(uint8_t pa_duty_cycle, uint8_t hp_max) {
   const uint8_t max_duty_cycle =
-      ((chip_type_ == ChipType::kSx1261) && (param_.freq_mhz >= 400.0))
-          ? 0x07
-          : 0x04;
+      ((chip_type_ == ChipType::kSx1261) && (param_.freq_mhz >= 400.0)) ? 0x07
+                                                                        : 0x04;
   if ((pa_duty_cycle > max_duty_cycle) || (hp_max > 0x07) ||
       ((chip_type_ == ChipType::kSx1261) && (hp_max != 0))) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -569,8 +562,7 @@ bool Sx126x::SetTxParams(int8_t power, RampTime ramp_time) {
   const int8_t max_power = (chip_type_ == ChipType::kSx1261) ? 14 : 22;
   if ((power < min_power) || (power > max_power) ||
       (static_cast<uint8_t>(ramp_time) > 7)) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -655,9 +647,8 @@ bool Sx126x::FixLoraInvertedIq(InvertIq iq) {
 bool Sx126x::SetLoraModulationParams(Sf sf, LoraBw bw, Cr cr, Ldro ldro) {
   const uint8_t sf_value = static_cast<uint8_t>(sf);
   const uint8_t cr_value = static_cast<uint8_t>(cr);
-  if ((sf_value < 5) || (sf_value > 12) ||
-      (GetLoraBandwidthHz(bw) <= 0.0f) || (cr_value < 1) ||
-      (cr_value > 4) || (static_cast<uint8_t>(ldro) > 1)) {
+  if ((sf_value < 5) || (sf_value > 12) || (GetLoraBandwidthHz(bw) <= 0.0f) ||
+      (cr_value < 1) || (cr_value > 4) || (static_cast<uint8_t>(ldro) > 1)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
@@ -685,10 +676,8 @@ bool Sx126x::SetLoraModulationParams(Sf sf, LoraBw bw, Cr cr, Ldro ldro) {
 bool Sx126x::SetLoraPacketParams(uint16_t preamble_length,
     LoraHeaderType header_type, uint8_t payload_length, LoraCrcType crc_type,
     InvertIq iq) {
-  if ((preamble_length == 0) ||
-      (static_cast<uint8_t>(header_type) > 1) ||
-      (static_cast<uint8_t>(crc_type) > 1) ||
-      (static_cast<uint8_t>(iq) > 1)) {
+  if ((preamble_length == 0) || (static_cast<uint8_t>(header_type) > 1) ||
+      (static_cast<uint8_t>(crc_type) > 1) || (static_cast<uint8_t>(iq) > 1)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
@@ -830,10 +819,8 @@ bool Sx126x::CalibrateImage(uint16_t start_freq_mhz, uint16_t end_freq_mhz) {
 }
 
 bool Sx126x::SetRfFrequency(double freq_mhz) {
-  if (!std::isfinite(freq_mhz) || (freq_mhz < 150.0) ||
-      (freq_mhz > 960.0)) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Value out of range\n");
+  if (!std::isfinite(freq_mhz) || (freq_mhz < 150.0) || (freq_mhz > 960.0)) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -1077,27 +1064,26 @@ bool Sx126x::Configure(const LoraConfig& config) {
   }
 
   if (!StopTimerOnPreamble(config.stop_timer_on_preamble)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "StopTimerOnPreamble failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "StopTimerOnPreamble failed\n");
     return false;
   }
   if (!SetLoraSymbolTimeout(config.symbol_timeout)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SetLoraSymbolTimeout failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SetLoraSymbolTimeout failed\n");
     return false;
   }
 
   if (config.configure_cad &&
       !SetCadParams(config.cad_symbol_num, config.cad_det_peak,
-          config.cad_det_min, config.cad_exit_mode,
-          config.cad_timeout_us)) {
+          config.cad_det_min, config.cad_exit_mode, config.cad_timeout_us)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetCadParams failed\n");
     return false;
   }
 
   // 根据实际符号时间自动配置LDRO，并恢复离开GFSK时的修正寄存器
-  const Ldro ldro = GetLoraLowDataRateOptimize(
-      config.spreading_factor, config.bandwidth);
+  const Ldro ldro =
+      GetLoraLowDataRateOptimize(config.spreading_factor, config.bandwidth);
   if (!ResetGfskLowRateWorkaround()) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ResetGfskLowRateWorkaround failed\n");
@@ -1112,8 +1098,8 @@ bool Sx126x::Configure(const LoraConfig& config) {
 
   // 设置同步字
   if (!SetLoraSyncWord(config.sync_word)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SetLoraSyncWord failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SetLoraSyncWord failed\n");
     return false;
   }
 
@@ -1127,8 +1113,8 @@ bool Sx126x::Configure(const LoraConfig& config) {
 
   // 设置电流限制
   if (!SetCurrentLimit(config.current_limit)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SetCurrentLimit failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SetCurrentLimit failed\n");
     return false;
   }
 
@@ -1306,8 +1292,8 @@ bool Sx126x::GetReceiveStatus(ReceiveStatus& status) {
 
   if ((status.packet_type == PacketType::kGfsk) && status.done) {
     if (!GetGfskPacketStatus(status.gfsk_packet_status_raw)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "GetGfskPacketStatus failed\n");
+      LogMessage(
+          LogLevel::kError, __FILE__, __LINE__, "GetGfskPacketStatus failed\n");
       return false;
     }
     status.gfsk_packet_status =
@@ -1606,8 +1592,8 @@ bool Sx126x::StartTransmit(const uint8_t* data, size_t length,
     uint32_t timeout_us, FallbackMode fallback_mode) {
   if (!initialized_ || sleeping_ || !configured_ || (data == nullptr) ||
       (length == 0) || (length > kMaxPayloadSize)) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Invalid state/argument\n");
+    LogMessage(
+        LogLevel::kWarning, __FILE__, __LINE__, "Invalid state/argument\n");
     return false;
   }
   if (!SetRxTxFallbackMode(fallback_mode)) {
@@ -1624,8 +1610,7 @@ bool Sx126x::StartTransmit(const uint8_t* data, size_t length,
         if (!SetGfskPacketParams(param_.gfsk.preamble_length,
                 param_.gfsk.preamble_detector, param_.gfsk.sync_word.length * 8,
                 param_.gfsk.address_comparison, param_.gfsk.header_type,
-                payload_length,
-                param_.gfsk.crc.type, param_.gfsk.whitening)) {
+                payload_length, param_.gfsk.crc.type, param_.gfsk.whitening)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
               "SetGfskPacketParams failed\n");
           return false;
@@ -1637,8 +1622,7 @@ bool Sx126x::StartTransmit(const uint8_t* data, size_t length,
       if (param_.lora.payload_length != payload_length) {
         // 重新设置长度
         if (!SetLoraPacketParams(param_.lora.preamble_length,
-                param_.lora.header_type, payload_length,
-                param_.lora.crc_type,
+                param_.lora.header_type, payload_length, param_.lora.crc_type,
                 param_.lora.invert_iq)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
               "SetLoraPacketParams failed\n");
@@ -1674,10 +1658,9 @@ bool Sx126x::StartTransmit(const uint8_t* data, size_t length,
     }
   }
 
-  const uint16_t irq_mask = IrqMask(IrqMaskFlag::kTxDone) |
-                            IrqMask(IrqMaskFlag::kTimeout);
-  if (!SetIrqGpioMode(irq_mask) ||
-      !ClearIrqFlag(IrqMaskFlag::kAll)) {
+  const uint16_t irq_mask =
+      IrqMask(IrqMaskFlag::kTxDone) | IrqMask(IrqMaskFlag::kTimeout);
+  if (!SetIrqGpioMode(irq_mask) || !ClearIrqFlag(IrqMaskFlag::kAll)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "IRQ setup failed\n");
     return false;
   }
@@ -1705,9 +1688,8 @@ bool Sx126x::SetLoraCrcPacketParams(LoraCrcType crc_type) {
 bool Sx126x::SetGfskModulationParams(
     double br, PulseShape ps, GfskBw bw, double freq_deviation_khz) {
   const uint8_t pulse_shape = static_cast<uint8_t>(ps);
-  const bool valid_pulse_shape = (pulse_shape == 0) ||
-                                 ((pulse_shape >= 0x08) &&
-                                     (pulse_shape <= 0x0B));
+  const bool valid_pulse_shape =
+      (pulse_shape == 0) || ((pulse_shape >= 0x08) && (pulse_shape <= 0x0B));
   if (!std::isfinite(br) || !std::isfinite(freq_deviation_khz) ||
       !valid_pulse_shape || (GetGfskBandwidthKhz(bw) <= 0.0f)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
@@ -1833,8 +1815,7 @@ bool Sx126x::SetGfskPacketParams(uint16_t preamble_length,
       detector_bits = 32;
       break;
     default:
-      LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-          "Invalid argument\n");
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
       return false;
   }
 
@@ -1905,8 +1886,7 @@ bool Sx126x::SetGfskCrc(uint16_t initial, uint16_t polynomial) {
 
 bool Sx126x::SetGfskWhiteningSeed(uint16_t seed) {
   if (seed > 0x01FF) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -1971,8 +1951,8 @@ bool Sx126x::Configure(const GfskConfig& config) {
     return false;
   }
   if (!StopTimerOnPreamble(config.stop_timer_on_preamble)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "StopTimerOnPreamble failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "StopTimerOnPreamble failed\n");
     return false;
   }
 
@@ -1990,8 +1970,8 @@ bool Sx126x::Configure(const GfskConfig& config) {
   }
 
   if (!SetGfskSyncWord(config.sync_word.data(), sync_word_length)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SetGfskSyncWord failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SetGfskSyncWord failed\n");
     return false;
   }
 
@@ -2016,8 +1996,8 @@ bool Sx126x::Configure(const GfskConfig& config) {
   // 设置包的参数
   if (!SetGfskPacketParams(config.preamble_length,
           param_.gfsk.preamble_detector, sync_word_length * 8,
-          config.address_comparison, config.header_type,
-          config.payload_length, config.crc_type, config.whitening)) {
+          config.address_comparison, config.header_type, config.payload_length,
+          config.crc_type, config.whitening)) {
     LogMessage(
         LogLevel::kError, __FILE__, __LINE__, "SetGfskPacketParams failed\n");
     return false;
@@ -2043,8 +2023,8 @@ bool Sx126x::Configure(const GfskConfig& config) {
 
   // 设置电流限制
   if (!SetCurrentLimit(config.current_limit)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SetCurrentLimit failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SetCurrentLimit failed\n");
     return false;
   }
 
@@ -2080,8 +2060,7 @@ bool Sx126x::Configure(const GfskConfig& config) {
   return true;
 }
 
-bool Sx126x::StartReceive(
-    uint32_t timeout_us, FallbackMode fallback_mode) {
+bool Sx126x::StartReceive(uint32_t timeout_us, FallbackMode fallback_mode) {
   if (!initialized_ || sleeping_ || !configured_) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid state\n");
     return false;
@@ -2093,8 +2072,7 @@ bool Sx126x::StartReceive(
   if (param_.packet_type == PacketType::kLora) {
     irq_mask |= IrqMask(IrqMaskFlag::kHeaderError);
   }
-  if (!SetIrqGpioMode(irq_mask) ||
-      !ClearIrqFlag(IrqMaskFlag::kAll)) {
+  if (!SetIrqGpioMode(irq_mask) || !ClearIrqFlag(IrqMaskFlag::kAll)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "IRQ setup failed\n");
     return false;
   }
@@ -2124,8 +2102,7 @@ bool Sx126x::StartGfsk(ChipMode chip_mode, uint32_t timeout_us,
 
   PreambleDetector preamble_detector = param_.gfsk.preamble_detector;
   const PreambleDetector max_preamble_detector =
-      GetGfskMaxPreambleDetector(
-          preamble_length, param_.gfsk.sync_word.length);
+      GetGfskMaxPreambleDetector(preamble_length, param_.gfsk.sync_word.length);
   if (static_cast<uint8_t>(preamble_detector) >
       static_cast<uint8_t>(max_preamble_detector)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
@@ -2181,8 +2158,7 @@ bool Sx126x::GetGfskPacketStatus(uint32_t& status) {
   return true;
 }
 
-Sx126x::GfskPacketStatus Sx126x::ParseGfskPacketStatus(
-    uint32_t parse_status) {
+Sx126x::GfskPacketStatus Sx126x::ParseGfskPacketStatus(uint32_t parse_status) {
   GfskPacketStatus status;
   parse_status >>= 16;
 
@@ -2196,8 +2172,7 @@ Sx126x::GfskPacketStatus Sx126x::ParseGfskPacketStatus(
   return status;
 }
 
-Sx126x::PacketMetrics Sx126x::ParseGfskPacketMetrics(
-    uint32_t parse_metrics) {
+Sx126x::PacketMetrics Sx126x::ParseGfskPacketMetrics(uint32_t parse_metrics) {
   PacketMetrics metrics;
   const uint8_t buffer[2] = {
       static_cast<uint8_t>(
@@ -2220,15 +2195,14 @@ bool Sx126x::SetGfskSyncWordPacketParams(
   }
   // 设置同步字（有效同步字长度会在GFSK包参数中同步更新）
   if (!SetGfskSyncWord(sync_word, sync_word_length)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SetGfskSyncWord failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SetGfskSyncWord failed\n");
     return false;
   }
 
   PreambleDetector preamble_detector = param_.gfsk.preamble_detector;
   const PreambleDetector max_preamble_detector =
-      GetGfskMaxPreambleDetector(
-          param_.gfsk.preamble_length, sync_word_length);
+      GetGfskMaxPreambleDetector(param_.gfsk.preamble_length, sync_word_length);
   if (static_cast<uint8_t>(preamble_detector) >
       static_cast<uint8_t>(max_preamble_detector)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
@@ -2246,8 +2220,7 @@ bool Sx126x::SetGfskSyncWordPacketParams(
   }
   param_.gfsk.sync_word.data = {};
   if (sync_word_length > 0) {
-    std::memcpy(
-        param_.gfsk.sync_word.data.data(), sync_word, sync_word_length);
+    std::memcpy(param_.gfsk.sync_word.data.data(), sync_word, sync_word_length);
   }
   param_.gfsk.sync_word.length = sync_word_length;
 
@@ -2296,8 +2269,8 @@ bool Sx126x::SetIrqGpioMode(uint16_t dio1_mask, uint16_t dio2_mask,
   }
 
   if (!SetDioIrqParams(irq_mask, dio1_mask, dio2_mask, dio3_mask)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SetDioIrqParams failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SetDioIrqParams failed\n");
     return false;
   }
 
@@ -2333,8 +2306,8 @@ bool Sx126x::SetSleep(SleepMode mode) {
     return false;
   }
   const uint8_t mode_value = static_cast<uint8_t>(mode);
-  if ((mode_value != 0x00) && (mode_value != 0x01) &&
-      (mode_value != 0x04) && (mode_value != 0x05)) {
+  if ((mode_value != 0x00) && (mode_value != 0x01) && (mode_value != 0x04) &&
+      (mode_value != 0x05)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
@@ -2385,8 +2358,7 @@ bool Sx126x::Wakeup() {
     return false;
   }
 
-  const bool cold_start =
-      (static_cast<uint8_t>(sleep_mode_) & 0x04) == 0;
+  const bool cold_start = (static_cast<uint8_t>(sleep_mode_) & 0x04) == 0;
   if (cold_start) {
     gfsk_low_rate_workaround_active_ = false;
     image_calibration_start_mhz_ = 902;
@@ -2396,8 +2368,8 @@ bool Sx126x::Wakeup() {
     }
   } else {
     if (hardware_config_.enable_retention_list && !InitRetentionList()) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "InitRetentionList failed\n");
+      LogMessage(
+          LogLevel::kError, __FILE__, __LINE__, "InitRetentionList failed\n");
       return false;
     }
     if (!ApplyWorkaroundsAfterWakeup()) {
@@ -2673,24 +2645,21 @@ Sx126x::PreambleDetector Sx126x::GetGfskMaxPreambleDetector(
 
   return (static_cast<uint8_t>(preamble_limit) <
              static_cast<uint8_t>(sync_word_limit))
-      ? preamble_limit
-      : sync_word_limit;
+             ? preamble_limit
+             : sync_word_limit;
 }
 
 bool Sx126x::ValidateHardwareConfig() const {
-  const uint8_t tcxo =
-      static_cast<uint8_t>(hardware_config_.tcxo_voltage);
+  const uint8_t tcxo = static_cast<uint8_t>(hardware_config_.tcxo_voltage);
   const uint8_t regulator =
       static_cast<uint8_t>(hardware_config_.regulator_mode);
   const uint8_t dio2 = static_cast<uint8_t>(hardware_config_.dio2_mode);
-  const bool has_busy_source =
-      (busy_ >= 0) || (busy_wait_callback_ != nullptr);
-  const bool valid_optional_pins =
-      ((busy_ == kDefaultValue) || (busy_ >= 0)) &&
-      ((rst_ == kDefaultValue) || (rst_ >= 0)) &&
-      ((cs_ == kDefaultValue) || (cs_ >= 0));
-  const bool valid_chip = (chip_type_ == ChipType::kSx1261) ||
-                          (chip_type_ == ChipType::kSx1262);
+  const bool has_busy_source = (busy_ >= 0) || (busy_wait_callback_ != nullptr);
+  const bool valid_optional_pins = ((busy_ == kDefaultValue) || (busy_ >= 0)) &&
+                                   ((rst_ == kDefaultValue) || (rst_ >= 0)) &&
+                                   ((cs_ == kDefaultValue) || (cs_ >= 0));
+  const bool valid_chip =
+      (chip_type_ == ChipType::kSx1261) || (chip_type_ == ChipType::kSx1262);
 
   return valid_chip && has_busy_source && valid_optional_pins && (tcxo <= 7) &&
          (regulator <= 1) && (dio2 <= 1) &&
@@ -2700,18 +2669,15 @@ bool Sx126x::ValidateHardwareConfig() const {
 }
 
 bool Sx126x::ValidateConfig(const LoraConfig& config) {
-  const int8_t min_power =
-      (chip_type_ == ChipType::kSx1261) ? -17 : -9;
-  const int8_t max_power =
-      (chip_type_ == ChipType::kSx1261) ? 14 : 22;
+  const int8_t min_power = (chip_type_ == ChipType::kSx1261) ? -17 : -9;
+  const int8_t max_power = (chip_type_ == ChipType::kSx1261) ? 14 : 22;
   const uint8_t sf = static_cast<uint8_t>(config.spreading_factor);
   const uint8_t cr = static_cast<uint8_t>(config.coding_rate);
   const uint8_t header = static_cast<uint8_t>(config.header_type);
   const uint8_t crc = static_cast<uint8_t>(config.crc_type);
   const uint8_t iq = static_cast<uint8_t>(config.invert_iq);
   const uint8_t ramp = static_cast<uint8_t>(config.ramp_time);
-  const uint8_t cad_symbols =
-      static_cast<uint8_t>(config.cad_symbol_num);
+  const uint8_t cad_symbols = static_cast<uint8_t>(config.cad_symbol_num);
   const uint8_t cad_exit = static_cast<uint8_t>(config.cad_exit_mode);
   const bool valid_cad_exit =
       (cad_exit == 0) || (cad_exit == 1) || (cad_exit == 0x10);
@@ -2723,32 +2689,27 @@ bool Sx126x::ValidateConfig(const LoraConfig& config) {
                          double actual, const char* expected) {
     if (!condition) {
       LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-          "Invalid LoRa config: %s=%g, expected %s\n", name, actual,
-          expected);
+          "Invalid LoRa config: %s=%g, expected %s\n", name, actual, expected);
       valid = false;
     }
   };
 
   check(std::isfinite(config.frequency_mhz) &&
-          (config.frequency_mhz >= 150.0) &&
-          (config.frequency_mhz <= 960.0),
+            (config.frequency_mhz >= 150.0) && (config.frequency_mhz <= 960.0),
       "frequency_mhz", config.frequency_mhz, "finite value in [150, 960]");
-  check(std::isfinite(config.current_limit) &&
-          (config.current_limit >= 0.0f) &&
-          (config.current_limit <= 157.5f),
-      "current_limit_ma", config.current_limit,
-      "finite value in [0, 157.5]");
-  check((config.power >= min_power) && (config.power <= max_power),
-      "power_dbm", config.power, power_range);
+  check(std::isfinite(config.current_limit) && (config.current_limit >= 0.0f) &&
+            (config.current_limit <= 157.5f),
+      "current_limit_ma", config.current_limit, "finite value in [0, 157.5]");
+  check((config.power >= min_power) && (config.power <= max_power), "power_dbm",
+      config.power, power_range);
   check((sf >= 5) && (sf <= 12), "spreading_factor", sf, "[5, 12]");
-  check(GetLoraBandwidthHz(config.bandwidth) > 0.0f,
-      "bandwidth", static_cast<uint8_t>(config.bandwidth),
-      "a supported enum value");
+  check(GetLoraBandwidthHz(config.bandwidth) > 0.0f, "bandwidth",
+      static_cast<uint8_t>(config.bandwidth), "a supported enum value");
   check((cr >= 1) && (cr <= 4), "coding_rate", cr, "[1, 4]");
-  check(config.preamble_length > 0, "preamble_length",
-      config.preamble_length, "> 0");
-  check(config.symbol_timeout <= 248, "symbol_timeout",
-      config.symbol_timeout, "<= 248");
+  check(config.preamble_length > 0, "preamble_length", config.preamble_length,
+      "> 0");
+  check(config.symbol_timeout <= 248, "symbol_timeout", config.symbol_timeout,
+      "<= 248");
   check(header <= 1, "header_type", header, "[0, 1]");
   check(crc <= 1, "crc_type", crc, "[0, 1]");
   check(iq <= 1, "invert_iq", iq, "[0, 1]");
@@ -2756,17 +2717,15 @@ bool Sx126x::ValidateConfig(const LoraConfig& config) {
   if (config.configure_cad) {
     check(cad_symbols <= 4, "cad_symbol_num", cad_symbols, "[0, 4]");
     check(valid_cad_exit, "cad_exit_mode", cad_exit, "0, 1, or 16");
-    check(config.cad_timeout_us <= 262143984U,
-        "cad_timeout_us", config.cad_timeout_us, "<= 262143984");
+    check(config.cad_timeout_us <= 262143984U, "cad_timeout_us",
+        config.cad_timeout_us, "<= 262143984");
   }
   return valid;
 }
 
 bool Sx126x::ValidateConfig(const GfskConfig& config) {
-  const int8_t min_power =
-      (chip_type_ == ChipType::kSx1261) ? -17 : -9;
-  const int8_t max_power =
-      (chip_type_ == ChipType::kSx1261) ? 14 : 22;
+  const int8_t min_power = (chip_type_ == ChipType::kSx1261) ? -17 : -9;
+  const int8_t max_power = (chip_type_ == ChipType::kSx1261) ? 14 : 22;
   const float bandwidth_khz = GetGfskBandwidthKhz(config.bandwidth);
   uint8_t detector_bits = 0;
   bool valid_detector = true;
@@ -2791,86 +2750,74 @@ bool Sx126x::ValidateConfig(const GfskConfig& config) {
   }
 
   const uint8_t pulse_shape = static_cast<uint8_t>(config.pulse_shape);
-  const bool valid_pulse_shape = (pulse_shape == 0) ||
-                                 ((pulse_shape >= 0x08) &&
-                                     (pulse_shape <= 0x0B));
+  const bool valid_pulse_shape =
+      (pulse_shape == 0) || ((pulse_shape >= 0x08) && (pulse_shape <= 0x0B));
   const uint8_t crc = static_cast<uint8_t>(config.crc_type);
   const bool valid_crc = (crc <= 2) || (crc == 4) || (crc == 6);
   const uint8_t header = static_cast<uint8_t>(config.header_type);
-  const uint8_t address =
-      static_cast<uint8_t>(config.address_comparison);
+  const uint8_t address = static_cast<uint8_t>(config.address_comparison);
   const uint8_t whitening = static_cast<uint8_t>(config.whitening);
   const uint8_t ramp = static_cast<uint8_t>(config.ramp_time);
   const char* power_range =
       (chip_type_ == ChipType::kSx1261) ? "[-17, 14]" : "[-9, 22]";
   const double required_bandwidth = config.bit_rate_kbps +
-                                     (2.0 * config.frequency_deviation_khz) +
-                                     config.frequency_error_khz;
+                                    (2.0 * config.frequency_deviation_khz) +
+                                    config.frequency_error_khz;
   const uint16_t sync_word_bits =
       static_cast<uint16_t>(config.sync_word_length) * 8U;
   const double modulation_index =
       (config.bit_rate_kbps > 0.0)
-      ? ((2.0 * config.frequency_deviation_khz) / config.bit_rate_kbps)
-      : 0.0;
+          ? ((2.0 * config.frequency_deviation_khz) / config.bit_rate_kbps)
+          : 0.0;
 
   bool valid = true;
   const auto check = [this, &valid](bool condition, const char* name,
                          double actual, const char* expected) {
     if (!condition) {
       LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-          "Invalid GFSK config: %s=%g, expected %s\n", name, actual,
-          expected);
+          "Invalid GFSK config: %s=%g, expected %s\n", name, actual, expected);
       valid = false;
     }
   };
 
   check(std::isfinite(config.frequency_mhz) &&
-          (config.frequency_mhz >= 150.0) &&
-          (config.frequency_mhz <= 960.0),
+            (config.frequency_mhz >= 150.0) && (config.frequency_mhz <= 960.0),
       "frequency_mhz", config.frequency_mhz, "finite value in [150, 960]");
-  check(std::isfinite(config.current_limit) &&
-          (config.current_limit >= 0.0f) &&
-          (config.current_limit <= 157.5f),
-      "current_limit_ma", config.current_limit,
-      "finite value in [0, 157.5]");
-  check((config.power >= min_power) && (config.power <= max_power),
-      "power_dbm", config.power, power_range);
-  check(std::isfinite(config.bit_rate_kbps) &&
-          (config.bit_rate_kbps >= 0.6) &&
-          (config.bit_rate_kbps <= 300.0),
-      "bit_rate_kbps", config.bit_rate_kbps,
-      "finite value in [0.6, 300]");
+  check(std::isfinite(config.current_limit) && (config.current_limit >= 0.0f) &&
+            (config.current_limit <= 157.5f),
+      "current_limit_ma", config.current_limit, "finite value in [0, 157.5]");
+  check((config.power >= min_power) && (config.power <= max_power), "power_dbm",
+      config.power, power_range);
+  check(std::isfinite(config.bit_rate_kbps) && (config.bit_rate_kbps >= 0.6) &&
+            (config.bit_rate_kbps <= 300.0),
+      "bit_rate_kbps", config.bit_rate_kbps, "finite value in [0.6, 300]");
   check(std::isfinite(config.frequency_deviation_khz) &&
-          (config.frequency_deviation_khz >= 0.6) &&
-          (config.frequency_deviation_khz <= 200.0),
+            (config.frequency_deviation_khz >= 0.6) &&
+            (config.frequency_deviation_khz <= 200.0),
       "frequency_deviation_khz", config.frequency_deviation_khz,
       "finite value in [0.6, 200]");
-  check((config.frequency_deviation_khz +
-            (config.bit_rate_kbps / 2.0)) <= 250.0,
+  check(
+      (config.frequency_deviation_khz + (config.bit_rate_kbps / 2.0)) <= 250.0,
       "deviation_plus_half_bit_rate_khz",
-      config.frequency_deviation_khz + (config.bit_rate_kbps / 2.0),
-      "<= 250");
+      config.frequency_deviation_khz + (config.bit_rate_kbps / 2.0), "<= 250");
   check(std::isfinite(modulation_index) && (modulation_index >= 0.5),
       "modulation_index", modulation_index, ">= 0.5");
   check(std::isfinite(config.frequency_error_khz) &&
-          (config.frequency_error_khz >= 0.0),
-      "frequency_error_khz", config.frequency_error_khz,
-      "finite value >= 0");
+            (config.frequency_error_khz >= 0.0),
+      "frequency_error_khz", config.frequency_error_khz, "finite value >= 0");
   check((bandwidth_khz > 0.0f) && std::isfinite(required_bandwidth) &&
-          (bandwidth_khz >= required_bandwidth),
+            (bandwidth_khz >= required_bandwidth),
       "bandwidth_margin_khz", bandwidth_khz - required_bandwidth, ">= 0");
-  check(config.sync_word_length <= config.sync_word.size(),
-      "sync_word_length", config.sync_word_length,
-      "<= sync_word buffer size (8)");
-  check(config.preamble_length > 0, "preamble_length",
-      config.preamble_length, "> 0");
+  check(config.sync_word_length <= config.sync_word.size(), "sync_word_length",
+      config.sync_word_length, "<= sync_word buffer size (8)");
+  check(config.preamble_length > 0, "preamble_length", config.preamble_length,
+      "> 0");
   check(valid_detector, "preamble_detector",
-      static_cast<uint8_t>(config.preamble_detector),
-      "a supported enum value");
+      static_cast<uint8_t>(config.preamble_detector), "a supported enum value");
   check(!valid_detector || (detector_bits <= config.preamble_length),
       "preamble_detector_bits", detector_bits, "<= preamble_length");
   check(!valid_detector || (detector_bits == 0) ||
-          (detector_bits < sync_word_bits),
+            (detector_bits < sync_word_bits),
       "preamble_detector_bits", detector_bits, "0 or < sync_word_bits");
   check(valid_pulse_shape, "pulse_shape", pulse_shape,
       "0 or a supported Gaussian enum value");
@@ -2878,8 +2825,8 @@ bool Sx126x::ValidateConfig(const GfskConfig& config) {
   check(header <= 1, "header_type", header, "[0, 1]");
   check(address <= 2, "address_comparison", address, "[0, 2]");
   check(whitening <= 1, "whitening", whitening, "[0, 1]");
-  check(config.whitening_seed <= 0x01FF,
-      "whitening_seed", config.whitening_seed, "<= 511 (0x01FF)");
+  check(config.whitening_seed <= 0x01FF, "whitening_seed",
+      config.whitening_seed, "<= 511 (0x01FF)");
   check(ramp <= 7, "ramp_time", ramp, "[0, 7]");
   return valid;
 }
@@ -2895,8 +2842,8 @@ bool Sx126x::ApplyHardwareConfig(bool calibrate_tcxo) {
     return false;
   }
   if (!SetDio2AsRfSwitchCtrl(hardware_config_.dio2_mode)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SetDio2AsRfSwitchCtrl failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SetDio2AsRfSwitchCtrl failed\n");
     return false;
   }
   if (hardware_config_.enable_dio3_tcxo &&
@@ -2973,16 +2920,14 @@ float Sx126x::GetGfskBandwidthKhz(GfskBw bandwidth) const {
   }
 }
 
-bool Sx126x::ReadModifyWriteRegister(
-    Reg reg, uint8_t mask, uint8_t value) {
+bool Sx126x::ReadModifyWriteRegister(Reg reg, uint8_t mask, uint8_t value) {
   uint8_t register_value = 0;
   if (!ReadRegister(static_cast<uint16_t>(reg), &register_value, 1)) {
     return false;
   }
   register_value =
       static_cast<uint8_t>((register_value & ~mask) | (value & mask));
-  return WriteRegister(
-      static_cast<uint16_t>(reg), &register_value, 1);
+  return WriteRegister(static_cast<uint16_t>(reg), &register_value, 1);
 }
 
 bool Sx126x::ResetGfskLowRateWorkaround() {
@@ -3006,8 +2951,8 @@ bool Sx126x::ApplyGfskLowRateWorkaround(const GfskConfig& config) {
       (std::fabs(config.frequency_deviation_khz - 5.0) < 0.0001) &&
       (config.bandwidth == GfskBw::kBw19500Hz);
   if (is_1200_bps) {
-    const bool result = ReadModifyWriteRegister(
-        Reg::kRwGfskWorkaround3, 0x10, 0x00);
+    const bool result =
+        ReadModifyWriteRegister(Reg::kRwGfskWorkaround3, 0x10, 0x00);
     gfsk_low_rate_workaround_active_ = result;
     return result;
   }

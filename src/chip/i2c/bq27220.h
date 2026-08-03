@@ -2,7 +2,7 @@
  * @Description: BQ27220 单节电池 CEDV 电量计驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-05-12 18:35:00
+ * @LastEditTime: 2026-08-03 16:11:05
  * @License: GPL 3.0
  */
 #pragma once
@@ -121,16 +121,16 @@ class Bq27220 final : public ChipI2cGuide {
   };
 
   struct OperationStatus {
-    uint8_t security_mode_bits = 0;  // 安全模式原始位，SEC
+    uint8_t security_mode_bits = 0;                  // 安全模式原始位，SEC
     SecurityMode security = SecurityMode::kUnknown;  // 解析后的安全模式
     struct {
-      bool calibration_mode = false;               // 校准模式状态，CALMD
-      bool edv2_reached = false;                   // EDV2 阈值到达状态，EDV2
-      bool valid_discharge_qualified = false;      // 有效放电合格状态，VDQ
-      bool initialization_complete = false;        // 初始化完成状态，INITCOMP
-      bool smoothing_active = false;               // 平滑算法激活状态，SMTH
-      bool battery_trip_point_interrupt = false;   // 电池阈值中断状态，BTP_INT
-      bool config_update_mode = false;             // 配置更新模式状态，CFGUPDATE
+      bool calibration_mode = false;              // 校准模式状态，CALMD
+      bool edv2_reached = false;                  // EDV2 阈值到达状态，EDV2
+      bool valid_discharge_qualified = false;     // 有效放电合格状态，VDQ
+      bool initialization_complete = false;       // 初始化完成状态，INITCOMP
+      bool smoothing_active = false;              // 平滑算法激活状态，SMTH
+      bool battery_trip_point_interrupt = false;  // 电池阈值中断状态，BTP_INT
+      bool config_update_mode = false;            // 配置更新模式状态，CFGUPDATE
     } flag;
   };
 
@@ -168,8 +168,7 @@ class Bq27220 final : public ChipI2cGuide {
   };
 
   explicit Bq27220(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kDefaultValue)
+      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   /**

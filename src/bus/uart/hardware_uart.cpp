@@ -2,7 +2,7 @@
  * @Description: ESP-IDF 硬件 UART 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:26:23
- * @LastEditTime: 2026-07-01 11:47:56
+ * @LastEditTime: 2026-08-03 16:10:50
  * @License: GPL 3.0
  */
 #include "hardware_uart.h"
@@ -39,14 +39,11 @@ bool HardwareUart::Init(int32_t baud_rate) {
       .parity = UART_PARITY_DISABLE,
       .stop_bits = UART_STOP_BITS_1,
       .flow_ctrl = [](int32_t rts, int32_t cts) -> uart_hw_flowcontrol_t {
-        if ((rts != kDefaultValue) &&
-            (cts != kDefaultValue)) {
+        if ((rts != kDefaultValue) && (cts != kDefaultValue)) {
           return uart_hw_flowcontrol_t::UART_HW_FLOWCTRL_CTS_RTS;
-        } else if ((rts != kDefaultValue) &&
-                   (cts == kDefaultValue)) {
+        } else if ((rts != kDefaultValue) && (cts == kDefaultValue)) {
           return uart_hw_flowcontrol_t::UART_HW_FLOWCTRL_RTS;
-        } else if ((rts == kDefaultValue) &&
-                   (cts != kDefaultValue)) {
+        } else if ((rts == kDefaultValue) && (cts != kDefaultValue)) {
           return uart_hw_flowcontrol_t::UART_HW_FLOWCTRL_CTS;
         }
 

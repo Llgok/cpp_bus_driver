@@ -2,7 +2,7 @@
  * @Description: RM69A10 MIPI-DSI 显示面板驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-30 13:46:44
+ * @LastEditTime: 2026-08-03 16:11:38
  * @License: GPL 3.0
  */
 #pragma once
@@ -12,8 +12,8 @@
 namespace cpp_bus_driver {
 class Rm69a10 final : public ChipMipiGuide {
  public:
-  explicit Rm69a10(std::shared_ptr<BusMipiGuide> bus,
-      int32_t rst = kDefaultValue)
+  explicit Rm69a10(
+      std::shared_ptr<BusMipiGuide> bus, int32_t rst = kDefaultValue)
       : ChipMipiGuide(bus, InitSequenceFormat::kWriteC8D8), rst_(rst) {}
 
   bool Init(float freq_mhz = kDefaultValue,

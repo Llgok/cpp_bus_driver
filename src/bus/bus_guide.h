@@ -2,7 +2,7 @@
  * @Description: I2C、SPI、I2S、UART、SDIO 与 MIPI 总线抽象接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2026-05-17 12:15:06
+ * @LastEditTime: 2026-08-03 16:10:29
  * @License: GPL 3.0
  */
 #pragma once
@@ -25,8 +25,7 @@ class BusI2cGuide : public virtual Tool {
   virtual i2c_cmd_handle_t CmdLinkCreate();
   virtual bool StartTransmit(
       i2c_cmd_handle_t cmd_handle, i2c_rw_t rw, bool ack_en);
-  virtual bool Write(
-      i2c_cmd_handle_t cmd_handle, uint8_t data, bool ack_en);
+  virtual bool Write(i2c_cmd_handle_t cmd_handle, uint8_t data, bool ack_en);
   virtual bool Write(i2c_cmd_handle_t cmd_handle, const uint8_t* data,
       size_t data_len, bool ack_en);
   virtual bool Read(i2c_cmd_handle_t cmd_handle, uint8_t* data, size_t data_len,

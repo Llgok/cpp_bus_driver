@@ -2,7 +2,7 @@
  * @Description: ESP-IDF 硬件 QSPI 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-05-16 23:35:05
+ * @LastEditTime: 2026-08-03 16:10:45
  * @License: GPL 3.0
  */
 #pragma once
@@ -27,11 +27,11 @@ class HardwareQspi final : public BusQspiGuide {
         clock_source_(clock_source),
         flags_(flags) {}
 
-  bool Init(int32_t freq_hz = kDefaultValue,
-      int32_t cs = kDefaultValue) override;
+  bool Init(
+      int32_t freq_hz = kDefaultValue, int32_t cs = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-  bool Write(const void* data, size_t byte,
-      uint32_t flags = 0, bool cs_keep_active = false) override;
+  bool Write(const void* data, size_t byte, uint32_t flags = 0,
+      bool cs_keep_active = false) override;
   bool SetCs(bool value);
 
  private:

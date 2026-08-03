@@ -2,7 +2,7 @@
  * @Description: nRF9151 蜂窝通信与 GNSS 模块驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-11 11:58:39
- * @LastEditTime: 2026-07-11 14:39:16
+ * @LastEditTime: 2026-08-03 16:12:04
  * @License: GPL 3.0
  */
 #include "nrf9151.h"
@@ -44,9 +44,8 @@ bool ExtractLineContaining(
   }
 
   const size_t previous_line_end = response.rfind('\n', marker_position);
-  const size_t line_start = previous_line_end == std::string::npos
-                                ? 0
-                                : previous_line_end + 1;
+  const size_t line_start =
+      previous_line_end == std::string::npos ? 0 : previous_line_end + 1;
   const size_t next_line_end = response.find('\n', marker_position);
   const size_t line_length = next_line_end == std::string::npos
                                  ? response.size() - line_start
@@ -229,12 +228,11 @@ Nrf9151::CommandResult Nrf9151::SendCommand(
     return CommandResult::kIoError;
   }
 
-  const uint32_t start_time_ms =
-      static_cast<uint32_t>(GetSystemTimeMs());
+  const uint32_t start_time_ms = static_cast<uint32_t>(GetSystemTimeMs());
   size_t parsed_length = 0;
 
-  while (static_cast<uint32_t>(GetSystemTimeMs()) -
-             start_time_ms < timeout_ms) {
+  while (
+      static_cast<uint32_t>(GetSystemTimeMs()) - start_time_ms < timeout_ms) {
     const size_t available = bus_->GetRxBufferLength();
     if (available == 0) {
       DelayMs(10);

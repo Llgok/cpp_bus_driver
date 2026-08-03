@@ -2,7 +2,7 @@
  * @Description: ICM20948 九轴惯性传感器 I2C/SPI 共用驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-07-31 15:20:00
- * @LastEditTime: 2026-07-31 13:33:33
+ * @LastEditTime: 2026-08-03 16:11:41
  * @License: GPL 3.0
  */
 #pragma once
@@ -46,10 +46,10 @@ class Icm20948 final : public Tool {
   };
 
   enum class MagnetometerMode {
-    kPowerDown = 0x00,       // 掉电模式。
-    kContinuous10Hz = 0x02,  // 10 Hz 连续测量模式。
-    kContinuous20Hz = 0x04,  // 20 Hz 连续测量模式。
-    kContinuous50Hz = 0x06,  // 50 Hz 连续测量模式。
+    kPowerDown = 0x00,        // 掉电模式。
+    kContinuous10Hz = 0x02,   // 10 Hz 连续测量模式。
+    kContinuous20Hz = 0x04,   // 20 Hz 连续测量模式。
+    kContinuous50Hz = 0x06,   // 50 Hz 连续测量模式。
     kContinuous100Hz = 0x08,  // 100 Hz 连续测量模式。
   };
 
@@ -69,42 +69,42 @@ class Icm20948 final : public Tool {
 
   // 一次连续寄存器读取获得的完整原始数据。
   struct RawData {
-    RawVector3 acceleration;       // 加速度计原始值。
-    RawVector3 angular_velocity;   // 陀螺仪原始值。
-    RawVector3 magnetic_field;     // AK09916 磁场原始值。
-    int16_t temperature = 0;       // 温度传感器原始值。
-    bool magnetometer_data_ready = false;  // 读取瞬间的 AK09916 DRDY 状态。
+    RawVector3 acceleration;                 // 加速度计原始值。
+    RawVector3 angular_velocity;             // 陀螺仪原始值。
+    RawVector3 magnetic_field;               // AK09916 磁场原始值。
+    int16_t temperature = 0;                 // 温度传感器原始值。
+    bool magnetometer_data_ready = false;    // 读取瞬间的 AK09916 DRDY 状态。
     bool magnetometer_data_overrun = false;  // AK09916 DOR 状态。
-    bool magnetometer_overflow = false;     // AK09916 HOFL 状态。
+    bool magnetometer_overflow = false;      // AK09916 HOFL 状态。
   };
 
   // 由原始数据换算后的物理量。
   struct SensorData {
-    Vector3 acceleration_g;       // 三轴加速度，单位 g。
-    Vector3 angular_velocity_dps;  // 三轴角速度，单位 dps。
-    Vector3 magnetic_field_ut;    // 三轴磁场，单位 uT。
-    float temperature_celsius = 0.0f;       // 温度，单位摄氏度。
-    bool magnetometer_data_ready = false;  // 读取瞬间的 AK09916 DRDY 状态。
+    Vector3 acceleration_g;                  // 三轴加速度，单位 g。
+    Vector3 angular_velocity_dps;            // 三轴角速度，单位 dps。
+    Vector3 magnetic_field_ut;               // 三轴磁场，单位 uT。
+    float temperature_celsius = 0.0f;        // 温度，单位摄氏度。
+    bool magnetometer_data_ready = false;    // 读取瞬间的 AK09916 DRDY 状态。
     bool magnetometer_data_overrun = false;  // AK09916 DOR 状态。
-    bool magnetometer_overflow = false;     // AK09916 HOFL 状态。
+    bool magnetometer_overflow = false;      // AK09916 HOFL 状态。
   };
 
   // 初始化配置不包含任何运行时校准步骤。
   struct Config {
-    AccelRange accel_range = AccelRange::k2g;  // 加速度计量程。
+    AccelRange accel_range = AccelRange::k2g;   // 加速度计量程。
     GyroRange gyro_range = GyroRange::k250Dps;  // 陀螺仪量程。
-    Dlpf accel_dlpf = Dlpf::k6;  // 加速度计 DLPF 档位。
-    Dlpf gyro_dlpf = Dlpf::k6;   // 陀螺仪 DLPF 档位。
-    Dlpf temperature_dlpf = Dlpf::k6;  // 温度传感器 DLPF 档位。
-    uint16_t accel_sample_rate_divider = 9;  // 加速度计采样分频值。
-    uint8_t gyro_sample_rate_divider = 9;    // 陀螺仪采样分频值。
+    Dlpf accel_dlpf = Dlpf::k6;                 // 加速度计 DLPF 档位。
+    Dlpf gyro_dlpf = Dlpf::k6;                  // 陀螺仪 DLPF 档位。
+    Dlpf temperature_dlpf = Dlpf::k6;           // 温度传感器 DLPF 档位。
+    uint16_t accel_sample_rate_divider = 9;     // 加速度计采样分频值。
+    uint8_t gyro_sample_rate_divider = 9;       // 陀螺仪采样分频值。
     MagnetometerMode magnetometer_mode =
-        MagnetometerMode::kContinuous20Hz;  // AK09916 工作模式。
-    bool accel_dlpf_enabled = true;   // 是否启用加速度计 DLPF。
-    bool gyro_dlpf_enabled = true;    // 是否启用陀螺仪 DLPF。
-    bool accelerometer_enabled = true;  // 是否启用加速度计。
-    bool gyroscope_enabled = true;      // 是否启用陀螺仪。
-    bool temperature_enabled = true;    // 是否启用温度传感器。
+        MagnetometerMode::kContinuous20Hz;      // AK09916 工作模式。
+    bool accel_dlpf_enabled = true;             // 是否启用加速度计 DLPF。
+    bool gyro_dlpf_enabled = true;              // 是否启用陀螺仪 DLPF。
+    bool accelerometer_enabled = true;          // 是否启用加速度计。
+    bool gyroscope_enabled = true;              // 是否启用陀螺仪。
+    bool temperature_enabled = true;            // 是否启用温度传感器。
     bool data_ready_interrupt_enabled = false;  // 是否启用数据就绪中断。
   };
 
@@ -181,8 +181,8 @@ class Icm20948 final : public Tool {
    * @param temperature_enabled 是否启用温度传感器
    * @return 设置成功返回 true，失败返回 false
    */
-  bool SetSensorEnabled(bool accelerometer_enabled,
-      bool gyroscope_enabled, bool temperature_enabled);
+  bool SetSensorEnabled(bool accelerometer_enabled, bool gyroscope_enabled,
+      bool temperature_enabled);
 
   /**
    * @brief 设置加速度计量程
@@ -379,23 +379,24 @@ class Icm20948 final : public Tool {
 
   // AK09916 内部 I2C 寄存器。
   enum class Ak09916Cmd : uint8_t {
-    kRoDeviceId = 0x01,        // 芯片标识 WIA2。
-    kRoStatus1 = 0x10,         // 数据就绪和覆盖状态 ST1。
+    kRoDeviceId = 0x01,         // 芯片标识 WIA2。
+    kRoStatus1 = 0x10,          // 数据就绪和覆盖状态 ST1。
     kRoMeasurementData = 0x11,  // 磁场数据起始地址 HXL。
-    kRoStatus2 = 0x18,         // 磁场溢出状态 ST2。
-    kRwControl2 = 0x31,        // 测量模式控制 CNTL2。
-    kWoControl3 = 0x32,        // 软件复位控制 CNTL3。
+    kRoStatus2 = 0x18,          // 磁场溢出状态 ST2。
+    kRwControl2 = 0x31,         // 测量模式控制 CNTL2。
+    kWoControl3 = 0x32,         // 软件复位控制 CNTL3。
   };
 
   static constexpr int16_t kDeviceI2cAddressDefault = 0x68;  // AD0=0。
-  static constexpr uint8_t kDeviceId = 0xEA;  // WHO_AM_I 期望值。
-  static constexpr uint8_t kAk09916Address = 0x0C;  // 内部磁力计地址。
-  static constexpr uint8_t kAk09916DeviceId = 0x09;  // WIA2 期望值。
-  static constexpr int32_t kDefaultIcmI2cFreqHz = 400000;  // I2C 上限。
+  static constexpr uint8_t kDeviceId = 0xEA;                // WHO_AM_I 期望值。
+  static constexpr uint8_t kAk09916Address = 0x0C;          // 内部磁力计地址。
+  static constexpr uint8_t kAk09916DeviceId = 0x09;         // WIA2 期望值。
+  static constexpr int32_t kDefaultIcmI2cFreqHz = 400000;   // I2C 上限。
   static constexpr int32_t kDefaultIcmSpiFreqHz = 7000000;  // SPI 上限。
-  static constexpr uint32_t kResetDelayMs = 100;  // 主芯片复位等待。
-  static constexpr uint32_t kGyroscopeStartDelayMs = 50;  // 陀螺仪启动等待。
-  static constexpr uint32_t kMagnetometerResetDelayMs = 100;  // 磁力计复位等待。
+  static constexpr uint32_t kResetDelayMs = 100;            // 主芯片复位等待。
+  static constexpr uint32_t kGyroscopeStartDelayMs = 50;    // 陀螺仪启动等待。
+  static constexpr uint32_t kMagnetometerResetDelayMs =
+      100;                                                  // 磁力计复位等待。
   static constexpr uint32_t kMagnetometerModeDelayMs = 10;  // 模式切换等待。
   static constexpr uint32_t kMinimumAuxiliaryTransactionTimeoutMs =
       100;  // 辅助 I2C 单次传输最短超时。
@@ -498,8 +499,7 @@ class Icm20948 final : public Tool {
    * @param restore_stream 读取结束后是否恢复 SLV0 连续数据流
    * @return 读取成功返回 true，否则返回 false
    */
-  bool ReadAk09916Register(Ak09916Cmd cmd, uint8_t& data,
-      bool restore_stream);
+  bool ReadAk09916Register(Ak09916Cmd cmd, uint8_t& data, bool restore_stream);
 
   /**
    * @brief 通过辅助 I2C SLV4 写入一个 AK09916 寄存器
@@ -653,14 +653,14 @@ class Icm20948 final : public Tool {
   MagnetometerMode active_magnetometer_mode_ =
       MagnetometerMode::kPowerDown;  // 当前 AK09916 硬件模式。
   MagnetometerMode resume_magnetometer_mode_ =
-      MagnetometerMode::kContinuous20Hz;  // 唤醒时恢复的 AK09916 模式。
-  Bank selected_bank_ = Bank::kInvalid;  // 当前寄存器 Bank 缓存。
-  bool bus_initialized_ = false;  // 主机总线设备是否已初始化。
-  bool initialized_ = false;      // 传感器是否已完成完整初始化。
-  bool sleeping_ = true;          // ICM20948 是否处于睡眠状态。
+      MagnetometerMode::kContinuous20Hz;       // 唤醒时恢复的 AK09916 模式。
+  Bank selected_bank_ = Bank::kInvalid;        // 当前寄存器 Bank 缓存。
+  bool bus_initialized_ = false;               // 主机总线设备是否已初始化。
+  bool initialized_ = false;                   // 传感器是否已完成完整初始化。
+  bool sleeping_ = true;                       // ICM20948 是否处于睡眠状态。
   bool auxiliary_i2c_master_enabled_ = false;  // 辅助 I2C 主机是否已启用。
-  bool magnetometer_stream_ready_ = false;  // AK09916 连续数据流是否可用。
-  mutable std::recursive_mutex mutex_;  // 保护 Bank 与设备运行状态。
+  bool magnetometer_stream_ready_ = false;     // AK09916 连续数据流是否可用。
+  mutable std::recursive_mutex mutex_;         // 保护 Bank 与设备运行状态。
 };
 
 }  // namespace cpp_bus_driver

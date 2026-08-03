@@ -2,7 +2,7 @@
  * @Description: GT9895 电容触摸控制器驱动接口
  * @Author: LILYGO_L
  * @Date 2025-07-09 09:15:31
- * @LastEditTime: 2026-04-30 13:43:17
+ * @LastEditTime: 2026-08-03 16:11:10
  * @License: GPL 3.0
  */
 #pragma once
@@ -27,9 +27,8 @@ class Gt9895 final : public ChipI2cGuide {
   };
 
   explicit Gt9895(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kDefaultValue, float x_scale_factor = 1.0,
-      float y_scale_factor = 1.0)
+      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue,
+      float x_scale_factor = 1.0, float y_scale_factor = 1.0)
       : ChipI2cGuide(bus, address),
         rst_(rst),
         x_scale_factor_(x_scale_factor),

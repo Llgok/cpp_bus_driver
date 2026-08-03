@@ -2,7 +2,7 @@
  * @Description: SGM41562 系列电池充电管理芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-07-31 14:00:26
+ * @LastEditTime: 2026-08-03 16:11:27
  * @License: GPL 3.0
  */
 #pragma once
@@ -53,25 +53,25 @@ class Sgm41562xx final : public ChipI2cGuide {
   };
 
   struct ChargerConfig {
-    bool charge_enabled = false;  // 充电使能状态
-    bool high_impedance_enabled = false;  // 输入高阻模式状态
-    bool input_current_limit_enabled = true;  // 输入限流是否生效
-    uint16_t input_voltage_limit_mv = 0;  // 最低输入电压限制
-    uint16_t input_current_limit_ma = 0;  // 输入电流限制
-    uint16_t fast_charge_current_ma = 0;  // 快充电流
-    uint16_t termination_current_ma = 0;  // 充电终止电流
-    uint16_t charge_voltage_limit_mv = 0;  // 充电目标电压
-    uint16_t system_voltage_regulation_mv = 0;  // 系统调节电压
+    bool charge_enabled = false;                  // 充电使能状态
+    bool high_impedance_enabled = false;          // 输入高阻模式状态
+    bool input_current_limit_enabled = true;      // 输入限流是否生效
+    uint16_t input_voltage_limit_mv = 0;          // 最低输入电压限制
+    uint16_t input_current_limit_ma = 0;          // 输入电流限制
+    uint16_t fast_charge_current_ma = 0;          // 快充电流
+    uint16_t termination_current_ma = 0;          // 充电终止电流
+    uint16_t charge_voltage_limit_mv = 0;         // 充电目标电压
+    uint16_t system_voltage_regulation_mv = 0;    // 系统调节电压
     uint16_t input_overvoltage_threshold_mv = 0;  // 输入过压阈值
-    bool watchdog_enabled = false;  // 看门狗使能状态
-    uint16_t watchdog_timeout_s = 0;  // 看门狗超时时间
-    bool charge_termination_enabled = false;  // 充电终止使能状态
-    bool safety_timer_enabled = false;  // 安全定时器使能状态
-    uint8_t safety_timer_hours = 0;  // 安全定时器时长
-    bool safety_timer_extended_in_ppm = false;  // PPM模式下定时器倍增状态
-    bool ntc_enabled = false;  // NTC检测使能状态
-    uint8_t thermal_regulation_threshold_c = 0;  // 热调节阈值
-    bool input_voltage_loop_enabled = false;  // 输入电压环路使能状态
+    bool watchdog_enabled = false;                // 看门狗使能状态
+    uint16_t watchdog_timeout_s = 0;              // 看门狗超时时间
+    bool charge_termination_enabled = false;      // 充电终止使能状态
+    bool safety_timer_enabled = false;            // 安全定时器使能状态
+    uint8_t safety_timer_hours = 0;               // 安全定时器时长
+    bool safety_timer_extended_in_ppm = false;    // PPM模式下定时器倍增状态
+    bool ntc_enabled = false;                     // NTC检测使能状态
+    uint8_t thermal_regulation_threshold_c = 0;   // 热调节阈值
+    bool input_voltage_loop_enabled = false;      // 输入电压环路使能状态
     bool pcb_overtemperature_protection_enabled = false;  // PCB过温保护状态
   };
 
@@ -82,8 +82,7 @@ class Sgm41562xx final : public ChipI2cGuide {
    * @param rst 复位引脚，使用kDefaultValue时不控制复位引脚
    */
   explicit Sgm41562xx(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kDefaultValue)
+      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   /**
@@ -190,50 +189,61 @@ class Sgm41562xx final : public ChipI2cGuide {
   static constexpr uint8_t kInitSequenceAb[] = {
       // 禁用PCB过温保护，保持输入电压环路和默认系统调节参数
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kSystemVoltageRegulation), 0xB7,
+      static_cast<uint8_t>(Cmd::kSystemVoltageRegulation),
+      0xB7,
 
       // 禁用NTC，保留默认的两倍安全定时器功能
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kMiscellaneousOperationControl), 0x40,
+      static_cast<uint8_t>(Cmd::kMiscellaneousOperationControl),
+      0x40,
 
       // 禁用看门狗，保留充电终止功能和5小时安全定时器
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kChargeTerminationTimerControl), 0x1A,
+      static_cast<uint8_t>(Cmd::kChargeTerminationTimerControl),
+      0x1A,
 
       // 解除输入电流限制
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kSystemStatus), 0x40,
+      static_cast<uint8_t>(Cmd::kSystemStatus),
+      0x40,
 
       // 完成其他配置后开启充电
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kPowerOnConfiguration), 0xA4,
+      static_cast<uint8_t>(Cmd::kPowerOnConfiguration),
+      0xA4,
   };
 
   // SGM41562S和SGM41562SA寄存器初始化序列
   static constexpr uint8_t kInitSequenceS[] = {
       // 保持输入电压环路和默认热调节、系统调节参数
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kSystemVoltageRegulation), 0x73,
+      static_cast<uint8_t>(Cmd::kSystemVoltageRegulation),
+      0x73,
 
       // 禁用NTC，保留默认的两倍安全定时器功能
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kMiscellaneousOperationControl), 0x40,
+      static_cast<uint8_t>(Cmd::kMiscellaneousOperationControl),
+      0x40,
 
       // 禁用看门狗，保留充电终止功能和5小时安全定时器
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kChargeTerminationTimerControl), 0x1A,
+      static_cast<uint8_t>(Cmd::kChargeTerminationTimerControl),
+      0x1A,
 
       // 禁用PCB过温保护，保持默认输入过压阈值
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kSystemStatus), 0x40,
+      static_cast<uint8_t>(Cmd::kSystemStatus),
+      0x40,
 
       // 将输入电流限制设置为800mA
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kExtendedInputCurrentControl), 0xCA,
+      static_cast<uint8_t>(Cmd::kExtendedInputCurrentControl),
+      0xCA,
 
       // 完成其他配置后开启充电
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kPowerOnConfiguration), 0xA4,
+      static_cast<uint8_t>(Cmd::kPowerOnConfiguration),
+      0xA4,
   };
 
   /**

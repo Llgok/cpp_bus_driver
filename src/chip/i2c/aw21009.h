@@ -2,7 +2,7 @@
  * @Description: AW21009 九通道 LED 驱动芯片接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-06-01 16:08:45
+ * @LastEditTime: 2026-08-03 16:10:54
  * @License: GPL 3.0
  */
 #pragma once
@@ -194,8 +194,7 @@ class Aw21009 final : public ChipI2cGuide {
   };
 
   explicit Aw21009(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kDefaultValue)
+      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
@@ -341,7 +340,8 @@ class Aw21009 final : public ChipI2cGuide {
   bool SetPhaseInvert(LedGroup group, bool enable);
 
   /**
-   * @brief 配置LED开路或短路检测。开启检测时会按手册要求设置SSCR.DCPWM[1:0]为11；关闭检测时会清除这两个位。
+   * @brief
+   * 配置LED开路或短路检测。开启检测时会按手册要求设置SSCR.DCPWM[1:0]为11；关闭检测时会清除这两个位。
    *       检测电流仍需要用户按硬件条件配置到约1mA。
    * @param mode 检测模式。
    * @param open_threshold 开路检测阈值。
@@ -365,8 +365,8 @@ class Aw21009 final : public ChipI2cGuide {
    * @param threshold 温度折返阈值。
    * @return 寄存器更新成功返回true。
    */
-  bool SetThermalRollOff(ThermalRollOffCurrent current,
-      ThermalRollOffThreshold threshold);
+  bool SetThermalRollOff(
+      ThermalRollOffCurrent current, ThermalRollOffThreshold threshold);
 
   /**
    * @brief 开启或关闭过温检测和过温保护。
@@ -398,8 +398,8 @@ class Aw21009 final : public ChipI2cGuide {
    * @param period 扩频周期。
    * @return 寄存器更新成功返回true。
    */
-  bool SetSpreadSpectrum(bool enable, SpreadSpectrumRange range,
-      SpreadSpectrumPeriod period);
+  bool SetSpreadSpectrum(
+      bool enable, SpreadSpectrumRange range, SpreadSpectrumPeriod period);
 
   /**
    * @brief 开启或关闭欠压检测和欠压保护。

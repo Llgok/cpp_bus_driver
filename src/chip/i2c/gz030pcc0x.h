@@ -2,7 +2,7 @@
  * @Description: GZ030PCC0X 显示面板辅助控制驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-30 13:43:21
+ * @LastEditTime: 2026-08-03 16:11:12
  * @License: GPL 3.0
  */
 #pragma once
@@ -36,8 +36,7 @@ class Gz030pcc0x final : public ChipI2cGuide {
   };
 
   explicit Gz030pcc0x(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kDefaultValue)
+      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = kDefaultValue) override;

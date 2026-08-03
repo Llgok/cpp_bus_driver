@@ -2,7 +2,7 @@
  * @Description: TI CC1101 亚 GHz 无线收发芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-12 00:00:00
- * @LastEditTime: 2026-07-31 00:18:28
+ * @LastEditTime: 2026-08-03 16:11:47
  * @License: GPL 3.0
  */
 #include "cc1101.h"
@@ -61,10 +61,8 @@ bool IsOfficialVersion(uint8_t version) {
 }  // namespace
 
 bool Cc1101::Init(int32_t freq_hz) {
-  if (bus_ == nullptr || cs_ == kDefaultValue ||
-      miso_ == kDefaultValue) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Invalid argument\n");
+  if (bus_ == nullptr || cs_ == kDefaultValue || miso_ == kDefaultValue) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -79,8 +77,8 @@ bool Cc1101::Init(int32_t freq_hz) {
   }
   result &= GpioWrite(cs_, true);
   if (!result) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Gpio initialization failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "Gpio initialization failed\n");
     return false;
   }
 
@@ -95,8 +93,8 @@ bool Cc1101::Init(int32_t freq_hz) {
 
   const int32_t bus_cs = kDefaultValue;
   if (!bus_->Init(freq_hz, bus_cs)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SPI initialization failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SPI initialization failed\n");
     return false;
   }
   spi_frequency_hz_ = freq_hz;
@@ -111,11 +109,9 @@ bool Cc1101::Init(int32_t freq_hz) {
   uint8_t version = 0;
   if (!GetPartNumber(&part_number) || !GetVersion(&version) ||
       part_number != kPartNumberCc1101 ||
-      (!IsOfficialVersion(version) &&
-          version != kCompatibleCloneVersion)) {
+      (!IsOfficialVersion(version) && version != kCompatibleCloneVersion)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "CC1101 not found (part: %#X version: %#X)\n",
-        part_number, version);
+        "CC1101 not found (part: %#X version: %#X)\n", part_number, version);
     bus_->Deinit(false);
     return false;
   }
@@ -125,8 +121,7 @@ bool Cc1101::Init(int32_t freq_hz) {
   }
 
   if (!Configure(config_)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Configure failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Configure failed\n");
     bus_->Deinit(false);
     return false;
   }
@@ -189,8 +184,8 @@ bool Cc1101::Reset() {
 
 bool Cc1101::Configure(const Config& config) {
   if (!ValidateConfig(config)) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Invalid configuration\n");
+    LogMessage(
+        LogLevel::kWarning, __FILE__, __LINE__, "Invalid configuration\n");
     return false;
   }
 
@@ -206,8 +201,7 @@ bool Cc1101::Configure(const Config& config) {
   result &= SetDataRate(config.data_rate_kbaud);
   result &= SetReceiveBandwidth(config.receive_bandwidth_khz);
   if (config.modulation == Modulation::kMsk) {
-    result &= SetMskPhaseChangePeriod(
-        config.msk_phase_change_period);
+    result &= SetMskPhaseChangePeriod(config.msk_phase_change_period);
   } else if (config.modulation != Modulation::kAskOok) {
     result &= SetFrequencyDeviation(config.frequency_deviation_khz);
   }
@@ -215,23 +209,19 @@ bool Cc1101::Configure(const Config& config) {
   result &= SetBitRateTolerance(config.bit_rate_tolerance);
   result &= SetChannel(config.channel);
   result &= SetCarrierSenseThreshold(
-      config.carrier_sense_threshold,
-      config.carrier_sense_relative);
+      config.carrier_sense_threshold, config.carrier_sense_relative);
   result &= SetCcaMode(config.cca_mode);
   result &= SetModulation(config.modulation);
   result &= SetEncoding(config.encoding);
-  result &= SetSyncWord(config.sync_word_high, config.sync_word_low,
-      config.sync_mode);
+  result &= SetSyncWord(
+      config.sync_word_high, config.sync_word_low, config.sync_mode);
   result &= SetPreambleLength(config.preamble_length_bits);
-  result &= SetPreambleQualityThreshold(
-      config.preamble_quality_threshold);
-  result &= SetPacketLengthMode(config.packet_length_mode,
-      config.maximum_packet_length);
-  result &= SetAddressCheck(config.address_check,
-      config.device_address);
+  result &= SetPreambleQualityThreshold(config.preamble_quality_threshold);
+  result &= SetPacketLengthMode(
+      config.packet_length_mode, config.maximum_packet_length);
+  result &= SetAddressCheck(config.address_check, config.device_address);
   result &= SetCrc(config.crc_enabled);
-  result &= UpdateRegisterBits(Cmd::kPktctrl1,
-      kAppendStatusMask,
+  result &= UpdateRegisterBits(Cmd::kPktctrl1, kAppendStatusMask,
       config.append_status ? kAppendStatusMask : 0);
   result &= SetCrcAutoflush(config.crc_autoflush);
   result &= SetFec(config.fec_enabled);
@@ -247,11 +237,9 @@ bool Cc1101::Configure(const Config& config) {
 }
 
 bool Cc1101::ApplyRegisterSettings(
-    const RegisterSetting* settings, size_t count,
-    const Config& config) {
+    const RegisterSetting* settings, size_t count, const Config& config) {
   if (settings == nullptr || count == 0 || !ValidateConfig(config)) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
@@ -259,8 +247,8 @@ bool Cc1101::ApplyRegisterSettings(
     return false;
   }
   for (size_t index = 0; index < count; ++index) {
-    if (!WriteRegister(static_cast<Cmd>(settings[index].address),
-            settings[index].value)) {
+    if (!WriteRegister(
+            static_cast<Cmd>(settings[index].address), settings[index].value)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "Register setting failed (index: %zu)\n", index);
       return false;
@@ -313,8 +301,7 @@ bool Cc1101::ReadRegister(Cmd cmd, uint8_t* value) {
   return true;
 }
 
-bool Cc1101::WriteBurst(
-    Cmd cmd, const uint8_t* data, size_t length) {
+bool Cc1101::WriteBurst(Cmd cmd, const uint8_t* data, size_t length) {
   const size_t maximum_length = GetMaximumBurstLength(cmd);
   if (data == nullptr || length == 0 || length > maximum_length) {
     return false;
@@ -333,8 +320,7 @@ bool Cc1101::WriteBurst(
   return true;
 }
 
-bool Cc1101::ReadBurst(
-    Cmd cmd, uint8_t* data, size_t length) {
+bool Cc1101::ReadBurst(Cmd cmd, uint8_t* data, size_t length) {
   const size_t maximum_length = GetMaximumBurstLength(cmd);
   if (data == nullptr || length == 0 || length > maximum_length) {
     return false;
@@ -379,8 +365,7 @@ bool Cc1101::Strobe(StrobeCmd command, ChipStatus* status) {
 }
 
 bool Cc1101::SetFrequency(double frequency_mhz) {
-  if (!ValidateFrequency(
-          frequency_mhz, config_.crystal_frequency_mhz)) {
+  if (!ValidateFrequency(frequency_mhz, config_.crystal_frequency_mhz)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Invalid frequency (frequency: %.03f MHz)\n", frequency_mhz);
     return false;
@@ -389,10 +374,9 @@ bool Cc1101::SetFrequency(double frequency_mhz) {
     return false;
   }
 
-  const double word_value = frequency_mhz * 65536.0 /
-      config_.crystal_frequency_mhz;
-  const uint32_t word = static_cast<uint32_t>(
-      std::lround(word_value));
+  const double word_value =
+      frequency_mhz * 65536.0 / config_.crystal_frequency_mhz;
+  const uint32_t word = static_cast<uint32_t>(std::lround(word_value));
   const uint8_t values[] = {
       static_cast<uint8_t>(word >> 16),
       static_cast<uint8_t>(word >> 8),
@@ -423,10 +407,9 @@ bool Cc1101::SetDataRate(double data_rate_kbaud) {
   uint8_t best_mantissa = 0;
   for (uint8_t exponent = 0; exponent <= 15; ++exponent) {
     for (uint16_t mantissa = 0; mantissa <= 255; ++mantissa) {
-      const double actual = crystal_hz *
-          static_cast<double>(256 + mantissa) *
-          static_cast<double>(1UL << exponent) /
-          static_cast<double>(1UL << 28);
+      const double actual = crystal_hz * static_cast<double>(256 + mantissa) *
+                            static_cast<double>(1UL << exponent) /
+                            static_cast<double>(1UL << 28);
       const double error = std::fabs(actual - target_hz);
       if (error < best_error) {
         best_error = error;
@@ -436,8 +419,7 @@ bool Cc1101::SetDataRate(double data_rate_kbaud) {
     }
   }
 
-  bool result = UpdateRegisterBits(Cmd::kMdmcfg4, 0x0F,
-      best_exponent);
+  bool result = UpdateRegisterBits(Cmd::kMdmcfg4, 0x0F, best_exponent);
   result &= WriteRegister(Cmd::kMdmcfg3, best_mantissa);
   if (result) {
     config_.data_rate_kbaud = data_rate_kbaud;
@@ -447,14 +429,14 @@ bool Cc1101::SetDataRate(double data_rate_kbaud) {
 
 bool Cc1101::SetFrequencyDeviation(double deviation_khz) {
   const double crystal_hz = config_.crystal_frequency_mhz * 1000000.0;
-  const double minimum_khz = crystal_hz * 8.0 /
-      static_cast<double>(1UL << 17) / 1000.0;
-  const double maximum_khz = crystal_hz * 15.0 * 128.0 /
-      static_cast<double>(1UL << 17) / 1000.0;
+  const double minimum_khz =
+      crystal_hz * 8.0 / static_cast<double>(1UL << 17) / 1000.0;
+  const double maximum_khz =
+      crystal_hz * 15.0 * 128.0 / static_cast<double>(1UL << 17) / 1000.0;
   if (!std::isfinite(deviation_khz) ||
       config_.modulation == Modulation::kAskOok ||
-      config_.modulation == Modulation::kMsk ||
-      deviation_khz < minimum_khz || deviation_khz > maximum_khz) {
+      config_.modulation == Modulation::kMsk || deviation_khz < minimum_khz ||
+      deviation_khz > maximum_khz) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Invalid deviation (deviation: %.03f kHz)\n", deviation_khz);
     return false;
@@ -470,10 +452,9 @@ bool Cc1101::SetFrequencyDeviation(double deviation_khz) {
   uint8_t best_mantissa = 0;
   for (uint8_t exponent = 0; exponent <= 7; ++exponent) {
     for (uint8_t mantissa = 0; mantissa <= 7; ++mantissa) {
-      const double actual = crystal_hz *
-          static_cast<double>(8 + mantissa) *
-          static_cast<double>(1UL << exponent) /
-          static_cast<double>(1UL << 17);
+      const double actual = crystal_hz * static_cast<double>(8 + mantissa) *
+                            static_cast<double>(1UL << exponent) /
+                            static_cast<double>(1UL << 17);
       const double error = std::fabs(actual - target_hz);
       if (error < best_error) {
         best_error = error;
@@ -483,8 +464,8 @@ bool Cc1101::SetFrequencyDeviation(double deviation_khz) {
     }
   }
 
-  const uint8_t value = static_cast<uint8_t>(
-      (best_exponent << 4) | best_mantissa);
+  const uint8_t value =
+      static_cast<uint8_t>((best_exponent << 4) | best_mantissa);
   if (!WriteRegister(Cmd::kDeviatn, value)) {
     return false;
   }
@@ -512,8 +493,7 @@ bool Cc1101::SetReceiveBandwidth(double bandwidth_khz) {
   const double maximum_khz = crystal_hz / 32.0 / 1000.0;
   const double minimum_allowed = std::floor(minimum_khz * 10.0) / 10.0;
   const double maximum_allowed = std::ceil(maximum_khz * 10.0) / 10.0;
-  if (!std::isfinite(bandwidth_khz) ||
-      bandwidth_khz < minimum_allowed ||
+  if (!std::isfinite(bandwidth_khz) || bandwidth_khz < minimum_allowed ||
       bandwidth_khz > maximum_allowed) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Invalid bandwidth (bandwidth: %.03f kHz)\n", bandwidth_khz);
@@ -530,9 +510,9 @@ bool Cc1101::SetReceiveBandwidth(double bandwidth_khz) {
   uint8_t best_mantissa = 0;
   for (uint8_t exponent = 0; exponent <= 3; ++exponent) {
     for (uint8_t mantissa = 0; mantissa <= 3; ++mantissa) {
-      const double actual = crystal_hz /
-          (8.0 * static_cast<double>(4 + mantissa) *
-              static_cast<double>(1UL << exponent));
+      const double actual =
+          crystal_hz / (8.0 * static_cast<double>(4 + mantissa) *
+                           static_cast<double>(1UL << exponent));
       const double error = std::fabs(actual - target_hz);
       if (error < best_error) {
         best_error = error;
@@ -542,19 +522,19 @@ bool Cc1101::SetReceiveBandwidth(double bandwidth_khz) {
     }
   }
 
-  const uint8_t value = static_cast<uint8_t>(
-      (best_exponent << 6) | (best_mantissa << 4));
+  const uint8_t value =
+      static_cast<uint8_t>((best_exponent << 6) | (best_mantissa << 4));
   if (!UpdateRegisterBits(Cmd::kMdmcfg4, 0xF0, value)) {
     return false;
   }
-  const double actual_bandwidth_khz = crystal_hz /
+  const double actual_bandwidth_khz =
+      crystal_hz /
       (8.0 * static_cast<double>(4 + best_mantissa) *
           static_cast<double>(1UL << best_exponent)) /
       1000.0;
   const bool narrow_bandwidth =
       actual_bandwidth_khz <= kAdcRetentionBandwidthLimitKhz;
-  bool result = UpdateRegisterBits(Cmd::kFifothr,
-      kAdcRetentionMask,
+  bool result = UpdateRegisterBits(Cmd::kFifothr, kAdcRetentionMask,
       narrow_bandwidth ? kAdcRetentionMask : 0);
   result &= WriteRegister(Cmd::kTest2,
       narrow_bandwidth ? kNarrowBandwidthTest2 : kWideBandwidthTest2);
@@ -569,13 +549,12 @@ bool Cc1101::SetReceiveBandwidth(double bandwidth_khz) {
 
 bool Cc1101::SetChannelSpacing(double spacing_khz) {
   const double crystal_hz = config_.crystal_frequency_mhz * 1000000.0;
-  const double minimum_hz = crystal_hz * 256.0 /
-      static_cast<double>(1UL << 18);
-  const double maximum_hz = crystal_hz * 511.0 * 8.0 /
-      static_cast<double>(1UL << 18);
+  const double minimum_hz = crystal_hz * 256.0 / static_cast<double>(1UL << 18);
+  const double maximum_hz =
+      crystal_hz * 511.0 * 8.0 / static_cast<double>(1UL << 18);
   const double target_hz = spacing_khz * 1000.0;
-  if (!std::isfinite(spacing_khz) ||
-      target_hz < minimum_hz || target_hz > maximum_hz) {
+  if (!std::isfinite(spacing_khz) || target_hz < minimum_hz ||
+      target_hz > maximum_hz) {
     return false;
   }
   if (!EnsureIdle()) {
@@ -587,10 +566,9 @@ bool Cc1101::SetChannelSpacing(double spacing_khz) {
   uint8_t best_mantissa = 0;
   for (uint8_t exponent = 0; exponent <= 3; ++exponent) {
     for (uint16_t mantissa = 0; mantissa <= 255; ++mantissa) {
-      const double actual = crystal_hz *
-          static_cast<double>(256 + mantissa) *
-          static_cast<double>(1UL << exponent) /
-          static_cast<double>(1UL << 18);
+      const double actual = crystal_hz * static_cast<double>(256 + mantissa) *
+                            static_cast<double>(1UL << exponent) /
+                            static_cast<double>(1UL << 18);
       const double error = std::fabs(actual - target_hz);
       if (error < best_error) {
         best_error = error;
@@ -600,8 +578,8 @@ bool Cc1101::SetChannelSpacing(double spacing_khz) {
     }
   }
 
-  bool result = UpdateRegisterBits(Cmd::kMdmcfg1,
-      kChannelSpacingExponentMask, best_exponent);
+  bool result = UpdateRegisterBits(
+      Cmd::kMdmcfg1, kChannelSpacingExponentMask, best_exponent);
   result &= WriteRegister(Cmd::kMdmcfg0, best_mantissa);
   if (result) {
     config_.channel_spacing_khz = spacing_khz;
@@ -616,8 +594,7 @@ bool Cc1101::SetBitRateTolerance(uint8_t tolerance) {
   if (!EnsureIdle()) {
     return false;
   }
-  if (!UpdateRegisterBits(Cmd::kBscfg,
-          kBitRateToleranceMask, tolerance)) {
+  if (!UpdateRegisterBits(Cmd::kBscfg, kBitRateToleranceMask, tolerance)) {
     return false;
   }
   config_.bit_rate_tolerance = tolerance;
@@ -663,10 +640,9 @@ bool Cc1101::SetOutputPowerRaw(uint8_t pa_value) {
 }
 
 bool Cc1101::SetModulation(Modulation modulation) {
-  const bool supported = modulation == Modulation::k2Fsk ||
-      modulation == Modulation::kGfsk ||
-      modulation == Modulation::kAskOok ||
-      modulation == Modulation::k4Fsk ||
+  const bool supported =
+      modulation == Modulation::k2Fsk || modulation == Modulation::kGfsk ||
+      modulation == Modulation::kAskOok || modulation == Modulation::k4Fsk ||
       modulation == Modulation::kMsk;
   if (!supported) {
     return false;
@@ -677,8 +653,7 @@ bool Cc1101::SetModulation(Modulation modulation) {
     return false;
   }
   if (config_.encoding == Encoding::kManchester &&
-      (modulation == Modulation::k4Fsk ||
-          modulation == Modulation::kMsk)) {
+      (modulation == Modulation::k4Fsk || modulation == Modulation::kMsk)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Manchester is incompatible with 4-FSK and MSK\n");
     return false;
@@ -687,26 +662,22 @@ bool Cc1101::SetModulation(Modulation modulation) {
     return false;
   }
   const uint8_t value = static_cast<uint8_t>(modulation) << 4;
-  if (!UpdateRegisterBits(Cmd::kMdmcfg2,
-          kModulationMask, value)) {
+  if (!UpdateRegisterBits(Cmd::kMdmcfg2, kModulationMask, value)) {
     return false;
   }
   config_.modulation = modulation;
   bool result = SetOutputPower(config_.output_power_dbm);
   if (modulation == Modulation::kMsk) {
-    result &= SetMskPhaseChangePeriod(
-        config_.msk_phase_change_period);
+    result &= SetMskPhaseChangePeriod(config_.msk_phase_change_period);
   } else if (modulation != Modulation::kAskOok) {
-    result &= SetFrequencyDeviation(
-        config_.frequency_deviation_khz);
+    result &= SetFrequencyDeviation(config_.frequency_deviation_khz);
   }
   return result;
 }
 
 bool Cc1101::SetEncoding(Encoding encoding) {
   if (encoding == Encoding::kManchester &&
-      (config_.fec_enabled ||
-          config_.modulation == Modulation::k4Fsk ||
+      (config_.fec_enabled || config_.modulation == Modulation::k4Fsk ||
           config_.modulation == Modulation::kMsk)) {
     return false;
   }
@@ -716,22 +687,18 @@ bool Cc1101::SetEncoding(Encoding encoding) {
   bool result = true;
   switch (encoding) {
     case Encoding::kNrz:
-      result &= UpdateRegisterBits(Cmd::kMdmcfg2,
-          kManchesterMask, 0);
-      result &= UpdateRegisterBits(Cmd::kPktctrl0,
-          kWhiteningMask, 0);
+      result &= UpdateRegisterBits(Cmd::kMdmcfg2, kManchesterMask, 0);
+      result &= UpdateRegisterBits(Cmd::kPktctrl0, kWhiteningMask, 0);
       break;
     case Encoding::kManchester:
-      result &= UpdateRegisterBits(Cmd::kMdmcfg2,
-          kManchesterMask, kManchesterMask);
-      result &= UpdateRegisterBits(Cmd::kPktctrl0,
-          kWhiteningMask, 0);
+      result &=
+          UpdateRegisterBits(Cmd::kMdmcfg2, kManchesterMask, kManchesterMask);
+      result &= UpdateRegisterBits(Cmd::kPktctrl0, kWhiteningMask, 0);
       break;
     case Encoding::kWhitening:
-      result &= UpdateRegisterBits(Cmd::kMdmcfg2,
-          kManchesterMask, 0);
-      result &= UpdateRegisterBits(Cmd::kPktctrl0,
-          kWhiteningMask, kWhiteningMask);
+      result &= UpdateRegisterBits(Cmd::kMdmcfg2, kManchesterMask, 0);
+      result &=
+          UpdateRegisterBits(Cmd::kPktctrl0, kWhiteningMask, kWhiteningMask);
       break;
     default:
       return false;
@@ -742,15 +709,14 @@ bool Cc1101::SetEncoding(Encoding encoding) {
   return result;
 }
 
-bool Cc1101::SetSyncWord(
-    uint8_t high, uint8_t low, SyncMode mode) {
+bool Cc1101::SetSyncWord(uint8_t high, uint8_t low, SyncMode mode) {
   if (static_cast<uint8_t>(mode) > 7 || !EnsureIdle()) {
     return false;
   }
   const uint8_t values[] = {high, low};
   bool result = WriteBurst(Cmd::kSync1, values, sizeof(values));
-  result &= UpdateRegisterBits(Cmd::kMdmcfg2, kSyncModeMask,
-      static_cast<uint8_t>(mode));
+  result &= UpdateRegisterBits(
+      Cmd::kMdmcfg2, kSyncModeMask, static_cast<uint8_t>(mode));
   if (result) {
     config_.sync_word_high = high;
     config_.sync_word_low = low;
@@ -795,8 +761,8 @@ bool Cc1101::SetPreambleLength(uint16_t length_bits) {
     return false;
   }
 
-  bool result = UpdateRegisterBits(Cmd::kMdmcfg1,
-      kPreambleMask, static_cast<uint8_t>(value << 4));
+  bool result = UpdateRegisterBits(
+      Cmd::kMdmcfg1, kPreambleMask, static_cast<uint8_t>(value << 4));
   if (result) {
     config_.preamble_length_bits = length_bits;
   }
@@ -810,8 +776,7 @@ bool Cc1101::SetPreambleQualityThreshold(uint8_t threshold) {
   if (!EnsureIdle()) {
     return false;
   }
-  if (!UpdateRegisterBits(Cmd::kPktctrl1,
-          kPreambleQualityMask,
+  if (!UpdateRegisterBits(Cmd::kPktctrl1, kPreambleQualityMask,
           static_cast<uint8_t>(threshold << 5))) {
     return false;
   }
@@ -821,14 +786,13 @@ bool Cc1101::SetPreambleQualityThreshold(uint8_t threshold) {
 
 bool Cc1101::SetPacketLengthMode(
     PacketLengthMode mode, uint8_t maximum_length) {
-  const bool supported = mode == PacketLengthMode::kFixed ||
-      mode == PacketLengthMode::kVariable;
+  const bool supported =
+      mode == PacketLengthMode::kFixed || mode == PacketLengthMode::kVariable;
   const size_t autoflush_limit =
       (mode == PacketLengthMode::kVariable ? 63 : 64) -
       (config_.append_status ? 2 : 0);
   if (!supported || maximum_length == 0 ||
-      (config_.fec_enabled &&
-          mode != PacketLengthMode::kFixed)) {
+      (config_.fec_enabled && mode != PacketLengthMode::kFixed)) {
     return false;
   }
   if (config_.crc_autoflush && maximum_length > autoflush_limit) {
@@ -837,8 +801,8 @@ bool Cc1101::SetPacketLengthMode(
   if (!EnsureIdle()) {
     return false;
   }
-  bool result = UpdateRegisterBits(Cmd::kPktctrl0,
-      kPacketLengthMask, static_cast<uint8_t>(mode));
+  bool result = UpdateRegisterBits(
+      Cmd::kPktctrl0, kPacketLengthMask, static_cast<uint8_t>(mode));
   result &= WriteRegister(Cmd::kPktlen, maximum_length);
   if (result) {
     config_.packet_length_mode = mode;
@@ -847,13 +811,12 @@ bool Cc1101::SetPacketLengthMode(
   return result;
 }
 
-bool Cc1101::SetAddressCheck(
-    AddressCheck check, uint8_t device_address) {
+bool Cc1101::SetAddressCheck(AddressCheck check, uint8_t device_address) {
   if (static_cast<uint8_t>(check) > 3 || !EnsureIdle()) {
     return false;
   }
-  bool result = UpdateRegisterBits(Cmd::kPktctrl1,
-      kAddressCheckMask, static_cast<uint8_t>(check));
+  bool result = UpdateRegisterBits(
+      Cmd::kPktctrl1, kAddressCheckMask, static_cast<uint8_t>(check));
   result &= WriteRegister(Cmd::kAddr, device_address);
   if (result) {
     config_.address_check = check;
@@ -866,12 +829,10 @@ bool Cc1101::SetCrc(bool enabled) {
   if (!EnsureIdle()) {
     return false;
   }
-  if (!enabled && config_.crc_autoflush &&
-      !SetCrcAutoflush(false)) {
+  if (!enabled && config_.crc_autoflush && !SetCrcAutoflush(false)) {
     return false;
   }
-  if (!UpdateRegisterBits(Cmd::kPktctrl0,
-          kCrcMask, enabled ? kCrcMask : 0)) {
+  if (!UpdateRegisterBits(Cmd::kPktctrl0, kCrcMask, enabled ? kCrcMask : 0)) {
     return false;
   }
   config_.crc_enabled = enabled;
@@ -882,8 +843,8 @@ bool Cc1101::SetCrcAutoflush(bool enabled) {
   const size_t maximum =
       (config_.packet_length_mode == PacketLengthMode::kVariable ? 63 : 64) -
       (config_.append_status ? 2 : 0);
-  if (enabled && (!config_.crc_enabled ||
-      config_.maximum_packet_length > maximum)) {
+  if (enabled &&
+      (!config_.crc_enabled || config_.maximum_packet_length > maximum)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "CRC autoflush packet length exceeds RX FIFO capacity\n");
     return false;
@@ -891,8 +852,8 @@ bool Cc1101::SetCrcAutoflush(bool enabled) {
   if (!EnsureIdle()) {
     return false;
   }
-  if (!UpdateRegisterBits(Cmd::kPktctrl1,
-          kCrcAutoflushMask, enabled ? kCrcAutoflushMask : 0)) {
+  if (!UpdateRegisterBits(
+          Cmd::kPktctrl1, kCrcAutoflushMask, enabled ? kCrcAutoflushMask : 0)) {
     return false;
   }
   config_.crc_autoflush = enabled;
@@ -900,9 +861,8 @@ bool Cc1101::SetCrcAutoflush(bool enabled) {
 }
 
 bool Cc1101::SetFec(bool enabled) {
-  if (enabled &&
-      (config_.packet_length_mode != PacketLengthMode::kFixed ||
-          config_.encoding == Encoding::kManchester)) {
+  if (enabled && (config_.packet_length_mode != PacketLengthMode::kFixed ||
+                     config_.encoding == Encoding::kManchester)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "FEC requires fixed length and no Manchester\n");
     return false;
@@ -910,8 +870,7 @@ bool Cc1101::SetFec(bool enabled) {
   if (!EnsureIdle()) {
     return false;
   }
-  if (!UpdateRegisterBits(Cmd::kMdmcfg1,
-          kFecMask, enabled ? kFecMask : 0)) {
+  if (!UpdateRegisterBits(Cmd::kMdmcfg1, kFecMask, enabled ? kFecMask : 0)) {
     return false;
   }
   config_.fec_enabled = enabled;
@@ -939,14 +898,12 @@ bool Cc1101::SetCarrierSenseThreshold(
     return false;
   }
   const uint8_t absolute =
-      static_cast<uint8_t>(absolute_threshold) &
-      kCarrierSenseAbsoluteMask;
-  const uint8_t relative =
-      static_cast<uint8_t>(relative_threshold << 4);
-  bool result = UpdateRegisterBits(Cmd::kAgcctrl1,
-      kCarrierSenseAbsoluteMask, absolute);
-  result &= UpdateRegisterBits(Cmd::kAgcctrl1,
-      kCarrierSenseRelativeMask, relative);
+      static_cast<uint8_t>(absolute_threshold) & kCarrierSenseAbsoluteMask;
+  const uint8_t relative = static_cast<uint8_t>(relative_threshold << 4);
+  bool result =
+      UpdateRegisterBits(Cmd::kAgcctrl1, kCarrierSenseAbsoluteMask, absolute);
+  result &=
+      UpdateRegisterBits(Cmd::kAgcctrl1, kCarrierSenseRelativeMask, relative);
   if (result) {
     config_.carrier_sense_threshold = absolute_threshold;
     config_.carrier_sense_relative = relative_threshold;
@@ -961,16 +918,15 @@ bool Cc1101::SetCcaMode(CcaMode mode) {
   if (!EnsureIdle()) {
     return false;
   }
-  if (!UpdateRegisterBits(Cmd::kMcsm1, kCcaModeMask,
-          static_cast<uint8_t>(mode) << 4)) {
+  if (!UpdateRegisterBits(
+          Cmd::kMcsm1, kCcaModeMask, static_cast<uint8_t>(mode) << 4)) {
     return false;
   }
   config_.cca_mode = mode;
   return true;
 }
 
-bool Cc1101::SetGdoMapping(
-    GdoPin pin, uint8_t signal, bool inverted) {
+bool Cc1101::SetGdoMapping(GdoPin pin, uint8_t signal, bool inverted) {
   if (signal > 0x3F) {
     return false;
   }
@@ -987,8 +943,8 @@ bool Cc1101::SetGdoMapping(
   if (!EnsureIdle()) {
     return false;
   }
-  return WriteRegister(cmd,
-      static_cast<uint8_t>(signal | (inverted ? 0x40 : 0)));
+  return WriteRegister(
+      cmd, static_cast<uint8_t>(signal | (inverted ? 0x40 : 0)));
 }
 
 bool Cc1101::Standby(uint32_t timeout_ms) {
@@ -1033,9 +989,7 @@ bool Cc1101::Sleep() {
   return true;
 }
 
-bool Cc1101::Wakeup() {
-  return Standby();
-}
+bool Cc1101::Wakeup() { return Standby(); }
 
 bool Cc1101::Calibrate(uint32_t timeout_ms) {
   if (!Standby() || !Strobe(StrobeCmd::kCalibrate)) {
@@ -1048,7 +1002,8 @@ bool Cc1101::StartReceive() {
   if (config_.packet_length_mode == PacketLengthMode::kInfinite) {
     return false;
   }
-  const size_t fifo_usage = config_.maximum_packet_length +
+  const size_t fifo_usage =
+      config_.maximum_packet_length +
       (config_.packet_length_mode == PacketLengthMode::kVariable ? 1 : 0) +
       (config_.append_status ? 2 : 0);
   if (fifo_usage > kFifoSize) {
@@ -1058,10 +1013,9 @@ bool Cc1101::StartReceive() {
   }
   bool result = Standby();
   result &= FlushRx();
-  result &= UpdateRegisterBits(Cmd::kFifothr,
-      kFifoThresholdMask, kRxFifoThresholdMaximum);
-  result &= WriteRegister(Cmd::kIocfg0,
-      kGdoRxFifoThresholdOrPacketEnd);
+  result &= UpdateRegisterBits(
+      Cmd::kFifothr, kFifoThresholdMask, kRxFifoThresholdMaximum);
+  result &= WriteRegister(Cmd::kIocfg0, kGdoRxFifoThresholdOrPacketEnd);
   result &= Strobe(StrobeCmd::kReceive);
   return result;
 }
@@ -1080,13 +1034,11 @@ bool Cc1101::FlushTx() {
   return Strobe(StrobeCmd::kFlushTx);
 }
 
-bool Cc1101::Transmit(const uint8_t* data, size_t length,
-    uint32_t timeout_ms, uint8_t destination,
-    bool include_destination) {
+bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
+    uint8_t destination, bool include_destination) {
   const bool has_address = include_destination;
   const size_t air_length = length + (has_address ? 1 : 0);
-  if (data == nullptr || length == 0 ||
-      air_length > kMaximumPacketLength ||
+  if (data == nullptr || length == 0 || air_length > kMaximumPacketLength ||
       air_length > config_.maximum_packet_length) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Invalid packet length (length: %zu)\n", length);
@@ -1123,8 +1075,7 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length,
     prefix.push_back(destination);
   }
 
-  const size_t initial_payload = std::min(
-      length, kFifoSize - prefix.size());
+  const size_t initial_payload = std::min(length, kFifoSize - prefix.size());
   if (!prefix.empty() &&
       !WriteBurst(Cmd::kFifo, prefix.data(), prefix.size())) {
     return false;
@@ -1134,15 +1085,13 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length,
   }
 
   if (config_.cca_mode != CcaMode::kAlways) {
-    if (!Strobe(StrobeCmd::kReceive) ||
-        !WaitForState(State::kReceive, 100)) {
+    if (!Strobe(StrobeCmd::kReceive) || !WaitForState(State::kReceive, 100)) {
       Standby();
       FlushTx();
       return false;
     }
     if (config_.cca_mode == CcaMode::kRssiBelowThreshold ||
-        config_.cca_mode ==
-            CcaMode::kRssiBelowThresholdUnlessReceiving) {
+        config_.cca_mode == CcaMode::kRssiBelowThresholdUnlessReceiving) {
       // CCA 需要先等待 RX 链路产生有效 RSSI 采样。
       DelayUs(kCcaRssiSettlingUs);
     }
@@ -1197,8 +1146,7 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length,
     }
     const size_t fifo_count = tx_bytes & kStatusFifoCountMask;
     if (fifo_count < kFifoSize) {
-      const size_t count = std::min(
-          kFifoSize - fifo_count, length - written);
+      const size_t count = std::min(kFifoSize - fifo_count, length - written);
       if (!WriteBurst(Cmd::kFifo, &data[written], count)) {
         result = false;
         break;
@@ -1213,26 +1161,24 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length,
   }
 
   if (result && gdo0_ != kDefaultValue) {
-    result &= WaitForGdo0(false,
-        static_cast<uint32_t>(std::max<int64_t>(
-            1, deadline - CurrentTimeMs())));
+    result &= WaitForGdo0(false, static_cast<uint32_t>(std::max<int64_t>(
+                                     1, deadline - CurrentTimeMs())));
   }
   if (result) {
-    result = WaitForState(State::kIdle,
-        static_cast<uint32_t>(std::max<int64_t>(
-            1, deadline - CurrentTimeMs())));
+    result = WaitForState(State::kIdle, static_cast<uint32_t>(std::max<int64_t>(
+                                            1, deadline - CurrentTimeMs())));
   }
 
   const bool cleanup = Standby() && FlushTx();
   if (!result) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Transmit failed or timed out\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "Transmit failed or timed out\n");
   }
   return result && cleanup;
 }
 
-bool Cc1101::Receive(uint8_t* data, size_t capacity,
-    size_t* received, PacketMetrics* metrics, uint32_t timeout_ms) {
+bool Cc1101::Receive(uint8_t* data, size_t capacity, size_t* received,
+    PacketMetrics* metrics, uint32_t timeout_ms) {
   if (data == nullptr || received == nullptr || capacity == 0 ||
       gdo0_ == kDefaultValue) {
     return false;
@@ -1240,14 +1186,13 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity,
   if (config_.packet_length_mode == PacketLengthMode::kInfinite) {
     return false;
   }
-  const size_t maximum_fifo_use = config_.maximum_packet_length +
+  const size_t maximum_fifo_use =
+      config_.maximum_packet_length +
       (config_.packet_length_mode == PacketLengthMode::kVariable ? 1 : 0) +
       (config_.append_status ? 2 : 0);
-  const double bits_per_symbol =
-      static_cast<double>(GetBitsPerSymbol());
+  const double bits_per_symbol = static_cast<double>(GetBitsPerSymbol());
   const double maximum_safe_rate =
-      static_cast<double>(spi_frequency_hz_) /
-      (8000.0 * bits_per_symbol);
+      static_cast<double>(spi_frequency_hz_) / (8000.0 * bits_per_symbol);
   if (maximum_fifo_use > kFifoSize &&
       config_.data_rate_kbaud > maximum_safe_rate) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
@@ -1255,15 +1200,13 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity,
     return false;
   }
   if (timeout_ms == 0) {
-    timeout_ms = CalculatePacketTimeoutMs(
-        config_.maximum_packet_length);
+    timeout_ms = CalculatePacketTimeoutMs(config_.maximum_packet_length);
   }
   *received = 0;
 
   bool result = Standby();
   result &= FlushRx();
-  result &= UpdateRegisterBits(Cmd::kFifothr,
-      kFifoThresholdMask, 0x07);
+  result &= UpdateRegisterBits(Cmd::kFifothr, kFifoThresholdMask, 0x07);
   result &= WriteRegister(Cmd::kIocfg0, kGdoSyncWord);
   result &= Strobe(StrobeCmd::kReceive);
   if (!result || !WaitForGdo0(true, timeout_ms)) {
@@ -1274,12 +1217,10 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity,
 
   const int64_t deadline = CurrentTimeMs() + timeout_ms;
   size_t copied = 0;
-  size_t packet_length = config_.packet_length_mode ==
-          PacketLengthMode::kFixed
-      ? config_.maximum_packet_length
-      : 0;
-  bool address_pending =
-      config_.address_check != AddressCheck::kDisabled;
+  size_t packet_length = config_.packet_length_mode == PacketLengthMode::kFixed
+                             ? config_.maximum_packet_length
+                             : 0;
+  bool address_pending = config_.address_check != AddressCheck::kDisabled;
   while (GpioRead(gdo0_)) {
     // 保留至少一个 FIFO 字节，避免包仍在接收时误判 FIFO 为空。
     uint8_t rx_bytes = 0;
@@ -1291,8 +1232,7 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity,
     size_t fifo_count = rx_bytes & kStatusFifoCountMask;
     if (packet_length == 0 && fifo_count > 0) {
       uint8_t length_byte = 0;
-      if (!ReadRegister(Cmd::kFifo, &length_byte) ||
-          length_byte == 0) {
+      if (!ReadRegister(Cmd::kFifo, &length_byte) || length_byte == 0) {
         result = false;
         break;
       }
@@ -1310,8 +1250,7 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity,
       address_pending = false;
     }
     if (fifo_count > 1 && copied < packet_length) {
-      const size_t count = std::min(
-          fifo_count - 1, packet_length - copied);
+      const size_t count = std::min(fifo_count - 1, packet_length - copied);
       if (!DrainReceiveFifo(data, capacity, &copied, count)) {
         result = false;
         break;
@@ -1325,14 +1264,12 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity,
   }
 
   uint8_t final_rx_bytes = 0;
-  if (result &&
-      (!ReadStableStatus(Cmd::kRxbytes, &final_rx_bytes) ||
-          (final_rx_bytes & kStatusFifoErrorMask) != 0)) {
+  if (result && (!ReadStableStatus(Cmd::kRxbytes, &final_rx_bytes) ||
+                    (final_rx_bytes & kStatusFifoErrorMask) != 0)) {
     result = false;
   }
   if (result) {
-    const size_t available =
-        final_rx_bytes & kStatusFifoCountMask;
+    const size_t available = final_rx_bytes & kStatusFifoCountMask;
     const size_t required =
         (address_pending ? 1 : 0) +
         (packet_length >= copied ? packet_length - copied : 0) +
@@ -1380,8 +1317,8 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity,
   return result && cleanup;
 }
 
-bool Cc1101::ReadReceivedPacket(uint8_t* data, size_t capacity,
-    size_t* received, PacketMetrics* metrics) {
+bool Cc1101::ReadReceivedPacket(
+    uint8_t* data, size_t capacity, size_t* received, PacketMetrics* metrics) {
   if (data == nullptr || received == nullptr || capacity == 0) {
     return false;
   }
@@ -1398,8 +1335,8 @@ bool Cc1101::ReadReceivedPacket(uint8_t* data, size_t capacity,
   if (available == 0) {
     return false;
   }
-  const bool result = ReadPacketFromFifo(
-      data, capacity, available, received, metrics);
+  const bool result =
+      ReadPacketFromFifo(data, capacity, available, received, metrics);
   const bool cleanup = Standby() && FlushRx();
   return result && cleanup;
 }
@@ -1471,10 +1408,10 @@ bool Cc1101::GetChipStatus(ChipStatus* status) {
   return false;
 }
 
-bool Cc1101::Transfer(const uint8_t* write_data,
-    uint8_t* read_data, size_t length, bool wait_ready) {
-  if (bus_ == nullptr || write_data == nullptr ||
-      read_data == nullptr || length == 0) {
+bool Cc1101::Transfer(const uint8_t* write_data, uint8_t* read_data,
+    size_t length, bool wait_ready) {
+  if (bus_ == nullptr || write_data == nullptr || read_data == nullptr ||
+      length == 0) {
     return false;
   }
 
@@ -1508,8 +1445,7 @@ bool Cc1101::WaitForReady(uint32_t timeout_us) {
   const int64_t deadline = CurrentTimeUs() + timeout_us;
   while (GpioRead(miso_)) {
     if (CurrentTimeUs() >= deadline) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "CHIP_RDY timeout\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "CHIP_RDY timeout\n");
       return false;
     }
     DelayUs(1);
@@ -1576,8 +1512,7 @@ bool Cc1101::ReadStableStatus(Cmd cmd, uint8_t* value) {
     previous = current;
   }
   LogMessage(LogLevel::kError, __FILE__, __LINE__,
-      "Unstable status register (address: %#X)\n",
-      static_cast<uint8_t>(cmd));
+      "Unstable status register (address: %#X)\n", static_cast<uint8_t>(cmd));
   return false;
 }
 
@@ -1598,8 +1533,7 @@ bool Cc1101::ReadPacketFromFifo(uint8_t* data, size_t capacity,
   size_t required = config_.append_status ? 2 : 0;
   if (config_.packet_length_mode == PacketLengthMode::kVariable) {
     uint8_t length_byte = 0;
-    if (!ReadRegister(Cmd::kFifo, &length_byte) ||
-        length_byte == 0) {
+    if (!ReadRegister(Cmd::kFifo, &length_byte) || length_byte == 0) {
       return false;
     }
     packet_length = length_byte;
@@ -1608,8 +1542,8 @@ bool Cc1101::ReadPacketFromFifo(uint8_t* data, size_t capacity,
   required += packet_length;
   if (required > kFifoSize || required > available) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Incomplete packet in FIFO (need: %zu available: %zu)\n",
-        required, available);
+        "Incomplete packet in FIFO (need: %zu available: %zu)\n", required,
+        available);
     return false;
   }
   if (config_.address_check != AddressCheck::kDisabled) {
@@ -1649,8 +1583,8 @@ bool Cc1101::ReadPacketFromFifo(uint8_t* data, size_t capacity,
   return ReadPacketMetrics(metrics);
 }
 
-bool Cc1101::DrainReceiveFifo(uint8_t* data, size_t capacity,
-    size_t* copied, size_t bytes_to_read) {
+bool Cc1101::DrainReceiveFifo(
+    uint8_t* data, size_t capacity, size_t* copied, size_t bytes_to_read) {
   if (copied == nullptr || *copied + bytes_to_read > capacity) {
     return false;
   }
@@ -1673,8 +1607,7 @@ bool Cc1101::ReadPacketMetrics(PacketMetrics* metrics) {
   }
   last_metrics_.rssi_dbm = DecodeRssi(rssi);
   last_metrics_.lqi = lqi & 0x7F;
-  last_metrics_.crc_valid =
-      !config_.crc_enabled || (lqi & kCrcValidMask) != 0;
+  last_metrics_.crc_valid = !config_.crc_enabled || (lqi & kCrcValidMask) != 0;
   if (metrics != nullptr) {
     *metrics = last_metrics_;
   }
@@ -1701,7 +1634,14 @@ bool Cc1101::SelectPaValue(int8_t power_dbm, uint8_t* value) const {
     return false;
   }
   constexpr int8_t kPowerLevels[] = {
-      -30, -20, -15, -10, 0, 5, 7, 10,
+      -30,
+      -20,
+      -15,
+      -10,
+      0,
+      5,
+      7,
+      10,
   };
   constexpr uint8_t kPaTable[][4] = {
       {0x12, 0x12, 0x03, 0x03},
@@ -1715,18 +1655,16 @@ bool Cc1101::SelectPaValue(int8_t power_dbm, uint8_t* value) const {
   };
 
   uint8_t band = 0;
-  if (config_.frequency_mhz >= 387.0 &&
-      config_.frequency_mhz <= 464.0) {
+  if (config_.frequency_mhz >= 387.0 && config_.frequency_mhz <= 464.0) {
     band = 1;
-  } else if (config_.frequency_mhz >= 779.0 &&
-      config_.frequency_mhz < 891.5) {
+  } else if (config_.frequency_mhz >= 779.0 && config_.frequency_mhz < 891.5) {
     band = 2;
   } else if (config_.frequency_mhz >= 891.5) {
     band = 3;
   }
 
-  for (size_t index = 0;
-       index < sizeof(kPowerLevels) / sizeof(kPowerLevels[0]); ++index) {
+  for (size_t index = 0; index < sizeof(kPowerLevels) / sizeof(kPowerLevels[0]);
+      ++index) {
     if (power_dbm == kPowerLevels[index]) {
       *value = kPaTable[index][band];
       return true;
@@ -1736,15 +1674,14 @@ bool Cc1101::SelectPaValue(int8_t power_dbm, uint8_t* value) const {
 }
 
 bool Cc1101::ValidateConfig(const Config& config) const {
-  const bool modulation_valid =
-      config.modulation == Modulation::k2Fsk ||
-      config.modulation == Modulation::kGfsk ||
-      config.modulation == Modulation::kAskOok ||
-      config.modulation == Modulation::k4Fsk ||
-      config.modulation == Modulation::kMsk;
+  const bool modulation_valid = config.modulation == Modulation::k2Fsk ||
+                                config.modulation == Modulation::kGfsk ||
+                                config.modulation == Modulation::kAskOok ||
+                                config.modulation == Modulation::k4Fsk ||
+                                config.modulation == Modulation::kMsk;
   const bool encoding_valid = config.encoding == Encoding::kNrz ||
-      config.encoding == Encoding::kManchester ||
-      config.encoding == Encoding::kWhitening;
+                              config.encoding == Encoding::kManchester ||
+                              config.encoding == Encoding::kWhitening;
   const bool packet_mode_valid =
       config.packet_length_mode == PacketLengthMode::kFixed ||
       config.packet_length_mode == PacketLengthMode::kVariable;
@@ -1755,58 +1692,52 @@ bool Cc1101::ValidateConfig(const Config& config) const {
       config.encoding == Encoding::kManchester &&
       (config.fec_enabled || config.modulation == Modulation::k4Fsk ||
           config.modulation == Modulation::kMsk);
-  const double crystal_hz =
-      config.crystal_frequency_mhz * 1000000.0;
+  const double crystal_hz = config.crystal_frequency_mhz * 1000000.0;
   const double minimum_bandwidth_khz =
       std::floor(crystal_hz / 448.0 / 100.0) / 10.0;
   const double maximum_bandwidth_khz =
       std::ceil(crystal_hz / 32.0 / 100.0) / 10.0;
   const double minimum_spacing_khz =
-      crystal_hz * 256.0 /
-      static_cast<double>(1UL << 18) / 1000.0;
+      crystal_hz * 256.0 / static_cast<double>(1UL << 18) / 1000.0;
   const double maximum_spacing_khz =
-      crystal_hz * 511.0 * 8.0 /
-      static_cast<double>(1UL << 18) / 1000.0;
+      crystal_hz * 511.0 * 8.0 / static_cast<double>(1UL << 18) / 1000.0;
   const double minimum_deviation_khz =
-      crystal_hz * 8.0 /
-      static_cast<double>(1UL << 17) / 1000.0;
+      crystal_hz * 8.0 / static_cast<double>(1UL << 17) / 1000.0;
   const double maximum_deviation_khz =
-      crystal_hz * 15.0 * 128.0 /
-      static_cast<double>(1UL << 17) / 1000.0;
-  const bool deviation_used =
-      config.modulation == Modulation::k2Fsk ||
-      config.modulation == Modulation::kGfsk ||
-      config.modulation == Modulation::k4Fsk;
+      crystal_hz * 15.0 * 128.0 / static_cast<double>(1UL << 17) / 1000.0;
+  const bool deviation_used = config.modulation == Modulation::k2Fsk ||
+                              config.modulation == Modulation::kGfsk ||
+                              config.modulation == Modulation::k4Fsk;
   return config.crystal_frequency_mhz >= 26.0 &&
-      config.crystal_frequency_mhz <= 27.0 &&
-      ValidateFrequency(
-          config.frequency_mhz, config.crystal_frequency_mhz) &&
-      modulation_valid && encoding_valid && packet_mode_valid &&
-      ValidateDataRate(config.data_rate_kbaud, config.modulation) &&
-      config.receive_bandwidth_khz >= minimum_bandwidth_khz &&
-      config.receive_bandwidth_khz <= maximum_bandwidth_khz &&
-      config.channel_spacing_khz >= minimum_spacing_khz &&
-      config.channel_spacing_khz <= maximum_spacing_khz &&
-      (!deviation_used ||
-          (config.frequency_deviation_khz >= minimum_deviation_khz &&
-              config.frequency_deviation_khz <= maximum_deviation_khz)) &&
-      ValidatePreambleLength(config.preamble_length_bits) &&
-      ValidateOutputPower(config.output_power_dbm) &&
-      config.maximum_packet_length != 0 && !manchester_conflict &&
-      (!config.fec_enabled ||
-          config.packet_length_mode == PacketLengthMode::kFixed) &&
-      (!config.crc_autoflush ||
-          (config.crc_enabled &&
-              config.maximum_packet_length <= autoflush_limit)) &&
-      config.bit_rate_tolerance <= kBitRateToleranceMask &&
-      config.carrier_sense_threshold >= -8 &&
-      config.carrier_sense_threshold <= 7 &&
-      config.carrier_sense_relative <= 3 &&
-      config.preamble_quality_threshold <= 7 &&
-      config.msk_phase_change_period <= 7 &&
-      static_cast<uint8_t>(config.address_check) <= 3 &&
-      static_cast<uint8_t>(config.sync_mode) <= 7 &&
-      static_cast<uint8_t>(config.cca_mode) <= 3;
+         config.crystal_frequency_mhz <= 27.0 &&
+         ValidateFrequency(
+             config.frequency_mhz, config.crystal_frequency_mhz) &&
+         modulation_valid && encoding_valid && packet_mode_valid &&
+         ValidateDataRate(config.data_rate_kbaud, config.modulation) &&
+         config.receive_bandwidth_khz >= minimum_bandwidth_khz &&
+         config.receive_bandwidth_khz <= maximum_bandwidth_khz &&
+         config.channel_spacing_khz >= minimum_spacing_khz &&
+         config.channel_spacing_khz <= maximum_spacing_khz &&
+         (!deviation_used ||
+             (config.frequency_deviation_khz >= minimum_deviation_khz &&
+                 config.frequency_deviation_khz <= maximum_deviation_khz)) &&
+         ValidatePreambleLength(config.preamble_length_bits) &&
+         ValidateOutputPower(config.output_power_dbm) &&
+         config.maximum_packet_length != 0 && !manchester_conflict &&
+         (!config.fec_enabled ||
+             config.packet_length_mode == PacketLengthMode::kFixed) &&
+         (!config.crc_autoflush ||
+             (config.crc_enabled &&
+                 config.maximum_packet_length <= autoflush_limit)) &&
+         config.bit_rate_tolerance <= kBitRateToleranceMask &&
+         config.carrier_sense_threshold >= -8 &&
+         config.carrier_sense_threshold <= 7 &&
+         config.carrier_sense_relative <= 3 &&
+         config.preamble_quality_threshold <= 7 &&
+         config.msk_phase_change_period <= 7 &&
+         static_cast<uint8_t>(config.address_check) <= 3 &&
+         static_cast<uint8_t>(config.sync_mode) <= 7 &&
+         static_cast<uint8_t>(config.cca_mode) <= 3;
 }
 
 bool Cc1101::ValidateDataRate(
@@ -1834,8 +1765,7 @@ bool Cc1101::ValidateDataRate(
     default:
       return false;
   }
-  return data_rate_kbaud >= minimum_kbaud &&
-      data_rate_kbaud <= maximum_kbaud;
+  return data_rate_kbaud >= minimum_kbaud && data_rate_kbaud <= maximum_kbaud;
 }
 
 uint8_t Cc1101::GetBitsPerSymbol() const {
@@ -1843,15 +1773,21 @@ uint8_t Cc1101::GetBitsPerSymbol() const {
 }
 
 bool Cc1101::ValidatePreambleLength(uint16_t length_bits) const {
-  return length_bits == 16 || length_bits == 24 ||
-      length_bits == 32 || length_bits == 48 ||
-      length_bits == 64 || length_bits == 96 ||
-      length_bits == 128 || length_bits == 192;
+  return length_bits == 16 || length_bits == 24 || length_bits == 32 ||
+         length_bits == 48 || length_bits == 64 || length_bits == 96 ||
+         length_bits == 128 || length_bits == 192;
 }
 
 bool Cc1101::ValidateOutputPower(int8_t power_dbm) const {
   constexpr int8_t kPowerLevels[] = {
-      -30, -20, -15, -10, 0, 5, 7, 10,
+      -30,
+      -20,
+      -15,
+      -10,
+      0,
+      5,
+      7,
+      10,
   };
   for (const int8_t supported : kPowerLevels) {
     if (power_dbm == supported) {
@@ -1863,20 +1799,19 @@ bool Cc1101::ValidateOutputPower(int8_t power_dbm) const {
 
 bool Cc1101::ValidateFrequency(
     double frequency_mhz, double crystal_frequency_mhz) const {
-  if (!std::isfinite(frequency_mhz) ||
-      !std::isfinite(crystal_frequency_mhz)) {
+  if (!std::isfinite(frequency_mhz) || !std::isfinite(crystal_frequency_mhz)) {
     return false;
   }
   const double middle_band_minimum =
       crystal_frequency_mhz >= 27.0 ? 392.0 : 387.0;
   return (frequency_mhz >= 300.0 && frequency_mhz <= 348.0) ||
-      (frequency_mhz >= middle_band_minimum && frequency_mhz <= 464.0) ||
-      (frequency_mhz >= 779.0 && frequency_mhz <= 928.0);
+         (frequency_mhz >= middle_band_minimum && frequency_mhz <= 464.0) ||
+         (frequency_mhz >= 779.0 && frequency_mhz <= 928.0);
 }
 
 uint32_t Cc1101::CalculatePacketTimeoutMs(size_t length) const {
   double data_rate_bps = config_.data_rate_kbaud * 1000.0 *
-      static_cast<double>(GetBitsPerSymbol());
+                         static_cast<double>(GetBitsPerSymbol());
   if (config_.encoding == Encoding::kManchester) {
     data_rate_bps /= 2.0;
   }
@@ -1884,24 +1819,20 @@ uint32_t Cc1101::CalculatePacketTimeoutMs(size_t length) const {
     data_rate_bps /= 2.0;
   }
   const double air_time_ms =
-      static_cast<double>((length + 16) * 8) * 1000.0 /
-      data_rate_bps;
+      static_cast<double>((length + 16) * 8) * 1000.0 / data_rate_bps;
   return static_cast<uint32_t>(
       std::max(100.0, std::ceil(air_time_ms * 5.0 + 10.0)));
 }
 
 uint32_t Cc1101::CalculateFifoPollIntervalUs() const {
-  const double bits_per_symbol =
-      static_cast<double>(GetBitsPerSymbol());
+  const double bits_per_symbol = static_cast<double>(GetBitsPerSymbol());
   const double maximum_interval_us =
-      4000.0 /
-      (std::max(0.6, config_.data_rate_kbaud) * bits_per_symbol);
-  const double status_read_us = 32000000.0 /
-      static_cast<double>(std::max(int32_t{1}, spi_frequency_hz_));
+      4000.0 / (std::max(0.6, config_.data_rate_kbaud) * bits_per_symbol);
+  const double status_read_us =
+      32000000.0 / static_cast<double>(std::max(int32_t{1}, spi_frequency_hz_));
   const double interval_us =
       std::max(0.0, maximum_interval_us - status_read_us);
-  return static_cast<uint32_t>(
-      std::min(1000.0, std::floor(interval_us)));
+  return static_cast<uint32_t>(std::min(1000.0, std::floor(interval_us)));
 }
 
 bool Cc1101::RestoreAfterWakeup() {
@@ -1909,8 +1840,7 @@ bool Cc1101::RestoreAfterWakeup() {
   result &= WriteRegister(Cmd::kTest1, test1_value_);
   result &= WriteRegister(Cmd::kTest0, test0_value_);
   result &= WriteRegister(Cmd::kFscal2, fscal2_value_);
-  result &= WriteBurst(Cmd::kPatable,
-      pa_table_cache_, pa_table_length_);
+  result &= WriteBurst(Cmd::kPatable, pa_table_cache_, pa_table_length_);
   return result;
 }
 
@@ -1936,17 +1866,15 @@ int64_t Cc1101::CurrentTimeMs() const {
 }
 
 float Cc1101::DecodeRssi(uint8_t raw) const {
-  const int16_t signed_value = raw >= 128
-      ? static_cast<int16_t>(raw) - 256
-      : static_cast<int16_t>(raw);
+  const int16_t signed_value =
+      raw >= 128 ? static_cast<int16_t>(raw) - 256 : static_cast<int16_t>(raw);
   return static_cast<float>(signed_value) / 2.0F - 74.0F;
 }
 
 Cc1101::ChipStatus Cc1101::ParseChipStatus(uint8_t raw) const {
   ChipStatus status;
   status.ready = (raw & kChipReadyMask) == 0;
-  status.state = static_cast<uint8_t>(
-      (raw & kStateMask) >> 4);
+  status.state = static_cast<uint8_t>((raw & kStateMask) >> 4);
   status.fifo_bytes_available = raw & kFifoCountMask;
   return status;
 }

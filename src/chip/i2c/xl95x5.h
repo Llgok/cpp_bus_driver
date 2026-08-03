@@ -2,7 +2,7 @@
  * @Description: XL95x5 GPIO 扩展芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-30 13:44:44
+ * @LastEditTime: 2026-08-03 16:11:35
  * @License: GPL 3.0
  */
 #pragma once
@@ -42,8 +42,7 @@ class Xl95x5 final : public ChipI2cGuide {
   };
 
   explicit Xl95x5(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kDefaultValue)
+      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
@@ -60,8 +59,10 @@ class Xl95x5 final : public ChipI2cGuide {
 
   /**
    * @brief 写入引脚或端口数据
-   * @param pin 使用Pin::配置；传入引脚时写单个IO，传入Pin::kIoPort0或Pin::kIoPort1时写整个端口
-   * @param value 写单个IO时0为低电平、非0为高电平；写端口时每一位对应一个IO输出电平
+   * @param pin
+   * 使用Pin::配置；传入引脚时写单个IO，传入Pin::kIoPort0或Pin::kIoPort1时写整个端口
+   * @param value
+   * 写单个IO时0为低电平、非0为高电平；写端口时每一位对应一个IO输出电平
    * @return 写入成功返回 true，失败返回 false
    */
   bool GpioWrite(Pin pin, uint8_t value);

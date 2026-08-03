@@ -2,7 +2,7 @@
  * @Description: SGM41562 系列电池充电管理芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-07-25 16:20:43
+ * @LastEditTime: 2026-08-03 16:11:25
  * @License: GPL 3.0
  */
 #include "sgm41562xx.h"
@@ -65,10 +65,8 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
     return false;
   }
 
-  if (device_id != kDeviceIdSgm41562BAndSa &&
-      device_id != kDeviceIdSgm41562A &&
-      device_id != kDeviceIdSgm41562 &&
-      device_id != kDeviceIdSgm41562S) {
+  if (device_id != kDeviceIdSgm41562BAndSa && device_id != kDeviceIdSgm41562A &&
+      device_id != kDeviceIdSgm41562 && device_id != kDeviceIdSgm41562S) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Unsupported SGM41562xx id: %#X\n", device_id);
     return false;
@@ -87,22 +85,19 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
 
   chip_type_ = detected_chip_type;
   const bool extended_register_map =
-      chip_type_ == ChipType::kSgm41562S ||
-      chip_type_ == ChipType::kSgm41562Sa;
+      chip_type_ == ChipType::kSgm41562S || chip_type_ == ChipType::kSgm41562Sa;
   const uint8_t* init_sequence =
       extended_register_map ? kInitSequenceS : kInitSequenceAb;
   const size_t init_sequence_size =
       extended_register_map ? sizeof(kInitSequenceS) : sizeof(kInitSequenceAb);
   if (!InitSequence(init_sequence, init_sequence_size)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
     chip_type_ = ChipType::kUnknown;
     return false;
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "Get %s id success (id: %#X)\n", ChipTypeToString(chip_type_),
-      device_id);
+      "Get %s id success (id: %#X)\n", ChipTypeToString(chip_type_), device_id);
   return true;
 }
 
@@ -175,8 +170,8 @@ Sgm41562xx::ChipType Sgm41562xx::DetectIdZeroChipType() {
           &charge_voltage_control) ||
       !bus_->Read(static_cast<uint8_t>(Cmd::kSystemVoltageRegulation),
           &system_voltage_regulation)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Read reset values failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "Read reset values failed\n");
     return ChipType::kUnknown;
   }
 
@@ -202,8 +197,8 @@ bool Sgm41562xx::ResetRegisters() {
           &charge_current_control) ||
       !bus_->Write(static_cast<uint8_t>(Cmd::kChargeCurrentControl),
           static_cast<uint8_t>(charge_current_control | kRegisterResetMask))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Reset registers failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "Reset registers failed\n");
     return false;
   }
 
@@ -211,8 +206,7 @@ bool Sgm41562xx::ResetRegisters() {
   return true;
 }
 
-bool Sgm41562xx::UpdateRegisterBits(
-    Cmd cmd, uint8_t mask, uint8_t value) {
+bool Sgm41562xx::UpdateRegisterBits(Cmd cmd, uint8_t mask, uint8_t value) {
   uint8_t current_value = 0;
   if (!bus_->Read(static_cast<uint8_t>(cmd), &current_value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read register failed\n");
@@ -229,8 +223,7 @@ bool Sgm41562xx::UpdateRegisterBits(
   return true;
 }
 
-bool Sgm41562xx::ReadRegister(
-    Cmd cmd, uint8_t& value, const char* name) {
+bool Sgm41562xx::ReadRegister(Cmd cmd, uint8_t& value, const char* name) {
   if (!bus_->Read(static_cast<uint8_t>(cmd), &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Read %s failed (command: %#X)\n",
@@ -257,8 +250,8 @@ bool Sgm41562xx::GetIrqStatus(IrqStatus& status) {
   }
 
   uint8_t irq_status = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kFaultAndShippingControl),
-          &irq_status)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Cmd::kFaultAndShippingControl), &irq_status)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -281,8 +274,8 @@ bool Sgm41562xx::SetChargeEnable(bool enable) {
     return false;
   }
 
-  return UpdateRegisterBits(Cmd::kPowerOnConfiguration,
-      kChargeDisableMask, enable ? 0x00 : kChargeDisableMask);
+  return UpdateRegisterBits(Cmd::kPowerOnConfiguration, kChargeDisableMask,
+      enable ? 0x00 : kChargeDisableMask);
 }
 
 bool Sgm41562xx::GetChipStatus(ChipStatus& status) {
@@ -291,8 +284,7 @@ bool Sgm41562xx::GetChipStatus(ChipStatus& status) {
   }
 
   uint8_t chip_status = 0;
-  if (!bus_->Read(
-          static_cast<uint8_t>(Cmd::kSystemStatus), &chip_status)) {
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kSystemStatus), &chip_status)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -301,11 +293,9 @@ bool Sgm41562xx::GetChipStatus(ChipStatus& status) {
   return true;
 }
 
-void Sgm41562xx::ParseChipStatus(
-    uint8_t chip_status, ChipStatus& status) {
+void Sgm41562xx::ParseChipStatus(uint8_t chip_status, ChipStatus& status) {
   status.watchdog_expired = (chip_status & 0x80) != 0;
-  status.charge_status =
-      static_cast<ChargeStatus>((chip_status & 0x18) >> 3);
+  status.charge_status = static_cast<ChargeStatus>((chip_status & 0x18) >> 3);
   status.power_path_management_active = (chip_status & 0x04) != 0;
   status.input_power_good = (chip_status & 0x02) != 0;
   status.thermal_regulation_active = (chip_status & 0x01) != 0;
@@ -317,8 +307,7 @@ bool Sgm41562xx::GetChargerConfig(ChargerConfig& config) {
   }
 
   ChargerConfig new_config;
-  if (!ReadInputConfig(new_config) ||
-      !ReadChargeConfig(new_config) ||
+  if (!ReadInputConfig(new_config) || !ReadChargeConfig(new_config) ||
       !ReadProtectionConfig(new_config)) {
     return false;
   }
@@ -331,17 +320,15 @@ bool Sgm41562xx::ReadInputConfig(ChargerConfig& config) {
   uint8_t input_source_control = 0;
   uint8_t power_on_configuration = 0;
   uint8_t system_status = 0;
-  if (!ReadRegister(Cmd::kInputSourceControl,
-          input_source_control, "REG00 input source control") ||
-      !ReadRegister(Cmd::kPowerOnConfiguration,
-          power_on_configuration, "REG01 power-on configuration") ||
-      !ReadRegister(Cmd::kSystemStatus,
-          system_status, "REG08 system status")) {
+  if (!ReadRegister(Cmd::kInputSourceControl, input_source_control,
+          "REG00 input source control") ||
+      !ReadRegister(Cmd::kPowerOnConfiguration, power_on_configuration,
+          "REG01 power-on configuration") ||
+      !ReadRegister(Cmd::kSystemStatus, system_status, "REG08 system status")) {
     return false;
   }
 
-  config.charge_enabled =
-      (power_on_configuration & kChargeDisableMask) == 0;
+  config.charge_enabled = (power_on_configuration & kChargeDisableMask) == 0;
   config.high_impedance_enabled =
       (power_on_configuration & kHighImpedanceEnableMask) != 0;
   config.input_voltage_limit_mv =
@@ -363,8 +350,7 @@ bool Sgm41562xx::ReadInputConfig(ChargerConfig& config) {
   } else {
     config.input_current_limit_enabled =
         (system_status & kInputCurrentLimitReleaseMask) == 0;
-    config.input_current_limit_ma =
-        50 + 30 * (input_source_control & 0x0F);
+    config.input_current_limit_ma = 50 + 30 * (input_source_control & 0x0F);
     if ((system_status & kInputCurrentLimitAdd200Mask) != 0) {
       config.input_current_limit_ma += 200;
     }
@@ -378,13 +364,13 @@ bool Sgm41562xx::ReadChargeConfig(ChargerConfig& config) {
   uint8_t charge_current_control = 0;
   uint8_t discharge_termination_current = 0;
   uint8_t charge_voltage_control = 0;
-  if (!ReadRegister(Cmd::kChargeCurrentControl,
-          charge_current_control, "REG02 charge current control") ||
+  if (!ReadRegister(Cmd::kChargeCurrentControl, charge_current_control,
+          "REG02 charge current control") ||
       !ReadRegister(Cmd::kDischargeTerminationCurrent,
           discharge_termination_current,
           "REG03 discharge and termination current") ||
-      !ReadRegister(Cmd::kChargeVoltageControl,
-          charge_voltage_control, "REG04 charge voltage control")) {
+      !ReadRegister(Cmd::kChargeVoltageControl, charge_voltage_control,
+          "REG04 charge voltage control")) {
     return false;
   }
 
@@ -393,8 +379,7 @@ bool Sgm41562xx::ReadChargeConfig(ChargerConfig& config) {
   uint8_t extended_current_control = 0;
   if (extended_register_map) {
     fast_charge_current_code = charge_current_control & 0x7F;
-    if (!ReadRegister(Cmd::kExtendedCurrentControl,
-            extended_current_control,
+    if (!ReadRegister(Cmd::kExtendedCurrentControl, extended_current_control,
             "REG0D extended current control")) {
       return false;
     }
@@ -405,8 +390,7 @@ bool Sgm41562xx::ReadChargeConfig(ChargerConfig& config) {
 
   uint16_t termination_current_ma =
       1 + 2 * (discharge_termination_current & 0x0F);
-  if (extended_register_map &&
-      (extended_current_control & 0x04) != 0) {
+  if (extended_register_map && (extended_current_control & 0x04) != 0) {
     termination_current_ma *= 6;
   }
   config.termination_current_ma = termination_current_ma;
@@ -425,14 +409,11 @@ bool Sgm41562xx::ReadProtectionConfig(ChargerConfig& config) {
   uint8_t charge_timer_control = 0;
   uint8_t miscellaneous_control = 0;
   uint8_t system_voltage_regulation = 0;
-  if (!ReadRegister(Cmd::kChargeTerminationTimerControl,
-          charge_timer_control,
+  if (!ReadRegister(Cmd::kChargeTerminationTimerControl, charge_timer_control,
           "REG05 charge termination and timer control") ||
-      !ReadRegister(Cmd::kMiscellaneousOperationControl,
-          miscellaneous_control,
+      !ReadRegister(Cmd::kMiscellaneousOperationControl, miscellaneous_control,
           "REG06 miscellaneous operation control") ||
-      !ReadRegister(Cmd::kSystemVoltageRegulation,
-          system_voltage_regulation,
+      !ReadRegister(Cmd::kSystemVoltageRegulation, system_voltage_regulation,
           "REG07 system voltage regulation")) {
     return false;
   }
@@ -442,30 +423,25 @@ bool Sgm41562xx::ReadProtectionConfig(ChargerConfig& config) {
     config.system_voltage_regulation_mv =
         3600 + 50 * (system_voltage_regulation & 0x1F);
     config.input_voltage_loop_enabled =
-        (system_voltage_regulation &
-            kInputVoltageLoopDisableSMask) == 0;
+        (system_voltage_regulation & kInputVoltageLoopDisableSMask) == 0;
     config.thermal_regulation_threshold_c =
         60 + 20 * ((system_voltage_regulation >> 5) & 0x03);
   } else {
     config.system_voltage_regulation_mv =
         4200 + 50 * (system_voltage_regulation & 0x0F);
     config.pcb_overtemperature_protection_enabled =
-        (system_voltage_regulation &
-            kPcbProtectionDisableAbMask) == 0;
+        (system_voltage_regulation & kPcbProtectionDisableAbMask) == 0;
     config.input_voltage_loop_enabled =
-        (system_voltage_regulation &
-            kInputVoltageLoopDisableAbMask) == 0;
+        (system_voltage_regulation & kInputVoltageLoopDisableAbMask) == 0;
     config.thermal_regulation_threshold_c =
         60 + 20 * ((system_voltage_regulation >> 4) & 0x03);
   }
 
-  const uint8_t watchdog_setting =
-      (charge_timer_control & kWatchdogMask) >> 5;
+  const uint8_t watchdog_setting = (charge_timer_control & kWatchdogMask) >> 5;
   config.watchdog_enabled = watchdog_setting != 0;
   if (config.watchdog_enabled) {
     const uint16_t watchdog_base_s = extended_register_map ? 64 : 40;
-    config.watchdog_timeout_s =
-        watchdog_base_s << (watchdog_setting - 1);
+    config.watchdog_timeout_s = watchdog_base_s << (watchdog_setting - 1);
   }
   config.charge_termination_enabled =
       (charge_timer_control & kChargeTerminationEnableMask) != 0;
@@ -476,14 +452,13 @@ bool Sgm41562xx::ReadProtectionConfig(ChargerConfig& config) {
   config.safety_timer_hours = kSafetyTimerHours[safety_timer_setting];
   config.safety_timer_extended_in_ppm =
       (miscellaneous_control & kSafetyTimerExtendedMask) != 0;
-  config.ntc_enabled =
-      (miscellaneous_control & kNtcEnableMask) != 0;
+  config.ntc_enabled = (miscellaneous_control & kNtcEnableMask) != 0;
   return true;
 }
 
 bool Sgm41562xx::HasExtendedRegisterMap() const {
   return chip_type_ == ChipType::kSgm41562S ||
-      chip_type_ == ChipType::kSgm41562Sa;
+         chip_type_ == ChipType::kSgm41562Sa;
 }
 
 bool Sgm41562xx::SetShippingModeEnable(bool enable) {
@@ -492,8 +467,7 @@ bool Sgm41562xx::SetShippingModeEnable(bool enable) {
   }
 
   return UpdateRegisterBits(Cmd::kMiscellaneousOperationControl,
-      kShippingModeEnableMask,
-      enable ? kShippingModeEnableMask : 0x00);
+      kShippingModeEnableMask, enable ? kShippingModeEnableMask : 0x00);
 }
 
 bool Sgm41562xx::SetShippingModeDelay(ShippingModeDelay delay) {

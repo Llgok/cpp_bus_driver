@@ -2,7 +2,7 @@
  * @Description: 跨平台硬件 I2S 音频总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-04-30 13:45:19
+ * @LastEditTime: 2026-08-03 16:10:35
  * @License: GPL 3.0
  */
 #pragma once
@@ -25,8 +25,7 @@ class HardwareI2s final : public BusI2sGuide {
       i2s_clock_src_t clock_source = I2S_CLK_SRC_DEFAULT,
       i2s_slot_mode_t slot_mode_in = i2s_slot_mode_t::I2S_SLOT_MODE_STEREO,
       i2s_slot_mode_t slot_mode_out = i2s_slot_mode_t::I2S_SLOT_MODE_STEREO,
-      i2s_std_slot_mask_t slot_mask_in =
-          i2s_std_slot_mask_t::I2S_STD_SLOT_BOTH,
+      i2s_std_slot_mask_t slot_mask_in = i2s_std_slot_mask_t::I2S_STD_SLOT_BOTH,
       i2s_std_slot_mask_t slot_mask_out =
           i2s_std_slot_mask_t::I2S_STD_SLOT_BOTH)
       : data_in_(data_in),

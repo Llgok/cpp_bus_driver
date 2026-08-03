@@ -2,7 +2,7 @@
  * @Description: ICN6211 MIPI-DSI 转 RGB 桥接芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-01-16 11:57:07
- * @LastEditTime: 2026-04-30 13:43:33
+ * @LastEditTime: 2026-08-03 16:11:17
  * @License: GPL 3.0
  */
 #pragma once
@@ -68,8 +68,7 @@ class Icn6211 final : public ChipI2cGuide {
   };
 
   explicit Icn6211(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kDefaultValue)
+      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = kDefaultValue) override;

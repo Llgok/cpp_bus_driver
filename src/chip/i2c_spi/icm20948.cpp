@@ -2,16 +2,14 @@
  * @Description: ICM20948 九轴惯性传感器 I2C/SPI 共用驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-31 15:20:00
- * @LastEditTime: 2026-07-31 15:20:00
+ * @LastEditTime: 2026-08-03 16:11:40
  * @License: GPL 3.0
  */
 #include "icm20948.h"
 
 namespace cpp_bus_driver {
 
-bool Icm20948::Init(int32_t freq_hz) {
-  return Init(Config{}, freq_hz);
-}
+bool Icm20948::Init(int32_t freq_hz) { return Init(Config{}, freq_hz); }
 
 bool Icm20948::Init(const Config& config, int32_t freq_hz) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
@@ -24,16 +22,13 @@ bool Icm20948::Init(const Config& config, int32_t freq_hz) {
   if ((UsesI2c() && (i2c_address_ < 0 || i2c_address_ > 0x7F)) ||
       (!UsesI2c() && spi_cs_ == kDefaultValue) ||
       (freq_hz != kDefaultValue && freq_hz <= 0)) {
-    LogMessage(
-        LogLevel::kWarning, __FILE__, __LINE__, "Invalid bus config\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid bus config\n");
     return false;
   }
 
   if (!IsValidAccelRange(config.accel_range) ||
-      !IsValidGyroRange(config.gyro_range) ||
-      !IsValidDlpf(config.accel_dlpf) ||
-      !IsValidDlpf(config.gyro_dlpf) ||
-      !IsValidDlpf(config.temperature_dlpf) ||
+      !IsValidGyroRange(config.gyro_range) || !IsValidDlpf(config.accel_dlpf) ||
+      !IsValidDlpf(config.gyro_dlpf) || !IsValidDlpf(config.temperature_dlpf) ||
       !IsValidMagnetometerMode(config.magnetometer_mode)) {
     LogMessage(
         LogLevel::kWarning, __FILE__, __LINE__, "Invalid sensor config\n");
@@ -60,8 +55,7 @@ bool Icm20948::Init(const Config& config, int32_t freq_hz) {
 
   uint8_t device_id = 0;
   if (!ResetDevice()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Reset ICM20948 failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Reset ICM20948 failed\n");
     EnterSafeStateAfterInitializationFailure();
     return false;
   }
@@ -73,8 +67,8 @@ bool Icm20948::Init(const Config& config, int32_t freq_hz) {
   }
   if (!GetDeviceId(device_id) || device_id != kDeviceId) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "ICM20948 device id mismatch (read: %#X, expected: %#X)\n",
-        device_id, kDeviceId);
+        "ICM20948 device id mismatch (read: %#X, expected: %#X)\n", device_id,
+        kDeviceId);
     EnterSafeStateAfterInitializationFailure();
     return false;
   }
@@ -88,8 +82,7 @@ bool Icm20948::Init(const Config& config, int32_t freq_hz) {
   initialized_ = true;
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "ICM20948 initialized by %s\n",
-      UsesI2c() ? "I2C" : "SPI");
+      "ICM20948 initialized by %s\n", UsesI2c() ? "I2C" : "SPI");
   return true;
 }
 
@@ -99,8 +92,7 @@ bool Icm20948::Deinit(bool delete_bus) {
   bool power_result = true;
   if (bus_initialized_ && !sleeping_) {
     if (auxiliary_i2c_master_enabled_) {
-      power_result &=
-          SetActiveMagnetometerMode(MagnetometerMode::kPowerDown);
+      power_result &= SetActiveMagnetometerMode(MagnetometerMode::kPowerDown);
     }
     power_result &= SetCoreSleep(true);
   }
@@ -137,8 +129,7 @@ bool Icm20948::Reset() {
 
   uint8_t device_id = 0;
   if (!ResetDevice()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Reset ICM20948 failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Reset ICM20948 failed\n");
     EnterSafeStateAfterInitializationFailure();
     return false;
   }
@@ -190,13 +181,12 @@ bool Icm20948::SetSleep(bool sleep) {
   }
   if (sleep == sleeping_) {
     if (!sleep) {
-      if (!UsesI2c() &&
-          !UpdateRegister(Cmd::kRwUserCtrl, 0x00, 0x10)) {
+      if (!UsesI2c() && !UpdateRegister(Cmd::kRwUserCtrl, 0x00, 0x10)) {
         return false;
       }
       if (resume_magnetometer_mode_ != MagnetometerMode::kPowerDown &&
           (active_magnetometer_mode_ != resume_magnetometer_mode_ ||
-           !magnetometer_stream_ready_)) {
+              !magnetometer_stream_ready_)) {
         return SetActiveMagnetometerMode(resume_magnetometer_mode_);
       }
     }
@@ -247,8 +237,8 @@ bool Icm20948::SetSensorEnabled(bool accelerometer_enabled,
   config_.accelerometer_enabled = accelerometer_enabled;
   config_.gyroscope_enabled = gyroscope_enabled;
 
-  if (!UpdateRegister(Cmd::kRwPowerManagement1, 0x08,
-          temperature_enabled ? 0x00 : 0x08)) {
+  if (!UpdateRegister(
+          Cmd::kRwPowerManagement1, 0x08, temperature_enabled ? 0x00 : 0x08)) {
     return false;
   }
   config_.temperature_enabled = temperature_enabled;
@@ -261,8 +251,8 @@ bool Icm20948::SetAccelRange(AccelRange range) {
     return false;
   }
 
-  const bool result = UpdateRegister(Cmd::kRwAccelConfig, 0x06,
-      static_cast<uint8_t>(range) << 1);
+  const bool result = UpdateRegister(
+      Cmd::kRwAccelConfig, 0x06, static_cast<uint8_t>(range) << 1);
   if (result) {
     config_.accel_range = range;
   }
@@ -275,8 +265,8 @@ bool Icm20948::SetGyroRange(GyroRange range) {
     return false;
   }
 
-  const bool result = UpdateRegister(Cmd::kRwGyroConfig1, 0x06,
-      static_cast<uint8_t>(range) << 1);
+  const bool result = UpdateRegister(
+      Cmd::kRwGyroConfig1, 0x06, static_cast<uint8_t>(range) << 1);
   if (result) {
     config_.gyro_range = range;
   }
@@ -289,9 +279,8 @@ bool Icm20948::SetAccelDlpf(Dlpf dlpf, bool enable) {
     return false;
   }
 
-  const uint8_t value =
-      static_cast<uint8_t>((static_cast<uint8_t>(dlpf) << 3) |
-                           static_cast<uint8_t>(enable));
+  const uint8_t value = static_cast<uint8_t>(
+      (static_cast<uint8_t>(dlpf) << 3) | static_cast<uint8_t>(enable));
   const bool result = UpdateRegister(Cmd::kRwAccelConfig, 0x39, value);
   if (result) {
     config_.accel_dlpf = dlpf;
@@ -306,9 +295,8 @@ bool Icm20948::SetGyroDlpf(Dlpf dlpf, bool enable) {
     return false;
   }
 
-  const uint8_t value =
-      static_cast<uint8_t>((static_cast<uint8_t>(dlpf) << 3) |
-                           static_cast<uint8_t>(enable));
+  const uint8_t value = static_cast<uint8_t>(
+      (static_cast<uint8_t>(dlpf) << 3) | static_cast<uint8_t>(enable));
   const bool result = UpdateRegister(Cmd::kRwGyroConfig1, 0x39, value);
   if (result) {
     config_.gyro_dlpf = dlpf;
@@ -323,8 +311,8 @@ bool Icm20948::SetTemperatureDlpf(Dlpf dlpf) {
     return false;
   }
 
-  const bool result = UpdateRegister(Cmd::kRwTemperatureConfig, 0x07,
-      static_cast<uint8_t>(dlpf));
+  const bool result = UpdateRegister(
+      Cmd::kRwTemperatureConfig, 0x07, static_cast<uint8_t>(dlpf));
   if (result) {
     config_.temperature_dlpf = dlpf;
   }
@@ -348,8 +336,8 @@ bool Icm20948::SetAccelSampleRateDivider(uint16_t divider) {
           static_cast<uint8_t>((divider >> 8) & 0x0F))) {
     return false;
   }
-  if (!WriteRegister(Cmd::kRwAccelSampleRateDividerLow,
-          static_cast<uint8_t>(divider))) {
+  if (!WriteRegister(
+          Cmd::kRwAccelSampleRateDividerLow, static_cast<uint8_t>(divider))) {
     const bool rollback_result =
         WriteRegister(Cmd::kRwAccelSampleRateDividerHigh,
             static_cast<uint8_t>((previous_divider >> 8) & 0x0F)) &&
@@ -371,8 +359,7 @@ bool Icm20948::SetGyroSampleRateDivider(uint8_t divider) {
     return false;
   }
 
-  const bool result =
-      WriteRegister(Cmd::kRwGyroSampleRateDivider, divider);
+  const bool result = WriteRegister(Cmd::kRwGyroSampleRateDivider, divider);
   if (result) {
     config_.gyro_sample_rate_divider = divider;
   }
@@ -405,8 +392,8 @@ bool Icm20948::SetDataReadyInterrupt(bool enable) {
     return false;
   }
 
-  const bool result = UpdateRegister(Cmd::kRwInterruptEnable1, 0x01,
-      enable ? 0x01 : 0x00);
+  const bool result =
+      UpdateRegister(Cmd::kRwInterruptEnable1, 0x01, enable ? 0x01 : 0x00);
   if (result) {
     config_.data_ready_interrupt_enabled = enable;
   }
@@ -436,16 +423,14 @@ bool Icm20948::ReadRawData(RawData& data) {
   const bool read_magnetometer =
       active_magnetometer_mode_ != MagnetometerMode::kPowerDown;
   if (read_magnetometer &&
-      (!magnetometer_stream_ready_ ||
-       !CheckMagnetometerStreamHealth())) {
+      (!magnetometer_stream_ready_ || !CheckMagnetometerStreamHealth())) {
     return false;
   }
 
   // 0x2D 至 0x3A 为主传感器数据，启用磁力计时继续读取至 0x43。
   uint8_t buffer[23] = {0};
   const size_t read_length = read_magnetometer ? sizeof(buffer) : 14;
-  if (!ReadRegister(
-          Cmd::kRoAccelXoutH, buffer, read_length)) {
+  if (!ReadRegister(Cmd::kRoAccelXoutH, buffer, read_length)) {
     return false;
   }
 
@@ -482,29 +467,20 @@ bool Icm20948::ReadData(SensorData& data) {
     return false;
   }
 
-  const float accel_sensitivity =
-      GetAccelSensitivity(config_.accel_range);
-  const float gyro_sensitivity =
-      GetGyroSensitivity(config_.gyro_range);
+  const float accel_sensitivity = GetAccelSensitivity(config_.accel_range);
+  const float gyro_sensitivity = GetGyroSensitivity(config_.gyro_range);
 
   data.acceleration_g.x = raw.acceleration.x / accel_sensitivity;
   data.acceleration_g.y = raw.acceleration.y / accel_sensitivity;
   data.acceleration_g.z = raw.acceleration.z / accel_sensitivity;
-  data.angular_velocity_dps.x =
-      raw.angular_velocity.x / gyro_sensitivity;
-  data.angular_velocity_dps.y =
-      raw.angular_velocity.y / gyro_sensitivity;
-  data.angular_velocity_dps.z =
-      raw.angular_velocity.z / gyro_sensitivity;
+  data.angular_velocity_dps.x = raw.angular_velocity.x / gyro_sensitivity;
+  data.angular_velocity_dps.y = raw.angular_velocity.y / gyro_sensitivity;
+  data.angular_velocity_dps.z = raw.angular_velocity.z / gyro_sensitivity;
   data.temperature_celsius =
-      raw.temperature / kTemperatureSensitivity +
-      kTemperatureOffsetCelsius;
-  data.magnetic_field_ut.x =
-      raw.magnetic_field.x * kMagnetometerSensitivityUt;
-  data.magnetic_field_ut.y =
-      raw.magnetic_field.y * kMagnetometerSensitivityUt;
-  data.magnetic_field_ut.z =
-      raw.magnetic_field.z * kMagnetometerSensitivityUt;
+      raw.temperature / kTemperatureSensitivity + kTemperatureOffsetCelsius;
+  data.magnetic_field_ut.x = raw.magnetic_field.x * kMagnetometerSensitivityUt;
+  data.magnetic_field_ut.y = raw.magnetic_field.y * kMagnetometerSensitivityUt;
+  data.magnetic_field_ut.z = raw.magnetic_field.z * kMagnetometerSensitivityUt;
   data.magnetometer_data_ready = raw.magnetometer_data_ready;
   data.magnetometer_data_overrun = raw.magnetometer_data_overrun;
   data.magnetometer_overflow = raw.magnetometer_overflow;
@@ -554,30 +530,26 @@ bool Icm20948::ReadTemperature(float& temperature_celsius) {
   }
 
   uint8_t buffer[2] = {0};
-  if (!ReadRegister(
-          Cmd::kRoTemperatureOutH, buffer, sizeof(buffer))) {
+  if (!ReadRegister(Cmd::kRoTemperatureOutH, buffer, sizeof(buffer))) {
     return false;
   }
 
-  temperature_celsius =
-      DecodeBigEndian(buffer) / kTemperatureSensitivity +
-      kTemperatureOffsetCelsius;
+  temperature_celsius = DecodeBigEndian(buffer) / kTemperatureSensitivity +
+                        kTemperatureOffsetCelsius;
   return true;
 }
 
-bool Icm20948::ReadMagnetometer(Vector3& magnetic_field_ut,
-    bool& data_ready, bool& data_overrun, bool& overflow) {
+bool Icm20948::ReadMagnetometer(Vector3& magnetic_field_ut, bool& data_ready,
+    bool& data_overrun, bool& overflow) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_ || sleeping_ ||
       active_magnetometer_mode_ == MagnetometerMode::kPowerDown ||
-      !magnetometer_stream_ready_ ||
-      !CheckMagnetometerStreamHealth()) {
+      !magnetometer_stream_ready_ || !CheckMagnetometerStreamHealth()) {
     return false;
   }
 
   uint8_t buffer[9] = {0};
-  if (!ReadRegister(
-          Cmd::kRoExternalSensorData00, buffer, sizeof(buffer))) {
+  if (!ReadRegister(Cmd::kRoExternalSensorData00, buffer, sizeof(buffer))) {
     return false;
   }
 
@@ -614,20 +586,16 @@ bool Icm20948::InitBus(int32_t freq_hz) {
   }
 
   if (freq_hz == kDefaultValue) {
-    freq_hz = UsesI2c()
-                  ? kDefaultIcmI2cFreqHz
-                  : kDefaultIcmSpiFreqHz;
+    freq_hz = UsesI2c() ? kDefaultIcmI2cFreqHz : kDefaultIcmSpiFreqHz;
   }
 
   if (UsesI2c() && freq_hz > kDefaultIcmI2cFreqHz) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "ICM20948 I2C frequency limited to %d Hz\n",
-        kDefaultIcmI2cFreqHz);
+        "ICM20948 I2C frequency limited to %d Hz\n", kDefaultIcmI2cFreqHz);
     freq_hz = kDefaultIcmI2cFreqHz;
   } else if (!UsesI2c() && freq_hz > kDefaultIcmSpiFreqHz) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "ICM20948 SPI frequency limited to %d Hz\n",
-        kDefaultIcmSpiFreqHz);
+        "ICM20948 SPI frequency limited to %d Hz\n", kDefaultIcmSpiFreqHz);
     freq_hz = kDefaultIcmSpiFreqHz;
   }
 
@@ -685,8 +653,7 @@ bool Icm20948::SetCoreSleep(bool sleep) {
   DelayMs(kGyroscopeStartDelayMs);
 
   // SPI 模式唤醒后重新确认 I2C 从接口关闭，避免异常复位后接口冲突。
-  if (!UsesI2c() &&
-      !UpdateRegister(Cmd::kRwUserCtrl, 0x00, 0x10)) {
+  if (!UsesI2c() && !UpdateRegister(Cmd::kRwUserCtrl, 0x00, 0x10)) {
     return false;
   }
   return true;
@@ -714,8 +681,7 @@ void Icm20948::EnterSafeStateAfterInitializationFailure() {
 
 bool Icm20948::ConfigureDevice(const Config& config) {
   const uint8_t power_management_1 =
-      static_cast<uint8_t>((config.temperature_enabled ? 0x00 : 0x08) |
-                           0x01);
+      static_cast<uint8_t>((config.temperature_enabled ? 0x00 : 0x08) | 0x01);
   uint8_t power_management_2 = 0;
   if (!config.accelerometer_enabled) {
     power_management_2 |= 0x38;
@@ -736,20 +702,18 @@ bool Icm20948::ConfigureDevice(const Config& config) {
   }
 
   const uint8_t gyro_config =
-      static_cast<uint8_t>(
-          (static_cast<uint8_t>(config.gyro_dlpf) << 3) |
-          (static_cast<uint8_t>(config.gyro_range) << 1) |
-          static_cast<uint8_t>(config.gyro_dlpf_enabled));
+      static_cast<uint8_t>((static_cast<uint8_t>(config.gyro_dlpf) << 3) |
+                           (static_cast<uint8_t>(config.gyro_range) << 1) |
+                           static_cast<uint8_t>(config.gyro_dlpf_enabled));
   const uint8_t accel_config =
-      static_cast<uint8_t>(
-          (static_cast<uint8_t>(config.accel_dlpf) << 3) |
-          (static_cast<uint8_t>(config.accel_range) << 1) |
-          static_cast<uint8_t>(config.accel_dlpf_enabled));
+      static_cast<uint8_t>((static_cast<uint8_t>(config.accel_dlpf) << 3) |
+                           (static_cast<uint8_t>(config.accel_range) << 1) |
+                           static_cast<uint8_t>(config.accel_dlpf_enabled));
 
   if (!WriteRegister(Cmd::kRwGyroConfig1, gyro_config) ||
       !WriteRegister(Cmd::kRwAccelConfig, accel_config) ||
-      !WriteRegister(Cmd::kRwGyroSampleRateDivider,
-          config.gyro_sample_rate_divider) ||
+      !WriteRegister(
+          Cmd::kRwGyroSampleRateDivider, config.gyro_sample_rate_divider) ||
       !WriteRegister(Cmd::kRwAccelSampleRateDividerHigh,
           static_cast<uint8_t>(
               (config.accel_sample_rate_divider >> 8) & 0x0F)) ||
@@ -773,8 +737,7 @@ bool Icm20948::ConfigureDevice(const Config& config) {
 
 bool Icm20948::ConfigureHostInterface() {
   // SPI 模式必须在启动等待结束后立即关闭主接口的 I2C 从机功能。
-  const uint8_t user_ctrl =
-      UsesI2c() ? 0x00 : 0x10;
+  const uint8_t user_ctrl = UsesI2c() ? 0x00 : 0x10;
   if (!WriteRegister(Cmd::kRwUserCtrl, user_ctrl)) {
     return false;
   }
@@ -787,8 +750,7 @@ bool Icm20948::ConfigureMagnetometer(MagnetometerMode mode) {
   }
 
   if (!WriteAk09916Register(Ak09916Cmd::kWoControl3, 0x01)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Reset AK09916 failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Reset AK09916 failed\n");
     return false;
   }
   DelayMs(kMagnetometerResetDelayMs);
@@ -796,12 +758,11 @@ bool Icm20948::ConfigureMagnetometer(MagnetometerMode mode) {
   magnetometer_stream_ready_ = false;
 
   uint8_t device_id = 0;
-  if (!ReadAk09916Register(
-          Ak09916Cmd::kRoDeviceId, device_id, false) ||
+  if (!ReadAk09916Register(Ak09916Cmd::kRoDeviceId, device_id, false) ||
       device_id != kAk09916DeviceId) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "AK09916 device id mismatch (read: %#X, expected: %#X)\n",
-        device_id, kAk09916DeviceId);
+        "AK09916 device id mismatch (read: %#X, expected: %#X)\n", device_id,
+        kAk09916DeviceId);
     return false;
   }
 
@@ -810,9 +771,8 @@ bool Icm20948::ConfigureMagnetometer(MagnetometerMode mode) {
 
 bool Icm20948::ConfigureMagnetometerStream(MagnetometerMode mode) {
   if (mode == MagnetometerMode::kPowerDown) {
-    const bool result =
-        WriteRegister(Cmd::kRwI2cSlave0Ctrl, 0x00) &&
-        WriteRegister(Cmd::kRwI2cMasterDelayCtrl, 0x00);
+    const bool result = WriteRegister(Cmd::kRwI2cSlave0Ctrl, 0x00) &&
+                        WriteRegister(Cmd::kRwI2cMasterDelayCtrl, 0x00);
     if (result) {
       magnetometer_stream_ready_ = false;
     }
@@ -820,13 +780,12 @@ bool Icm20948::ConfigureMagnetometerStream(MagnetometerMode mode) {
   }
 
   // 从 ST1 开始读取 9 字节，确保每次都以 ST2 结束本次磁场数据读取。
-  const bool result =
-      WriteRegister(Cmd::kRwI2cMasterDelayCtrl, 0x00) &&
-      WriteRegister(Cmd::kRwI2cSlave0Address,
-          static_cast<uint8_t>(kAk09916Address | 0x80)) &&
-      WriteRegister(Cmd::kRwI2cSlave0Register,
-          static_cast<uint8_t>(Ak09916Cmd::kRoStatus1)) &&
-      WriteRegister(Cmd::kRwI2cSlave0Ctrl, 0x89);
+  const bool result = WriteRegister(Cmd::kRwI2cMasterDelayCtrl, 0x00) &&
+                      WriteRegister(Cmd::kRwI2cSlave0Address,
+                          static_cast<uint8_t>(kAk09916Address | 0x80)) &&
+                      WriteRegister(Cmd::kRwI2cSlave0Register,
+                          static_cast<uint8_t>(Ak09916Cmd::kRoStatus1)) &&
+                      WriteRegister(Cmd::kRwI2cSlave0Ctrl, 0x89);
   magnetometer_stream_ready_ = result;
   return result;
 }
@@ -837,19 +796,16 @@ bool Icm20948::SetActiveMagnetometerMode(MagnetometerMode mode) {
   }
 
   if (mode == active_magnetometer_mode_ &&
-      ((mode == MagnetometerMode::kPowerDown &&
-           !magnetometer_stream_ready_) ||
-       (mode != MagnetometerMode::kPowerDown &&
-           magnetometer_stream_ready_))) {
+      ((mode == MagnetometerMode::kPowerDown && !magnetometer_stream_ready_) ||
+          (mode != MagnetometerMode::kPowerDown &&
+              magnetometer_stream_ready_))) {
     return true;
   }
 
   // AK09916 在不同连续测量模式间切换前先进入 Power-down。
   if (active_magnetometer_mode_ != MagnetometerMode::kPowerDown &&
-      (active_magnetometer_mode_ != mode ||
-       !magnetometer_stream_ready_)) {
-    if (!WriteAk09916Register(
-            Ak09916Cmd::kRwControl2,
+      (active_magnetometer_mode_ != mode || !magnetometer_stream_ready_)) {
+    if (!WriteAk09916Register(Ak09916Cmd::kRwControl2,
             static_cast<uint8_t>(MagnetometerMode::kPowerDown))) {
       return false;
     }
@@ -876,8 +832,7 @@ bool Icm20948::SetActiveMagnetometerMode(MagnetometerMode mode) {
 
 bool Icm20948::EnableAuxiliaryI2cMaster() {
   const uint8_t user_ctrl_set =
-      static_cast<uint8_t>(0x20 |
-                           (UsesI2c() ? 0x00 : 0x10));
+      static_cast<uint8_t>(0x20 | (UsesI2c() ? 0x00 : 0x10));
   if (!UpdateRegister(Cmd::kRwUserCtrl, 0x30, user_ctrl_set)) {
     auxiliary_i2c_master_enabled_ = false;
     return false;
@@ -896,8 +851,7 @@ bool Icm20948::EnableAuxiliaryI2cMaster() {
 bool Icm20948::WaitForAuxiliaryTransaction() {
   const int64_t start_time_ms = GetSystemTimeMs();
   const uint32_t timeout_ms = GetAuxiliaryTransactionTimeoutMs();
-  while (GetSystemTimeMs() - start_time_ms <
-         timeout_ms) {
+  while (GetSystemTimeMs() - start_time_ms < timeout_ms) {
     // SLV4_EN 在单字节事务完成后由硬件自动清零，不依赖完成中断使能。
     uint8_t control = 0;
     if (!ReadRegister(Cmd::kRwI2cSlave4Ctrl, &control)) {
@@ -910,8 +864,7 @@ bool Icm20948::WaitForAuxiliaryTransaction() {
       }
       if ((status & 0x30) != 0) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__,
-            "AK09916 auxiliary transaction failed (status: %#X)\n",
-            status);
+            "AK09916 auxiliary transaction failed (status: %#X)\n", status);
         return false;
       }
       return true;
@@ -929,15 +882,11 @@ uint32_t Icm20948::GetAuxiliaryTransactionTimeoutMs() const {
   uint32_t sample_period_ms = 0;
   if (config_.gyroscope_enabled) {
     const uint32_t numerator =
-        1000U * (static_cast<uint32_t>(
-                     config_.gyro_sample_rate_divider) +
-                    1U);
+        1000U * (static_cast<uint32_t>(config_.gyro_sample_rate_divider) + 1U);
     sample_period_ms = (numerator + 1099U) / 1100U;
   } else if (config_.accelerometer_enabled) {
     const uint32_t numerator =
-        1000U * (static_cast<uint32_t>(
-                     config_.accel_sample_rate_divider) +
-                    1U);
+        1000U * (static_cast<uint32_t>(config_.accel_sample_rate_divider) + 1U);
     sample_period_ms = (numerator + 1124U) / 1125U;
   } else {
     // I2C_MST_ODR_CONFIG=4 时为 1100/16=68.75 Hz。
@@ -965,8 +914,8 @@ bool Icm20948::CheckMagnetometerStreamHealth() {
   return false;
 }
 
-bool Icm20948::ReadAk09916Register(Ak09916Cmd cmd, uint8_t& data,
-    bool restore_stream) {
+bool Icm20948::ReadAk09916Register(
+    Ak09916Cmd cmd, uint8_t& data, bool restore_stream) {
   bool result = WriteRegister(Cmd::kRwI2cSlave0Ctrl, 0x00);
   if (result) {
     magnetometer_stream_ready_ = false;
@@ -974,14 +923,14 @@ bool Icm20948::ReadAk09916Register(Ak09916Cmd cmd, uint8_t& data,
 
   uint8_t ignored_status = 0;
   if (result) {
-    result = ReadRegister(Cmd::kRoI2cMasterStatus, &ignored_status) &&
-             WriteRegister(Cmd::kRwI2cSlave4Address,
-                 static_cast<uint8_t>(kAk09916Address | 0x80)) &&
-             WriteRegister(
-                 Cmd::kRwI2cSlave4Register, static_cast<uint8_t>(cmd)) &&
-             WriteRegister(Cmd::kRwI2cSlave4Ctrl, 0x80) &&
-             WaitForAuxiliaryTransaction() &&
-             ReadRegister(Cmd::kRoI2cSlave4DataIn, &data);
+    result =
+        ReadRegister(Cmd::kRoI2cMasterStatus, &ignored_status) &&
+        WriteRegister(Cmd::kRwI2cSlave4Address,
+            static_cast<uint8_t>(kAk09916Address | 0x80)) &&
+        WriteRegister(Cmd::kRwI2cSlave4Register, static_cast<uint8_t>(cmd)) &&
+        WriteRegister(Cmd::kRwI2cSlave4Ctrl, 0x80) &&
+        WaitForAuxiliaryTransaction() &&
+        ReadRegister(Cmd::kRoI2cSlave4DataIn, &data);
   }
 
   if (restore_stream &&
@@ -1005,8 +954,7 @@ bool Icm20948::WriteAk09916Register(Ak09916Cmd cmd, uint8_t data) {
   }
   return ReadRegister(Cmd::kRoI2cMasterStatus, &ignored_status) &&
          WriteRegister(Cmd::kRwI2cSlave4Address, kAk09916Address) &&
-         WriteRegister(
-             Cmd::kRwI2cSlave4Register, static_cast<uint8_t>(cmd)) &&
+         WriteRegister(Cmd::kRwI2cSlave4Register, static_cast<uint8_t>(cmd)) &&
          WriteRegister(Cmd::kRwI2cSlave4DataOut, data) &&
          WriteRegister(Cmd::kRwI2cSlave4Ctrl, 0x80) &&
          WaitForAuxiliaryTransaction();
@@ -1020,12 +968,10 @@ bool Icm20948::SelectBank(Bank bank) {
     return true;
   }
 
-  const uint8_t value = static_cast<uint8_t>(
-      static_cast<uint8_t>(bank) << 4);
+  const uint8_t value = static_cast<uint8_t>(static_cast<uint8_t>(bank) << 4);
   if (!WriteTransport(0x7F, &value, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Select bank failed (bank: %u)\n",
-        static_cast<unsigned int>(bank));
+        "Select bank failed (bank: %u)\n", static_cast<unsigned int>(bank));
     selected_bank_ = Bank::kInvalid;
     return false;
   }
@@ -1046,8 +992,7 @@ bool Icm20948::WriteRegister(Cmd cmd, uint8_t data) {
   return WriteRegister(cmd, &data, 1);
 }
 
-bool Icm20948::WriteRegister(
-    Cmd cmd, const uint8_t* data, size_t length) {
+bool Icm20948::WriteRegister(Cmd cmd, const uint8_t* data, size_t length) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if ((data == nullptr && length != 0) || !bus_initialized_) {
     return false;
@@ -1056,8 +1001,7 @@ bool Icm20948::WriteRegister(
          WriteTransport(GetRegisterAddress(cmd), data, length);
 }
 
-bool Icm20948::UpdateRegister(
-    Cmd cmd, uint8_t clear_mask, uint8_t set_mask) {
+bool Icm20948::UpdateRegister(Cmd cmd, uint8_t clear_mask, uint8_t set_mask) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   uint8_t value = 0;
   if (!ReadRegister(cmd, &value)) {
@@ -1067,27 +1011,22 @@ bool Icm20948::UpdateRegister(
   return WriteRegister(cmd, value);
 }
 
-bool Icm20948::ReadTransport(
-    uint8_t reg, uint8_t* data, size_t length) {
+bool Icm20948::ReadTransport(uint8_t reg, uint8_t* data, size_t length) {
   if (UsesI2c()) {
     return i2c_bus_->Read(reg, data, length);
   }
-  return spi_bus_->Read(
-      static_cast<uint8_t>(reg | 0x80), data, length);
+  return spi_bus_->Read(static_cast<uint8_t>(reg | 0x80), data, length);
 }
 
-bool Icm20948::WriteTransport(
-    uint8_t reg, const uint8_t* data, size_t length) {
+bool Icm20948::WriteTransport(uint8_t reg, const uint8_t* data, size_t length) {
   if (UsesI2c()) {
     return i2c_bus_->Write(reg, data, length);
   }
-  return spi_bus_->Write(
-      static_cast<uint8_t>(reg & 0x7F), data, length);
+  return spi_bus_->Write(static_cast<uint8_t>(reg & 0x7F), data, length);
 }
 
 Icm20948::Bank Icm20948::GetBank(Cmd cmd) {
-  return static_cast<Bank>(
-      (static_cast<uint16_t>(cmd) >> 8) & 0x03);
+  return static_cast<Bank>((static_cast<uint16_t>(cmd) >> 8) & 0x03);
 }
 
 uint8_t Icm20948::GetRegisterAddress(Cmd cmd) {
@@ -1095,13 +1034,11 @@ uint8_t Icm20948::GetRegisterAddress(Cmd cmd) {
 }
 
 int16_t Icm20948::DecodeBigEndian(const uint8_t* data) {
-  return static_cast<int16_t>(
-      (static_cast<uint16_t>(data[0]) << 8) | data[1]);
+  return static_cast<int16_t>((static_cast<uint16_t>(data[0]) << 8) | data[1]);
 }
 
 int16_t Icm20948::DecodeLittleEndian(const uint8_t* data) {
-  return static_cast<int16_t>(
-      (static_cast<uint16_t>(data[1]) << 8) | data[0]);
+  return static_cast<int16_t>((static_cast<uint16_t>(data[1]) << 8) | data[0]);
 }
 
 float Icm20948::GetAccelSensitivity(AccelRange range) {
@@ -1125,8 +1062,7 @@ float Icm20948::GetGyroSensitivity(GyroRange range) {
 }
 
 bool Icm20948::IsValidAccelRange(AccelRange range) {
-  return static_cast<uint8_t>(range) <=
-         static_cast<uint8_t>(AccelRange::k16g);
+  return static_cast<uint8_t>(range) <= static_cast<uint8_t>(AccelRange::k16g);
 }
 
 bool Icm20948::IsValidGyroRange(GyroRange range) {
@@ -1135,8 +1071,7 @@ bool Icm20948::IsValidGyroRange(GyroRange range) {
 }
 
 bool Icm20948::IsValidDlpf(Dlpf dlpf) {
-  return static_cast<uint8_t>(dlpf) <=
-         static_cast<uint8_t>(Dlpf::k7);
+  return static_cast<uint8_t>(dlpf) <= static_cast<uint8_t>(Dlpf::k7);
 }
 
 bool Icm20948::IsValidMagnetometerMode(MagnetometerMode mode) {

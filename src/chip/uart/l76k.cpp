@@ -2,7 +2,7 @@
  * @Description: L76K GNSS 定位模块驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-04-30 14:32:02
+ * @LastEditTime: 2026-08-03 16:12:02
  * @License: GPL 3.0
  */
 #include "l76k.h"
@@ -100,8 +100,7 @@ bool L76k::Init(int32_t baud_rate) {
 
   if (wake_up_ != kDefaultValue) {
     bool result = true;
-    result &=
-        SetGpioMode(wake_up_, GpioMode::kOutput, GpioStatus::kPullup);
+    result &= SetGpioMode(wake_up_, GpioMode::kOutput, GpioStatus::kPullup);
     if (!result) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "WakeUp failed\n");
       return false;
@@ -109,21 +108,18 @@ bool L76k::Init(int32_t baud_rate) {
   }
 
   if (!Sleep(false)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "Sleep failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Sleep failed\n");
     return false;
   }
 
   if (!ChipUartGuide::Init(baud_rate)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
   size_t buffer_index = 0;
   if (!GetDeviceId(&buffer_index)) {
-    LogMessage(
-        LogLevel::kInfo, __FILE__, __LINE__, "Get l76k id failed\n");
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Get l76k id failed\n");
     return false;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
@@ -135,8 +131,7 @@ bool L76k::Init(int32_t baud_rate) {
 
 bool L76k::Deinit() {
   if (!ChipUartGuide::Deinit()) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     return false;
   }
 
@@ -156,14 +151,13 @@ bool L76k::GetDeviceId(size_t* search_index) {
   uint32_t buffer_length = 0;
 
   if (!GetInfoData(buffer, &buffer_length)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "GetInfoData failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetInfoData failed\n");
     return false;
   }
 
   const char* buffer_cmd = "$G";
-  if (!Search(buffer.get(), buffer_length, buffer_cmd,
-          std::strlen(buffer_cmd), search_index)) {
+  if (!Search(buffer.get(), buffer_length, buffer_cmd, std::strlen(buffer_cmd),
+          search_index)) {
     return false;
   }
 
@@ -173,8 +167,7 @@ bool L76k::GetDeviceId(size_t* search_index) {
 bool L76k::Sleep(bool enable) {
   if (wake_up_ != kDefaultValue) {
     if (!GpioWrite(wake_up_, !enable)) {
-      LogMessage(
-          LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
       return false;
     }
   } else if (wake_up_callback_ != nullptr) {
@@ -184,8 +177,7 @@ bool L76k::Sleep(bool enable) {
       return false;
     }
   } else {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "Sleep failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Sleep failed\n");
     return false;
   }
 
@@ -194,8 +186,7 @@ bool L76k::Sleep(bool enable) {
 
 uint32_t L76k::ReadData(uint8_t* data, uint32_t length) {
   if (data == nullptr) {
-    LogMessage(
-        LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return 0;
   }
 
@@ -213,8 +204,7 @@ uint32_t L76k::ReadData(uint8_t* data, uint32_t length) {
 
   const int32_t result = bus_->Read(data, read_length);
   if (result <= 0) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return 0;
   }
 
@@ -228,14 +218,12 @@ bool L76k::ClearRxBufferData() { return bus_->ClearRxBufferData(); }
 bool L76k::GetInfoData(std::unique_ptr<uint8_t[]>& data, uint32_t* length,
     uint32_t max_length, uint8_t timeout_count) {
   if (length == nullptr) {
-    LogMessage(
-        LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     data = nullptr;
     return false;
   }
   if (max_length == 0) {
-    LogMessage(
-        LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     data = nullptr;
     *length = 0;
     return false;
@@ -263,8 +251,7 @@ bool L76k::GetInfoData(std::unique_ptr<uint8_t[]>& data, uint32_t* length,
 
       const int32_t read_length = bus_->Read(data.get(), buffer_length);
       if (read_length <= 0) {
-        LogMessage(
-            LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
         data = nullptr;
         *length = 0;
         return false;
@@ -280,8 +267,7 @@ bool L76k::GetInfoData(std::unique_ptr<uint8_t[]>& data, uint32_t* length,
     buffer_timeout_count++;
     if (buffer_timeout_count > timeout_count)  // 超时
     {
-      LogMessage(
-          LogLevel::kError, __FILE__, __LINE__, "Read timeout\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read timeout\n");
       data = nullptr;
       *length = 0;
       return false;
@@ -321,8 +307,7 @@ bool L76k::SetBaudRate(BaudRate baud_rate) {
   uint8_t pcas_value = 0;
   const uint32_t baud_rate_value = BaudRateToValue(baud_rate);
   if (baud_rate_value == 0 || !BaudRateToPcas01Value(baud_rate, pcas_value)) {
-    LogMessage(
-        LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -340,8 +325,7 @@ bool L76k::SetBaudRate(BaudRate baud_rate) {
   }
 
   if (!bus_->SetBaudRate(baud_rate_value)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "SetBaudRate failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetBaudRate failed\n");
     return false;
   }
 
@@ -418,8 +402,7 @@ bool L76k::SetNmeaOutputConfig(const NmeaOutputConfig& config) {
       !IsPcasOutputRateValid(config.vtg) ||
       !IsPcasOutputRateValid(config.zda) ||
       !IsPcasOutputRateValid(config.ant)) {
-    LogMessage(
-        LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -446,8 +429,7 @@ bool L76k::SetNmeaOutputConfig(const NmeaOutputConfig& config) {
 
 bool L76k::SetNmeaSentenceOutput(NmeaSentence sentence, uint16_t rate) {
   if (!((rate <= 9) || (rate == 0xFFFF))) {
-    LogMessage(
-        LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -509,8 +491,7 @@ bool L76k::QueryCasicPortConfig() {
 bool L76k::SetCasicBaudRate(BaudRate baud_rate) {
   const uint32_t baud_rate_value = BaudRateToValue(baud_rate);
   if (baud_rate_value == 0) {
-    LogMessage(
-        LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -522,16 +503,15 @@ bool L76k::SetCasicBaudRate(BaudRate baud_rate) {
 
   DelayMs(update_interval_ms_ / 2);
   if (!bus_->SetBaudRate(baud_rate_value)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "SetBaudRate failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetBaudRate failed\n");
     return false;
   }
 
   return true;
 }
 
-bool L76k::SetCasicRestartMode(RestartMode start_mode,
-    uint16_t nav_bbr_mask, CasicResetMode reset_mode) {
+bool L76k::SetCasicRestartMode(
+    RestartMode start_mode, uint16_t nav_bbr_mask, CasicResetMode reset_mode) {
   uint8_t start_mode_value = 0;
   switch (start_mode) {
     case RestartMode::kHotStart:
@@ -574,8 +554,7 @@ bool L76k::SetCasicRestartMode(RestartMode start_mode,
 
 bool L76k::SetCasicUpdateInterval(uint16_t interval_ms) {
   if (interval_ms != 200 && interval_ms != 500 && interval_ms != 1000) {
-    LogMessage(
-        LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -605,8 +584,7 @@ bool L76k::WritePcasCommand(const std::string& body) {
 
   const std::string command = "$" + body + "*" + checksum_buffer + "\r\n";
   if (!bus_->Write(command.c_str(), command.length())) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -616,8 +594,7 @@ bool L76k::WritePcasCommand(const std::string& body) {
 bool L76k::WriteCasicCommand(
     uint8_t class_id, uint8_t message_id, const std::vector<uint8_t>& payload) {
   if ((payload.size() % 4) != 0) {
-    LogMessage(
-        LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -629,10 +606,9 @@ bool L76k::WriteCasicCommand(
   frame.push_back(message_id);
   frame.insert(frame.end(), payload.begin(), payload.end());
 
-  uint32_t checksum =
-      (static_cast<uint32_t>(message_id) << 24) |
-      (static_cast<uint32_t>(class_id) << 16) |
-      static_cast<uint32_t>(payload.size());
+  uint32_t checksum = (static_cast<uint32_t>(message_id) << 24) |
+                      (static_cast<uint32_t>(class_id) << 16) |
+                      static_cast<uint32_t>(payload.size());
   for (size_t i = 0; i + 3 < payload.size(); i += 4) {
     const uint32_t word = static_cast<uint32_t>(payload[i]) |
                           (static_cast<uint32_t>(payload[i + 1]) << 8) |
@@ -643,8 +619,7 @@ bool L76k::WriteCasicCommand(
   AppendU32(frame, checksum);
 
   if (!bus_->Write(frame.data(), frame.size())) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 

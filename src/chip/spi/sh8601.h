@@ -2,7 +2,7 @@
  * @Description: SH8601 QSPI 显示控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-30 13:46:58
+ * @LastEditTime: 2026-08-03 16:11:58
  * @License: GPL 3.0
  */
 #pragma once
@@ -38,9 +38,9 @@ class Sh8601 final : public ChipQspiGuide {
   };
 
   explicit Sh8601(std::shared_ptr<BusQspiGuide> bus, uint16_t width,
-      uint16_t height, int32_t cs = kDefaultValue,
-      int32_t rst = kDefaultValue, int16_t x_offset = 0,
-      int16_t y_offset = 0, ColorFormat color_format = ColorFormat::kRgb565)
+      uint16_t height, int32_t cs = kDefaultValue, int32_t rst = kDefaultValue,
+      int16_t x_offset = 0, int16_t y_offset = 0,
+      ColorFormat color_format = ColorFormat::kRgb565)
       : ChipQspiGuide(bus, cs),
         rst_(rst),
         width_(width),
@@ -60,8 +60,7 @@ class Sh8601 final : public ChipQspiGuide {
    * @param y_end y坐标结束点
    * @return 设置成功返回 true，失败返回 false
    */
-  bool SetRenderWindow(
-      int x_start, int y_start, int x_end, int y_end);
+  bool SetRenderWindow(int x_start, int y_start, int x_end, int y_end);
 
   /**
    * @brief 设置写入流的模式

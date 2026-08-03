@@ -2,7 +2,7 @@
  * @Description: 跨平台硬件 I2C 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-07-01 12:01:12
+ * @LastEditTime: 2026-08-03 16:10:40
  * @License: GPL 3.0
  */
 #include "hardware_i2c_2.h"
@@ -106,8 +106,8 @@ bool HardwareI2c2::Deinit(bool delete_bus) {
 
 bool HardwareI2c2::Read(uint8_t* data, size_t length) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  esp_err_t result = i2c_master_read_from_device(port_, address_, data, length,
-      pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
+  esp_err_t result = i2c_master_read_from_device(
+      port_, address_, data, length, pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "i2c_master_read_from_device failed (error code: %#X)\n", result);
@@ -135,8 +135,8 @@ bool HardwareI2c2::Read(uint8_t* data, size_t length) {
 
 bool HardwareI2c2::Write(const uint8_t* data, size_t length) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  esp_err_t result = i2c_master_write_to_device(port_, address_, data, length,
-      pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
+  esp_err_t result = i2c_master_write_to_device(
+      port_, address_, data, length, pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "i2c_master_write_to_device failed (error code: %#X)\n", result);
@@ -164,8 +164,8 @@ bool HardwareI2c2::Write(const uint8_t* data, size_t length) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "data too long\n");
       return false;
     case 2:
-      LogMessage(
-          LogLevel::kError, __FILE__, __LINE__, "nack on transmit of address\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "nack on transmit of address\n");
       return false;
     case 3:
       LogMessage(
@@ -189,9 +189,9 @@ bool HardwareI2c2::Write(const uint8_t* data, size_t length) {
 bool HardwareI2c2::WriteRead(const uint8_t* write_data, size_t write_length,
     uint8_t* read_data, size_t read_length) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  esp_err_t result = i2c_master_write_read_device(port_, address_, write_data,
-      write_length, read_data, read_length,
-      pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
+  esp_err_t result =
+      i2c_master_write_read_device(port_, address_, write_data, write_length,
+          read_data, read_length, pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "i2c_master_write_read_device failed (error code: %#X)\n", result);
@@ -221,8 +221,8 @@ bool HardwareI2c2::WriteRead(const uint8_t* write_data, size_t write_length,
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "data too long\n");
       return false;
     case 2:
-      LogMessage(
-          LogLevel::kError, __FILE__, __LINE__, "nack on transmit of address\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "nack on transmit of address\n");
       return false;
     case 3:
     case 4:
@@ -251,8 +251,8 @@ bool HardwareI2c2::WriteRead(const uint8_t* write_data, size_t write_length,
 bool HardwareI2c2::Probe(const uint16_t address) {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   uint8_t buffer = 0;
-  esp_err_t result = i2c_master_read_from_device(port_, address, &buffer, 1,
-      pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
+  esp_err_t result = i2c_master_read_from_device(
+      port_, address, &buffer, 1, pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
   if (result != ESP_OK) {
     return false;
   }
@@ -352,8 +352,8 @@ bool HardwareI2c2::StopTransmit(i2c_cmd_handle_t cmd_handle) {
     return false;
   }
 
-  result = i2c_master_cmd_begin(port_, cmd_handle,
-      pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
+  result = i2c_master_cmd_begin(
+      port_, cmd_handle, pdMS_TO_TICKS(kDefaultI2cWaitTimeoutMs));
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "i2c_master_cmd_begin failed (error code: %#X)\n", result);

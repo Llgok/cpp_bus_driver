@@ -2,7 +2,7 @@
  * @Description: SGM38121 多通道 LDO 稳压器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-04-30 13:44:25
+ * @LastEditTime: 2026-08-03 16:11:24
  * @License: GPL 3.0
  */
 #pragma once
@@ -25,8 +25,7 @@ class Sgm38121 final : public ChipI2cGuide {
   };
 
   explicit Sgm38121(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kDefaultValue)
+      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = kDefaultValue) override;

@@ -2,13 +2,13 @@
  * @Description: 通用日志、GPIO、延时与数据处理工具实现
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2026-07-25 16:57:06
+ * @LastEditTime: 2026-08-03 16:10:27
  * @License: GPL 3.0
  */
 #include "tool.h"
 
-#include <cerrno>
 #include <cctype>
+#include <cerrno>
 #include <cstdlib>
 
 namespace cpp_bus_driver {
@@ -264,7 +264,8 @@ bool Tool::SetGpioMode(int32_t pin, GpioMode mode, GpioStatus status) {
       break;
 
     default:
-      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(
+          LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
   switch (status) {
@@ -282,7 +283,8 @@ bool Tool::SetGpioMode(int32_t pin, GpioMode mode, GpioStatus status) {
       break;
 
     default:
-      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(
+          LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
   config.intr_type = GPIO_INTR_DISABLE;
@@ -326,7 +328,8 @@ bool Tool::SetGpioMode(int32_t pin, GpioMode mode, GpioStatus status) {
       break;
 
     default:
-      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(
+          LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       nrf_gpio_cfg_default(pin);
       return false;
   }
@@ -521,7 +524,8 @@ bool Tool::InitGpioInterrupt(
       break;
 
     default:
-      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(
+          LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
 #if SOC_GPIO_SUPPORT_PIN_HYS_FILTER
@@ -558,8 +562,7 @@ bool Tool::InitGpioInterrupt(
         gpio_isr_handler_remove(static_cast<gpio_num_t>(pin));
     if (cleanup_result != ESP_OK) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "gpio_isr_handler_remove failed (error code: %#X)\n",
-          cleanup_result);
+          "gpio_isr_handler_remove failed (error code: %#X)\n", cleanup_result);
     }
     cleanup_result = gpio_reset_pin(static_cast<gpio_num_t>(pin));
     if (cleanup_result != ESP_OK) {
@@ -581,8 +584,7 @@ bool Tool::DeinitGpioInterrupt(uint32_t pin) {
     deinit_ok = false;
   }
 
-  result =
-      gpio_set_intr_type(static_cast<gpio_num_t>(pin), GPIO_INTR_DISABLE);
+  result = gpio_set_intr_type(static_cast<gpio_num_t>(pin), GPIO_INTR_DISABLE);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_set_intr_type failed (error code: %#X)\n", result);
@@ -613,7 +615,8 @@ bool Pwm::Init(ledc_timer_t timer_num, ledc_channel_t channel, uint32_t freq_hz,
   const ledc_timer_config_t buffer_ledc_timer_config = {
       .speed_mode = speed_mode,
       .duty_resolution = duty_resolution,  // LEDC 驱动器占空比精度
-      // LEDC 使用的定时器编号，若要生成多个频率不同的 PWM 信号，需要指定不同定时器
+      // LEDC 使用的定时器编号，若要生成多个频率不同的 PWM
+      // 信号，需要指定不同定时器
       .timer_num = timer_num,
       .freq_hz = freq_hz,        // PWM 频率
       .clk_cfg = LEDC_AUTO_CLK,  // 自动选择定时器时钟源
@@ -873,15 +876,16 @@ std::vector<NmeaSentenceLine> FindNmeaSentences(
   const std::string received_data(reinterpret_cast<const char*>(data), length);
   size_t start_pos = 0;
 
-  while ((start_pos = received_data.find('$', start_pos)) !=
-         std::string::npos) {
+  while (
+      (start_pos = received_data.find('$', start_pos)) != std::string::npos) {
     size_t end_pos = received_data.find_first_of("\r\n", start_pos);
-    std::string line = (end_pos == std::string::npos)
-                           ? received_data.substr(start_pos)
-                           : received_data.substr(start_pos, end_pos - start_pos);
+    std::string line =
+        (end_pos == std::string::npos)
+            ? received_data.substr(start_pos)
+            : received_data.substr(start_pos, end_pos - start_pos);
 
-    start_pos = (end_pos == std::string::npos) ? received_data.size()
-                                               : end_pos + 1;
+    start_pos =
+        (end_pos == std::string::npos) ? received_data.size() : end_pos + 1;
     if (line.size() < 6) {
       continue;
     }
@@ -903,8 +907,7 @@ std::vector<NmeaSentenceLine> FindNmeaSentences(
       continue;
     }
 
-    const std::string sentence_formatter =
-        address.substr(address.size() - 3);
+    const std::string sentence_formatter = address.substr(address.size() - 3);
     if (sentence_formatter != formatter) {
       continue;
     }
@@ -960,8 +963,8 @@ bool ParseUtcField(const std::string& field, Utc& utc) {
  * @return 解析成功返回 true
  */
 template <typename Coordinate>
-bool ParseCoordinateField(
-    const std::string& field, const std::string& direction, size_t degree_digits,
+bool ParseCoordinateField(const std::string& field,
+    const std::string& direction, size_t degree_digits,
     Coordinate& coordinate) {
   if (field.length() < degree_digits + 2) {
     return false;
@@ -1015,9 +1018,9 @@ bool ParseCoordinateField(
  * @return 成功解析到任意坐标返回 true
  */
 template <typename Location>
-bool ParseLocationFields(const std::vector<std::string>& parts, size_t lat_index,
-    size_t lat_direction_index, size_t lon_index, size_t lon_direction_index,
-    Location& location) {
+bool ParseLocationFields(const std::vector<std::string>& parts,
+    size_t lat_index, size_t lat_direction_index, size_t lon_index,
+    size_t lon_direction_index, Location& location) {
   bool parsed = false;
 
   if (parts.size() > lat_direction_index) {
@@ -1052,8 +1055,7 @@ bool ParseDdmmyyField(const std::string& field, Date& date) {
       !ParseLongField(field.substr(4, 2), &year)) {
     return false;
   }
-  if (day < 1 || day > 31 || month < 1 || month > 12 || year < 0 ||
-      year > 99) {
+  if (day < 1 || day > 31 || month < 1 || month > 12 || year < 0 || year > 99) {
     return false;
   }
 
@@ -1413,13 +1415,13 @@ bool GnssParser::ParseZdaInfo(const uint8_t* data, size_t length, Zda& zda) {
     }
 
     long value = 0;
-    if (parts.size() > 5 && ParseLongField(parts[5], &value) &&
-        value >= -13 && value <= 13) {
+    if (parts.size() > 5 && ParseLongField(parts[5], &value) && value >= -13 &&
+        value <= 13) {
       zda.local_hour = value;
       parsed = true;
     }
-    if (parts.size() > 6 && ParseLongField(parts[6], &value) &&
-        value >= 0 && value <= 59) {
+    if (parts.size() > 6 && ParseLongField(parts[6], &value) && value >= 0 &&
+        value <= 59) {
       zda.local_minute = value;
       parsed = true;
     }

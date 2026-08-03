@@ -2,7 +2,7 @@
  * @Description: SGM38121 多通道 LDO 稳压器驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-04-20 15:10:33
+ * @LastEditTime: 2026-08-03 16:11:23
  * @License: GPL 3.0
  */
 #include "sgm38121.h"
@@ -72,10 +72,12 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
   switch (channel) {
     case Channel::kDvdd1:
       if (voltage < 528) {
-        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(
+            LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 528;
       } else if (voltage > 1504) {
-        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(
+            LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 1504;
       }
       buffer = (voltage - 504) / 8;
@@ -87,10 +89,12 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
       break;
     case Channel::kDvdd2:
       if (voltage < 528) {
-        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(
+            LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 528;
       } else if (voltage > 1504) {
-        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(
+            LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 1504;
       }
       buffer = (voltage - 504) / 8;
@@ -102,10 +106,12 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
       break;
     case Channel::kAvdd1:
       if (voltage < 1504) {
-        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(
+            LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 1504;
       } else if (voltage > 3424) {
-        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(
+            LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 3424;
       }
       buffer = (voltage - 1384) / 8;
@@ -117,10 +123,12 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
       break;
     case Channel::kAvdd2:
       if (voltage < 1504) {
-        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(
+            LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 1504;
       } else if (voltage > 3424) {
-        LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+        LogMessage(
+            LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
         voltage = 3424;
       }
       buffer = (voltage - 1384) / 8;

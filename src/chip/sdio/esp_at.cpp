@@ -2,7 +2,7 @@
  * @Description: 基于 SDIO 的 ESP-AT 通信驱动实现
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-07-01 11:52:21
+ * @LastEditTime: 2026-08-03 16:11:45
  * @License: GPL 3.0
  */
 #include "esp_at.h"
@@ -15,9 +15,7 @@ namespace {
  * @param value 原始字节长度
  * @return 4字节对齐后的字节长度
  */
-size_t AlignTo4(size_t value) {
-  return (value + 3) & ~static_cast<size_t>(3);
-}
+size_t AlignTo4(size_t value) { return (value + 3) & ~static_cast<size_t>(3); }
 
 bool IsSafeAtQuotedField(const std::string& value) {
   for (char ch : value) {
@@ -128,7 +126,8 @@ bool EspAt::SetSleep(SleepMode mode, int16_t timeout_ms) {
       break;
 
     default:
-      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(
+          LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
 
@@ -242,7 +241,8 @@ bool EspAt::SetDeepSleep(uint32_t sleep_time_ms, int16_t timeout_ms) {
 
     buffer_timeout_count++;
     if (buffer_timeout_count > timeout_ms / 10) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetDeepSleep timeout\n");
+      LogMessage(
+          LogLevel::kError, __FILE__, __LINE__, "SetDeepSleep timeout\n");
       return false;
     }
 
@@ -255,30 +255,30 @@ bool EspAt::SetDeepSleep(uint32_t sleep_time_ms, int16_t timeout_ms) {
 bool EspAt::InitSequence() {
   // 启用功能 1
   if (!bus_->Write(
-      0, static_cast<uint32_t>(Cmd::kSdIoCccrFnEnable), 6, nullptr)) {
+          0, static_cast<uint32_t>(Cmd::kSdIoCccrFnEnable), 6, nullptr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(
-      0, static_cast<uint32_t>(Cmd::kSdIoCccrFnReady), 6, nullptr)) {
+          0, static_cast<uint32_t>(Cmd::kSdIoCccrFnReady), 6, nullptr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   // 启用功能 1、功能 2 和主中断
   if (!bus_->Write(
-      0, static_cast<uint32_t>(Cmd::kSdIoCccrIntEnable), 7, nullptr)) {
+          0, static_cast<uint32_t>(Cmd::kSdIoCccrIntEnable), 7, nullptr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!bus_->Write(
-      0, static_cast<uint32_t>(Cmd::kSdIoCccrBlksizel), 0, nullptr)) {
+          0, static_cast<uint32_t>(Cmd::kSdIoCccrBlksizel), 0, nullptr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(
-      0, static_cast<uint32_t>(Cmd::kSdIoCccrBlksizeh), 2, nullptr)) {
+          0, static_cast<uint32_t>(Cmd::kSdIoCccrBlksizeh), 2, nullptr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -495,7 +495,8 @@ bool EspAt::ReceivePacket(std::vector<uint8_t>& data) {
   uint32_t buffer_lenght = GetRxDataLength();
 
   if (buffer_lenght == 0) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetRxDataLength failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "GetRxDataLength failed\n");
     return false;
   }
 
@@ -552,14 +553,14 @@ bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
   uint32_t buffer_lenght = GetRxDataLength();
 
   if (buffer_lenght == 0) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetRxDataLength failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "GetRxDataLength failed\n");
     return false;
   }
 
   if (*byte < buffer_lenght) {
     *byte = buffer_lenght;
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Value out of range\n");
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
 
@@ -617,7 +618,8 @@ bool EspAt::ReceivePacket(std::unique_ptr<uint8_t[]>& data, size_t* byte) {
   uint32_t buffer_lenght = GetRxDataLength();
 
   if (buffer_lenght == 0) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetRxDataLength failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "GetRxDataLength failed\n");
     return false;
   }
 
@@ -824,7 +826,8 @@ bool EspAt::SetWifiMode(WifiMode mode, int16_t timeout_ms) {
       break;
 
     default:
-      LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+      LogMessage(
+          LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
       return false;
   }
 
@@ -1109,7 +1112,8 @@ bool EspAt::GetRealTime(RealTime& time, int16_t timeout_ms) {
         buffer_cmd = "\r\nbusy p...\r\n";
         if (Search(buffer.data(), buffer.size(), buffer_cmd,
                 std::strlen(buffer_cmd))) {
-          LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetRealTime busy\n");
+          LogMessage(
+              LogLevel::kError, __FILE__, __LINE__, "GetRealTime busy\n");
           buffer_timeout_count = 0;
         }
       }

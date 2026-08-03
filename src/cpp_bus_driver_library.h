@@ -2,7 +2,7 @@
  * @Description: cpp_bus_driver 公共驱动头文件汇总入口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:14:18
- * @LastEditTime: 2026-04-22 16:17:38
+ * @LastEditTime: 2026-08-03 16:10:25
  * @License: GPL 3.0
  */
 #pragma once
@@ -33,13 +33,13 @@
 #include "./chip/i2c/sy6970.h"
 #include "./chip/i2c/tca8418.h"
 #include "./chip/i2c/xl95x5.h"
-#include "./chip/i2c_spi/icm20948.h"
 #include "./chip/i2c_i2s/es8311.h"
+#include "./chip/i2c_spi/icm20948.h"
 #include "./chip/mipi/hi8561.h"
 #include "./chip/mipi/rm69a10.h"
 #include "./chip/sdio/esp_at.h"
-#include "./chip/spi/co5300.h"
 #include "./chip/spi/cc1101.h"
+#include "./chip/spi/co5300.h"
 #include "./chip/spi/ecx336cn.h"
 #include "./chip/spi/nrf24l01x.h"
 #include "./chip/spi/sh8601.h"

@@ -2,7 +2,7 @@
  * @Description: ESP-IDF SDIO 主机通信驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-07-01 13:56:02
+ * @LastEditTime: 2026-08-03 16:10:42
  * @License: GPL 3.0
  */
 #include "hardware_sdio.h"
@@ -50,16 +50,11 @@ bool HardwareSdio::Init(int32_t freq_hz) {
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareSdio config d7_: %d\n", d7_);
 
-  if (d1_ != kDefaultValue &&
-      d2_ != kDefaultValue &&
-      d3_ != kDefaultValue &&
-      d4_ != kDefaultValue &&
-      d5_ != kDefaultValue &&
-      d6_ != kDefaultValue &&
+  if (d1_ != kDefaultValue && d2_ != kDefaultValue && d3_ != kDefaultValue &&
+      d4_ != kDefaultValue && d5_ != kDefaultValue && d6_ != kDefaultValue &&
       d7_ != kDefaultValue) {
     width_ = 8;
-  } else if (d1_ != kDefaultValue &&
-             d2_ != kDefaultValue &&
+  } else if (d1_ != kDefaultValue && d2_ != kDefaultValue &&
              d3_ != kDefaultValue) {
     width_ = 4;
   } else {
