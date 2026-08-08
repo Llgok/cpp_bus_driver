@@ -583,6 +583,22 @@ class Aw862xx final : public ChipI2cGuide {
    */
   bool SetRamAddress(uint16_t ram_addr);
 
+  enum class RamVerificationResult {
+    kMatch,
+    kMismatch,
+    kError,
+  };
+
+  /**
+   * @brief 读取并校验RAM波形数据
+   * @param ram_addr RAM波形数据起始地址
+   * @param expected_data 期望的波形数据
+   * @param length 波形数据长度
+   * @return 返回校验结果
+   */
+  RamVerificationResult VerifyRamData(uint16_t ram_addr,
+      const uint8_t* expected_data, size_t length);
+
   int32_t rst_;
   uint32_t f0_value_ = 1700;
   RamWaveformInfo ram_waveform_info_;

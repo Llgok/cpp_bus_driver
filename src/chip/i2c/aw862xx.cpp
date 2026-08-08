@@ -1038,6 +1038,100 @@ bool Aw862xx::SetRamAddress(uint16_t ram_addr) {
   return true;
 }
 
+Aw862xx::RamVerificationResult Aw862xx::VerifyRamData(uint16_t ram_addr,
+    const uint8_t* expected_data, size_t length) {
+  constexpr size_t kRamReadChunkSize = 32;
+  constexpr uint16_t kRamAddressLimit = 0x1000;
+
+  if (expected_data == nullptr) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Verify ram data failed (reason: expected data is null, base "
+        "address: %#X, length: %u)\n",
+        static_cast<unsigned int>(ram_addr),
+        static_cast<unsigned int>(length));
+    return RamVerificationResult::kError;
+  }
+  if (length == 0) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Verify ram data failed (reason: data is empty, base address: %#X, "
+        "length: %u)\n",
+        static_cast<unsigned int>(ram_addr),
+        static_cast<unsigned int>(length));
+    return RamVerificationResult::kError;
+  }
+  if (ram_addr >= kRamAddressLimit) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Verify ram data failed (reason: base address out of range, base "
+        "address: %#X, address limit: %#X, length: %u)\n",
+        static_cast<unsigned int>(ram_addr),
+        static_cast<unsigned int>(kRamAddressLimit),
+        static_cast<unsigned int>(length));
+    return RamVerificationResult::kError;
+  }
+  if (length > static_cast<size_t>(kRamAddressLimit - ram_addr)) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Verify ram data failed (reason: data exceeds ram address range, "
+        "base address: %#X, address limit: %#X, length: %u)\n",
+        static_cast<unsigned int>(ram_addr),
+        static_cast<unsigned int>(kRamAddressLimit),
+        static_cast<unsigned int>(length));
+    return RamVerificationResult::kError;
+  }
+
+  uint8_t read_buffer[kRamReadChunkSize] = {};
+  size_t offset = 0;
+  while (offset < length) {
+    const size_t chunk_length =
+        std::min(kRamReadChunkSize, length - offset);
+    const uint16_t chunk_address =
+        static_cast<uint16_t>(ram_addr + offset);
+
+    // 每次分块读取前都显式设置地址，避免依赖不同 I2C 后端在事务之间
+    // 保持 AW86224 SRAM 数据指针。
+    if (!SetRamAddress(chunk_address)) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Verify ram data failed (reason: set address error, address: "
+          "%#X, offset: %u, size: %u, length: %u)\n",
+          static_cast<unsigned int>(chunk_address),
+          static_cast<unsigned int>(offset),
+          static_cast<unsigned int>(chunk_length),
+          static_cast<unsigned int>(length));
+      return RamVerificationResult::kError;
+    }
+    if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwRamadata), read_buffer,
+            chunk_length)) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Verify ram data failed (reason: read error, address: %#X, "
+          "offset: %u, size: %u, length: %u)\n",
+          static_cast<unsigned int>(chunk_address),
+          static_cast<unsigned int>(offset),
+          static_cast<unsigned int>(chunk_length),
+          static_cast<unsigned int>(length));
+      return RamVerificationResult::kError;
+    }
+
+    for (size_t i = 0; i < chunk_length; ++i) {
+      if (read_buffer[i] != expected_data[offset + i]) {
+        const uint16_t mismatch_address =
+            static_cast<uint16_t>(chunk_address + i);
+        LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+            "AW862xx RAM waveform mismatch (address: %#X, offset: %u, "
+            "expected: %#X, actual: %#X, length: %u)\n",
+            static_cast<unsigned int>(mismatch_address),
+            static_cast<unsigned int>(offset + i),
+            static_cast<unsigned int>(expected_data[offset + i]),
+            static_cast<unsigned int>(read_buffer[i]),
+            static_cast<unsigned int>(length));
+        return RamVerificationResult::kMismatch;
+      }
+    }
+
+    offset += chunk_length;
+  }
+
+  return RamVerificationResult::kMatch;
+}
+
 bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
   RamWaveformInfo waveform_info;
   if (ram_waveform_info_.data == waveform_data &&
@@ -1054,8 +1148,8 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
     return false;
   }
 
-  // container_update流程：停止播放、进入raminit、配置地址/FIFO、
-  // 写入RAM数据，然后退出raminit。
+  // RAM 波形初始化流程：停止播放、进入 RAM 初始化模式、配置地址和 FIFO、
+  // 校验 RAM，仅在数据不一致时重新写入，最后退出 RAM 初始化模式。
   if (!StopRamPlaybackWaveform()) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "StopRamPlaybackWaveform failed\n");
@@ -1069,51 +1163,100 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
 
   DelayUs(500);
 
+  bool operation_result = true;
+
   if (!SetRamBaseAddress(base_addr)) {
     LogMessage(
         LogLevel::kError, __FILE__, __LINE__, "SetRamBaseAddress failed\n");
-    return false;
+    operation_result = false;
   }
 
-  if (!SetRamFifoThreshold(base_addr)) {
+  if (operation_result && !SetRamFifoThreshold(base_addr)) {
     LogMessage(
         LogLevel::kError, __FILE__, __LINE__, "SetRamFifoThreshold failed\n");
-    return false;
+    operation_result = false;
   }
 
-  if (!SetRamAddress(base_addr)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRamAddress failed\n");
-    return false;
+  RamVerificationResult verification_result = RamVerificationResult::kError;
+  if (operation_result) {
+    verification_result = VerifyRamData(base_addr, waveform_data, length);
+    if (verification_result == RamVerificationResult::kError) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Verify retained ram data failed (base address: %#X, length: %u)\n",
+          static_cast<unsigned int>(base_addr),
+          static_cast<unsigned int>(length));
+      operation_result = false;
+    }
   }
+
+  if (operation_result &&
+      verification_result == RamVerificationResult::kMismatch) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+        "Reload AW862xx RAM waveform (reason: retained data mismatch, "
+        "base address: %#X, length: %u)\n",
+        static_cast<unsigned int>(base_addr),
+        static_cast<unsigned int>(length));
+    if (!SetRamAddress(base_addr)) {
+      LogMessage(
+          LogLevel::kError, __FILE__, __LINE__, "SetRamAddress failed\n");
+      operation_result = false;
+    }
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  // 写入RAM波形数据，上电时只需写入一次。Arduino nRF 的 Wire
-  // 默认发送缓存为64字节，环形缓冲可用63字节，扣除1字节寄存器地址。
-  constexpr size_t kRamWriteChunkSize = 62;
-  size_t offset = 0;
-  while (offset < length) {
-    const size_t chunk_length = std::min(kRamWriteChunkSize, length - offset);
-    if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwRamadata),
-            waveform_data + offset, chunk_length)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "Write ram data failed (offset: %u size: %u)\n",
-          static_cast<unsigned int>(offset),
-          static_cast<unsigned int>(chunk_length));
-      return false;
+    if (operation_result) {
+      // Arduino nRF 的 Wire 默认发送缓存为64字节，环形缓冲可用63字节，
+      // 扣除1字节寄存器地址。
+      constexpr size_t kRamWriteChunkSize = 62;
+      size_t offset = 0;
+      while (offset < length) {
+        const size_t chunk_length =
+            std::min(kRamWriteChunkSize, length - offset);
+        if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwRamadata),
+                waveform_data + offset, chunk_length)) {
+          LogMessage(LogLevel::kError, __FILE__, __LINE__,
+              "Write ram data failed (offset: %u size: %u)\n",
+              static_cast<unsigned int>(offset),
+              static_cast<unsigned int>(chunk_length));
+          operation_result = false;
+          break;
+        }
+        offset += chunk_length;
+      }
     }
-    offset += chunk_length;
-  }
 #else
-  // 写入RAM波形数据，上电时只需写入一次。
-  if (!bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwRamadata), waveform_data, length)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
+    if (operation_result &&
+        !bus_->Write(
+            static_cast<uint8_t>(Cmd::kRwRamadata), waveform_data, length)) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+      operation_result = false;
+    }
 #endif
 
-  if (!SetRamInit(false)) {
+    if (operation_result) {
+      verification_result = VerifyRamData(base_addr, waveform_data, length);
+      if (verification_result == RamVerificationResult::kError) {
+        LogMessage(LogLevel::kError, __FILE__, __LINE__,
+            "Verify written ram data failed (base address: %#X, length: "
+            "%u)\n",
+            static_cast<unsigned int>(base_addr),
+            static_cast<unsigned int>(length));
+        operation_result = false;
+      } else if (verification_result == RamVerificationResult::kMismatch) {
+        LogMessage(LogLevel::kError, __FILE__, __LINE__,
+            "Written ram data verification mismatch (base address: %#X, "
+            "length: %u)\n",
+            static_cast<unsigned int>(base_addr),
+            static_cast<unsigned int>(length));
+        operation_result = false;
+      }
+    }
+  }
+
+  const bool ram_init_disabled = SetRamInit(false);
+  if (!ram_init_disabled) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRamInit failed\n");
+  }
+  if (!operation_result || !ram_init_disabled) {
     return false;
   }
 
