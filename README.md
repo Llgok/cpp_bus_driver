@@ -154,7 +154,7 @@ The chip-layer `Deinit()` releases the bus device used by the chip first, and sw
 
 ### Log Configuration
 
-`cpp_bus_driver` provides log level configuration for controlling debug messages, general messages, warning messages, and error messages.
+`cpp_bus_driver` provides a library-wide minimum log level for controlling debug messages, general messages, warning messages, and error messages.
 
 In an ESP-IDF project, run:
 
@@ -162,7 +162,15 @@ In an ESP-IDF project, run:
 idf.py menuconfig
 ```
 
-Then enter `cpp_bus_driver configuration` and select the desired log level.
+Then enter `cpp_bus_driver configuration` and select the default log level used at startup. The application can also change the level at runtime through the thread-safe API:
+
+```cpp
+cpp_bus_driver::Tool::SetMinimumLogLevel(
+    cpp_bus_driver::Tool::LogLevel::kWarning);
+const auto level = cpp_bus_driver::Tool::GetMinimumLogLevel();
+```
+
+Setting the level to `kNone` disables all logs. Call `Tool::ShouldLog()` before constructing expensive log arguments when needed.
 
 ## v2 Migration Guide
 

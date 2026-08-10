@@ -151,7 +151,7 @@ chip->Deinit();
 
 ### 日志配置
 
-`cpp_bus_driver` 提供日志等级配置，用于控制调试信息、普通信息、警告信息和错误信息输出。
+`cpp_bus_driver` 提供库级最低日志等级，用于控制调试信息、普通信息、警告信息和错误信息输出。
 
 在 ESP-IDF 工程中可以通过：
 
@@ -159,7 +159,15 @@ chip->Deinit();
 idf.py menuconfig
 ```
 
-进入 `cpp_bus_driver configuration`，选择需要的日志等级。
+进入 `cpp_bus_driver configuration`，选择启动时使用的默认日志等级。应用也可以在线程安全的运行时接口中动态调整等级：
+
+```cpp
+cpp_bus_driver::Tool::SetMinimumLogLevel(
+    cpp_bus_driver::Tool::LogLevel::kWarning);
+const auto level = cpp_bus_driver::Tool::GetMinimumLogLevel();
+```
+
+设置为 `kNone` 会禁止全部日志。需要在构造开销较高的日志参数前主动判断时，可以调用 `Tool::ShouldLog()`。
 
 ## v2 迁移说明
 

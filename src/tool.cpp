@@ -2,17 +2,34 @@
  * @Description: 通用日志、GPIO、延时与数据处理工具实现
  * @Author: LILYGO_L
  * @Date: 2024-12-18 10:22:46
- * @LastEditTime: 2026-08-03 16:10:27
+ * @LastEditTime: 2026-08-10 15:19:44
  * @License: GPL 3.0
  */
 #include "tool.h"
 
+#include <atomic>
 #include <cctype>
 #include <cerrno>
 #include <cstdlib>
 
 namespace cpp_bus_driver {
 namespace {
+
+#if defined(CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_DEBUG)
+constexpr Tool::LogLevel kDefaultMinimumLogLevel = Tool::LogLevel::kDebug;
+#elif defined(CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_INFO)
+constexpr Tool::LogLevel kDefaultMinimumLogLevel = Tool::LogLevel::kInfo;
+#elif defined(CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_WARNING)
+constexpr Tool::LogLevel kDefaultMinimumLogLevel = Tool::LogLevel::kWarning;
+#elif defined(CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_ERROR)
+constexpr Tool::LogLevel kDefaultMinimumLogLevel = Tool::LogLevel::kError;
+#elif defined(CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_NONE)
+constexpr Tool::LogLevel kDefaultMinimumLogLevel = Tool::LogLevel::kNone;
+#else
+constexpr Tool::LogLevel kDefaultMinimumLogLevel = Tool::LogLevel::kInfo;
+#endif
+
+std::atomic<Tool::LogLevel> g_minimum_log_level{kDefaultMinimumLogLevel};
 
 /**
  * @brief 获取日志等级名称
@@ -29,36 +46,10 @@ const char* LogLevelName(Tool::LogLevel level) {
       return "Warning";
     case Tool::LogLevel::kError:
       return "Error";
+    case Tool::LogLevel::kNone:
+      return "None";
     default:
       return "Unknown";
-  }
-}
-
-/**
- * @brief 判断指定日志等级是否允许输出
- * @param level 日志等级
- * @return 允许输出返回 true，否则返回 false
- */
-bool IsLogLevelEnabled(Tool::LogLevel level) {
-  switch (level) {
-#if defined(CPP_BUS_DRIVER_LOG_LEVEL_DEBUG)
-    case Tool::LogLevel::kDebug:
-      return true;
-#endif
-#if defined(CPP_BUS_DRIVER_LOG_LEVEL_INFO)
-    case Tool::LogLevel::kInfo:
-      return true;
-#endif
-#if defined(CPP_BUS_DRIVER_LOG_LEVEL_WARNING)
-    case Tool::LogLevel::kWarning:
-      return true;
-#endif
-#if defined(CPP_BUS_DRIVER_LOG_LEVEL_ERROR)
-    case Tool::LogLevel::kError:
-      return true;
-#endif
-    default:
-      return false;
   }
 }
 
@@ -141,9 +132,28 @@ bool SafeStringToDouble(const std::string& input, double* output) {
 
 }  // namespace safe_convert
 
+void Tool::SetMinimumLogLevel(LogLevel level) {
+  if (level > LogLevel::kNone) {
+    level = LogLevel::kNone;
+  }
+  g_minimum_log_level.store(level, std::memory_order_relaxed);
+}
+
+Tool::LogLevel Tool::GetMinimumLogLevel() {
+  return g_minimum_log_level.load(std::memory_order_relaxed);
+}
+
+bool Tool::ShouldLog(LogLevel level) {
+  if (level > LogLevel::kError) {
+    return false;
+  }
+  const LogLevel minimum_level = GetMinimumLogLevel();
+  return minimum_level != LogLevel::kNone && level >= minimum_level;
+}
+
 void Tool::LogMessage(LogLevel level, const char* file_name, size_t line_number,
     const char* format, ...) {
-  if (!IsLogLevelEnabled(level)) {
+  if (!ShouldLog(level)) {
     return;
   }
 

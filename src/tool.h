@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <cstdint>
+
 #include "config.h"
 
 namespace cpp_bus_driver {
@@ -40,11 +42,12 @@ bool SafeStringToDouble(const std::string& input, double* output);
 
 class Tool {
  public:
-  enum class LogLevel {
+  enum class LogLevel : uint8_t {
     kDebug,    // 调试信息
     kInfo,     // 普通信息
     kWarning,  // 警告信息
     kError,    // 错误信息
+    kNone,     // 禁止日志输出
   };
 
   enum class InterruptMode {
@@ -74,6 +77,33 @@ class Tool {
   Tool() = default;
 
   virtual ~Tool() = default;
+
+  /**
+   * @brief 设置库级最低日志输出等级
+   * @param level 最低日志等级，kNone 表示禁止全部日志
+   */
+  static void SetMinimumLogLevel(LogLevel level);
+
+  /**
+   * @brief 获取库级最低日志输出等级
+   * @return 当前最低日志等级
+   */
+  static LogLevel GetMinimumLogLevel();
+
+  /**
+   * @brief 判断指定等级的日志当前是否允许输出
+   * @param level 待判断的日志等级
+   * @return 允许输出返回 true，否则返回 false
+   */
+  static bool ShouldLog(LogLevel level);
+
+  /**
+   * @brief 按当前最低日志等级输出格式化日志
+   * @param level 日志等级
+   * @param file_name 源文件名
+   * @param line_number 源代码行号
+   * @param format printf 风格格式字符串
+   */
   void LogMessage(LogLevel level, const char* file_name, size_t line_number,
       const char* format, ...);
 
