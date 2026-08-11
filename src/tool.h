@@ -168,59 +168,6 @@ class Tool {
   static constexpr uint16_t kMaxLogBufferSize = 1024;
 };
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-class Pwm : public virtual Tool {
- public:
-  explicit Pwm(int32_t pin) : pin_(pin) {}
-  bool Init(ledc_timer_t timer_num, ledc_channel_t channel, uint32_t freq_hz,
-      uint32_t duty = 0,
-      ledc_mode_t speed_mode = ledc_mode_t::LEDC_LOW_SPEED_MODE,
-      ledc_timer_bit_t duty_resolution = ledc_timer_bit_t::LEDC_TIMER_10_BIT,
-      ledc_sleep_mode_t sleep_mode =
-          ledc_sleep_mode_t::LEDC_SLEEP_MODE_NO_ALIVE_NO_PD);
-
-  /**
-   * @brief 设置 PWM 占空比
-   * @param duty 值范围 0~100
-   * @return 设置成功返回 true，失败返回 false
-   */
-  bool SetDuty(uint8_t duty);
-
-  /**
-   * @brief 设置 PWM 频率
-   * @param freq_hz PWM 频率
-   * @return 设置成功返回 true，失败返回 false
-   */
-  bool SetFrequency(uint32_t freq_hz);
-
-  /**
-   * @brief 设置渐变占空比
-   * @param target_duty 值范围 0~100
-   * @param time_ms 渐变花费时间
-   * @return 操作成功返回 true，失败返回 false
-   */
-  bool StartGradientTime(uint8_t target_duty, int32_t time_ms);
-
-  /**
-   * @brief 停止 PWM
-   * @param idle_level PWM 停止后的空闲输出电平
-   * @return 操作成功返回 true，失败返回 false
-   */
-  bool Stop(uint32_t idle_level = 0);
-
- private:
-  int32_t pin_;
-  ledc_timer_t timer_num_;
-  ledc_channel_t channel_;
-  uint32_t freq_hz_;
-  uint32_t duty_;
-  ledc_mode_t speed_mode_;
-  ledc_timer_bit_t duty_resolution_;
-  ledc_sleep_mode_t sleep_mode_;
-};
-
-#endif
-
 class GnssParser : public virtual Tool {
  public:
   // UTC 时间
