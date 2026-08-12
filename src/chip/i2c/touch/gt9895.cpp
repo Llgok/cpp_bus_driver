@@ -10,12 +10,11 @@
 #include <algorithm>
 #include <array>
 #include <cstdio>
-#include <cstring>
-#include <limits>
 
 namespace cpp_bus_driver {
 
 bool Gt9895::Init(int32_t freq_hz) {
+  chip_info_ = ChipInfo();
   last_debug_report_ms_ = 0;
   last_failure_report_ms_ = 0;
 
@@ -54,6 +53,7 @@ bool Gt9895::Init(int32_t freq_hz) {
   if (!ReadChipInfo(&chip_info)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "GT9895 init failed (firmware information is invalid)\n");
+    ChipI2cGuide::Deinit(false);
     return false;
   }
   chip_info_ = chip_info;
@@ -449,13 +449,15 @@ bool Gt9895::ReadChipInfo(ChipInfo* chip_info) {
 
   std::array<uint8_t, kFirmwareInfoSize> data{};
   bool read_success = false;
-  for (size_t attempt = 0; attempt < 2; ++attempt) {
+  for (size_t attempt = 0; attempt < kChipInfoReadAttemptCount; ++attempt) {
     if (ReadRegister(kFirmwareVersionAddress, data.data(), data.size()) &&
         HasValidChecksum(data.data(), data.size())) {
       read_success = true;
       break;
     }
-    DelayMs(attempt == 0 ? 5 : 15);
+    if (attempt + 1 < kChipInfoReadAttemptCount) {
+      DelayMs(kChipInfoReadRetryDelayMs);
+    }
   }
   if (!read_success) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,

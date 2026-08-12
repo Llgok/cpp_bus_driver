@@ -64,8 +64,6 @@ class Hi8561Touch final : public ChipI2cGuide {
     uint8_t y_channel_count = 0;
     uint8_t panel_maker = 0;
     uint8_t panel_version = 0;
-    // 基础固件信息是否完整有效。
-    bool valid = false;
   };
 
   explicit Hi8561Touch(std::shared_ptr<BusI2cGuide> bus,
@@ -155,11 +153,10 @@ class Hi8561Touch final : public ChipI2cGuide {
     uint32_t length = 0;
   };
 
-  // 初始化阶段从固件描述表中发现的运行时地址。
-  struct RuntimeAddresses {
+  // 固件描述表及触摸运行区布局。
+  struct RuntimeLayout {
     uint16_t dsram_section_count = 0;
     SectionInfo host;
-    SectionInfo debug;
     SectionInfo coordinate_report;
   };
 
@@ -177,8 +174,22 @@ class Hi8561Touch final : public ChipI2cGuide {
   static constexpr size_t kDsramDebugSectionIndex = 4;
   static constexpr size_t kDsramFirmwareConfigSectionIndex = 1;
   static constexpr size_t kEsramCoordinateSectionIndex = 1;
+  static constexpr size_t kFirmwareConfigSize = 6;
+  static constexpr size_t kFirmwareVersionOffset = 12;
+  static constexpr size_t kFirmwareVersionSize = 8;
+  static constexpr size_t kUsbStateOffset = 32;
+  static constexpr size_t kGestureWakeOffset = 34;
+  static constexpr size_t kHighSensitivityOffset = 36;
+  static constexpr size_t kRotationBorderOffset = 38;
+  static constexpr size_t kFrequencyBandOffset = 40;
+  static constexpr size_t kVirtualProximityOffset = 44;
+  static constexpr size_t kPanelInfoOffset = 56;
+  static constexpr size_t kEarphoneStateOffset = 58;
+  static constexpr size_t kRuntimeFieldSize = 2;
   static constexpr size_t kTouchCoordinateOffset = 3;
   static constexpr size_t kTouchBytesPerContact = 5;
+  static constexpr size_t kPrimaryReportSize =
+      kTouchCoordinateOffset + kTouchBytesPerContact;
   static constexpr size_t kTouchStateOffset =
       kTouchCoordinateOffset +
       kMaxTouchContactCount * kTouchBytesPerContact;
@@ -211,10 +222,17 @@ class Hi8561Touch final : public ChipI2cGuide {
       const uint8_t* data, uint8_t contact_id, TouchContact* contact);
 
   /**
+   * @brief 判断原始触点记录是否为固件边缘触摸标记
+   * @param data 指向一个 5 字节原始触点记录
+   * @return 原始记录表示边缘触摸返回 true，否则返回 false
+   */
+  static bool IsEdgeContact(const uint8_t* data);
+
+  /**
    * @brief 读取并验证固件动态内存区描述表
    * @return 解析成功返回 true，失败返回 false
    */
-  bool DiscoverRuntimeAddresses();
+  bool DiscoverRuntimeLayout();
 
   /**
    * @brief 从指定固件配置区读取固件、面板和坐标范围信息
@@ -300,7 +318,7 @@ class Hi8561Touch final : public ChipI2cGuide {
       uint8_t enabled_low_byte, uint8_t enabled_high_byte);
 
   int32_t rst_;
-  RuntimeAddresses runtime_addresses_;
+  RuntimeLayout runtime_layout_;
   // 串行化触摸报告、运行时设置和后门模式访问。
   std::mutex mutex_;
   // 最近一次输出触摸调试报告的时间。

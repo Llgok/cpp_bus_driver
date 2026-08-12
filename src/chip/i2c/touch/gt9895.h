@@ -94,6 +94,8 @@ class Gt9895 final : public ChipI2cGuide {
       kChecksumSize;
   static constexpr size_t kReadAttemptCount = 2;
   static constexpr uint32_t kReadRetryDelayMs = 1;
+  static constexpr size_t kChipInfoReadAttemptCount = 2;
+  static constexpr uint32_t kChipInfoReadRetryDelayMs = 5;
   static constexpr int64_t kDebugReportIntervalMs = 1000;
   static constexpr int64_t kFailureReportIntervalMs = 1000;
   static constexpr uint8_t kTouchEventMask = 0x80;

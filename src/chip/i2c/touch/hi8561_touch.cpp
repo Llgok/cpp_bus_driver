@@ -17,7 +17,7 @@ namespace cpp_bus_driver {
 bool Hi8561Touch::Init(int32_t freq_hz) {
   std::lock_guard<std::mutex> lock(mutex_);
 
-  runtime_addresses_ = RuntimeAddresses();
+  runtime_layout_ = RuntimeLayout();
   last_debug_report_ms_ = 0;
 
   if (rst_ != kDefaultValue) {
@@ -39,17 +39,18 @@ bool Hi8561Touch::Init(int32_t freq_hz) {
     return false;
   }
 
-  if (!DiscoverRuntimeAddresses()) {
+  if (!DiscoverRuntimeLayout()) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 dynamic section discovery failed\n");
+    ChipI2cGuide::Deinit(false);
     return false;
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HI8561 init success (touch address: 0X%08lX, report size: %u)\n",
       static_cast<unsigned long>(
-          runtime_addresses_.coordinate_report.address),
-      static_cast<unsigned int>(runtime_addresses_.coordinate_report.length));
+          runtime_layout_.coordinate_report.address),
+      static_cast<unsigned int>(runtime_layout_.coordinate_report.length));
   last_debug_report_ms_ = GetSystemTimeMs();
   return true;
 }
@@ -66,7 +67,7 @@ bool Hi8561Touch::Deinit(bool delete_bus) {
     result &= ResetGpio(rst_);
   }
 
-  runtime_addresses_ = RuntimeAddresses();
+  runtime_layout_ = RuntimeLayout();
   last_debug_report_ms_ = 0;
   return result;
 }
@@ -81,17 +82,15 @@ TouchReadStatus Hi8561Touch::ReadPrimaryTouch(TouchFrame* frame) {
   }
   *frame = TouchFrame();
 
-  constexpr size_t kPrimaryReportSize =
-      kTouchCoordinateOffset + kTouchBytesPerContact;
   if (!IsSectionValid(
-          runtime_addresses_.coordinate_report, kPrimaryReportSize)) {
+          runtime_layout_.coordinate_report, kPrimaryReportSize)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 read primary touch failed (driver is not initialized)\n");
     return TouchReadStatus::kInvalidData;
   }
 
   std::array<uint8_t, kPrimaryReportSize> report{};
-  if (!ReadEram(runtime_addresses_.coordinate_report.address, report.data(),
+  if (!ReadEram(runtime_layout_.coordinate_report.address, report.data(),
           report.size())) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 read primary touch failed (I2C transfer failed)\n");
@@ -124,9 +123,7 @@ TouchReadStatus Hi8561Touch::ReadPrimaryTouch(TouchFrame* frame) {
         "single", report.data(), report.size(), reported_contact_count, *frame);
     return TouchReadStatus::kSuccess;
   }
-  frame->edge_touch = primary_data[0] == 0xFF && primary_data[1] == 0xFF &&
-                      primary_data[2] == 0xFF && primary_data[3] == 0xFF &&
-                      primary_data[4] == 0;
+  frame->edge_touch = IsEdgeContact(primary_data);
 
   // 边缘标记通常位于固件报告的最后一个有效槽位，仅在首点无效时补读该槽位。
   if (!frame->edge_touch && reported_contact_count > 1) {
@@ -135,17 +132,17 @@ TouchReadStatus Hi8561Touch::ReadPrimaryTouch(TouchFrame* frame) {
         kTouchCoordinateOffset +
         (reported_contact_count - 1) * kTouchBytesPerContact;
     if (last_contact_offset + last_contact.size() >
-        runtime_addresses_.coordinate_report.length) {
+        runtime_layout_.coordinate_report.length) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "HI8561 read primary touch failed (contact data exceeds report: "
           "count %u, size %lu)\n",
           static_cast<unsigned int>(reported_contact_count),
           static_cast<unsigned long>(
-              runtime_addresses_.coordinate_report.length));
+              runtime_layout_.coordinate_report.length));
       return TouchReadStatus::kInvalidData;
     }
     const uint32_t last_contact_address =
-        runtime_addresses_.coordinate_report.address +
+        runtime_layout_.coordinate_report.address +
         static_cast<uint32_t>(last_contact_offset);
     if (!ReadEram(
             last_contact_address, last_contact.data(), last_contact.size())) {
@@ -153,9 +150,7 @@ TouchReadStatus Hi8561Touch::ReadPrimaryTouch(TouchFrame* frame) {
           "HI8561 read primary touch failed (edge slot transfer failed)\n");
       return TouchReadStatus::kBusError;
     }
-    frame->edge_touch = last_contact[0] == 0xFF && last_contact[1] == 0xFF &&
-                        last_contact[2] == 0xFF && last_contact[3] == 0xFF &&
-                        last_contact[4] == 0;
+    frame->edge_touch = IsEdgeContact(last_contact.data());
   }
 
   LogTouchReport(
@@ -174,19 +169,19 @@ TouchReadStatus Hi8561Touch::ReadTouchFrame(TouchFrame* frame) {
   }
   *frame = TouchFrame();
 
-  if (!IsSectionValid(runtime_addresses_.coordinate_report,
+  if (!IsSectionValid(runtime_layout_.coordinate_report,
           kTouchReportReadSize)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 read touch frame failed (invalid report section: "
         "address 0X%08lX, size %lu)\n",
         static_cast<unsigned long>(
-            runtime_addresses_.coordinate_report.address),
-        static_cast<unsigned long>(runtime_addresses_.coordinate_report.length));
+            runtime_layout_.coordinate_report.address),
+        static_cast<unsigned long>(runtime_layout_.coordinate_report.length));
     return TouchReadStatus::kInvalidData;
   }
 
   std::array<uint8_t, kTouchReportReadSize> report{};
-  if (!ReadEram(runtime_addresses_.coordinate_report.address, report.data(),
+  if (!ReadEram(runtime_layout_.coordinate_report.address, report.data(),
           report.size())) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 read touch frame failed (I2C transfer failed)\n");
@@ -221,9 +216,7 @@ TouchReadStatus Hi8561Touch::ReadTouchFrame(TouchFrame* frame) {
     const uint8_t* contact_data = &report[offset];
     TouchContact contact;
     if (!ParseContact(contact_data, static_cast<uint8_t>(slot + 1), &contact)) {
-      if (contact_data[0] == 0xFF && contact_data[1] == 0xFF &&
-          contact_data[2] == 0xFF && contact_data[3] == 0xFF &&
-          contact_data[4] == 0) {
+      if (IsEdgeContact(contact_data)) {
         frame->edge_touch = true;
         ++accounted_contacts;
         if (accounted_contacts >= reported_contact_count) {
@@ -265,7 +258,7 @@ bool Hi8561Touch::ReadFirmwareInfo(FirmwareInfo* firmware_info) {
   }
   *firmware_info = FirmwareInfo();
 
-  if (runtime_addresses_.dsram_section_count <=
+  if (runtime_layout_.dsram_section_count <=
       kDsramFirmwareConfigSectionIndex) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "HI8561 read firmware info failed (driver is not initialized)\n");
@@ -274,9 +267,9 @@ bool Hi8561Touch::ReadFirmwareInfo(FirmwareInfo* firmware_info) {
 
   SectionInfo firmware_config;
   if (!ReadSectionInfo(kDsramSectionTableAddress,
-          runtime_addresses_.dsram_section_count,
+          runtime_layout_.dsram_section_count,
           kDsramFirmwareConfigSectionIndex, &firmware_config) ||
-      !IsSectionValid(firmware_config, 6)) {
+      !IsSectionValid(firmware_config, kFirmwareConfigSize)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "HI8561 read firmware info failed (firmware section unavailable: "
         "address 0X%08lX, size %lu)\n",
@@ -373,14 +366,21 @@ bool Hi8561Touch::ParseContact(
   return true;
 }
 
+bool Hi8561Touch::IsEdgeContact(const uint8_t* data) {
+  return data != nullptr && data[0] == 0xFF && data[1] == 0xFF &&
+         data[2] == 0xFF && data[3] == 0xFF && data[4] == 0;
+}
+
 bool Hi8561Touch::SetHighSensitivityEnabled(bool enabled) {
   std::lock_guard<std::mutex> lock(mutex_);
-  return WriteHostBooleanSetting(36, enabled, 0x3A, 0xA3);
+  return WriteHostBooleanSetting(
+      kHighSensitivityOffset, enabled, 0x3A, 0xA3);
 }
 
 bool Hi8561Touch::SetGestureWakeEnabled(bool enabled) {
   std::lock_guard<std::mutex> lock(mutex_);
-  const bool result = WriteHostBooleanSetting(34, enabled, 0x01, 0x00);
+  const bool result =
+      WriteHostBooleanSetting(kGestureWakeOffset, enabled, 0x01, 0x00);
   LogMessage(LogLevel::kDebug, __FILE__, __LINE__,
       "HI8561 gesture wake state changed (enabled: %s, result: %s)\n",
       enabled ? "yes" : "no", result ? "success" : "failed");
@@ -389,13 +389,14 @@ bool Hi8561Touch::SetGestureWakeEnabled(bool enabled) {
 
 bool Hi8561Touch::SetUsbConnected(bool connected) {
   std::lock_guard<std::mutex> lock(mutex_);
-  return WriteHostBooleanSetting(32, connected, 0x01, 0x00);
+  return WriteHostBooleanSetting(kUsbStateOffset, connected, 0x01, 0x00);
 }
 
 bool Hi8561Touch::SetRotationBorderMode(RotationBorderMode mode) {
   std::lock_guard<std::mutex> lock(mutex_);
 
-  if (!IsSectionValid(runtime_addresses_.host, 40)) {
+  if (!IsSectionValid(
+          runtime_layout_.host, kRotationBorderOffset + kRuntimeFieldSize)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 set rotation border failed (feature is not supported)\n");
     return false;
@@ -419,14 +420,16 @@ bool Hi8561Touch::SetRotationBorderMode(RotationBorderMode mode) {
       static_cast<uint8_t>(value >> 8),
   };
   return WriteRuntimeMemory(
-      runtime_addresses_.host.address + 38, data, sizeof(data));
+      runtime_layout_.host.address + kRotationBorderOffset, data,
+      sizeof(data));
 }
 
 bool Hi8561Touch::SetEarphoneConnected(
     bool analog_connected, bool usb_connected) {
   std::lock_guard<std::mutex> lock(mutex_);
 
-  if (!IsSectionValid(runtime_addresses_.host, 60)) {
+  if (!IsSectionValid(
+          runtime_layout_.host, kEarphoneStateOffset + kRuntimeFieldSize)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 set earphone state failed (feature is not supported)\n");
     return false;
@@ -437,12 +440,14 @@ bool Hi8561Touch::SetEarphoneConnected(
       static_cast<uint8_t>(usb_connected ? 1 : 0),
   };
   return WriteRuntimeMemory(
-      runtime_addresses_.host.address + 58, data, sizeof(data));
+      runtime_layout_.host.address + kEarphoneStateOffset, data,
+      sizeof(data));
 }
 
 bool Hi8561Touch::SetVirtualProximityEnabled(bool enabled) {
   std::lock_guard<std::mutex> lock(mutex_);
-  return WriteHostBooleanSetting(44, enabled, 0x3A, 0xA3);
+  return WriteHostBooleanSetting(
+      kVirtualProximityOffset, enabled, 0x3A, 0xA3);
 }
 
 bool Hi8561Touch::GetFrequencyBand(uint8_t* frequency_band) {
@@ -453,15 +458,25 @@ bool Hi8561Touch::GetFrequencyBand(uint8_t* frequency_band) {
         "HI8561 get frequency band failed (output is null)\n");
     return false;
   }
-  if (!IsSectionValid(runtime_addresses_.debug, 42)) {
+  if (runtime_layout_.dsram_section_count <= kDsramDebugSectionIndex) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "HI8561 get frequency band failed (driver is not initialized)\n");
+    return false;
+  }
+
+  SectionInfo debug;
+  if (!ReadSectionInfo(kDsramSectionTableAddress,
+          runtime_layout_.dsram_section_count, kDsramDebugSectionIndex,
+          &debug) ||
+      !IsSectionValid(debug, kFrequencyBandOffset + kRuntimeFieldSize)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 get frequency band failed (feature is not supported)\n");
     return false;
   }
 
-  uint8_t data[2] = {};
+  uint8_t data[kRuntimeFieldSize] = {};
   if (!ReadRuntimeMemory(
-          runtime_addresses_.debug.address + 40, data, sizeof(data))) {
+          debug.address + kFrequencyBandOffset, data, sizeof(data))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 get frequency band failed (I2C transfer failed)\n");
     return false;
@@ -470,7 +485,7 @@ bool Hi8561Touch::GetFrequencyBand(uint8_t* frequency_band) {
   return true;
 }
 
-bool Hi8561Touch::DiscoverRuntimeAddresses() {
+bool Hi8561Touch::DiscoverRuntimeLayout() {
   uint8_t ready_data[2] = {};
   bool section_ready = false;
   for (size_t attempt = 0; attempt < 25; ++attempt) {
@@ -504,7 +519,7 @@ bool Hi8561Touch::DiscoverRuntimeAddresses() {
   }
   const uint16_t esram_count = static_cast<uint16_t>(count_data[0]) |
                                (static_cast<uint16_t>(count_data[1]) << 8);
-  if (dsram_count <= kDsramDebugSectionIndex ||
+  if (dsram_count <= kDsramHostSectionIndex ||
       dsram_count > kMaxDsramSectionCount ||
       esram_count <= kEsramCoordinateSectionIndex ||
       esram_count > kMaxEsramSectionCount) {
@@ -517,39 +532,31 @@ bool Hi8561Touch::DiscoverRuntimeAddresses() {
   }
 
   SectionInfo host;
-  SectionInfo debug;
   SectionInfo coordinate;
   if (!ReadSectionInfo(kDsramSectionTableAddress, dsram_count,
           kDsramHostSectionIndex, &host) ||
-      !ReadSectionInfo(kDsramSectionTableAddress, dsram_count,
-          kDsramDebugSectionIndex, &debug) ||
       !ReadSectionInfo(kEsramSectionTableAddress, esram_count,
           kEsramCoordinateSectionIndex, &coordinate)) {
     return false;
   }
 
-  constexpr size_t kPrimaryReportSize =
-      kTouchCoordinateOffset + kTouchBytesPerContact;
   if (!IsSectionValid(coordinate, kPrimaryReportSize) ||
       coordinate.address < kEramAddress ||
       coordinate.address + kPrimaryReportSize >
           kEramAddress + kEramSize) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 dynamic section discovery failed (invalid required section: "
-        "host 0X%08lX/%lu, debug 0X%08lX/%lu, coordinate 0X%08lX/%lu)\n",
+        "host 0X%08lX/%lu, coordinate 0X%08lX/%lu)\n",
         static_cast<unsigned long>(host.address),
         static_cast<unsigned long>(host.length),
-        static_cast<unsigned long>(debug.address),
-        static_cast<unsigned long>(debug.length),
         static_cast<unsigned long>(coordinate.address),
         static_cast<unsigned long>(coordinate.length));
     return false;
   }
 
-  runtime_addresses_.dsram_section_count = dsram_count;
-  runtime_addresses_.host = host;
-  runtime_addresses_.debug = debug;
-  runtime_addresses_.coordinate_report = coordinate;
+  runtime_layout_.dsram_section_count = dsram_count;
+  runtime_layout_.host = host;
+  runtime_layout_.coordinate_report = coordinate;
   return true;
 }
 
@@ -560,9 +567,9 @@ bool Hi8561Touch::ReadFirmwareInfoFromSection(
     return false;
   }
 
-  uint8_t config[6] = {};
-  uint8_t version_info[8] = {};
-  uint8_t panel_info[2] = {};
+  uint8_t config[kFirmwareConfigSize] = {};
+  uint8_t version_info[kFirmwareVersionSize] = {};
+  uint8_t panel_info[kRuntimeFieldSize] = {};
 
   if (!SetBackdoorModeEnabled(true)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
@@ -573,16 +580,19 @@ bool Hi8561Touch::ReadFirmwareInfoFromSection(
   const bool config_read = ReadBackdoorMemory(
       firmware_config_section.address, config, sizeof(config));
   const bool version_supported =
-      IsSectionValid(runtime_addresses_.host, 20);
+      IsSectionValid(runtime_layout_.host,
+          kFirmwareVersionOffset + kFirmwareVersionSize);
   const bool version_read =
       !version_supported ||
-      ReadBackdoorMemory(runtime_addresses_.host.address + 12, version_info,
-          sizeof(version_info));
-  const bool panel_supported = IsSectionValid(runtime_addresses_.host, 58);
+      ReadBackdoorMemory(
+          runtime_layout_.host.address + kFirmwareVersionOffset,
+          version_info, sizeof(version_info));
+  const bool panel_supported = IsSectionValid(
+      runtime_layout_.host, kPanelInfoOffset + kRuntimeFieldSize);
   const bool panel_read =
       !panel_supported ||
-      ReadBackdoorMemory(runtime_addresses_.host.address + 56, panel_info,
-          sizeof(panel_info));
+      ReadBackdoorMemory(runtime_layout_.host.address + kPanelInfoOffset,
+          panel_info, sizeof(panel_info));
   const bool backdoor_exit = SetBackdoorModeEnabled(false);
 
   if (!backdoor_exit) {
@@ -642,7 +652,6 @@ bool Hi8561Touch::ReadFirmwareInfoFromSection(
       parsed_info.panel_version = panel_info[1];
     }
   }
-  parsed_info.valid = true;
   *firmware_info = parsed_info;
   LogMessage(LogLevel::kDebug, __FILE__, __LINE__,
       "HI8561 firmware info read success (resolution: %u x %u, "
@@ -776,9 +785,8 @@ bool Hi8561Touch::IsSectionValid(
 
 bool Hi8561Touch::WriteHostBooleanSetting(size_t offset, bool enabled,
     uint8_t enabled_low_byte, uint8_t enabled_high_byte) {
-  constexpr size_t kSettingSize = 2;
-  if (offset > SIZE_MAX - kSettingSize ||
-      !IsSectionValid(runtime_addresses_.host, offset + kSettingSize)) {
+  if (offset > SIZE_MAX - kRuntimeFieldSize ||
+      !IsSectionValid(runtime_layout_.host, offset + kRuntimeFieldSize)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 setting write failed (feature is not supported, offset: %zu)\n",
         offset);
@@ -789,7 +797,7 @@ bool Hi8561Touch::WriteHostBooleanSetting(size_t offset, bool enabled,
       static_cast<uint8_t>(enabled ? enabled_high_byte : 0),
   };
   return WriteRuntimeMemory(
-      runtime_addresses_.host.address + offset, data, sizeof(data));
+      runtime_layout_.host.address + offset, data, sizeof(data));
 }
 
 }  // namespace cpp_bus_driver
