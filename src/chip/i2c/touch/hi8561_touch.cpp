@@ -36,6 +36,7 @@ bool Hi8561Touch::Init(int32_t freq_hz) {
 
   if (!ChipI2cGuide::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "HI8561 init failed\n");
+    ChipI2cGuide::Deinit(false);
     return false;
   }
 
