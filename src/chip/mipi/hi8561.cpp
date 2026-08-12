@@ -89,6 +89,10 @@ bool Hi8561::SetSleep(bool enable) {
 
   DelayMs(120);
 
+  LogMessage(LogLevel::kDebug, __FILE__, __LINE__,
+      "HI8561 display sleep state changed (sleep: %s)\n",
+      enable ? "yes" : "no");
+
   return true;
 }
 
@@ -98,6 +102,10 @@ bool Hi8561::SetScreenOff(bool enable) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
+
+  LogMessage(LogLevel::kDebug, __FILE__, __LINE__,
+      "HI8561 display output state changed (screen off: %s)\n",
+      enable ? "yes" : "no");
 
   return true;
 }

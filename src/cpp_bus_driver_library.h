@@ -2,7 +2,7 @@
  * @Description: cpp_bus_driver 公共驱动头文件汇总入口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:14:18
- * @LastEditTime: 2026-08-03 16:10:25
+ * @LastEditTime: 2026-08-11 17:17:26
  * @License: GPL 3.0
  */
 #pragma once
@@ -22,9 +22,7 @@
 #include "./chip/i2c/bq27220.h"
 #include "./chip/i2c/cst2xxse.h"
 #include "./chip/i2c/ft3x68.h"
-#include "./chip/i2c/gt9895.h"
 #include "./chip/i2c/gz030pcc0x.h"
-#include "./chip/i2c/hi8561_touch.h"
 #include "./chip/i2c/icn6211.h"
 #include "./chip/i2c/pcf8563x.h"
 #include "./chip/i2c/s023msafjf10111e1.h"
@@ -32,6 +30,8 @@
 #include "./chip/i2c/sgm41562xx.h"
 #include "./chip/i2c/sy6970.h"
 #include "./chip/i2c/tca8418.h"
+#include "./chip/i2c/touch/gt9895.h"
+#include "./chip/i2c/touch/hi8561_touch.h"
 #include "./chip/i2c/xl95x5.h"
 #include "./chip/i2c_i2s/es8311.h"
 #include "./chip/i2c_spi/icm20948.h"

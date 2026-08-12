@@ -550,9 +550,10 @@ bool Tool::InitGpioInterrupt(
   }
 
   result = gpio_install_isr_service(0);
-  if (result != ESP_OK) {
+  if (result != ESP_OK && result != ESP_ERR_INVALID_STATE) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_install_isr_service failed (error code: %#X)\n", result);
+    return false;
   }
 
   result = gpio_isr_handler_add(static_cast<gpio_num_t>(pin), interrupt, args);

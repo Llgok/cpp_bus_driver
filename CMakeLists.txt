@@ -12,6 +12,7 @@ set(
 
         "./src/chip"
         "./src/chip/i2c"
+        "./src/chip/i2c/touch"
         "./src/chip/i2c_spi"
         "./src/chip/spi"
         "./src/chip/uart"

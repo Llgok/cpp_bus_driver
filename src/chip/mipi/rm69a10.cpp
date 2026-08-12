@@ -2,7 +2,7 @@
  * @Description: RM69A10 MIPI-DSI 显示面板驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-04-20 15:37:22
+ * @LastEditTime: 2026-08-12 09:37:20
  * @License: GPL 3.0
  */
 #include "rm69a10.h"
@@ -85,6 +85,10 @@ bool Rm69a10::SetSleep(bool enable) {
 
   DelayMs(120);
 
+  LogMessage(LogLevel::kDebug, __FILE__, __LINE__,
+      "RM69A10 display sleep state changed (sleep: %s)\n",
+      enable ? "yes" : "no");
+
   return true;
 }
 
@@ -94,6 +98,10 @@ bool Rm69a10::SetScreenOff(bool enable) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
+
+  LogMessage(LogLevel::kDebug, __FILE__, __LINE__,
+      "RM69A10 display output state changed (screen off: %s)\n",
+      enable ? "yes" : "no");
 
   return true;
 }
