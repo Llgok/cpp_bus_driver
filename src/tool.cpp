@@ -11,6 +11,7 @@
 #include <cctype>
 #include <cerrno>
 #include <cstdlib>
+#include <mutex>
 
 namespace cpp_bus_driver {
 namespace {
@@ -30,6 +31,30 @@ constexpr Tool::LogLevel kDefaultMinimumLogLevel = Tool::LogLevel::kInfo;
 #endif
 
 std::atomic<Tool::LogLevel> g_minimum_log_level{kDefaultMinimumLogLevel};
+
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+std::mutex g_gpio_isr_service_mutex;
+bool g_gpio_isr_service_installed = false;
+
+/**
+ * @brief 确保全局 GPIO ISR 服务只安装一次
+ * @return 安装成功或服务已经存在时返回 ESP_OK，否则返回实际错误码
+ */
+esp_err_t EnsureGpioIsrServiceInstalled() {
+  std::lock_guard<std::mutex> lock(g_gpio_isr_service_mutex);
+  if (g_gpio_isr_service_installed) {
+    return ESP_OK;
+  }
+
+  const esp_err_t result = gpio_install_isr_service(0);
+  if (result == ESP_OK || result == ESP_ERR_INVALID_STATE) {
+    g_gpio_isr_service_installed = true;
+    return ESP_OK;
+  }
+
+  return result;
+}
+#endif
 
 /**
  * @brief 获取日志等级名称
@@ -549,8 +574,8 @@ bool Tool::InitGpioInterrupt(
     return false;
   }
 
-  result = gpio_install_isr_service(0);
-  if (result != ESP_OK && result != ESP_ERR_INVALID_STATE) {
+  result = EnsureGpioIsrServiceInstalled();
+  if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "gpio_install_isr_service failed (error code: %#X)\n", result);
     return false;
