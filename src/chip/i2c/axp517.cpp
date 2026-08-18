@@ -821,6 +821,29 @@ bool Axp517::SetBc12DetectEnable(bool enable) {
   return true;
 }
 
+bool Axp517::SetTypeCDetectEnable(bool enable) {
+  uint8_t buffer = 0;
+  if (!bus_->Read(
+          static_cast<uint8_t>(Cmd::kRwModuleEnableControl0), &buffer)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+    return false;
+  }
+
+  if (enable) {
+    buffer |= 0B00001000;
+  } else {
+    buffer &= 0B11110111;
+  }
+
+  if (!bus_->Write(
+          static_cast<uint8_t>(Cmd::kRwModuleEnableControl0), buffer)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+    return false;
+  }
+
+  return true;
+}
+
 bool Axp517::GetBc12DetectResult(BcDetectResult& result) {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoBcDetect), &buffer)) {
@@ -844,6 +867,33 @@ bool Axp517::GetBc12DetectResult(BcDetectResult& result) {
       return false;
   }
 
+  return true;
+}
+
+bool Axp517::SetVbusDetectEnable(bool enable) {
+  const uint8_t command = enable ? 0x33 : 0x22;
+  if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwCommand), command)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+    return false;
+  }
+  return true;
+}
+
+bool Axp517::GetPdConnectionStatus(PdConnectionStatus& status) {
+  uint8_t buffer = 0;
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoCcStatus), &buffer)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+    return false;
+  }
+
+  const uint8_t cc1_status = buffer & 0B00000011;
+  const uint8_t cc2_status = (buffer & 0B00001100) >> 2;
+  status.looking_for_connection = (buffer & 0B00100000) != 0;
+  status.source_role = (buffer & 0B00010000) == 0;
+  status.source_device_attached =
+      status.source_role && (cc1_status == 0B10 || cc2_status == 0B10);
+  status.sink_power_attached = !status.source_role &&
+      (cc1_status != 0 || cc2_status != 0);
   return true;
 }
 
@@ -880,8 +930,8 @@ bool Axp517::SetPdRole(bool is_source, bool is_drp) {
     return false;
   }
 
-  if (is_drp && !bus_->Write(static_cast<uint8_t>(Cmd::kRwCommand),
-                    static_cast<uint8_t>(0x99))) {
+  if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwCommand),
+          static_cast<uint8_t>(0x99))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

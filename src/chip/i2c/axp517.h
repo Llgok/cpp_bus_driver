@@ -133,6 +133,17 @@ class Axp517 final : public ChipI2cGuide {
         BatteryCurrentDirection::kStandby;
   };
 
+  struct PdConnectionStatus {
+    // TCPC 当前是否正在搜索连接。
+    bool looking_for_connection = false;
+    // 当前连接是否由本机提供 Rp。
+    bool source_role = false;
+    // 作为 Source 时是否检测到对端 Rd。
+    bool source_device_attached = false;
+    // 作为 Sink 时是否检测到对端 Rp。
+    bool sink_power_attached = false;
+  };
+
   struct AdcChannel {
     bool vbus_current_measure = false;
     bool battery_discharge_current_measure = false;
@@ -406,6 +417,13 @@ class Axp517 final : public ChipI2cGuide {
   bool SetBc12DetectEnable(bool enable);
 
   /**
+   * @brief 设置 Type-C CC 检测使能
+   * @param enable true 开启检测，false 关闭检测
+   * @return 设置成功返回 true，失败返回 false
+   */
+  bool SetTypeCDetectEnable(bool enable);
+
+  /**
    * @brief 获取BC1.2检测结果
    * @param result BC1.2 检测结果
    * @return 读取成功返回 true，失败返回 false
@@ -413,7 +431,21 @@ class Axp517 final : public ChipI2cGuide {
   bool GetBc12DetectResult(BcDetectResult& result);
 
   /**
-   * @brief 设置PD角色
+   * @brief 设置 TCPC 的 VBUS 有效电平检测状态
+   * @param enable true 开启检测，false 关闭检测
+   * @return 设置成功返回 true，失败返回 false
+   */
+  bool SetVbusDetectEnable(bool enable);
+
+  /**
+   * @brief 读取 Type-C CC 连接和当前电源角色
+   * @param status 用于保存连接状态的结构体
+   * @return 读取成功返回 true，失败返回 false
+   */
+  bool GetPdConnectionStatus(PdConnectionStatus& status);
+
+  /**
+   * @brief 设置 PD 角色并启动 Type-C 连接检测
    * @param is_source [true]：源模式 [false]：汇模式
    * @param is_drp [true]：双角色模式 [false]：固定角色
    * @return 设置成功返回 true，失败返回 false
@@ -509,6 +541,7 @@ class Axp517 final : public ChipI2cGuide {
     // PD相关
     kRwTcpcControl = 0xB9,  // TCPC控制
     kRwRoleControl,         // 角色控制
+    kRoCcStatus = 0xBD,     // CC连接状态
     kRwCommand = 0xC3,      // 命令寄存器
   };
 
