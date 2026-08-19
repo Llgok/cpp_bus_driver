@@ -7,6 +7,8 @@
  */
 #include "nrf9151.h"
 
+#include <algorithm>
+
 namespace cpp_bus_driver {
 namespace {
 
@@ -97,24 +99,55 @@ std::vector<std::string> ParseCsv(const std::string& value) {
 }  // namespace
 
 bool Nrf9151::Init(int32_t baud_rate) {
-  return Init(baud_rate, kDefaultCommandTimeoutMs);
+  return Init(baud_rate, kDefaultInitializationTimeoutMs);
 }
 
-bool Nrf9151::Init(int32_t baud_rate, uint32_t timeout_ms) {
+bool Nrf9151::Init(
+    int32_t baud_rate, uint32_t initialization_timeout_ms) {
+  if (initialization_timeout_ms == 0) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
+    return false;
+  }
+
+  chip_id_.clear();
   if (!ChipUartGuide::Init(baud_rate)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init uart failed\n");
     return false;
   }
 
-  if (!GetChipId(timeout_ms)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "Get nrf9151 chip id failed\n");
-    return false;
+  const int64_t start_time_ms = GetSystemTimeMs();
+  uint32_t probe_attempts = 0;
+
+  while (true) {
+    const int64_t elapsed_ms = GetSystemTimeMs() - start_time_ms;
+    if (elapsed_ms >= initialization_timeout_ms) {
+      break;
+    }
+
+    const uint32_t remaining_ms = static_cast<uint32_t>(
+        initialization_timeout_ms - elapsed_ms);
+    const uint32_t command_timeout_ms =
+        std::min(kDefaultCommandTimeoutMs, remaining_ms);
+    ++probe_attempts;
+    if (GetChipId(command_timeout_ms)) {
+      LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+          "Get nrf9151 chip id success "
+          "(model: %s, attempts: %u, elapsed: %lld ms)\n",
+          chip_id_.c_str(), static_cast<unsigned>(probe_attempts),
+          static_cast<long long>(GetSystemTimeMs() - start_time_ms));
+      return true;
+    }
   }
 
-  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "Get nrf9151 chip id success (model: %s)\n", chip_id_.c_str());
-  return true;
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "Init nrf9151 failed (attempts: %u, timeout: %u ms)\n",
+      static_cast<unsigned>(probe_attempts),
+      static_cast<unsigned>(initialization_timeout_ms));
+  if (!Deinit()) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Release nrf9151 UART after init failure failed\n");
+  }
+  return false;
 }
 
 bool Nrf9151::Deinit() {

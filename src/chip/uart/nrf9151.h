@@ -15,6 +15,9 @@ class Nrf9151 final : public ChipUartGuide {
   // AT 指令默认超时时间，单位为毫秒
   static constexpr uint32_t kDefaultCommandTimeoutMs = 500;
 
+  // 模块初始化默认总超时时间，单位为毫秒
+  static constexpr uint32_t kDefaultInitializationTimeoutMs = 3000;
+
   // ncs-serial-modem 及其构建环境的版本信息
   struct SerialModemVersion {
     std::string application;  // ncs-serial-modem 应用版本
@@ -40,12 +43,12 @@ class Nrf9151 final : public ChipUartGuide {
   bool Init(int32_t baud_rate = kDefaultUartBaudRate) override;
 
   /**
-   * @brief 初始化 UART，并在指定时间内使用 AT+CGMM 验证芯片型号
+   * @brief 初始化 UART，并在总超时内重复使用 AT+CGMM 验证芯片型号
    * @param baud_rate UART 波特率
-   * @param timeout_ms 等待 AT 指令最终响应的总超时时间，单位为毫秒
+   * @param initialization_timeout_ms 初始化总超时时间，单位为毫秒
    * @return UART 初始化且芯片型号验证成功时返回 true，否则返回 false
    */
-  bool Init(int32_t baud_rate, uint32_t timeout_ms);
+  bool Init(int32_t baud_rate, uint32_t initialization_timeout_ms);
 
   /**
    * @brief 反初始化 nRF9151 UART 驱动并清除已保存的芯片型号
