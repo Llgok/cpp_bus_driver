@@ -139,8 +139,6 @@ bool Nrf24l01x::Init(int32_t frequency_hz) {
   }
 
   initialized_ = true;
-  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "nRF24L01x initialization success (SPI: %d Hz)\n", spi_frequency_hz_);
   return true;
 }
 

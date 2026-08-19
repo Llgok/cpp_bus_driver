@@ -2,7 +2,7 @@
  * @Description: TI CC1101 亚 GHz 无线收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-07-12 00:00:00
- * @LastEditTime: 2026-08-03 16:11:48
+ * @LastEditTime: 2026-08-19 15:58:40
  * @License: GPL 3.0
  */
 #pragma once
@@ -175,6 +175,12 @@ class Cc1101 final : public ChipSpiGuide {
    * @return 初始化成功返回 true，失败返回 false。
    */
   bool Init(int32_t freq_hz = kMaximumSpiFrequencyHz) override;
+
+  /**
+   * @brief 读取 VERSION 设备标识寄存器。
+   * @return 设备标识；读取失败返回 0xFF。
+   */
+  uint8_t GetDeviceId();
 
   /**
    * @brief 使芯片进入掉电模式并释放 SPI 设备和专用 GPIO。

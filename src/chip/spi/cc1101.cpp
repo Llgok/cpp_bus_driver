@@ -42,17 +42,17 @@ constexpr uint8_t kDefaultMcsm0 = 0x18;
 constexpr uint8_t kDefaultMcsm1 = 0x30;
 constexpr uint32_t kCcaRssiSettlingUs = 1000;
 constexpr uint8_t kPartNumberCc1101 = 0x00;
-constexpr uint8_t kOfficialVersions[] = {0x04, 0x14};
-constexpr uint8_t kCompatibleCloneVersion = 0x17;
+constexpr uint8_t kOfficialDeviceIds[] = {0x04, 0x14};
+constexpr uint8_t kCompatibleCloneDeviceId = 0x17;
 
 /**
- * @brief 检查 VERSION 是否属于 TI 公开版本。
- * @param version VERSION 状态寄存器值。
- * @return 属于 TI 版本返回 true，否则返回 false。
+ * @brief 检查设备标识是否属于 TI 公开型号。
+ * @param device_id VERSION 设备标识寄存器值。
+ * @return 属于 TI 公开型号返回 true，否则返回 false。
  */
-bool IsOfficialVersion(uint8_t version) {
-  for (const uint8_t known : kOfficialVersions) {
-    if (version == known) {
+bool IsOfficialDeviceId(uint8_t device_id) {
+  for (const uint8_t known : kOfficialDeviceIds) {
+    if (device_id == known) {
       return true;
     }
   }
@@ -106,18 +106,21 @@ bool Cc1101::Init(int32_t freq_hz) {
   }
 
   uint8_t part_number = 0;
-  uint8_t version = 0;
-  if (!GetPartNumber(&part_number) || !GetVersion(&version) ||
-      part_number != kPartNumberCc1101 ||
-      (!IsOfficialVersion(version) && version != kCompatibleCloneVersion)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "CC1101 not found (part: %#X version: %#X)\n", part_number, version);
+  const auto device_id = GetDeviceId();
+  if (!GetPartNumber(&part_number) || part_number != kPartNumberCc1101 ||
+      (!IsOfficialDeviceId(device_id) &&
+          device_id != kCompatibleCloneDeviceId)) {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+        "Get cc1101 id failed (error id: %#X)\n", device_id);
     bus_->Deinit(false);
     return false;
+  } else {
+    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+        "Get cc1101 id success (id: %#X)\n", device_id);
   }
-  if (version == kCompatibleCloneVersion) {
+  if (device_id == kCompatibleCloneDeviceId) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Compatible CC1101 clone detected (version: %#X)\n", version);
+        "Compatible CC1101 clone detected (id: %#X)\n", device_id);
   }
 
   if (!Configure(config_)) {
@@ -127,8 +130,6 @@ bool Cc1101::Init(int32_t freq_hz) {
   }
 
   initialized_ = true;
-  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "CC1101 initialization success (version: %#X)\n", version);
   return true;
 }
 
@@ -1351,6 +1352,15 @@ bool Cc1101::GetState(State* state) {
   }
   *state = static_cast<State>(value & kMarcStateMask);
   return true;
+}
+
+uint8_t Cc1101::GetDeviceId() {
+  uint8_t device_id = 0;
+  if (!GetVersion(&device_id)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+    return static_cast<uint8_t>(-1);
+  }
+  return device_id;
 }
 
 bool Cc1101::GetPartNumber(uint8_t* part_number) {
