@@ -70,7 +70,12 @@ class Sy6970 final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-  uint8_t GetDeviceId();
+
+  /**
+   * @brief 读取 SY6970 芯片标识。
+   * @return 芯片标识；读取失败返回 0xFF。
+   */
+  uint8_t GetChipId();
 
   /**
    * @brief 设置高阻态模式
@@ -571,7 +576,7 @@ class Sy6970 final : public ChipI2cGuide {
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x6A;
-  static constexpr uint8_t kDeviceId = 0x01;
+  static constexpr uint8_t kChipId = 0x01;
   static constexpr uint8_t kInitSequence[] = {
 
       // 关闭 ILIM引脚，输入电流限制修改为最大

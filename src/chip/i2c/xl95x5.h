@@ -47,7 +47,12 @@ class Xl95x5 final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-  uint8_t GetDeviceId();
+
+  /**
+   * @brief 读取 XL95x5 芯片标识。
+   * @return 芯片标识；读取失败返回 0xFF。
+   */
+  uint8_t GetChipId();
 
   /**
    * @brief 设置引脚或端口模式
@@ -82,7 +87,7 @@ class Xl95x5 final : public ChipI2cGuide {
 
  private:
   enum class Cmd {
-    kRoDeviceId = 0x04,
+    kRoChipId = 0x04,
 
     kRoInputPort0 = 0x00,
     kRoInputPort1,

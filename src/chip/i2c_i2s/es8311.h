@@ -139,7 +139,12 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
   bool Deinit(bool delete_bus = true) override;
   bool Init(uint16_t mclk_multiple, uint32_t sample_rate_hz,
       uint8_t data_bit_width) override;
-  uint16_t GetDeviceId();
+
+  /**
+   * @brief 读取 ES8311 芯片标识。
+   * @return 芯片标识；读取失败返回 0xFFFF。
+   */
+  uint16_t GetChipId();
 
   /**
    * @brief 软件复位
@@ -386,7 +391,7 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
 
  private:
   enum class Cmd {
-    kRoDeviceIdStart = 0xFD,  // 连续读取两次返回芯片ID 0x8311
+    kRoChipIdStart = 0xFD,  // 连续读取两次返回芯片ID 0x8311
 
     kRwResetSerialPortModeControl = 0x00,
     kRwClockManager1,
@@ -438,7 +443,7 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
   static constexpr uint8_t kDeviceI2cAddress1 = 0x18;
   static constexpr uint8_t kDeviceI2cAddress2 = 0x19;
   static constexpr uint8_t kDeviceI2cAddressDefault = kDeviceI2cAddress1;
-  static constexpr uint16_t kDeviceId = 0x8311;
+  static constexpr uint16_t kChipId = 0x8311;
   // 时钟分配系数列表
   static constexpr ClockCoeff kClockCoeffTable_[] = {
       // 每项字段的排列顺序与 ClockCoeff 声明一致。

@@ -155,17 +155,17 @@ class Icm20948 final : public Tool {
 
   /**
    * @brief 获取 ICM20948 芯片标识
-   * @param device_id 返回 WHO_AM_I 寄存器值
+   * @param chip_id 返回 WHO_AM_I 寄存器值
    * @return 读取成功返回 true，失败返回 false
    */
-  bool GetDeviceId(uint8_t& device_id);
+  bool GetChipId(uint8_t& chip_id);
 
   /**
    * @brief 获取内部 AK09916 磁力计芯片标识
-   * @param device_id 返回 WIA2 寄存器值
+   * @param chip_id 返回 WIA2 寄存器值
    * @return 读取成功返回 true，失败返回 false
    */
-  bool GetMagnetometerDeviceId(uint8_t& device_id);
+  bool GetMagnetometerChipId(uint8_t& chip_id);
 
   /**
    * @brief 设置芯片睡眠状态
@@ -379,7 +379,7 @@ class Icm20948 final : public Tool {
 
   // AK09916 内部 I2C 寄存器。
   enum class Ak09916Cmd : uint8_t {
-    kRoDeviceId = 0x01,         // 芯片标识 WIA2。
+    kRoChipId = 0x01,           // 芯片标识 WIA2。
     kRoStatus1 = 0x10,          // 数据就绪和覆盖状态 ST1。
     kRoMeasurementData = 0x11,  // 磁场数据起始地址 HXL。
     kRoStatus2 = 0x18,          // 磁场溢出状态 ST2。
@@ -388,9 +388,9 @@ class Icm20948 final : public Tool {
   };
 
   static constexpr int16_t kDeviceI2cAddressDefault = 0x68;  // AD0=0。
-  static constexpr uint8_t kDeviceId = 0xEA;                // WHO_AM_I 期望值。
+  static constexpr uint8_t kChipId = 0xEA;                  // WHO_AM_I 期望值。
   static constexpr uint8_t kAk09916Address = 0x0C;          // 内部磁力计地址。
-  static constexpr uint8_t kAk09916DeviceId = 0x09;         // WIA2 期望值。
+  static constexpr uint8_t kAk09916ChipId = 0x09;           // WIA2 期望值。
   static constexpr int32_t kDefaultIcmI2cFreqHz = 400000;   // I2C 上限。
   static constexpr int32_t kDefaultIcmSpiFreqHz = 7000000;  // SPI 上限。
   static constexpr uint32_t kResetDelayMs = 100;            // 主芯片复位等待。

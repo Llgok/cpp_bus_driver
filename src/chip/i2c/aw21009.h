@@ -210,7 +210,7 @@ class Aw21009 final : public ChipI2cGuide {
    * @brief 从RESET/ID寄存器读取AW21009芯片ID。
    * @return 芯片ID，读取失败返回0xFF。
    */
-  uint8_t GetDeviceId();
+  uint8_t GetChipId();
 
   /**
    * @brief 一次性配置GCR全局控制寄存器。
@@ -599,7 +599,7 @@ class Aw21009 final : public ChipI2cGuide {
     kGroupConfig = 0x8B,
   };
 
-  static constexpr uint8_t kDeviceId = 0x12;
+  static constexpr uint8_t kChipId = 0x12;
 
   /**
    * @brief 将寄存器枚举转换为寄存器地址。

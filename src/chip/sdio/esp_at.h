@@ -81,7 +81,12 @@ class EspAt final : public ChipSdioGuide {
    * @return 初始化成功返回 true，失败返回 false
    */
   bool InitConnect();
-  bool GetDeviceId();
+
+  /**
+   * @brief 发送 AT 探测命令并检查 ESP-AT 芯片响应。
+   * @return 收到有效响应返回 true，否则返回 false。
+   */
+  bool GetChipId();
 
   /**
    * @brief 重新连接

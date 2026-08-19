@@ -68,11 +68,13 @@ bool EspAt::Init(int32_t freq_hz) {
     return false;
   }
 
-  if (!GetDeviceId()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Get espat id failed\n");
+  if (!GetChipId()) {
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "Get espat chip id failed\n");
     return false;
   } else {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Get espat id success\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "Get espat chip id success\n");
   }
 
   return true;
@@ -343,7 +345,7 @@ bool EspAt::InitConnect() {
   return true;
 }
 
-bool EspAt::GetDeviceId() {
+bool EspAt::GetChipId() {
   const std::string buffer_cmd = "AT\r\n";
 
   SendPacket(buffer_cmd);
@@ -375,7 +377,7 @@ bool EspAt::GetDeviceId() {
 
     buffer_timeout_count++;
     if (buffer_timeout_count > kTransmitTimeoutCount) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetDeviceId timeout\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetChipId timeout\n");
       return false;
     }
 
@@ -389,9 +391,9 @@ bool EspAt::Reconnect() {
   connect_.status = true;
   connect_.error_count = 0;
 
-  if (!GetDeviceId()) {
+  if (!GetChipId()) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "GetDeviceId fail, starting reinitialization\n");
+        "GetChipId fail, starting reinitialization\n");
     Init();
 
     return false;

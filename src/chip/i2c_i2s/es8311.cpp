@@ -41,14 +41,14 @@ bool Es8311::Init(int32_t freq_hz) {
     return false;
   }
 
-  auto buffer = GetDeviceId();
-  if (buffer != kDeviceId) {
+  auto buffer = GetChipId();
+  if (buffer != kChipId) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get es8311 id failed (error id: %#X)\n", buffer);
+        "Get es8311 chip id failed (error id: %#X)\n", buffer);
     return false;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get es8311 id success (id: %#X)\n", buffer);
+        "Get es8311 chip id success (id: %#X)\n", buffer);
   }
 
   if (!SetMasterClockSource(ClockSource::kAdcDacMclk)) {
@@ -151,13 +151,13 @@ bool Es8311::Init(
   return true;
 }
 
-uint16_t Es8311::GetDeviceId() {
+uint16_t Es8311::GetChipId() {
   uint8_t buffer[2] = {0};
 
   for (uint8_t i = 0; i < 2; i++) {
     if (!ChipI2cGuide::bus_->Read(
             static_cast<uint8_t>(
-                static_cast<uint8_t>(Cmd::kRoDeviceIdStart) + i),
+                static_cast<uint8_t>(Cmd::kRoChipIdStart) + i),
             &buffer[i])) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return -1;

@@ -172,7 +172,7 @@ class Bq27220 final : public ChipI2cGuide {
       : ChipI2cGuide(bus, address), rst_(rst) {}
 
   /**
-   * @brief 初始化 BQ27220 并校验 Device ID
+   * @brief 初始化 BQ27220 并校验 Chip ID
    * @param freq_hz I2C 工作频率，默认使用总线默认配置
    * @return 初始化成功返回 true，失败返回 false
    */
@@ -186,10 +186,10 @@ class Bq27220 final : public ChipI2cGuide {
   bool Deinit(bool delete_bus = true) override;
 
   /**
-   * @brief 读取芯片 Device ID
-   * @return Device ID，BQ27220 正常应为 0x0220
+   * @brief 读取芯片 Chip ID
+   * @return Chip ID，BQ27220 正常应为 0x0220
    */
-  uint16_t GetDeviceId();
+  uint16_t GetChipId();
 
   /**
    * @brief 读取芯片固件版本
@@ -480,7 +480,7 @@ class Bq27220 final : public ChipI2cGuide {
 
   /**
    * @brief 软复位 BQ27220
-   * @return 复位后 Device ID 校验成功返回 true，失败返回 false
+   * @return 复位后 Chip ID 校验成功返回 true，失败返回 false
    */
   bool Reset();
 
@@ -639,7 +639,7 @@ class Bq27220 final : public ChipI2cGuide {
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x55;
-  static constexpr uint16_t kDeviceId = 0x0220;
+  static constexpr uint16_t kChipId = 0x0220;
   static constexpr uint16_t kUnsealKey1 = 0x0414;
   static constexpr uint16_t kUnsealKey2 = 0x3672;
   static constexpr uint16_t kFullAccessKey = 0xFFFF;

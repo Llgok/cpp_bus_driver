@@ -31,14 +31,14 @@ bool Sy6970::Init(int32_t freq_hz) {
     return false;
   }
 
-  auto buffer = GetDeviceId();
-  if (buffer != kDeviceId) {
+  auto buffer = GetChipId();
+  if (buffer != kChipId) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get sy6970 id failed (error id: %#X)\n", buffer);
+        "Get sy6970 chip id failed (error id: %#X)\n", buffer);
     return false;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get sy6970 id success (id: %#X)\n", buffer);
+        "Get sy6970 chip id success (id: %#X)\n", buffer);
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
@@ -64,7 +64,7 @@ bool Sy6970::Deinit(bool delete_bus) {
   return result;
 }
 
-uint8_t Sy6970::GetDeviceId() {
+uint8_t Sy6970::GetChipId() {
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwDeviceControl), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");

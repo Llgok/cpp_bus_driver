@@ -28,14 +28,14 @@ bool Aw21009::Init(int32_t freq_hz) {
     return false;
   }
 
-  const uint8_t device_id = GetDeviceId();
-  if (device_id != kDeviceId) {
+  const uint8_t chip_id = GetChipId();
+  if (chip_id != kChipId) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get aw21009 id failed (error id: %#X)\n", device_id);
+        "Get aw21009 chip id failed (error id: %#X)\n", chip_id);
     return false;
   }
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "Get aw21009 id success (id: %#X)\n", device_id);
+      "Get aw21009 chip id success (id: %#X)\n", chip_id);
 
   if (!SoftwareReset()) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "SoftwareReset failed\n");
@@ -144,7 +144,7 @@ bool Aw21009::SoftwareReset() {
   return true;
 }
 
-uint8_t Aw21009::GetDeviceId() {
+uint8_t Aw21009::GetChipId() {
   uint8_t buffer = 0;
 
   if (!ReadRegister(RegisterValue(Register::kReset), &buffer)) {

@@ -29,7 +29,12 @@ class Ft3x68 final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-  uint8_t GetDeviceId();
+
+  /**
+   * @brief 读取 FT3x68 芯片标识。
+   * @return 芯片标识；读取失败返回 0xFF。
+   */
+  uint8_t GetChipId();
 
   /**
    * @brief 获取触摸总数
@@ -56,16 +61,16 @@ class Ft3x68 final : public ChipI2cGuide {
 
  private:
   enum class Cmd {
-    // 设备标识映射：0x00 为 kFt6456，0x04 为 kFt3268，
+    // 芯片标识映射：0x00 为 kFt6456，0x04 为 kFt3268，
     // 0x01 为 kFt3067，0x05 为 kFt3368，0x02 为 kFt3068，0x03 为 kFt3168。
-    kRoDeviceId = 0xA0,
+    kRoChipId = 0xA0,
 
     kRoTdStatus = 0x02,  // 触摸手指数
     kRoP1Xh,             // 第1点的X坐标高4位
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x38;
-  static constexpr uint8_t kDeviceId = 0x03;
+  static constexpr uint8_t kChipId = 0x03;
   static constexpr uint8_t kMaxTouchFingerCount = 2;
   static constexpr uint8_t kSingleTouchPointDataSize = 6;
 

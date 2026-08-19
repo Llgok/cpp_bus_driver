@@ -2,7 +2,7 @@
  * @Description: Semtech SX1261/SX1262 无线收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-08-03 16:12:01
+ * @LastEditTime: 2026-08-19 16:32:57
  * @License: GPL 3.0
  */
 #pragma once
@@ -452,7 +452,7 @@ class Sx126x final : public ChipSpiGuide {
     uint16_t length_error = 0;
   };
 
-  struct DeviceId {
+  struct ChipId {
     std::array<uint8_t, 6> bytes = {};
   };
 
@@ -555,7 +555,14 @@ class Sx126x final : public ChipSpiGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-  bool GetDeviceId(DeviceId& device_id);
+
+  /**
+   * @brief 读取 SX126x 芯片标识。
+   * @param chip_id 返回读取到的芯片标识。
+   * @return 读取成功返回 true，否则返回 false。
+   */
+  bool GetChipId(ChipId& chip_id);
+  
   bool IsInitialized() const { return initialized_; }
   bool IsSleeping() const { return sleeping_; }
   bool IsConfigured() const { return configured_; }
@@ -1348,7 +1355,7 @@ class Sx126x final : public ChipSpiGuide {
   // 采用大端先发的规则发送（0x0001 先发0x00后发0x01）
   enum class Reg {
     kRwRetentionListBaseAddress = 0x029F,
-    kRoDeviceId = 0x0320,
+    kRoChipId = 0x0320,
     kRwWhiteningSeedStart = 0x06B8,
     kRwCrcValueProgrammingStart = 0x06BC,
     kRwCrcPolynomialStart = 0x06BE,
@@ -1421,7 +1428,7 @@ class Sx126x final : public ChipSpiGuide {
   };
 
   // SX1262的ID为SX1261
-  static constexpr std::array<uint8_t, 6> kDeviceId = {
+  static constexpr std::array<uint8_t, 6> kChipId = {
       'S', 'X', '1', '2', '6', '1'};
   static constexpr uint16_t kBusyPinTimeoutCount = 10000;
   static constexpr uint16_t kBusyFunctionTimeoutCount = kBusyPinTimeoutCount;

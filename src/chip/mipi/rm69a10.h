@@ -19,7 +19,12 @@ class Rm69a10 final : public ChipMipiGuide {
   bool Init(float freq_mhz = kDefaultValue,
       float lane_bit_rate_mbps = kDefaultValue) override;
   bool Deinit() override;
-  uint8_t GetDeviceId();
+
+  /**
+   * @brief 读取 RM69A10 芯片标识。
+   * @return 芯片标识；读取失败返回 0xFF。
+   */
+  uint8_t GetChipId();
 
   /**
    * @brief 设置睡眠
@@ -63,7 +68,7 @@ class Rm69a10 final : public ChipMipiGuide {
 
  private:
   enum class Cmd {
-    kRoDeviceId = 0xA1,
+    kRoChipId = 0xA1,
 
     kWoSlpin = 0x10,
     kWoSlpout,
@@ -77,7 +82,7 @@ class Rm69a10 final : public ChipMipiGuide {
     kWoDispon,
   };
 
-  static constexpr uint8_t kDeviceId = 0x01;
+  static constexpr uint8_t kChipId = 0x01;
   static constexpr uint8_t kInitSequence[] = {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8), 0xFE, 0xFD,
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8), 0x80, 0xFC,

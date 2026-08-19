@@ -38,7 +38,12 @@ class Hi8561 final : public ChipMipiGuide {
   bool Init(float freq_mhz = kDefaultValue,
       float lane_bit_rate_mbps = kDefaultValue) override;
   bool Deinit() override;
-  uint16_t GetDeviceId();
+
+  /**
+   * @brief 读取 HI8561 芯片标识。
+   * @return 芯片标识；读取失败返回 0xFFFF。
+   */
+  uint16_t GetChipId();
 
   /**
    * @brief 设置睡眠
@@ -103,7 +108,7 @@ class Hi8561 final : public ChipMipiGuide {
 
  private:
   enum class Cmd {
-    kRoDeviceIdStart = 0xDA,
+    kRoChipIdStart = 0xDA,
 
     kWoSlpin = 0x10,
     kWoSlpout,
@@ -121,7 +126,7 @@ class Hi8561 final : public ChipMipiGuide {
     kWoDispon,
   };
 
-  static constexpr uint16_t kDeviceId = 0x8561;
+  static constexpr uint16_t kChipId = 0x8561;
   static constexpr uint8_t kInitSequence[] = {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8ByteData), 0xDF, 3, 0x90,
       0x69, 0xF9,

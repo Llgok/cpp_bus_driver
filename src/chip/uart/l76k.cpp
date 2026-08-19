@@ -118,12 +118,13 @@ bool L76k::Init(int32_t baud_rate) {
   }
 
   size_t buffer_index = 0;
-  if (!GetDeviceId(&buffer_index)) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Get l76k id failed\n");
+  if (!GetChipId(&buffer_index)) {
+    LogMessage(
+        LogLevel::kInfo, __FILE__, __LINE__, "Get l76k chip id failed\n");
     return false;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get l76k id success (index: %d)\n", buffer_index);
+        "Get l76k chip id success (index: %d)\n", buffer_index);
   }
 
   return true;
@@ -146,7 +147,7 @@ bool L76k::Deinit() {
   return result;
 }
 
-bool L76k::GetDeviceId(size_t* search_index) {
+bool L76k::GetChipId(size_t* search_index) {
   std::unique_ptr<uint8_t[]> buffer;
   uint32_t buffer_length = 0;
 

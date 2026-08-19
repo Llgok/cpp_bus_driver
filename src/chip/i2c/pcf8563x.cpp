@@ -27,14 +27,14 @@ bool Pcf8563x::Init(int32_t freq_hz) {
     return false;
   }
 
-  auto buffer = GetDeviceId();
+  auto buffer = GetChipId();
   if (buffer == static_cast<uint8_t>(kDefaultValue)) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get pcf8563x id failed (error id: %#X)\n", buffer);
+        "Get pcf8563x chip id failed (error id: %#X)\n", buffer);
     return false;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get pcf8563x id success (id: %#X)\n", buffer);
+        "Get pcf8563x chip id success (id: %#X)\n", buffer);
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
@@ -62,10 +62,10 @@ bool Pcf8563x::Deinit(bool delete_bus) {
   return result;
 }
 
-uint8_t Pcf8563x::GetDeviceId() {
+uint8_t Pcf8563x::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceId), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoChipId), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }

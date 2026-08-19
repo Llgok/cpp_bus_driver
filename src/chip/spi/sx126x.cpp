@@ -54,17 +54,17 @@ bool Sx126x::Init(int32_t freq_hz) {
     return false;
   }
 
-  DeviceId device_id;
-  if (!GetDeviceId(device_id) || (device_id.bytes != kDeviceId)) {
+  ChipId chip_id;
+  if (!GetChipId(chip_id) || (chip_id.bytes != kChipId)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Get sx126x id failed (error id: %.6s)\n",
-        reinterpret_cast<const char*>(device_id.bytes.data()));
+        "Get sx126x chip id failed (error id: %.6s)\n",
+        reinterpret_cast<const char*>(chip_id.bytes.data()));
     Deinit(false);
     return false;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get sx126x id success (id: %.6s)\n",
-        reinterpret_cast<const char*>(device_id.bytes.data()));
+        "Get sx126x chip id success (id: %.6s)\n",
+        reinterpret_cast<const char*>(chip_id.bytes.data()));
   }
 
   if (!ApplyHardwareConfig(hardware_config_.enable_dio3_tcxo)) {
@@ -98,10 +98,10 @@ bool Sx126x::Deinit(bool delete_bus) {
   return result;
 }
 
-bool Sx126x::GetDeviceId(DeviceId& device_id) {
-  device_id = DeviceId{};
-  if (!ReadRegister(static_cast<uint16_t>(Reg::kRoDeviceId),
-          device_id.bytes.data(), device_id.bytes.size())) {
+bool Sx126x::GetChipId(ChipId& chip_id) {
+  chip_id = ChipId{};
+  if (!ReadRegister(static_cast<uint16_t>(Reg::kRoChipId),
+          chip_id.bytes.data(), chip_id.bytes.size())) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }

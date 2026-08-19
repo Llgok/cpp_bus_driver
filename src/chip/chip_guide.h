@@ -2,7 +2,7 @@
  * @Description: 基于不同总线访问芯片的公共驱动基类
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-08-03 16:10:32
+ * @LastEditTime: 2026-08-19 16:20:03
  * @License: GPL 3.0
  */
 #pragma once
@@ -16,6 +16,7 @@ class ChipI2cGuide : public virtual Tool {
       : bus_(bus), address_(address) {}
   virtual bool Init(int32_t freq_hz);
   virtual bool Deinit(bool delete_bus);
+
   bool InitSequence(const uint8_t* sequence, size_t length);
   bool InitSequence(const uint16_t* sequence, size_t length);
 

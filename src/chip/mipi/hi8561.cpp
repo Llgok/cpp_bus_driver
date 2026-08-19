@@ -27,14 +27,14 @@ bool Hi8561::Init(float freq_mhz, float lane_bit_rate_mbps) {
     return false;
   }
 
-  auto buffer = GetDeviceId();
-  if (buffer != kDeviceId) {
+  auto buffer = GetChipId();
+  if (buffer != kChipId) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get hi8561 id failed (error id: %#X)\n", buffer);
+        "Get hi8561 chip id failed (error id: %#X)\n", buffer);
     return false;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get hi8561 id success (id: %#X)\n", buffer);
+        "Get hi8561 chip id success (id: %#X)\n", buffer);
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
@@ -65,12 +65,12 @@ bool Hi8561::Deinit() {
   return result;
 }
 
-uint16_t Hi8561::GetDeviceId() {
+uint16_t Hi8561::GetChipId() {
   uint8_t buffer[2] = {0};
 
   for (uint8_t i = 0; i < 2; i++) {
     if (!bus_->Read(
-            static_cast<uint8_t>(Cmd::kRoDeviceIdStart) + i, &buffer[i], 1)) {
+            static_cast<uint8_t>(Cmd::kRoChipIdStart) + i, &buffer[i], 1)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return -1;
     }

@@ -74,7 +74,13 @@ class Pcf8563x final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-  uint8_t GetDeviceId();
+
+  /**
+   * @brief 读取 PCF8563x 芯片标识。
+   * @return 芯片标识；读取失败返回 0xFF。
+   */
+  uint8_t GetChipId();
+
   /**
    * @brief 设置CLKOUT引脚输出频率
    * @param freq_hz 时钟输出频率
@@ -171,7 +177,7 @@ class Pcf8563x final : public ChipI2cGuide {
 
  private:
   enum class Cmd {
-    kRoDeviceId = 0x00,
+    kRoChipId = 0x00,
 
     kRwControlStatus1 = 0x00,
     kRwControlStatus2,

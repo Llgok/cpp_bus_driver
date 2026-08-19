@@ -73,7 +73,12 @@ class Icn6211 final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-  uint16_t GetDeviceId();
+
+  /**
+   * @brief 读取 ICN6211 芯片标识。
+   * @return 芯片标识；读取失败返回 0xFFFF。
+   */
+  uint16_t GetChipId();
 
   /**
    * @brief 检查接口参数是否正确
@@ -131,7 +136,7 @@ class Icn6211 final : public ChipI2cGuide {
 
  private:
   enum class Cmd {
-    kRoDeviceIdStart = 0x01,
+    kRoChipIdStart = 0x01,
 
     kConfigFinishSoftReset = 0x09,
 
@@ -169,7 +174,7 @@ class Icn6211 final : public ChipI2cGuide {
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x2C;
-  static constexpr uint16_t kDeviceId = 0x6211;
+  static constexpr uint16_t kChipId = 0x6211;
 
   int32_t rst_;
   double fps_;

@@ -29,14 +29,14 @@ bool Icn6211::Init(int32_t freq_hz) {
     return false;
   }
 
-  auto buffer = GetDeviceId();
-  if (buffer != kDeviceId) {
+  auto buffer = GetChipId();
+  if (buffer != kChipId) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get icn6211 id failed (error id: %#X)\n", buffer);
+        "Get icn6211 chip id failed (error id: %#X)\n", buffer);
     return false;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get icn6211 id success (id: %#X)\n", buffer);
+        "Get icn6211 chip id success (id: %#X)\n", buffer);
   }
 
   return true;
@@ -57,10 +57,10 @@ bool Icn6211::Deinit(bool delete_bus) {
   return result;
 }
 
-uint16_t Icn6211::GetDeviceId() {
+uint16_t Icn6211::GetChipId() {
   uint8_t buffer[2] = {0};
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceIdStart), buffer, 2)) {
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoChipIdStart), buffer, 2)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }

@@ -27,14 +27,14 @@ bool Rm69a10::Init(float freq_mhz, float lane_bit_rate_mbps) {
     return false;
   }
 
-  auto buffer = GetDeviceId();
-  if (buffer != kDeviceId) {
+  auto buffer = GetChipId();
+  if (buffer != kChipId) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get rm69a10 id failed (error id: %#X)\n", buffer);
+        "Get rm69a10 chip id failed (error id: %#X)\n", buffer);
     return false;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get rm69a10 id success (id: %#X)\n", buffer);
+        "Get rm69a10 chip id success (id: %#X)\n", buffer);
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
@@ -65,10 +65,10 @@ bool Rm69a10::Deinit() {
   return result;
 }
 
-uint8_t Rm69a10::GetDeviceId() {
+uint8_t Rm69a10::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceId), &buffer, 1)) {
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoChipId), &buffer, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }

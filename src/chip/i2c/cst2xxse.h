@@ -31,7 +31,12 @@ class Cst2xxse final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-  uint8_t GetDeviceId();
+
+  /**
+   * @brief 读取 CST2xxSE 芯片标识。
+   * @return 芯片标识；读取失败返回 0xFF。
+   */
+  uint8_t GetChipId();
 
   /**
    * @brief 获取触摸总数
@@ -63,13 +68,13 @@ class Cst2xxse final : public ChipI2cGuide {
 
  private:
   enum class Cmd {
-    kRoDeviceId = 0x06,  // 读取后返回0xAB
+    kRoChipId = 0x06,  // 读取后返回0xAB
     kRoTouchPointInfoStart = 0x00,
     kRoGetFingerCount = 0x05,
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x5A;
-  static constexpr uint8_t kDeviceId = 0xAB;
+  static constexpr uint8_t kChipId = 0xAB;
   static constexpr uint8_t kMaxTouchFingerCount = 6;
   static constexpr uint8_t kSingleTouchPointDataSize = 5;
 

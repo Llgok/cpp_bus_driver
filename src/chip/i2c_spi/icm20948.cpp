@@ -53,7 +53,7 @@ bool Icm20948::Init(const Config& config, int32_t freq_hz) {
   }
   resume_magnetometer_mode_ = config_.magnetometer_mode;
 
-  uint8_t device_id = 0;
+  uint8_t chip_id = 0;
   if (!ResetDevice()) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Reset ICM20948 failed\n");
     EnterSafeStateAfterInitializationFailure();
@@ -65,10 +65,10 @@ bool Icm20948::Init(const Config& config, int32_t freq_hz) {
     EnterSafeStateAfterInitializationFailure();
     return false;
   }
-  if (!GetDeviceId(device_id) || device_id != kDeviceId) {
+  if (!GetChipId(chip_id) || chip_id != kChipId) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "ICM20948 device id mismatch (read: %#X, expected: %#X)\n", device_id,
-        kDeviceId);
+        "ICM20948 chip id mismatch (read: %#X, expected: %#X)\n", chip_id,
+        kChipId);
     EnterSafeStateAfterInitializationFailure();
     return false;
   }
@@ -127,7 +127,7 @@ bool Icm20948::Reset() {
     return false;
   }
 
-  uint8_t device_id = 0;
+  uint8_t chip_id = 0;
   if (!ResetDevice()) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Reset ICM20948 failed\n");
     EnterSafeStateAfterInitializationFailure();
@@ -139,11 +139,11 @@ bool Icm20948::Reset() {
     EnterSafeStateAfterInitializationFailure();
     return false;
   }
-  if (!GetDeviceId(device_id) || device_id != kDeviceId) {
+  if (!GetChipId(chip_id) || chip_id != kChipId) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "ICM20948 device id mismatch after reset "
+        "ICM20948 chip id mismatch after reset "
         "(read: %#X, expected: %#X)\n",
-        device_id, kDeviceId);
+        chip_id, kChipId);
     EnterSafeStateAfterInitializationFailure();
     return false;
   }
@@ -155,20 +155,20 @@ bool Icm20948::Reset() {
   return true;
 }
 
-bool Icm20948::GetDeviceId(uint8_t& device_id) {
+bool Icm20948::GetChipId(uint8_t& chip_id) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!bus_initialized_) {
     return false;
   }
-  return ReadRegister(Cmd::kRoWhoAmI, &device_id);
+  return ReadRegister(Cmd::kRoWhoAmI, &chip_id);
 }
 
-bool Icm20948::GetMagnetometerDeviceId(uint8_t& device_id) {
+bool Icm20948::GetMagnetometerChipId(uint8_t& chip_id) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_ || sleeping_ || !auxiliary_i2c_master_enabled_) {
     return false;
   }
-  return ReadAk09916Register(Ak09916Cmd::kRoDeviceId, device_id, true);
+  return ReadAk09916Register(Ak09916Cmd::kRoChipId, chip_id, true);
 }
 
 bool Icm20948::SetSleep(bool sleep) {
@@ -757,12 +757,12 @@ bool Icm20948::ConfigureMagnetometer(MagnetometerMode mode) {
   active_magnetometer_mode_ = MagnetometerMode::kPowerDown;
   magnetometer_stream_ready_ = false;
 
-  uint8_t device_id = 0;
-  if (!ReadAk09916Register(Ak09916Cmd::kRoDeviceId, device_id, false) ||
-      device_id != kAk09916DeviceId) {
+  uint8_t chip_id = 0;
+  if (!ReadAk09916Register(Ak09916Cmd::kRoChipId, chip_id, false) ||
+      chip_id != kAk09916ChipId) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "AK09916 device id mismatch (read: %#X, expected: %#X)\n", device_id,
-        kAk09916DeviceId);
+        "AK09916 chip id mismatch (read: %#X, expected: %#X)\n", chip_id,
+        kAk09916ChipId);
     return false;
   }
 

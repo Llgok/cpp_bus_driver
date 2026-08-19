@@ -28,7 +28,7 @@ bool Axp517::Init(int32_t freq_hz) {
     return false;
   }
 
-  auto buffer = GetDeviceId();
+  auto buffer = GetChipId();
   if (buffer == static_cast<uint8_t>(-1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -65,7 +65,7 @@ bool Axp517::Deinit(bool delete_bus) {
   return result;
 }
 
-uint8_t Axp517::GetDeviceId() {
+uint8_t Axp517::GetChipId() {
   uint8_t buffer = 0;
 
   if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwMessageHeaderInfo), &buffer)) {

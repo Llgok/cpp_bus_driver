@@ -100,11 +100,11 @@ class Sgm41562xx final : public ChipI2cGuide {
   bool Deinit(bool delete_bus = true) override;
 
   /**
-   * @brief 读取REG0B中的设备ID
-   * @param device_id 返回读取到的设备ID
+   * @brief 读取REG0B中的芯片ID
+   * @param chip_id 返回读取到的芯片ID
    * @return 读取成功返回true，失败返回false
    */
-  bool GetDeviceId(uint8_t& device_id);
+  bool GetChipId(uint8_t& chip_id);
 
   /**
    * @brief 获取Init函数确认的芯片型号
@@ -174,16 +174,16 @@ class Sgm41562xx final : public ChipI2cGuide {
     kSystemStatus = 0x08,
     kFaultAndShippingControl = 0x09,
     kI2cAddressMiscellaneousConfiguration = 0x0A,
-    kDeviceId = 0x0B,
+    kChipId = 0x0B,
     kExtendedInputCurrentControl = 0x0C,
     kExtendedCurrentControl = 0x0D,
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x03;
-  static constexpr uint8_t kDeviceIdSgm41562BAndSa = 0x00;
-  static constexpr uint8_t kDeviceIdSgm41562A = 0x02;
-  static constexpr uint8_t kDeviceIdSgm41562 = 0x04;
-  static constexpr uint8_t kDeviceIdSgm41562S = 0x09;
+  static constexpr uint8_t kChipIdSgm41562BAndSa = 0x00;
+  static constexpr uint8_t kChipIdSgm41562A = 0x02;
+  static constexpr uint8_t kChipIdSgm41562 = 0x04;
+  static constexpr uint8_t kChipIdSgm41562S = 0x09;
 
   // SGM41562、SGM41562A和SGM41562B寄存器初始化序列
   static constexpr uint8_t kInitSequenceAb[] = {
@@ -247,14 +247,14 @@ class Sgm41562xx final : public ChipI2cGuide {
   };
 
   /**
-   * @brief 根据设备ID识别芯片型号
-   * @param device_id REG0B中的原始设备ID
+   * @brief 根据芯片ID识别芯片型号
+   * @param chip_id REG0B中的原始芯片ID
    * @return 返回识别出的芯片型号，无法识别时返回ChipType::kUnknown
    */
-  ChipType DetectChipType(uint8_t device_id);
+  ChipType DetectChipType(uint8_t chip_id);
 
   /**
-   * @brief 区分设备ID同为0x00的SGM41562B和SGM41562SA
+   * @brief 区分芯片ID同为0x00的SGM41562B和SGM41562SA
    * @return 返回识别出的芯片型号，无法可靠区分时返回ChipType::kUnknown
    */
   ChipType DetectIdZeroChipType();

@@ -27,14 +27,14 @@ bool Ft3x68::Init(int32_t freq_hz) {
     return false;
   }
 
-  auto buffer = GetDeviceId();
-  if (buffer != kDeviceId) {
+  auto buffer = GetChipId();
+  if (buffer != kChipId) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get ft3x68 id failed (error id: %#X)\n", buffer);
+        "Get ft3x68 chip id failed (error id: %#X)\n", buffer);
     return false;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get ft3x68 id success (id: %#X)\n", buffer);
+        "Get ft3x68 chip id success (id: %#X)\n", buffer);
   }
 
   return true;
@@ -55,10 +55,10 @@ bool Ft3x68::Deinit(bool delete_bus) {
   return result;
 }
 
-uint8_t Ft3x68::GetDeviceId() {
+uint8_t Ft3x68::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceId), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoChipId), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }

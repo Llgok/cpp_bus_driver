@@ -106,19 +106,19 @@ bool Nrf9151::Init(int32_t baud_rate, uint32_t timeout_ms) {
     return false;
   }
 
-  if (!GetDeviceId(timeout_ms)) {
+  if (!GetChipId(timeout_ms)) {
     LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "Get nrf9151 device id failed\n");
+        LogLevel::kError, __FILE__, __LINE__, "Get nrf9151 chip id failed\n");
     return false;
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "Get nrf9151 device id success (model: %s)\n", device_id_.c_str());
+      "Get nrf9151 chip id success (model: %s)\n", chip_id_.c_str());
   return true;
 }
 
 bool Nrf9151::Deinit() {
-  device_id_.clear();
+  chip_id_.clear();
   return ChipUartGuide::Deinit();
 }
 
@@ -137,7 +137,7 @@ const char* Nrf9151::CommandResultToString(CommandResult result) {
   }
 }
 
-bool Nrf9151::GetDeviceId(uint32_t timeout_ms) {
+bool Nrf9151::GetChipId(uint32_t timeout_ms) {
   std::string response;
   if (SendCommand("AT+CGMM", &response, timeout_ms) != CommandResult::kOk) {
     return false;
@@ -150,7 +150,7 @@ bool Nrf9151::GetDeviceId(uint32_t timeout_ms) {
     return false;
   }
 
-  device_id_ = model;
+  chip_id_ = model;
   return true;
 }
 

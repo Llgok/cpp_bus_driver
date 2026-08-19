@@ -42,17 +42,17 @@ constexpr uint8_t kDefaultMcsm0 = 0x18;
 constexpr uint8_t kDefaultMcsm1 = 0x30;
 constexpr uint32_t kCcaRssiSettlingUs = 1000;
 constexpr uint8_t kPartNumberCc1101 = 0x00;
-constexpr uint8_t kOfficialDeviceIds[] = {0x04, 0x14};
-constexpr uint8_t kCompatibleCloneDeviceId = 0x17;
+constexpr uint8_t kOfficialChipIds[] = {0x04, 0x14};
+constexpr uint8_t kCompatibleCloneChipId = 0x17;
 
 /**
- * @brief 检查设备标识是否属于 TI 公开型号。
- * @param device_id VERSION 设备标识寄存器值。
+ * @brief 检查芯片标识是否属于 TI 公开型号。
+ * @param chip_id VERSION 芯片标识寄存器值。
  * @return 属于 TI 公开型号返回 true，否则返回 false。
  */
-bool IsOfficialDeviceId(uint8_t device_id) {
-  for (const uint8_t known : kOfficialDeviceIds) {
-    if (device_id == known) {
+bool IsOfficialChipId(uint8_t chip_id) {
+  for (const uint8_t known : kOfficialChipIds) {
+    if (chip_id == known) {
       return true;
     }
   }
@@ -106,21 +106,21 @@ bool Cc1101::Init(int32_t freq_hz) {
   }
 
   uint8_t part_number = 0;
-  const auto device_id = GetDeviceId();
+  const auto chip_id = GetChipId();
   if (!GetPartNumber(&part_number) || part_number != kPartNumberCc1101 ||
-      (!IsOfficialDeviceId(device_id) &&
-          device_id != kCompatibleCloneDeviceId)) {
+      (!IsOfficialChipId(chip_id) &&
+          chip_id != kCompatibleCloneChipId)) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get cc1101 id failed (error id: %#X)\n", device_id);
+        "Get cc1101 chip id failed (error id: %#X)\n", chip_id);
     bus_->Deinit(false);
     return false;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get cc1101 id success (id: %#X)\n", device_id);
+        "Get cc1101 chip id success (id: %#X)\n", chip_id);
   }
-  if (device_id == kCompatibleCloneDeviceId) {
+  if (chip_id == kCompatibleCloneChipId) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Compatible CC1101 clone detected (id: %#X)\n", device_id);
+        "Compatible CC1101 clone detected (chip id: %#X)\n", chip_id);
   }
 
   if (!Configure(config_)) {
@@ -1354,13 +1354,13 @@ bool Cc1101::GetState(State* state) {
   return true;
 }
 
-uint8_t Cc1101::GetDeviceId() {
-  uint8_t device_id = 0;
-  if (!GetVersion(&device_id)) {
+uint8_t Cc1101::GetChipId() {
+  uint8_t chip_id = 0;
+  if (!GetVersion(&chip_id)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return static_cast<uint8_t>(-1);
   }
-  return device_id;
+  return chip_id;
 }
 
 bool Cc1101::GetPartNumber(uint8_t* part_number) {

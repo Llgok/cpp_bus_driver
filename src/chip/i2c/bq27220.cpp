@@ -27,15 +27,15 @@ bool Bq27220::Init(int32_t freq_hz) {
     return false;
   }
 
-  const uint16_t device_id = GetDeviceId();
-  if (device_id != kDeviceId) {
+  const uint16_t chip_id = GetChipId();
+  if (chip_id != kChipId) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get bq27220 device id failed (error id: %#X)\n", device_id);
+        "Get bq27220 chip id failed (error id: %#X)\n", chip_id);
     return false;
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "Get bq27220 device id success (id: %#X)\n", device_id);
+      "Get bq27220 chip id success (id: %#X)\n", chip_id);
   return true;
 }
 
@@ -54,7 +54,7 @@ bool Bq27220::Deinit(bool delete_bus) {
   return result;
 }
 
-uint16_t Bq27220::GetDeviceId() {
+uint16_t Bq27220::GetChipId() {
   uint16_t value = 0;
   if (!ReadControlSubcommand(ControlSubcommand::kDeviceNumber, &value)) {
     LogMessage(
@@ -553,7 +553,7 @@ bool Bq27220::Reset() {
     return false;
   }
   DelayMs(100);
-  if (GetDeviceId() != kDeviceId) {
+  if (GetChipId() != kChipId) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Reset failed\n");
     return false;
   }

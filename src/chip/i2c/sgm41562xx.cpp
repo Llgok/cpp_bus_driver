@@ -60,15 +60,15 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
     return false;
   }
 
-  uint8_t device_id = 0;
-  if (!GetDeviceId(device_id)) {
+  uint8_t chip_id = 0;
+  if (!GetChipId(chip_id)) {
     return false;
   }
 
-  if (device_id != kDeviceIdSgm41562BAndSa && device_id != kDeviceIdSgm41562A &&
-      device_id != kDeviceIdSgm41562 && device_id != kDeviceIdSgm41562S) {
+  if (chip_id != kChipIdSgm41562BAndSa && chip_id != kChipIdSgm41562A &&
+      chip_id != kChipIdSgm41562 && chip_id != kChipIdSgm41562S) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Unsupported SGM41562xx id: %#X\n", device_id);
+        "Unsupported SGM41562xx chip id: %#X\n", chip_id);
     return false;
   }
 
@@ -76,10 +76,10 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
     return false;
   }
 
-  const ChipType detected_chip_type = DetectChipType(device_id);
+  const ChipType detected_chip_type = DetectChipType(chip_id);
   if (detected_chip_type == ChipType::kUnknown) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Identify SGM41562xx failed (id: %#X)\n", device_id);
+        "Identify SGM41562xx failed (chip id: %#X)\n", chip_id);
     return false;
   }
 
@@ -97,7 +97,8 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "Get %s id success (id: %#X)\n", ChipTypeToString(chip_type_), device_id);
+      "Get %s chip id success (id: %#X)\n", ChipTypeToString(chip_type_),
+      chip_id);
   return true;
 }
 
@@ -117,14 +118,14 @@ bool Sgm41562xx::Deinit(bool delete_bus) {
   return result;
 }
 
-bool Sgm41562xx::GetDeviceId(uint8_t& device_id) {
+bool Sgm41562xx::GetChipId(uint8_t& chip_id) {
   uint8_t value = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kDeviceId), &value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read device id failed\n");
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kChipId), &value)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read chip id failed\n");
     return false;
   }
 
-  device_id = value;
+  chip_id = value;
   return true;
 }
 
@@ -148,15 +149,15 @@ const char* Sgm41562xx::ChipTypeToString(ChipType chip_type) {
   }
 }
 
-Sgm41562xx::ChipType Sgm41562xx::DetectChipType(uint8_t device_id) {
-  switch (device_id) {
-    case kDeviceIdSgm41562A:
+Sgm41562xx::ChipType Sgm41562xx::DetectChipType(uint8_t chip_id) {
+  switch (chip_id) {
+    case kChipIdSgm41562A:
       return ChipType::kSgm41562A;
-    case kDeviceIdSgm41562:
+    case kChipIdSgm41562:
       return ChipType::kSgm41562;
-    case kDeviceIdSgm41562S:
+    case kChipIdSgm41562S:
       return ChipType::kSgm41562S;
-    case kDeviceIdSgm41562BAndSa:
+    case kChipIdSgm41562BAndSa:
       return DetectIdZeroChipType();
     default:
       return ChipType::kUnknown;
@@ -175,7 +176,7 @@ Sgm41562xx::ChipType Sgm41562xx::DetectIdZeroChipType() {
     return ChipType::kUnknown;
   }
 
-  // B和SA的设备ID相同，软件复位后通过寄存器默认值区分型号
+  // B和SA的芯片ID相同，软件复位后通过寄存器默认值区分型号
   if (charge_voltage_control == kSgm41562BChargeVoltageReset &&
       system_voltage_regulation == kSgm41562BSystemVoltageReset) {
     return ChipType::kSgm41562B;

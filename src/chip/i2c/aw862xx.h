@@ -136,7 +136,7 @@ class Aw862xx final : public ChipI2cGuide {
    * @brief 读取并识别AW862xx芯片类型
    * @return 返回芯片类型，无法识别返回ChipType::kUnknown
    */
-  ChipType GetDeviceId();
+  ChipType GetChipId();
 
   /**
    * @brief 软件复位
@@ -449,8 +449,8 @@ class Aw862xx final : public ChipI2cGuide {
 
  private:
   enum class Cmd {
-    kRoDeviceId = 0x00,
-    kWoSrst = kRoDeviceId,
+    kRoChipId = 0x00,
+    kWoSrst = kRoChipId,
     kRoSysst,
     kRcSysint,
     kRwSysintm,

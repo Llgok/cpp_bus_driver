@@ -30,7 +30,12 @@ class Sgm38121 final : public ChipI2cGuide {
 
   bool Init(int32_t freq_hz = kDefaultValue) override;
   bool Deinit(bool delete_bus = true) override;
-  uint8_t GetDeviceId();
+
+  /**
+   * @brief 读取 SGM38121 芯片标识。
+   * @return 芯片标识；读取失败返回 0xFF。
+   */
+  uint8_t GetChipId();
 
   /**
    * @brief 设置输出电压
@@ -50,7 +55,7 @@ class Sgm38121 final : public ChipI2cGuide {
 
  private:
   enum class Cmd {
-    kRoDeviceId = 0x00,
+    kRoChipId = 0x00,
 
     kRwDischargeResistorSelection = 0X02,
     kRwDvdd1OutputVoltageLevel,
@@ -67,7 +72,7 @@ class Sgm38121 final : public ChipI2cGuide {
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x28;
-  static constexpr uint8_t kDeviceId = 0x80;
+  static constexpr uint8_t kChipId = 0x80;
 
   int32_t rst_;
 };

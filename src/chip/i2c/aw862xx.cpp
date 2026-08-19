@@ -216,12 +216,14 @@ bool Aw862xx::Init(int32_t freq_hz) {
 
   // 正常工作时芯片标识可能暂时不可读，因此用状态寄存器确认设备存在。
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceId), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Get aw862xx id failed\n");
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoChipId), &buffer)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Get aw862xx chip id failed\n");
     return false;
   }
 
-  LogMessage(LogLevel::kInfo, __FILE__, __LINE__, "Get aw862xx id success\n");
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "Get aw862xx chip id success\n");
 
   return true;
 }
@@ -240,10 +242,10 @@ bool Aw862xx::Deinit(bool delete_bus) {
   return result;
 }
 
-Aw862xx::ChipType Aw862xx::GetDeviceId() {
+Aw862xx::ChipType Aw862xx::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceId), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoChipId), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     chip_type_ = ChipType::kUnknown;
     return chip_type_;

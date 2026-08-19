@@ -27,14 +27,14 @@ bool Xl95x5::Init(int32_t freq_hz) {
     return false;
   }
 
-  auto buffer = GetDeviceId();
+  auto buffer = GetChipId();
   if (buffer == static_cast<uint8_t>(kDefaultValue)) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get xl95x5 id failed (error id: %#X)\n", buffer);
+        "Get xl95x5 chip id failed (error id: %#X)\n", buffer);
     return false;
   } else {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Get xl95x5 id success (id: %#X)\n", buffer);
+        "Get xl95x5 chip id success (id: %#X)\n", buffer);
   }
 
   return true;
@@ -55,10 +55,10 @@ bool Xl95x5::Deinit(bool delete_bus) {
   return result;
 }
 
-uint8_t Xl95x5::GetDeviceId() {
+uint8_t Xl95x5::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoDeviceId), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoChipId), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }

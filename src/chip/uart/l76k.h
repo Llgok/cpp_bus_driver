@@ -99,7 +99,13 @@ class L76k final : public ChipUartGuide, public GnssParser {
 
   bool Init(int32_t baud_rate = 9600) override;
   bool Deinit() override;
-  bool GetDeviceId(size_t* search_index = nullptr);
+
+  /**
+   * @brief 读取模块信息并检查有效的 NMEA 标识。
+   * @param search_index 可选的 NMEA 标识起始位置输出指针。
+   * @return 找到有效标识返回 true，否则返回 false。
+   */
+  bool GetChipId(size_t* search_index = nullptr);
 
   /**
    * @brief 启动睡眠
@@ -246,7 +252,7 @@ class L76k final : public ChipUartGuide, public GnssParser {
 
  private:
   enum class Cmd {
-    kRoDeviceId = 0x00,
+    kRoChipId = 0x00,
 
   };
 

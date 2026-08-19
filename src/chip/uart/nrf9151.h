@@ -35,30 +35,30 @@ class Nrf9151 final : public ChipUartGuide {
   /**
    * @brief 初始化 UART，并使用 AT+CGMM 验证设备是否为 nRF9151
    * @param baud_rate UART 波特率
-   * @return UART 初始化且设备型号验证成功时返回 true，否则返回 false
+   * @return UART 初始化且芯片型号验证成功时返回 true，否则返回 false
    */
   bool Init(int32_t baud_rate = kDefaultUartBaudRate) override;
 
   /**
-   * @brief 初始化 UART，并在指定时间内使用 AT+CGMM 验证设备型号
+   * @brief 初始化 UART，并在指定时间内使用 AT+CGMM 验证芯片型号
    * @param baud_rate UART 波特率
    * @param timeout_ms 等待 AT 指令最终响应的总超时时间，单位为毫秒
-   * @return UART 初始化且设备型号验证成功时返回 true，否则返回 false
+   * @return UART 初始化且芯片型号验证成功时返回 true，否则返回 false
    */
   bool Init(int32_t baud_rate, uint32_t timeout_ms);
 
   /**
-   * @brief 反初始化 nRF9151 UART 驱动并清除已保存的设备型号
+   * @brief 反初始化 nRF9151 UART 驱动并清除已保存的芯片型号
    * @return 反初始化成功时返回 true，否则返回 false
    */
   bool Deinit() override;
 
   /**
-   * @brief 发送 AT+CGMM 获取设备型号，并验证响应中是否包含 nRF9151
+   * @brief 发送 AT+CGMM 获取芯片型号，并验证响应中是否包含 nRF9151
    * @param timeout_ms 等待 AT 指令最终响应的总超时时间，单位为毫秒
    * @return 型号读取且验证成功时返回 true，否则返回 false
    */
-  bool GetDeviceId(uint32_t timeout_ms = kDefaultCommandTimeoutMs);
+  bool GetChipId(uint32_t timeout_ms = kDefaultCommandTimeoutMs);
 
   /**
    * @brief 发送 AT#XSMVER 获取 ncs-serial-modem、NCS 和用户版本
@@ -96,10 +96,10 @@ class Nrf9151 final : public ChipUartGuide {
   static const char* CommandResultToString(CommandResult result);
 
   /**
-   * @brief 获取最近一次通过 AT+CGMM 验证的设备型号
-   * @return 设备型号字符串的常量引用，尚未验证时为空字符串
+   * @brief 获取最近一次通过 AT+CGMM 验证的芯片型号
+   * @return 芯片型号字符串的常量引用，尚未验证时为空字符串
    */
-  const std::string& device_id() const { return device_id_; }
+  const std::string& chip_id() const { return chip_id_; }
 
  private:
   // 允许接收的 AT 响应最大长度，单位为字节
@@ -116,6 +116,6 @@ class Nrf9151 final : public ChipUartGuide {
   bool ExtractResponseLine(const std::string& response, const char* command,
       const char* prefix, std::string* line);
 
-  std::string device_id_;  // 最近一次验证成功的设备型号
+  std::string chip_id_;  // 最近一次验证成功的芯片型号
 };
 }  // namespace cpp_bus_driver
