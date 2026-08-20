@@ -193,7 +193,7 @@ Common migration example:
 tool.SetGpioMode(pin, cpp_bus_driver::Tool::GpioMode::kOutput);
 tool.GpioWrite(pin, true);
 tool.InitGpioInterrupt(pin, cpp_bus_driver::Tool::InterruptMode::kFalling,
-    InterruptCallback);
+    InterruptCallback, nullptr, cpp_bus_driver::Tool::GpioStatus::kPullup);
 ```
 
 ## Development Plan

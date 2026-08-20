@@ -190,7 +190,7 @@ const auto level = cpp_bus_driver::Tool::GetMinimumLogLevel();
 tool.SetGpioMode(pin, cpp_bus_driver::Tool::GpioMode::kOutput);
 tool.GpioWrite(pin, true);
 tool.InitGpioInterrupt(pin, cpp_bus_driver::Tool::InterruptMode::kFalling,
-    InterruptCallback);
+    InterruptCallback, nullptr, cpp_bus_driver::Tool::GpioStatus::kPullup);
 ```
 
 ## 开发计划

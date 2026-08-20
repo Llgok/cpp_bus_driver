@@ -510,7 +510,8 @@ int64_t Tool::GetSystemTimeMs() {
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool Tool::InitGpioInterrupt(
-    uint32_t pin, InterruptMode mode, void (*interrupt)(void*), void* args) {
+    uint32_t pin, InterruptMode mode, void (*interrupt)(void*), void* args,
+    GpioStatus status) {
   if (pin >= static_cast<uint32_t>(GPIO_NUM_MAX)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Value out of range (gpio pin: %u)\n", pin);
@@ -522,42 +523,48 @@ bool Tool::InitGpioInterrupt(
   config.mode = GPIO_MODE_INPUT;
   switch (mode) {
     case InterruptMode::kDisable:
-      config.pull_up_en = GPIO_PULLUP_DISABLE;
-      config.pull_down_en = GPIO_PULLDOWN_DISABLE;
       config.intr_type = GPIO_INTR_DISABLE;
       break;
     case InterruptMode::kRising:
-      config.pull_up_en = GPIO_PULLUP_DISABLE;
-      config.pull_down_en = GPIO_PULLDOWN_ENABLE;
       config.intr_type = GPIO_INTR_POSEDGE;
       break;
     case InterruptMode::kFalling:
-      config.pull_up_en = GPIO_PULLUP_ENABLE;
-      config.pull_down_en = GPIO_PULLDOWN_DISABLE;
       config.intr_type = GPIO_INTR_NEGEDGE;
       break;
     case InterruptMode::kChange:
-      config.pull_up_en = GPIO_PULLUP_DISABLE;
-      config.pull_down_en = GPIO_PULLDOWN_DISABLE;
       config.intr_type = GPIO_INTR_ANYEDGE;
       break;
     case InterruptMode::kOnLow:
       // 只要 kGpio 引脚保持低电平，就会持续触发中断
       // 需要确保中断处理函数可以处理这种情况，或外部信号不会长时间保持低电平
       // 否则系统可能崩溃重启
-      config.pull_up_en = GPIO_PULLUP_ENABLE;
-      config.pull_down_en = GPIO_PULLDOWN_DISABLE;
       config.intr_type = GPIO_INTR_LOW_LEVEL;
       break;
     case InterruptMode::kOnHigh:
       // 只要 kGpio 引脚保持高电平，就会持续触发中断
       // 需要确保中断处理函数可以处理这种情况，或外部信号不会长时间保持高电平
       // 否则系统可能崩溃重启
-      config.pull_up_en = GPIO_PULLUP_DISABLE;
-      config.pull_down_en = GPIO_PULLDOWN_ENABLE;
       config.intr_type = GPIO_INTR_HIGH_LEVEL;
       break;
 
+    default:
+      LogMessage(
+          LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
+      return false;
+  }
+  switch (status) {
+    case GpioStatus::kDisable:
+      config.pull_up_en = GPIO_PULLUP_DISABLE;
+      config.pull_down_en = GPIO_PULLDOWN_DISABLE;
+      break;
+    case GpioStatus::kPullup:
+      config.pull_up_en = GPIO_PULLUP_ENABLE;
+      config.pull_down_en = GPIO_PULLDOWN_DISABLE;
+      break;
+    case GpioStatus::kPulldown:
+      config.pull_up_en = GPIO_PULLUP_DISABLE;
+      config.pull_down_en = GPIO_PULLDOWN_ENABLE;
+      break;
     default:
       LogMessage(
           LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");

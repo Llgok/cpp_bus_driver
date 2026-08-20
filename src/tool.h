@@ -144,7 +144,8 @@ class Tool {
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   bool InitGpioInterrupt(uint32_t pin, InterruptMode mode,
-      void (*interrupt)(void* arg), void* args = nullptr);
+      void (*interrupt)(void* arg), void* args = nullptr,
+      GpioStatus status = GpioStatus::kDisable);
   bool DeinitGpioInterrupt(uint32_t pin);
 #endif
 
