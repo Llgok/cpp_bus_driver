@@ -146,6 +146,14 @@ bool Nrf24l01x::Deinit(bool delete_bus) {
   bool result = true;
   if (bus_initialized_) {
     result &= PowerDown();
+  }
+  result &= DeinitLocalResources(delete_bus);
+  return result;
+}
+
+bool Nrf24l01x::DeinitLocalResources(bool delete_bus) {
+  bool result = true;
+  if (bus_initialized_) {
     result &= bus_ != nullptr && bus_->Deinit(delete_bus);
   }
   if (cs_ != kDefaultValue) {

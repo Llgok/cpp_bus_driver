@@ -139,6 +139,12 @@ bool Cc1101::Deinit(bool delete_bus) {
     result &= Standby();
     result &= Sleep();
   }
+  result &= DeinitLocalResources(delete_bus);
+  return result;
+}
+
+bool Cc1101::DeinitLocalResources(bool delete_bus) {
+  bool result = true;
   result &= bus_ != nullptr && bus_->Deinit(delete_bus);
   if (cs_ != kDefaultValue) {
     result &= ResetGpio(cs_);

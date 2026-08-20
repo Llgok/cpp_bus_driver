@@ -167,6 +167,13 @@ class Nrf24l01x final : public ChipSpiGuide {
   bool Deinit(bool delete_bus = true) override;
 
   /**
+   * @brief 在不访问芯片的情况下释放 SPI 设备和专用 GPIO。
+   * @param delete_bus 是否同时请求释放底层共享 SPI 总线。
+   * @return 所有资源释放成功时返回 true。
+   */
+  bool DeinitLocalResources(bool delete_bus = false);
+
+  /**
    * @brief 一次应用完整 Enhanced ShockBurst 基础配置。
    * @param config 目标射频、管道和功能配置。
    * @return 参数有效且所有寄存器写入成功时返回 true。

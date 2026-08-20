@@ -184,6 +184,13 @@ class Cc1101 final : public ChipSpiGuide {
   bool Deinit(bool delete_bus = true) override;
 
   /**
+   * @brief 在不访问芯片的情况下释放 SPI 设备和专用 GPIO。
+   * @param delete_bus 是否尝试释放底层 SPI 总线。
+   * @return 资源释放成功返回 true，失败返回 false。
+   */
+  bool DeinitLocalResources(bool delete_bus = false);
+
+  /**
    * @brief 执行数据手册规定的手动 SPI 复位序列。
    * @return 复位成功并等待芯片就绪后返回 true，否则返回 false。
    */
