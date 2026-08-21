@@ -2,7 +2,7 @@
  * @Description: TI CC1101 亚 GHz 无线收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-07-12 00:00:00
- * @LastEditTime: 2026-08-19 16:29:11
+ * @LastEditTime: 2026-08-21 17:00:59
  * @License: GPL 3.0
  */
 #pragma once
@@ -154,6 +154,8 @@ class Cc1101 final : public ChipSpiGuide {
     bool crc_valid = false;  // 硬件 CRC 校验结果
   };
 
+  // 采用保守的默认时钟，保证连续 FIFO burst 传输稳定。
+  static constexpr int32_t kDefaultSpiFrequencyHz = 2000000;
   // 当前 SPI 总线连续传输字节间没有 100 ns 间隔，按 TI DN503 限制为 6.5 MHz。
   static constexpr int32_t kMaximumSpiFrequencyHz = 6500000;
 
@@ -171,10 +173,10 @@ class Cc1101 final : public ChipSpiGuide {
 
   /**
    * @brief 初始化 SPI、复位芯片、检查型号并应用 Config。
-   * @param freq_hz SPI 时钟；连续突发访问最大为 6.5 MHz。
+   * @param freq_hz SPI 时钟，默认 2 MHz；连续突发访问最大为 6.5 MHz。
    * @return 初始化成功返回 true，失败返回 false。
    */
-  bool Init(int32_t freq_hz = kMaximumSpiFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultSpiFrequencyHz) override;
 
   /**
    * @brief 使芯片进入掉电模式并释放 SPI 设备和专用 GPIO。
@@ -425,6 +427,9 @@ class Cc1101 final : public ChipSpiGuide {
 
   /**
    * @brief 清空 RX FIFO 并启动异步数据包接收。
+   *
+   * GDO0 在检测到同步字时拉高，并在数据包结束时拉低，调用方可通过
+   * 下降沿中断确认完整数据包已经进入 RX FIFO。
    *
    * 该模式不会在包接收期间排空 FIFO，因此完整空中包、
    * 可选长度字节和附加状态的总长必须不超过 64 字节。
@@ -859,7 +864,7 @@ class Cc1101 final : public ChipSpiGuide {
   uint8_t fscal2_value_ = 0x0A;
   bool sleeping_ = false;
   bool initialized_ = false;
-  int32_t spi_frequency_hz_ = kMaximumSpiFrequencyHz;
+  int32_t spi_frequency_hz_ = kDefaultSpiFrequencyHz;
   mutable uint32_t last_micros_ = 0;
   mutable uint64_t micros_epoch_ = 0;
 };

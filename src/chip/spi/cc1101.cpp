@@ -11,7 +11,6 @@ namespace cpp_bus_driver {
 namespace {
 constexpr uint8_t kGdoHighImpedance = 0x2E;
 constexpr uint8_t kGdoSyncWord = 0x06;
-constexpr uint8_t kGdoRxFifoThresholdOrPacketEnd = 0x01;
 constexpr uint8_t kRxFifoThresholdMaximum = 0x0F;
 constexpr uint8_t kFifoThresholdMask = 0x0F;
 constexpr uint8_t kAdcRetentionMask = 0x40;
@@ -83,7 +82,7 @@ bool Cc1101::Init(int32_t freq_hz) {
   }
 
   if (freq_hz == kDefaultValue) {
-    freq_hz = kMaximumSpiFrequencyHz;
+    freq_hz = kDefaultSpiFrequencyHz;
   }
   if (freq_hz <= 0 || freq_hz > kMaximumSpiFrequencyHz) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
@@ -1022,7 +1021,7 @@ bool Cc1101::StartReceive() {
   result &= FlushRx();
   result &= UpdateRegisterBits(
       Cmd::kFifothr, kFifoThresholdMask, kRxFifoThresholdMaximum);
-  result &= WriteRegister(Cmd::kIocfg0, kGdoRxFifoThresholdOrPacketEnd);
+  result &= WriteRegister(Cmd::kIocfg0, kGdoSyncWord);
   result &= Strobe(StrobeCmd::kReceive);
   return result;
 }
