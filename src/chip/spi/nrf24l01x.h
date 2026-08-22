@@ -97,7 +97,7 @@ class Nrf24l01x final : public ChipSpiGuide {
     DataRate data_rate = DataRate::k250Kbps;             // 默认空中速率
     AddressWidth address_width = AddressWidth::k5Bytes;  // 完整地址长度
     uint8_t rf_channel = 0;                        // 2400 MHz + rf_channel
-    uint8_t retransmit_count = 3;                  // SETUP_RETR.ARC，范围 0~15
+    uint8_t retransmit_count = 0;                  // SETUP_RETR.ARC，范围 0~15
     uint16_t retransmit_delay_us = 750;            // 250~4000 us，步进 250 us
     uint8_t enabled_pipe_mask = 0x03;              // EN_RXADDR 的低 6 位
     uint8_t auto_ack_pipe_mask = 0x3F;             // EN_AA 的低 6 位
