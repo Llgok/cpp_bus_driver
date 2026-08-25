@@ -10,11 +10,46 @@
 #include <algorithm>
 #include <array>
 #include <cstdio>
+#include <new>
 
 namespace cpp_bus_driver {
 
+namespace {
+
+enum class Command : uint8_t {
+  kEnterLandscapeEdgeRejection = 0x17,
+  kExitLandscapeEdgeRejection = 0x18,
+  kPocketMode = 0x70,
+  kUpdateMutualCapacitanceBaseline = 0x83,
+  kSleep = 0x84,
+  kTouchReporting = 0x91,
+  kCallHover = 0x93,
+  kMutualFrequency = 0x9C,
+  kRefreshRate = 0x9D,
+  kExitGestureMode = 0xA7,
+  kChargerMode = 0xAF,
+  kHighRefreshRate = 0xC0,
+  kPeriodicReporting = 0xC1,
+  kGameMode = 0xC2,
+};
+
+uint16_t ReadLittleEndian16(const uint8_t* data) {
+  return static_cast<uint16_t>(data[0]) |
+         (static_cast<uint16_t>(data[1]) << 8);
+}
+
+uint32_t ReadLittleEndian32(const uint8_t* data) {
+  return static_cast<uint32_t>(data[0]) |
+         (static_cast<uint32_t>(data[1]) << 8) |
+         (static_cast<uint32_t>(data[2]) << 16) |
+         (static_cast<uint32_t>(data[3]) << 24);
+}
+
+}  // namespace
+
 bool Gt9895::Init(int32_t freq_hz) {
   chip_info_ = ChipInfo();
+  runtime_info_ = RuntimeInfo();
   last_debug_report_ms_ = 0;
   last_failure_report_ms_ = 0;
 
@@ -59,13 +94,24 @@ bool Gt9895::Init(int32_t freq_hz) {
   }
   chip_info_ = chip_info;
 
+  RuntimeInfo runtime_info;
+  if (!ReadRuntimeInfo(&runtime_info)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "GT9895 init failed (runtime information is invalid)\n");
+    ChipI2cGuide::Deinit(false);
+    chip_info_ = ChipInfo();
+    return false;
+  }
+  runtime_info_ = runtime_info;
+
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "GT9895 init success (product id: %s, sensor id: %u, version: "
-      "0X%08lX)\n",
+      "0X%08lX, config: 0X%08lX/%u)\n",
       chip_info_.patch_product_id.data(),
       static_cast<unsigned int>(chip_info_.sensor_id),
-      static_cast<unsigned long>(chip_info_.patch_version));
-  last_debug_report_ms_ = GetSystemTimeMs();
+      static_cast<unsigned long>(chip_info_.patch_version),
+      static_cast<unsigned long>(runtime_info_.config_id),
+      static_cast<unsigned int>(runtime_info_.config_version));
   return true;
 }
 
@@ -82,6 +128,7 @@ bool Gt9895::Deinit(bool delete_bus) {
     result &= ResetGpio(rst_);
   }
   chip_info_ = ChipInfo();
+  runtime_info_ = RuntimeInfo();
   last_debug_report_ms_ = 0;
   last_failure_report_ms_ = 0;
   return result;
@@ -93,6 +140,117 @@ TouchReadStatus Gt9895::ReadPrimaryTouch(TouchFrame* frame) {
 
 TouchReadStatus Gt9895::ReadTouchFrame(TouchFrame* frame) {
   return ReadTouchReport(kMaxTouchContactCount, frame);
+}
+
+bool Gt9895::SetPocketModeEnabled(bool enabled) {
+  return SendBooleanCommand(
+      static_cast<uint8_t>(Command::kPocketMode), enabled);
+}
+
+bool Gt9895::SetEdgeRejectionOrientation(
+    EdgeRejectionOrientation orientation) {
+  switch (orientation) {
+    case EdgeRejectionOrientation::kPortrait:
+      return SendCommand(static_cast<uint8_t>(
+                             Command::kExitLandscapeEdgeRejection),
+          nullptr, 0);
+    case EdgeRejectionOrientation::kLandscapeLeft: {
+      constexpr uint8_t kLandscapeLeft = 0;
+      return SendCommand(static_cast<uint8_t>(
+                             Command::kEnterLandscapeEdgeRejection),
+          &kLandscapeLeft, sizeof(kLandscapeLeft));
+    }
+    case EdgeRejectionOrientation::kLandscapeRight: {
+      constexpr uint8_t kLandscapeRight = 1;
+      return SendCommand(static_cast<uint8_t>(
+                             Command::kEnterLandscapeEdgeRejection),
+          &kLandscapeRight, sizeof(kLandscapeRight));
+    }
+    default:
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+          "GT9895 set edge rejection orientation failed "
+          "(invalid orientation: %u)\n",
+          static_cast<unsigned int>(orientation));
+      return false;
+  }
+}
+
+bool Gt9895::UpdateMutualCapacitanceBaseline() {
+  return SendCommand(static_cast<uint8_t>(
+                         Command::kUpdateMutualCapacitanceBaseline),
+      nullptr, 0);
+}
+
+bool Gt9895::SetTouchReportingMode(TouchReportingMode mode) {
+  switch (mode) {
+    case TouchReportingMode::kDisabled:
+    case TouchReportingMode::kEnabled:
+    case TouchReportingMode::kSynchronized:
+      break;
+    default:
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+          "GT9895 set touch reporting failed (invalid mode: 0X%02X)\n",
+          static_cast<unsigned int>(mode));
+      return false;
+  }
+
+  const uint8_t data = static_cast<uint8_t>(mode);
+  return SendCommand(static_cast<uint8_t>(Command::kTouchReporting),
+      &data, sizeof(data));
+}
+
+bool Gt9895::SetCallHoverEnabled(bool enabled) {
+  return SendBooleanCommand(
+      static_cast<uint8_t>(Command::kCallHover), enabled);
+}
+
+bool Gt9895::SetMutualFrequencyIndex(uint8_t index) {
+  if (index >= runtime_info_.mutual_frequency_count) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "GT9895 set mutual frequency failed (index: %u, count: %u)\n",
+        static_cast<unsigned int>(index),
+        static_cast<unsigned int>(runtime_info_.mutual_frequency_count));
+    return false;
+  }
+  return SendCommand(static_cast<uint8_t>(Command::kMutualFrequency),
+      &index, sizeof(index));
+}
+
+bool Gt9895::SetRefreshRateIndex(uint8_t index) {
+  if (index >= runtime_info_.active_scan_rate_count) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "GT9895 set refresh rate failed (index: %u, count: %u)\n",
+        static_cast<unsigned int>(index),
+        static_cast<unsigned int>(runtime_info_.active_scan_rate_count));
+    return false;
+  }
+  return SendCommand(static_cast<uint8_t>(Command::kRefreshRate),
+      &index, sizeof(index));
+}
+
+bool Gt9895::ExitGestureMode() {
+  return SendCommand(
+      static_cast<uint8_t>(Command::kExitGestureMode), nullptr, 0);
+}
+
+bool Gt9895::SetChargerModeEnabled(bool enabled) {
+  return SendBooleanCommand(
+      static_cast<uint8_t>(Command::kChargerMode), enabled);
+}
+
+bool Gt9895::SetHighRefreshRateEnabled(bool enabled) {
+  return SendBooleanCommand(
+      static_cast<uint8_t>(Command::kHighRefreshRate), enabled);
+}
+
+bool Gt9895::SetPeriodicReportingEnabled(bool enabled) {
+  return SendBooleanCommand(
+      static_cast<uint8_t>(Command::kPeriodicReporting), enabled);
+}
+
+bool Gt9895::SetGameModeEnabled(bool enabled) {
+  return SendBooleanCommand(
+      static_cast<uint8_t>(Command::kGameMode), enabled);
 }
 
 TouchReadStatus Gt9895::ReadTouchReport(
@@ -116,8 +274,8 @@ TouchReadStatus Gt9895::ReadTouchReport(
     const bool retry_available = attempt + 1 < kReadAttemptCount;
     *frame = TouchFrame();
     size_t report_size = initial_report_size;
-    if (!ReadRegister(
-            kTouchEventAddress, report.data(), initial_report_size)) {
+    if (!ReadRegister(runtime_info_.touch_data_address, report.data(),
+            initial_report_size)) {
       failure_status = TouchReadStatus::kBusError;
       if (!retry_available) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__,
@@ -169,11 +327,14 @@ TouchReadStatus Gt9895::ReadTouchReport(
     }
     if (reported_contact_count == 0) {
       frame->event_flags = report[0];
-      frame->edge_touch = (report[0] & kEdgeTouchMask) != 0;
       LogTouchReport(
           mode, report.data(), report_size, reported_contact_count, *frame);
-      return frame->edge_touch ? TouchReadStatus::kSuccess
-                               : TouchReadStatus::kNoData;
+      if (!ClearTouchStatus()) {
+        LogMessage(LogLevel::kError, __FILE__, __LINE__,
+            "GT9895 read touch report failed (event acknowledgement)\n");
+        return TouchReadStatus::kBusError;
+      }
+      return TouchReadStatus::kNoData;
     }
 
     if (reported_contact_count > prefetched_contact_count &&
@@ -187,7 +348,7 @@ TouchReadStatus Gt9895::ReadTouchReport(
       // 首次读取已经取得报告前缀，只续读剩余数据，避免重新读取整帧时
       // 控制器更新报告区导致前后两次数据属于不同帧。
       if (!ReadRegister(
-              kTouchEventAddress + initial_report_size,
+              runtime_info_.touch_data_address + initial_report_size,
               report.data() + initial_report_size, remaining_report_size)) {
         failure_status = TouchReadStatus::kBusError;
         if (!retry_available) {
@@ -229,7 +390,6 @@ TouchReadStatus Gt9895::ReadTouchReport(
     }
 
     frame->event_flags = report[0];
-    frame->edge_touch = (report[0] & kEdgeTouchMask) != 0;
     const size_t parsed_contact_count =
         std::min(contact_limit, static_cast<size_t>(reported_contact_count));
     for (size_t i = 0; i < parsed_contact_count; ++i) {
@@ -239,6 +399,11 @@ TouchReadStatus Gt9895::ReadTouchReport(
     frame->contact_count = static_cast<uint8_t>(parsed_contact_count);
     LogTouchReport(
         mode, report.data(), report_size, reported_contact_count, *frame);
+    if (!ClearTouchStatus()) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "GT9895 read touch report failed (event acknowledgement)\n");
+      return TouchReadStatus::kBusError;
+    }
     return TouchReadStatus::kSuccess;
   }
 
@@ -373,6 +538,13 @@ void Gt9895::LogInvalidTouchReport(const char* reason, const uint8_t* report,
 }
 
 bool Gt9895::EnterSleep() {
+  std::lock_guard<std::mutex> lock(command_mutex_);
+  if (runtime_info_.command_address == 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "GT9895 sleep failed (driver is not initialized)\n");
+    return false;
+  }
+
   if (irq_ != kDefaultValue) {
     if (!SetGpioMode(irq_, GpioMode::kOutput, GpioStatus::kPulldown) ||
         !GpioWrite(irq_, 0)) {
@@ -384,18 +556,15 @@ bool Gt9895::EnterSleep() {
   }
 
   const uint8_t command[] = {
-      static_cast<uint8_t>(kCommandAddress >> 24),
-      static_cast<uint8_t>(kCommandAddress >> 16),
-      static_cast<uint8_t>(kCommandAddress >> 8),
-      static_cast<uint8_t>(kCommandAddress),
       0x00,
       0x00,
       0x04,
-      0x84,
+      static_cast<uint8_t>(Command::kSleep),
       0x88,
       0x00,
   };
-  if (!bus_->Write(command, sizeof(command))) {
+  if (!WriteRegister(
+          runtime_info_.command_address, command, sizeof(command))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "GT9895 sleep failed (command transfer failed)\n");
     return false;
@@ -419,7 +588,10 @@ bool Gt9895::WakeUp() {
     }
     DelayMs(8);
   }
-  return ResetController();
+  if (!ResetController()) {
+    return false;
+  }
+  return true;
 }
 
 bool Gt9895::ResetController() {
@@ -495,6 +667,106 @@ bool Gt9895::ReadChipInfo(ChipInfo* chip_info) {
   return true;
 }
 
+bool Gt9895::ReadRuntimeInfo(RuntimeInfo* runtime_info) {
+  if (runtime_info == nullptr) {
+    return false;
+  }
+
+  uint8_t length_data[2] = {};
+  if (!ReadRegister(kRuntimeInfoAddress, length_data, sizeof(length_data))) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "GT9895 runtime information read failed (length transfer)\n");
+    return false;
+  }
+  const size_t length = ReadLittleEndian16(length_data);
+  const size_t minimum_length = sizeof(length_data) +
+      kRuntimeInfoVersionSize + kRuntimeInfoFeatureSize +
+      kRuntimeInfoFixedParameterSize + kRuntimeInfoVariableArrayCount +
+      kRuntimeInfoMiscMinimumSize + kChecksumSize;
+  if (length < minimum_length || length > kMaximumRuntimeInfoSize) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "GT9895 runtime information is invalid (length: %zu)\n", length);
+    return false;
+  }
+
+  std::unique_ptr<uint8_t[]> data(new (std::nothrow) uint8_t[length]());
+  if (data == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "GT9895 runtime information read failed (allocation: %zu bytes)\n",
+        length);
+    return false;
+  }
+  if (!ReadRegister(kRuntimeInfoAddress, data.get(), length) ||
+      !HasValidChecksum(data.get(), length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "GT9895 runtime information read failed (checksum or I2C error)\n");
+    return false;
+  }
+
+  RuntimeInfo parsed;
+  size_t offset = sizeof(length_data);
+  parsed.config_id = ReadLittleEndian32(data.get() + offset + 4);
+  parsed.config_version = data[offset + 8];
+  offset += kRuntimeInfoVersionSize;
+
+  parsed.frequency_hopping_feature =
+      ReadLittleEndian16(data.get() + offset);
+  parsed.calibration_feature =
+      ReadLittleEndian16(data.get() + offset + 2);
+  parsed.gesture_feature = ReadLittleEndian16(data.get() + offset + 4);
+  parsed.side_touch_feature = ReadLittleEndian16(data.get() + offset + 6);
+  parsed.stylus_feature = ReadLittleEndian16(data.get() + offset + 8);
+  offset += kRuntimeInfoFeatureSize + kRuntimeInfoFixedParameterSize;
+
+  for (size_t array_index = 0;
+       array_index < kRuntimeInfoVariableArrayCount; ++array_index) {
+    if (offset >= length - kChecksumSize) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "GT9895 runtime information is invalid (parameter header)\n");
+      return false;
+    }
+    const uint8_t element_count = data[offset++];
+    if (array_index == 0) {
+      parsed.active_scan_rate_count = element_count;
+    } else if (array_index == 1) {
+      parsed.mutual_frequency_count = element_count;
+    }
+
+    const size_t byte_count = static_cast<size_t>(element_count) * 2;
+    if (byte_count > length - kChecksumSize - offset) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "GT9895 runtime information is invalid (parameter array: %zu)\n",
+          array_index);
+      return false;
+    }
+    offset += byte_count;
+  }
+
+  if (kRuntimeInfoMiscMinimumSize > length - kChecksumSize - offset) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "GT9895 runtime information is invalid (miscellaneous data)\n");
+    return false;
+  }
+  parsed.command_address = ReadLittleEndian32(data.get() + offset);
+  parsed.command_max_length =
+      ReadLittleEndian16(data.get() + offset + 4);
+  parsed.touch_data_address =
+      ReadLittleEndian32(data.get() + offset + 44);
+  if (parsed.command_address == 0 || parsed.command_max_length < 6 ||
+      parsed.touch_data_address == 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "GT9895 runtime information is invalid (command: 0X%08lX/%u, "
+        "touch: 0X%08lX)\n",
+        static_cast<unsigned long>(parsed.command_address),
+        static_cast<unsigned int>(parsed.command_max_length),
+        static_cast<unsigned long>(parsed.touch_data_address));
+    return false;
+  }
+
+  *runtime_info = parsed;
+  return true;
+}
+
 bool Gt9895::ReadRegister(uint32_t address, uint8_t* data, size_t length) {
   if (data == nullptr || length == 0) {
     return false;
@@ -508,15 +780,116 @@ bool Gt9895::ReadRegister(uint32_t address, uint8_t* data, size_t length) {
   return bus_->WriteRead(command, sizeof(command), data, length);
 }
 
+bool Gt9895::WriteRegister(
+    uint32_t address, const uint8_t* data, size_t length) {
+  if (data == nullptr || length == 0 ||
+      length > kMaximumCommandPacketSize) {
+    return false;
+  }
+
+  std::array<uint8_t, 4 + kMaximumCommandPacketSize> packet{};
+  packet[0] = static_cast<uint8_t>(address >> 24);
+  packet[1] = static_cast<uint8_t>(address >> 16);
+  packet[2] = static_cast<uint8_t>(address >> 8);
+  packet[3] = static_cast<uint8_t>(address);
+  std::copy_n(data, length, packet.begin() + 4);
+  return bus_->Write(packet.data(), 4 + length);
+}
+
+bool Gt9895::SendCommand(
+    uint8_t command, const uint8_t* data, size_t data_length) {
+  if (data_length > kMaximumCommandDataSize ||
+      (data_length > 0 && data == nullptr)) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "GT9895 command failed (command: 0X%02X, invalid data size: %zu)\n",
+        static_cast<unsigned int>(command), data_length);
+    return false;
+  }
+
+  std::lock_guard<std::mutex> lock(command_mutex_);
+  std::array<uint8_t, kMaximumCommandPacketSize> packet{};
+  const size_t command_length = 4 + data_length;
+  packet[2] = static_cast<uint8_t>(command_length);
+  packet[3] = command;
+  if (data_length > 0) {
+    std::copy_n(data, data_length, packet.begin() + 4);
+  }
+
+  uint16_t checksum = 0;
+  for (size_t i = 0; i < command_length; ++i) {
+    checksum = static_cast<uint16_t>(checksum + packet[i]);
+  }
+  packet[command_length] = static_cast<uint8_t>(checksum);
+  packet[command_length + 1] = static_cast<uint8_t>(checksum >> 8);
+  const size_t packet_length = command_length + kChecksumSize;
+  if (runtime_info_.command_address == 0 ||
+      packet_length > runtime_info_.command_max_length) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "GT9895 command failed (command: 0X%02X, packet size: %zu, "
+        "firmware limit: %u)\n",
+        static_cast<unsigned int>(command), packet_length,
+        static_cast<unsigned int>(runtime_info_.command_max_length));
+    return false;
+  }
+
+  std::array<uint8_t, 2> acknowledgement{};
+  uint8_t last_acknowledgement = 0;
+  for (size_t attempt = 0; attempt < kCommandRetryCount; ++attempt) {
+    if (!WriteRegister(runtime_info_.command_address, packet.data(),
+            packet_length)) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "GT9895 command failed (command: 0X%02X, write attempt: %zu)\n",
+          static_cast<unsigned int>(command), attempt + 1);
+      return false;
+    }
+
+    for (size_t poll = 0; poll < kCommandRetryCount; ++poll) {
+      if (!ReadRegister(runtime_info_.command_address, acknowledgement.data(),
+              acknowledgement.size())) {
+        LogMessage(LogLevel::kError, __FILE__, __LINE__,
+            "GT9895 command failed (command: 0X%02X, ACK read failed)\n",
+            static_cast<unsigned int>(command));
+        return false;
+      }
+
+      last_acknowledgement = acknowledgement[1];
+      if (last_acknowledgement == kCommandAckAccepted) {
+        DelayMs(kCommandAcceptedDelayMs);
+        return true;
+      }
+      if (last_acknowledgement == 0 ||
+          last_acknowledgement == kCommandAckBusy) {
+        DelayMs(kCommandBusyDelayMs);
+        continue;
+      }
+      if (last_acknowledgement == kCommandAckBufferOverflow) {
+        DelayMs(kCommandOverflowDelayMs);
+      } else {
+        DelayMs(kCommandBusyDelayMs);
+      }
+      break;
+    }
+  }
+
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "GT9895 command failed (command: 0X%02X, ACK: 0X%02X%s)\n",
+      static_cast<unsigned int>(command),
+      static_cast<unsigned int>(last_acknowledgement),
+      last_acknowledgement == kCommandAckChecksumError
+          ? ", checksum rejected"
+          : "");
+  return false;
+}
+
+bool Gt9895::SendBooleanCommand(uint8_t command, bool enabled) {
+  const uint8_t data = enabled ? 1 : 0;
+  return SendCommand(command, &data, sizeof(data));
+}
+
 bool Gt9895::ClearTouchStatus() {
-  const uint8_t command[] = {
-      static_cast<uint8_t>(kTouchEventAddress >> 24),
-      static_cast<uint8_t>(kTouchEventAddress >> 16),
-      static_cast<uint8_t>(kTouchEventAddress >> 8),
-      static_cast<uint8_t>(kTouchEventAddress),
-      0x00,
-  };
-  return bus_->Write(command, sizeof(command));
+  const uint8_t status = 0;
+  return WriteRegister(
+      runtime_info_.touch_data_address, &status, sizeof(status));
 }
 
 void Gt9895::ParseContact(const uint8_t* data, TouchContact* contact) const {
