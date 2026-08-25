@@ -58,7 +58,7 @@ bool Ft3x68::Deinit(bool delete_bus) {
 uint8_t Ft3x68::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoChipId), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
@@ -69,7 +69,7 @@ uint8_t Ft3x68::GetChipId() {
 uint8_t Ft3x68::GetFingerCount() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoTdStatus), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRoTdStatus), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
@@ -86,7 +86,7 @@ bool Ft3x68::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
 
   // 地址自动偏移
   if (!bus_->Read(
-          static_cast<uint8_t>(static_cast<uint8_t>(Cmd::kRoP1Xh) +
+          static_cast<uint8_t>(static_cast<uint8_t>(Register::kRoP1Xh) +
                                ((finger_num - 1) * kSingleTouchPointDataSize)),
           buffer.data(), buffer.size())) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
@@ -121,7 +121,7 @@ bool Ft3x68::GetMultipleTouchPoint(TouchPoint& tp) {
   std::vector<uint8_t> buffer(buffer_touch_point_size, 0);
 
   // 地址自动偏移
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoTdStatus), buffer.data(),
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRoTdStatus), buffer.data(),
           buffer_touch_point_size)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;

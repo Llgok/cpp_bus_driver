@@ -551,7 +551,7 @@ class Sy6970 final : public ChipI2cGuide {
   uint8_t ReadDeviceRevision();
 
  private:
-  enum class Cmd : uint8_t {
+  enum class Register : uint8_t {
     kRwInputSourceControl = 0x00,      // 输入源控制寄存器
     kRwTemperatureMonitorControl,      // 温度监控控制寄存器
     kRwSystemControl,                  // 系统控制寄存器
@@ -581,15 +581,15 @@ class Sy6970 final : public ChipI2cGuide {
 
       // 关闭 ILIM引脚，输入电流限制修改为最大
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kRwInputSourceControl), 0x3F,
+      static_cast<uint8_t>(Register::kRwInputSourceControl), 0x3F,
 
       // 禁用看门狗定时喂狗功能
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kRwChargeTerminationTimerControl), 0x8D,
+      static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl), 0x8D,
 
       // 快速充电电流限制设置为512ma
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kRwChargeCurrentControl), 0x08};
+      static_cast<uint8_t>(Register::kRwChargeCurrentControl), 0x08};
 
   int32_t rst_;
 };

@@ -67,7 +67,7 @@ class Cst2xxse final : public ChipI2cGuide {
   bool GetHomeTouch();
 
  private:
-  enum class Cmd {
+  enum class Register {
     kRoChipId = 0x06,  // 读取后返回0xAB
     kRoTouchPointInfoStart = 0x00,
     kRoGetFingerCount = 0x05,

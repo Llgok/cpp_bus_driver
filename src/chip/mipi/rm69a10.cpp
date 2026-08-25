@@ -68,7 +68,7 @@ bool Rm69a10::Deinit() {
 uint8_t Rm69a10::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoChipId), &buffer, 1)) {
+  if (!bus_->Read(static_cast<uint8_t>(DcsCommand::kRoChipId), &buffer, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
@@ -77,8 +77,8 @@ uint8_t Rm69a10::GetChipId() {
 }
 
 bool Rm69a10::SetSleep(bool enable) {
-  if (!bus_->Write(enable ? static_cast<uint8_t>(Cmd::kWoSlpin)
-                          : static_cast<uint8_t>(Cmd::kWoSlpout))) {
+  if (!bus_->Write(enable ? static_cast<uint8_t>(DcsCommand::kWoSlpin)
+                          : static_cast<uint8_t>(DcsCommand::kWoSlpout))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -93,8 +93,8 @@ bool Rm69a10::SetSleep(bool enable) {
 }
 
 bool Rm69a10::SetScreenOff(bool enable) {
-  if (!bus_->Write(enable ? static_cast<uint8_t>(Cmd::kWoDispoff)
-                          : static_cast<uint8_t>(Cmd::kWoDispon))) {
+  if (!bus_->Write(enable ? static_cast<uint8_t>(DcsCommand::kWoDispoff)
+                          : static_cast<uint8_t>(DcsCommand::kWoDispon))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -107,8 +107,8 @@ bool Rm69a10::SetScreenOff(bool enable) {
 }
 
 bool Rm69a10::SetInversion(bool enable) {
-  if (!bus_->Write(enable ? static_cast<uint8_t>(Cmd::kWoInvon)
-                          : static_cast<uint8_t>(Cmd::kWoInvoff))) {
+  if (!bus_->Write(enable ? static_cast<uint8_t>(DcsCommand::kWoInvon)
+                          : static_cast<uint8_t>(DcsCommand::kWoInvoff))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -117,7 +117,7 @@ bool Rm69a10::SetInversion(bool enable) {
 }
 
 bool Rm69a10::SetBrightness(uint8_t brightness) {
-  if (!bus_->Write(static_cast<uint8_t>(Cmd::kWoWrdisbv), brightness)) {
+  if (!bus_->Write(static_cast<uint8_t>(DcsCommand::kWoWrdisbv), brightness)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

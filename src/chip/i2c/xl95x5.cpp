@@ -58,7 +58,7 @@ bool Xl95x5::Deinit(bool delete_bus) {
 uint8_t Xl95x5::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoChipId), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
@@ -76,7 +76,7 @@ bool Xl95x5::SetGpioMode(Pin pin, Mode mode) {
       buffer = 0B11111111;
     }
     if (!bus_->Write(
-            static_cast<uint8_t>(Cmd::kRwConfigurationPort0), buffer)) {
+            static_cast<uint8_t>(Register::kRwConfigurationPort0), buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
@@ -87,13 +87,13 @@ bool Xl95x5::SetGpioMode(Pin pin, Mode mode) {
       buffer = 0B11111111;
     }
     if (!bus_->Write(
-            static_cast<uint8_t>(Cmd::kRwConfigurationPort1), buffer)) {
+            static_cast<uint8_t>(Register::kRwConfigurationPort1), buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   } else if (static_cast<uint8_t>(pin) > 7) {
     if (!bus_->Read(
-            static_cast<uint8_t>(Cmd::kRwConfigurationPort1), &buffer)) {
+            static_cast<uint8_t>(Register::kRwConfigurationPort1), &buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
@@ -103,13 +103,13 @@ bool Xl95x5::SetGpioMode(Pin pin, Mode mode) {
       buffer = buffer | (1 << (static_cast<uint8_t>(pin) - 10));
     }
     if (!bus_->Write(
-            static_cast<uint8_t>(Cmd::kRwConfigurationPort1), buffer)) {
+            static_cast<uint8_t>(Register::kRwConfigurationPort1), buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   } else {
     if (!bus_->Read(
-            static_cast<uint8_t>(Cmd::kRwConfigurationPort0), &buffer)) {
+            static_cast<uint8_t>(Register::kRwConfigurationPort0), &buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
@@ -119,7 +119,7 @@ bool Xl95x5::SetGpioMode(Pin pin, Mode mode) {
       buffer = buffer | (1 << static_cast<uint8_t>(pin));
     }
     if (!bus_->Write(
-            static_cast<uint8_t>(Cmd::kRwConfigurationPort0), buffer)) {
+            static_cast<uint8_t>(Register::kRwConfigurationPort0), buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
@@ -132,17 +132,17 @@ bool Xl95x5::GpioWrite(Pin pin, uint8_t value) {
   uint8_t buffer = 0;
 
   if (pin == Pin::kIoPort0) {
-    if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwOutputPort0), value)) {
+    if (!bus_->Write(static_cast<uint8_t>(Register::kRwOutputPort0), value)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   } else if (pin == Pin::kIoPort1) {
-    if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwOutputPort1), value)) {
+    if (!bus_->Write(static_cast<uint8_t>(Register::kRwOutputPort1), value)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   } else if (static_cast<uint8_t>(pin) > 7) {
-    if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwOutputPort1), &buffer)) {
+    if (!bus_->Read(static_cast<uint8_t>(Register::kRwOutputPort1), &buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
@@ -152,12 +152,12 @@ bool Xl95x5::GpioWrite(Pin pin, uint8_t value) {
       buffer = buffer | (1 << (static_cast<uint8_t>(pin) - 10));
     }
 
-    if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwOutputPort1), buffer)) {
+    if (!bus_->Write(static_cast<uint8_t>(Register::kRwOutputPort1), buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   } else {
-    if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwOutputPort0), &buffer)) {
+    if (!bus_->Read(static_cast<uint8_t>(Register::kRwOutputPort0), &buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
@@ -166,7 +166,7 @@ bool Xl95x5::GpioWrite(Pin pin, uint8_t value) {
     } else {
       buffer = buffer | (1 << static_cast<uint8_t>(pin));
     }
-    if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwOutputPort0), buffer)) {
+    if (!bus_->Write(static_cast<uint8_t>(Register::kRwOutputPort0), buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
@@ -179,23 +179,23 @@ uint8_t Xl95x5::GpioRead(Pin pin) {
   uint8_t buffer = 0;
 
   if (pin == Pin::kIoPort0) {
-    if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoInputPort0), &buffer)) {
+    if (!bus_->Read(static_cast<uint8_t>(Register::kRoInputPort0), &buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return -1;
     }
   } else if (pin == Pin::kIoPort1) {
-    if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoInputPort1), &buffer)) {
+    if (!bus_->Read(static_cast<uint8_t>(Register::kRoInputPort1), &buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return -1;
     }
   } else if (static_cast<uint8_t>(pin) > 7) {
-    if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoInputPort1), &buffer)) {
+    if (!bus_->Read(static_cast<uint8_t>(Register::kRoInputPort1), &buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return -1;
     }
     buffer = (buffer >> (static_cast<uint8_t>(pin) - 10)) & 0B00000001;
   } else {
-    if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoInputPort0), &buffer)) {
+    if (!bus_->Read(static_cast<uint8_t>(Register::kRoInputPort0), &buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return -1;
     }
@@ -210,7 +210,7 @@ bool Xl95x5::ClearIrqFlag() {
 
   for (uint8_t i = 0; i < 2; i++) {
     if (!bus_->Read(
-            static_cast<uint8_t>(static_cast<uint8_t>(Cmd::kRoInputPort0) + i),
+            static_cast<uint8_t>(static_cast<uint8_t>(Register::kRoInputPort0) + i),
             &buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return false;

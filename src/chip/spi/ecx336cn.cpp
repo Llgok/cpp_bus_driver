@@ -59,12 +59,12 @@ bool Ecx336cn::Deinit(bool delete_bus) {
 
 bool Ecx336cn::SetPowerSaveMode(bool enable) {
   if (enable) {
-    if (!bus_->Write(static_cast<uint8_t>(Cmd::kWoPowerSaveMode), 0x0E)) {
+    if (!bus_->Write(static_cast<uint8_t>(Register::kWoPowerSaveMode), 0x0E)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   } else {
-    if (!bus_->Write(static_cast<uint8_t>(Cmd::kWoPowerSaveMode), 0x0F)) {
+    if (!bus_->Write(static_cast<uint8_t>(Register::kWoPowerSaveMode), 0x0F)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }

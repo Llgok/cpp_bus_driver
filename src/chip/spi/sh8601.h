@@ -117,16 +117,17 @@ class Sh8601 final : public ChipQspiGuide {
   bool SetColorFormat(ColorFormat format);
 
  private:
-  enum class Cmd {
-    // 用于读写寄存器命令
-    kWoWriteRegister = 0x02,
-    kWoReadRegister,
+  // QSPI 寄存器事务操作码。
+  enum class RegisterOpcode {
+    kWrite = 0x02,
+    kRead,
+  };
 
-    // 用于写颜色流命令
-    kWoWriteColorStream1lanesCmd = 0x02,
-    kWoWriteColorStream4lanesCmd2 = 0x12,
-    kWoWriteColorStream4lanesCmd1 = 0x32,
-
+  // QSPI 颜色流事务操作码。
+  enum class ColorStreamOpcode {
+    kOneLane = 0x02,
+    kFourLaneCommand2 = 0x12,
+    kFourLaneCommand1 = 0x32,
   };
 
   enum class Reg {
@@ -155,7 +156,7 @@ class Sh8601 final : public ChipQspiGuide {
 
   static constexpr uint32_t kInitSequence[] = {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24),
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       0x001100,
 
       static_cast<uint8_t>(InitSequenceFormat::kDelayMs),
@@ -163,12 +164,12 @@ class Sh8601 final : public ChipQspiGuide {
 
       // 开启正常显示模式
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24),
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       0x001300,
 
       // RGB 色序
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       0x003600,
       0x00,
 
@@ -176,7 +177,7 @@ class Sh8601 final : public ChipQspiGuide {
 
       // 接口像素格式：16 位/像素
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       0x003A00,
       0x55,
 
@@ -186,25 +187,25 @@ class Sh8601 final : public ChipQspiGuide {
 
       // 开启亮度控制和显示调光
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       0x005300,
       0x28,
 
       // 写入 HBM 模式下的显示亮度
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       0x006300,
       0xFF,
 
       // 亮度调节
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       0x005100,
       0x00,
 
       // 关闭阳光下可读性增强
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       0x005800,
       0x00,
 
@@ -212,7 +213,7 @@ class Sh8601 final : public ChipQspiGuide {
 
       // 开启显示
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24),
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       0x002900,
 
       static_cast<uint8_t>(InitSequenceFormat::kDelayMs),

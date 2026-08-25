@@ -135,7 +135,7 @@ class Icn6211 final : public ChipI2cGuide {
   bool SetChipEnable(bool enable);
 
  private:
-  enum class Cmd {
+  enum class Register {
     kRoChipIdStart = 0x01,
 
     kConfigFinishSoftReset = 0x09,

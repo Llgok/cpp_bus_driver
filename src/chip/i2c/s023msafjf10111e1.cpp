@@ -49,14 +49,14 @@ bool S023msafjf10111e1::SetDataFormat(DataFormat format) {
   switch (format) {
     case DataFormat::kRgb888:
       if (!bus_->Write(
-              static_cast<uint16_t>(Cmd::kRwInternalTestModeRegisterControl1),
+              static_cast<uint16_t>(Register::kRwInternalTestModeRegisterControl1),
               0x14)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
 
       if (!bus_->Write(
-              static_cast<uint16_t>(Cmd::kRwInternalTestModeRegisterControl2),
+              static_cast<uint16_t>(Register::kRwInternalTestModeRegisterControl2),
               0x40)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
@@ -64,14 +64,14 @@ bool S023msafjf10111e1::SetDataFormat(DataFormat format) {
       break;
     case DataFormat::kInternalTestMode:
       if (!bus_->Write(
-              static_cast<uint16_t>(Cmd::kRwInternalTestModeRegisterControl1),
+              static_cast<uint16_t>(Register::kRwInternalTestModeRegisterControl1),
               0x15)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
 
       if (!bus_->Write(
-              static_cast<uint16_t>(Cmd::kRwInternalTestModeRegisterControl2),
+              static_cast<uint16_t>(Register::kRwInternalTestModeRegisterControl2),
               0x80)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
@@ -86,7 +86,7 @@ bool S023msafjf10111e1::SetDataFormat(DataFormat format) {
 }
 
 bool S023msafjf10111e1::SetInternalTestMode(InternalTestMode mode) {
-  if (!bus_->Write(static_cast<uint16_t>(Cmd::kRwInternalTestMode),
+  if (!bus_->Write(static_cast<uint16_t>(Register::kRwInternalTestMode),
           static_cast<uint8_t>(mode))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -98,13 +98,13 @@ bool S023msafjf10111e1::SetInternalTestMode(InternalTestMode mode) {
 bool S023msafjf10111e1::SetShowDirection(ShowDirection direction) {
   uint8_t buffer[2] = {0};
 
-  if (!bus_->Read(static_cast<uint16_t>(Cmd::kRwHorizontalVerticalMirror1),
+  if (!bus_->Read(static_cast<uint16_t>(Register::kRwHorizontalVerticalMirror1),
           &buffer[0])) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
-  if (!bus_->Read(static_cast<uint16_t>(Cmd::kRwHorizontalVerticalMirror2),
+  if (!bus_->Read(static_cast<uint16_t>(Register::kRwHorizontalVerticalMirror2),
           &buffer[1])) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -137,13 +137,13 @@ bool S023msafjf10111e1::SetShowDirection(ShowDirection direction) {
       return false;
   }
 
-  if (!bus_->Write(static_cast<uint16_t>(Cmd::kRwHorizontalVerticalMirror1),
+  if (!bus_->Write(static_cast<uint16_t>(Register::kRwHorizontalVerticalMirror1),
           buffer[0])) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
-  if (!bus_->Write(static_cast<uint16_t>(Cmd::kRwHorizontalVerticalMirror2),
+  if (!bus_->Write(static_cast<uint16_t>(Register::kRwHorizontalVerticalMirror2),
           buffer[1])) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -159,26 +159,26 @@ bool S023msafjf10111e1::SetBrightness(uint16_t value) {
   }
 
   if (!bus_->Write(
-          static_cast<uint16_t>(Cmd::kRwDisplayBrightnessRegisterControl1),
+          static_cast<uint16_t>(Register::kRwDisplayBrightnessRegisterControl1),
           0x1C)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!bus_->Write(
-          static_cast<uint16_t>(Cmd::kRwDisplayBrightnessRegisterControl2),
+          static_cast<uint16_t>(Register::kRwDisplayBrightnessRegisterControl2),
           0x03)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
-  if (!bus_->Write(static_cast<uint16_t>(Cmd::kRwDisplayBrightness1),
+  if (!bus_->Write(static_cast<uint16_t>(Register::kRwDisplayBrightness1),
           static_cast<uint8_t>(value))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
-  if (!bus_->Write(static_cast<uint16_t>(Cmd::kRwDisplayBrightness2),
+  if (!bus_->Write(static_cast<uint16_t>(Register::kRwDisplayBrightness2),
           static_cast<uint8_t>(value >> 8))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;

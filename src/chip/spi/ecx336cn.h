@@ -27,7 +27,7 @@ class Ecx336cn final : public ChipSpiGuide {
   bool SetPowerSaveMode(bool enable);
 
  private:
-  enum class Cmd {
+  enum class Register {
     kWoPowerSaveMode = 0x00,
   };
 

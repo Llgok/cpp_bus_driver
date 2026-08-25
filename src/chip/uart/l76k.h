@@ -251,7 +251,7 @@ class L76k final : public ChipUartGuide, public GnssParser {
   bool QueryCasicUpdateInterval();
 
  private:
-  enum class Cmd {
+  enum class Register {
     kRoChipId = 0x00,
 
   };

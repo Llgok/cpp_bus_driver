@@ -458,7 +458,7 @@ class Axp517 final : public ChipI2cGuide {
   bool SetPdRole(bool is_source, bool is_drp);
 
  private:
-  enum class Cmd {
+  enum class Register {
     kRwMessageHeaderInfo = 0xCE,
 
     // 状态寄存器
@@ -556,15 +556,15 @@ class Axp517 final : public ChipI2cGuide {
 
       // 输入电流限制修改为最大
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kRwInputCurrentLimitControl), 0B11111100,
+      static_cast<uint8_t>(Register::kRwInputCurrentLimitControl), 0B11111100,
 
       // 输入电压限制修改为4.7v
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kRwInputVoltageLimitControl), 0B00001100,
+      static_cast<uint8_t>(Register::kRwInputVoltageLimitControl), 0B00001100,
 
       // 设置充电电流为512mA
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kRwIccSetting), 0B00001000};
+      static_cast<uint8_t>(Register::kRwIccSetting), 0B00001000};
 
   int32_t rst_;
 };

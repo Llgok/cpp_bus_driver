@@ -86,7 +86,7 @@ class Xl95x5 final : public ChipI2cGuide {
   bool ClearIrqFlag();
 
  private:
-  enum class Cmd {
+  enum class Register {
     kRoChipId = 0x04,
 
     kRoInputPort0 = 0x00,

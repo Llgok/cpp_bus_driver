@@ -83,7 +83,7 @@ uint16_t Bq27220::GetHardwareVersion() {
 
 uint16_t Bq27220::GetDesignCapacity() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kDesignCapacity, &value)) {
+  if (!ReadU16(StandardCommand::kDesignCapacity, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -91,7 +91,7 @@ uint16_t Bq27220::GetDesignCapacity() {
 
 uint16_t Bq27220::GetVoltage() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kVoltage, &value)) {
+  if (!ReadU16(StandardCommand::kVoltage, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -99,7 +99,7 @@ uint16_t Bq27220::GetVoltage() {
 
 int16_t Bq27220::GetCurrent() {
   int16_t value = 0;
-  if (!ReadS16(Cmd::kCurrent, &value)) {
+  if (!ReadS16(StandardCommand::kCurrent, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadS16 failed\n");
   }
   return value;
@@ -107,7 +107,7 @@ int16_t Bq27220::GetCurrent() {
 
 int16_t Bq27220::GetAverageCurrent() {
   int16_t value = 0;
-  if (!ReadS16(Cmd::kAverageCurrent, &value)) {
+  if (!ReadS16(StandardCommand::kAverageCurrent, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadS16 failed\n");
   }
   return value;
@@ -115,7 +115,7 @@ int16_t Bq27220::GetAverageCurrent() {
 
 uint16_t Bq27220::GetRemainingCapacity() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kRemainingCapacity, &value)) {
+  if (!ReadU16(StandardCommand::kRemainingCapacity, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -123,7 +123,7 @@ uint16_t Bq27220::GetRemainingCapacity() {
 
 uint16_t Bq27220::GetFullChargeCapacity() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kFullChargeCapacity, &value)) {
+  if (!ReadU16(StandardCommand::kFullChargeCapacity, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -131,14 +131,14 @@ uint16_t Bq27220::GetFullChargeCapacity() {
 
 int16_t Bq27220::GetAtRate() {
   int16_t value = 0;
-  if (!ReadS16(Cmd::kAtRate, &value)) {
+  if (!ReadS16(StandardCommand::kAtRate, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadS16 failed\n");
   }
   return value;
 }
 
 bool Bq27220::SetAtRate(int16_t rate) {
-  if (!WriteU16(Cmd::kAtRate, static_cast<uint16_t>(rate))) {
+  if (!WriteU16(StandardCommand::kAtRate, static_cast<uint16_t>(rate))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteU16 failed\n");
     return false;
   }
@@ -147,7 +147,7 @@ bool Bq27220::SetAtRate(int16_t rate) {
 
 uint16_t Bq27220::GetAtRateTimeToEmpty() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kAtRateTimeToEmpty, &value)) {
+  if (!ReadU16(StandardCommand::kAtRateTimeToEmpty, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -155,7 +155,7 @@ uint16_t Bq27220::GetAtRateTimeToEmpty() {
 
 uint16_t Bq27220::GetTemperatureRaw() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kTemperature, &value)) {
+  if (!ReadU16(StandardCommand::kTemperature, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -201,7 +201,7 @@ bool Bq27220::SetTemperatureMode(TemperatureMode mode) {
 
 bool Bq27220::GetBatteryStatus(BatteryStatus& status) {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kBatteryStatus, &value)) {
+  if (!ReadU16(StandardCommand::kBatteryStatus, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
     return false;
   }
@@ -225,7 +225,7 @@ bool Bq27220::GetBatteryStatus(BatteryStatus& status) {
 
 bool Bq27220::GetOperationStatus(OperationStatus& status) {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kOperationStatus, &value)) {
+  if (!ReadU16(StandardCommand::kOperationStatus, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
     return false;
   }
@@ -252,7 +252,7 @@ bool Bq27220::SetDesignCapacity(uint16_t capacity) {
 
 uint16_t Bq27220::GetTimeToEmpty() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kTimeToEmpty, &value)) {
+  if (!ReadU16(StandardCommand::kTimeToEmpty, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -260,7 +260,7 @@ uint16_t Bq27220::GetTimeToEmpty() {
 
 uint16_t Bq27220::GetTimeToFull() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kTimeToFull, &value)) {
+  if (!ReadU16(StandardCommand::kTimeToFull, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -268,7 +268,7 @@ uint16_t Bq27220::GetTimeToFull() {
 
 int16_t Bq27220::GetStandbyCurrent() {
   int16_t value = 0;
-  if (!ReadS16(Cmd::kStandbyCurrent, &value)) {
+  if (!ReadS16(StandardCommand::kStandbyCurrent, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadS16 failed\n");
   }
   return value;
@@ -276,7 +276,7 @@ int16_t Bq27220::GetStandbyCurrent() {
 
 uint16_t Bq27220::GetStandbyTimeToEmpty() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kStandbyTimeToEmpty, &value)) {
+  if (!ReadU16(StandardCommand::kStandbyTimeToEmpty, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -284,7 +284,7 @@ uint16_t Bq27220::GetStandbyTimeToEmpty() {
 
 int16_t Bq27220::GetMaxLoadCurrent() {
   int16_t value = 0;
-  if (!ReadS16(Cmd::kMaxLoadCurrent, &value)) {
+  if (!ReadS16(StandardCommand::kMaxLoadCurrent, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadS16 failed\n");
   }
   return value;
@@ -292,7 +292,7 @@ int16_t Bq27220::GetMaxLoadCurrent() {
 
 uint16_t Bq27220::GetMaxLoadTimeToEmpty() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kMaxLoadTimeToEmpty, &value)) {
+  if (!ReadU16(StandardCommand::kMaxLoadTimeToEmpty, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -300,7 +300,7 @@ uint16_t Bq27220::GetMaxLoadTimeToEmpty() {
 
 int16_t Bq27220::GetRawCoulombCount() {
   int16_t value = 0;
-  if (!ReadS16(Cmd::kRawCoulombCount, &value)) {
+  if (!ReadS16(StandardCommand::kRawCoulombCount, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadS16 failed\n");
   }
   return value;
@@ -308,7 +308,7 @@ int16_t Bq27220::GetRawCoulombCount() {
 
 int16_t Bq27220::GetAveragePower() {
   int16_t value = 0;
-  if (!ReadS16(Cmd::kAveragePower, &value)) {
+  if (!ReadS16(StandardCommand::kAveragePower, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadS16 failed\n");
   }
   return value;
@@ -316,7 +316,7 @@ int16_t Bq27220::GetAveragePower() {
 
 uint16_t Bq27220::GetChipTemperatureRaw() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kInternalTemperature, &value)) {
+  if (!ReadU16(StandardCommand::kInternalTemperature, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -332,7 +332,7 @@ float Bq27220::GetChipTemperatureCelsius() {
 
 uint16_t Bq27220::GetCycleCount() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kCycleCount, &value)) {
+  if (!ReadU16(StandardCommand::kCycleCount, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -340,7 +340,7 @@ uint16_t Bq27220::GetCycleCount() {
 
 uint16_t Bq27220::GetStatusOfCharge() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kStatusOfCharge, &value)) {
+  if (!ReadU16(StandardCommand::kStatusOfCharge, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -348,7 +348,7 @@ uint16_t Bq27220::GetStatusOfCharge() {
 
 uint16_t Bq27220::GetStatusOfHealth() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kStatusOfHealth, &value)) {
+  if (!ReadU16(StandardCommand::kStatusOfHealth, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -356,7 +356,7 @@ uint16_t Bq27220::GetStatusOfHealth() {
 
 uint16_t Bq27220::GetChargingVoltage() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kChargingVoltage, &value)) {
+  if (!ReadU16(StandardCommand::kChargingVoltage, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -364,14 +364,14 @@ uint16_t Bq27220::GetChargingVoltage() {
 
 uint16_t Bq27220::GetChargingCurrent() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kChargingCurrent, &value)) {
+  if (!ReadU16(StandardCommand::kChargingCurrent, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
 }
 
 bool Bq27220::SetBtpDischargeThreshold(uint16_t threshold_mah) {
-  if (!WriteU16(Cmd::kBtpDischargeSet, threshold_mah)) {
+  if (!WriteU16(StandardCommand::kBtpDischargeSet, threshold_mah)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteU16 failed\n");
     return false;
   }
@@ -379,7 +379,7 @@ bool Bq27220::SetBtpDischargeThreshold(uint16_t threshold_mah) {
 }
 
 bool Bq27220::SetBtpChargeThreshold(uint16_t threshold_mah) {
-  if (!WriteU16(Cmd::kBtpChargeSet, threshold_mah)) {
+  if (!WriteU16(StandardCommand::kBtpChargeSet, threshold_mah)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteU16 failed\n");
     return false;
   }
@@ -388,7 +388,7 @@ bool Bq27220::SetBtpChargeThreshold(uint16_t threshold_mah) {
 
 uint16_t Bq27220::GetAnalogCount() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kAnalogCount, &value)) {
+  if (!ReadU16(StandardCommand::kAnalogCount, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -396,7 +396,7 @@ uint16_t Bq27220::GetAnalogCount() {
 
 int16_t Bq27220::GetRawCurrent() {
   int16_t value = 0;
-  if (!ReadS16(Cmd::kRawCurrent, &value)) {
+  if (!ReadS16(StandardCommand::kRawCurrent, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadS16 failed\n");
   }
   return value;
@@ -404,7 +404,7 @@ int16_t Bq27220::GetRawCurrent() {
 
 uint16_t Bq27220::GetRawVoltage() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kRawVoltage, &value)) {
+  if (!ReadU16(StandardCommand::kRawVoltage, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -412,7 +412,7 @@ uint16_t Bq27220::GetRawVoltage() {
 
 uint16_t Bq27220::GetRawInternalTemperature() {
   uint16_t value = 0;
-  if (!ReadU16(Cmd::kRawInternalTemperature, &value)) {
+  if (!ReadU16(StandardCommand::kRawInternalTemperature, &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
   }
   return value;
@@ -433,7 +433,7 @@ bool Bq27220::SetSleepCurrentThreshold(uint16_t threshold) {
 }
 
 bool Bq27220::SendControlSubcommand(ControlSubcommand subcommand) {
-  if (!WriteU16(Cmd::kControl, static_cast<uint16_t>(subcommand))) {
+  if (!WriteU16(StandardCommand::kControl, static_cast<uint16_t>(subcommand))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteU16 failed\n");
     return false;
   }
@@ -452,7 +452,7 @@ bool Bq27220::ReadControlSubcommand(
     return false;
   }
   DelayMs(15);
-  if (!ReadU16(Cmd::kMacData, value)) {
+  if (!ReadU16(StandardCommand::kMacData, value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
     return false;
   }
@@ -488,12 +488,12 @@ bool Bq27220::Unseal() {
     return true;
   }
 
-  if (!WriteU16(Cmd::kControl, kUnsealKey1)) {
+  if (!WriteU16(StandardCommand::kControl, kUnsealKey1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteU16 failed\n");
     return false;
   }
   DelayMs(10);
-  if (!WriteU16(Cmd::kControl, kUnsealKey2)) {
+  if (!WriteU16(StandardCommand::kControl, kUnsealKey2)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteU16 failed\n");
     return false;
   }
@@ -523,12 +523,12 @@ bool Bq27220::FullAccess() {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Unseal failed\n");
     return false;
   }
-  if (!WriteU16(Cmd::kControl, kFullAccessKey)) {
+  if (!WriteU16(StandardCommand::kControl, kFullAccessKey)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteU16 failed\n");
     return false;
   }
   DelayMs(10);
-  if (!WriteU16(Cmd::kControl, kFullAccessKey)) {
+  if (!WriteU16(StandardCommand::kControl, kFullAccessKey)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteU16 failed\n");
     return false;
   }
@@ -838,14 +838,14 @@ bool Bq27220::WaitConfigUpdate(bool enabled, uint32_t timeout_ms) {
   return false;
 }
 
-bool Bq27220::ReadU16(Cmd cmd, uint16_t* value) {
+bool Bq27220::ReadU16(StandardCommand command, uint16_t* value) {
   if (value == nullptr) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
   uint8_t buffer[2] = {};
-  if (!bus_->Read(static_cast<uint8_t>(cmd), buffer, 2)) {
+  if (!bus_->Read(static_cast<uint8_t>(command), buffer, 2)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -854,17 +854,17 @@ bool Bq27220::ReadU16(Cmd cmd, uint16_t* value) {
   return true;
 }
 
-bool Bq27220::WriteU16(Cmd cmd, uint16_t value) {
-  if (!bus_->Write(static_cast<uint8_t>(cmd), value, Endian::kLittle)) {
+bool Bq27220::WriteU16(StandardCommand command, uint16_t value) {
+  if (!bus_->Write(static_cast<uint8_t>(command), value, Endian::kLittle)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   return true;
 }
 
-bool Bq27220::ReadS16(Cmd cmd, int16_t* value) {
+bool Bq27220::ReadS16(StandardCommand command, int16_t* value) {
   uint16_t raw = 0;
-  if (!ReadU16(cmd, &raw)) {
+  if (!ReadU16(command, &raw)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadU16 failed\n");
     return false;
   }
@@ -902,7 +902,7 @@ bool Bq27220::WriteDataMemoryBytes(
   std::memcpy(&buffer[2], data, length);
 
   if (!bus_->Write(
-          static_cast<uint8_t>(Cmd::kSelectSubclass), buffer, length + 2)) {
+          static_cast<uint8_t>(StandardCommand::kSelectSubclass), buffer, length + 2)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     if (entered_config_update) {
       ExitConfigUpdate(false);
@@ -916,7 +916,7 @@ bool Bq27220::WriteDataMemoryBytes(
       checksum,
       static_cast<uint8_t>(length + 4),
   };
-  if (!bus_->Write(static_cast<uint8_t>(Cmd::kMacDataSum), checksum_buffer,
+  if (!bus_->Write(static_cast<uint8_t>(StandardCommand::kMacDataSum), checksum_buffer,
           sizeof(checksum_buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     if (entered_config_update) {
@@ -949,14 +949,14 @@ bool Bq27220::ReadDataMemoryBytes(
       static_cast<uint8_t>(address),
       static_cast<uint8_t>(address >> 8),
   };
-  if (!bus_->Write(static_cast<uint8_t>(Cmd::kSelectSubclass), address_buffer,
+  if (!bus_->Write(static_cast<uint8_t>(StandardCommand::kSelectSubclass), address_buffer,
           sizeof(address_buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   DelayMs(10);
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kMacData), data, length)) {
+  if (!bus_->Read(static_cast<uint8_t>(StandardCommand::kMacData), data, length)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }

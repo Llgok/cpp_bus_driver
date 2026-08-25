@@ -53,7 +53,7 @@ bool Gz030pcc0x::Deinit(bool delete_bus) {
 float Gz030pcc0x::GetTemperatureCelsius() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint16_t>(Cmd::kRoTemperatureReading), &buffer)) {
+  if (!bus_->Read(static_cast<uint16_t>(Register::kRoTemperatureReading), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
@@ -65,7 +65,7 @@ bool Gz030pcc0x::SetDataFormat(DataFormat format) {
   uint8_t buffer = 0;
 
   if (!bus_->Read(
-          static_cast<uint16_t>(Cmd::kRwInternalTestModeInputDataFormat),
+          static_cast<uint16_t>(Register::kRwInternalTestModeInputDataFormat),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -74,7 +74,7 @@ bool Gz030pcc0x::SetDataFormat(DataFormat format) {
   buffer = (buffer & 0B11111000) | static_cast<uint8_t>(format);
 
   if (!bus_->Write(
-          static_cast<uint16_t>(Cmd::kRwInternalTestModeInputDataFormat),
+          static_cast<uint16_t>(Register::kRwInternalTestModeInputDataFormat),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -87,7 +87,7 @@ bool Gz030pcc0x::SetInternalTestMode(InternalTestMode mode) {
   uint8_t buffer = 0;
 
   if (!bus_->Read(
-          static_cast<uint16_t>(Cmd::kRwInternalTestModeInputDataFormat),
+          static_cast<uint16_t>(Register::kRwInternalTestModeInputDataFormat),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -96,7 +96,7 @@ bool Gz030pcc0x::SetInternalTestMode(InternalTestMode mode) {
   buffer = (buffer & 0B00011111) | static_cast<uint8_t>(mode);
 
   if (!bus_->Write(
-          static_cast<uint16_t>(Cmd::kRwInternalTestModeInputDataFormat),
+          static_cast<uint16_t>(Register::kRwInternalTestModeInputDataFormat),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -106,7 +106,7 @@ bool Gz030pcc0x::SetInternalTestMode(InternalTestMode mode) {
 }
 
 bool Gz030pcc0x::SetShowDirection(ShowDirection direction) {
-  if (!bus_->Write(static_cast<uint16_t>(Cmd::kRwHorizontalVerticalMirror),
+  if (!bus_->Write(static_cast<uint16_t>(Register::kRwHorizontalVerticalMirror),
           static_cast<uint8_t>(direction))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -116,7 +116,7 @@ bool Gz030pcc0x::SetShowDirection(ShowDirection direction) {
 }
 
 bool Gz030pcc0x::SetBrightness(uint8_t value) {
-  if (!bus_->Write(static_cast<uint16_t>(Cmd::kRwDisplayBrightness), value)) {
+  if (!bus_->Write(static_cast<uint16_t>(Register::kRwDisplayBrightness), value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

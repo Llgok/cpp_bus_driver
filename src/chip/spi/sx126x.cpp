@@ -168,7 +168,7 @@ bool Sx126x::GetStatus(uint8_t& status) {
   if (!CheckBusy()) {
     return false;
   }
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoGetStatus), &status)) {
+  if (!bus_->Read(static_cast<uint8_t>(Command::kRoGetStatus), &status)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -259,7 +259,7 @@ bool Sx126x::SetStandby(StdbyConfig config) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
-  if (!WriteCommand(Cmd::kWoSetStandby, &buffer, 1)) {
+  if (!WriteCommand(Command::kWoSetStandby, &buffer, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -280,7 +280,7 @@ bool Sx126x::SetDio3AsTcxoCtrl(Dio3TcxoVoltage voltage, uint32_t time_out_us) {
       static_cast<uint8_t>(timeout),
   };
 
-  if (!WriteCommand(Cmd::kWoSetDio3AsTcxoCtrl, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetDio3AsTcxoCtrl, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -315,7 +315,7 @@ bool Sx126x::SetBufferBaseAddress(
     uint8_t tx_base_address, uint8_t rx_base_address) {
   uint8_t buffer[] = {tx_base_address, rx_base_address};
 
-  if (!WriteCommand(Cmd::kWoSetBufferBaseAddress, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetBufferBaseAddress, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -330,7 +330,7 @@ bool Sx126x::SetPacketType(PacketType type) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
-  if (!WriteCommand(Cmd::kWoSetPacketType, &buffer, 1)) {
+  if (!WriteCommand(Command::kWoSetPacketType, &buffer, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -349,7 +349,7 @@ bool Sx126x::SetRxTxFallbackMode(FallbackMode mode) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
-  if (!WriteCommand(Cmd::kWoSetRxTxFallbackMode, &buffer, 1)) {
+  if (!WriteCommand(Command::kWoSetRxTxFallbackMode, &buffer, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -377,7 +377,7 @@ bool Sx126x::SetCadParams(CadSymbolNum num, uint8_t cad_det_peak,
       static_cast<uint8_t>(timeout),
   };
 
-  if (!WriteCommand(Cmd::kWoSetCadParams, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetCadParams, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -395,7 +395,7 @@ bool Sx126x::ClearIrqFlag(uint16_t flags) {
       static_cast<uint8_t>(flags),
   };
 
-  if (!WriteCommand(Cmd::kWoClearIrqStatus, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoClearIrqStatus, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -416,7 +416,7 @@ bool Sx126x::SetDioIrqParams(uint16_t irq_mask, uint16_t dio1_mask,
       static_cast<uint8_t>(dio3_mask),
   };
 
-  if (!WriteCommand(Cmd::kWoSetDioIrqParams, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetDioIrqParams, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -425,7 +425,7 @@ bool Sx126x::SetDioIrqParams(uint16_t irq_mask, uint16_t dio1_mask,
 }
 
 bool Sx126x::Calibrate(uint8_t calib_param) {
-  if (!WriteCommand(Cmd::kWoCalibrate, &calib_param, 1)) {
+  if (!WriteCommand(Command::kWoCalibrate, &calib_param, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -437,7 +437,7 @@ bool Sx126x::GetPacketType(PacketType& packet_type) {
   packet_type = PacketType::kFalse;
   uint8_t buffer = 0;
 
-  if (!ReadCommand(Cmd::kRoGetPacketType, &buffer, 1)) {
+  if (!ReadCommand(Command::kRoGetPacketType, &buffer, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return false;
   }
@@ -470,7 +470,7 @@ bool Sx126x::SetRegulatorMode(RegulatorMode mode) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
-  if (!WriteCommand(Cmd::kWoSetRegulatorMode, &buffer, 1)) {
+  if (!WriteCommand(Command::kWoSetRegulatorMode, &buffer, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -524,7 +524,7 @@ bool Sx126x::SetDio2AsRfSwitchCtrl(Dio2Mode mode) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
-  if (!WriteCommand(Cmd::kWoSetDio2AsRfSwitchCtrl, &buffer, 1)) {
+  if (!WriteCommand(Command::kWoSetDio2AsRfSwitchCtrl, &buffer, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -549,7 +549,7 @@ bool Sx126x::SetPaConfig(uint8_t pa_duty_cycle, uint8_t hp_max) {
       0x01,  // 这一位固定为0x01
   };
 
-  if (!WriteCommand(Cmd::kWoSetPaConfig, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetPaConfig, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -569,7 +569,7 @@ bool Sx126x::SetTxParams(int8_t power, RampTime ramp_time) {
   uint8_t buffer[] = {
       static_cast<uint8_t>(power), static_cast<uint8_t>(ramp_time)};
 
-  if (!WriteCommand(Cmd::kWoSetTxParams, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetTxParams, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -656,7 +656,7 @@ bool Sx126x::SetLoraModulationParams(Sf sf, LoraBw bw, Cr cr, Ldro ldro) {
   uint8_t buffer[] = {static_cast<uint8_t>(sf), static_cast<uint8_t>(bw),
       static_cast<uint8_t>(cr), static_cast<uint8_t>(ldro)};
 
-  if (!WriteCommand(Cmd::kWoSetModulationParams, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetModulationParams, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -691,7 +691,7 @@ bool Sx126x::SetLoraPacketParams(uint16_t preamble_length,
       static_cast<uint8_t>(iq),
   };
 
-  if (!WriteCommand(Cmd::kWoSetPacketParams, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetPacketParams, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -782,7 +782,7 @@ bool Sx126x::CalibrateImage(ImgCalFreq freq_mhz) {
       return false;
   }
 
-  if (!WriteCommand(Cmd::kWoCalibrateImage, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoCalibrateImage, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -810,7 +810,7 @@ bool Sx126x::CalibrateImage(uint16_t start_freq_mhz, uint16_t end_freq_mhz) {
                            kImageCalibrationStepMhz),
   };
 
-  if (!WriteCommand(Cmd::kWoCalibrateImage, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoCalibrateImage, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -836,7 +836,7 @@ bool Sx126x::SetRfFrequency(double freq_mhz) {
       static_cast<uint8_t>(buffer_freq),
   };
 
-  if (!WriteCommand(Cmd::kWoSetRfFrequency, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetRfFrequency, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -939,7 +939,7 @@ bool Sx126x::SetFrequency(double freq_mhz) {
 }
 
 bool Sx126x::SetFs() {
-  if (!WriteCommand(Cmd::kWoSetFs)) {
+  if (!WriteCommand(Command::kWoSetFs)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -959,7 +959,7 @@ bool Sx126x::SetRxDutyCycle(uint32_t rx_time_us, uint32_t sleep_time_us) {
       static_cast<uint8_t>(sleep_time),
   };
 
-  if (!WriteCommand(Cmd::kWoSetRxDutyCycle, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetRxDutyCycle, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -969,7 +969,7 @@ bool Sx126x::SetRxDutyCycle(uint32_t rx_time_us, uint32_t sleep_time_us) {
 
 bool Sx126x::StopTimerOnPreamble(bool enable) {
   const uint8_t buffer = enable ? 1 : 0;
-  if (!WriteCommand(Cmd::kWoStopTimerOnPreamble, &buffer, 1)) {
+  if (!WriteCommand(Command::kWoStopTimerOnPreamble, &buffer, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -978,7 +978,7 @@ bool Sx126x::StopTimerOnPreamble(bool enable) {
 }
 
 bool Sx126x::SetCad() {
-  if (!WriteCommand(Cmd::kWoSetCad)) {
+  if (!WriteCommand(Command::kWoSetCad)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -987,7 +987,7 @@ bool Sx126x::SetCad() {
 }
 
 bool Sx126x::SetTxInfinitePreamble() {
-  if (!WriteCommand(Cmd::kWoSetTxInfinitePreamble)) {
+  if (!WriteCommand(Command::kWoSetTxInfinitePreamble)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -1009,7 +1009,7 @@ bool Sx126x::SetLoraSymbolTimeout(uint8_t symbol_count) {
   }
 
   const uint8_t command_value = static_cast<uint8_t>(mant << ((2 * exp) + 1));
-  if (!WriteCommand(Cmd::kWoSetLoraSymbolNumTimeout, &command_value, 1)) {
+  if (!WriteCommand(Command::kWoSetLoraSymbolNumTimeout, &command_value, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -1159,7 +1159,7 @@ bool Sx126x::SetRx(uint32_t time_out_us) {
       static_cast<uint8_t>(timeout),
   };
 
-  if (!WriteCommand(Cmd::kWoSetRx, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetRx, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -1213,7 +1213,7 @@ bool Sx126x::GetIrqFlag(uint16_t& irq_flags) {
   irq_flags = 0;
   uint8_t buffer[2] = {0};
 
-  if (!ReadCommand(Cmd::kRoGetIrqStatus, buffer, sizeof(buffer))) {
+  if (!ReadCommand(Command::kRoGetIrqStatus, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return false;
   }
@@ -1226,7 +1226,7 @@ bool Sx126x::GetRxBufferStatus(RxBufferStatus& status) {
   status = RxBufferStatus{};
   uint8_t buffer[2] = {0};
 
-  if (!ReadCommand(Cmd::kRoGetRxBufferStatus, buffer, sizeof(buffer))) {
+  if (!ReadCommand(Command::kRoGetRxBufferStatus, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return false;
   }
@@ -1418,7 +1418,7 @@ bool Sx126x::GetLoraPacketMetrics(PacketMetrics& metrics) {
   metrics = PacketMetrics{};
   uint8_t buffer[3] = {0};
 
-  if (!ReadCommand(Cmd::kRoGetPacketStatus, buffer, sizeof(buffer))) {
+  if (!ReadCommand(Command::kRoGetPacketStatus, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return false;
   }
@@ -1435,7 +1435,7 @@ bool Sx126x::GetRssiInst(float& rssi_dbm) {
   rssi_dbm = 0.0f;
   uint8_t buffer = 0;
 
-  if (!ReadCommand(Cmd::kRoGetRssiInst, &buffer, 1)) {
+  if (!ReadCommand(Command::kRoGetRssiInst, &buffer, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return false;
   }
@@ -1449,7 +1449,7 @@ bool Sx126x::GetPacketStats(PacketStats& stats) {
   stats = PacketStats{};
   uint8_t buffer[6] = {0};
 
-  if (!ReadCommand(Cmd::kRoGetStats, buffer, sizeof(buffer))) {
+  if (!ReadCommand(Command::kRoGetStats, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return false;
   }
@@ -1469,7 +1469,7 @@ bool Sx126x::GetPacketStats(PacketStats& stats) {
 
 bool Sx126x::ResetStats() {
   const uint8_t buffer[6] = {0};
-  if (!WriteCommand(Cmd::kWoResetStats, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoResetStats, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -1481,7 +1481,7 @@ bool Sx126x::GetDeviceErrors(uint16_t& errors) {
   errors = 0;
   uint8_t buffer[2] = {0};
 
-  if (!ReadCommand(Cmd::kRoGetDeviceErrors, buffer, sizeof(buffer))) {
+  if (!ReadCommand(Command::kRoGetDeviceErrors, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return false;
   }
@@ -1492,7 +1492,7 @@ bool Sx126x::GetDeviceErrors(uint16_t& errors) {
 
 bool Sx126x::ClearDeviceErrors() {
   const uint8_t buffer[2] = {0};
-  if (!WriteCommand(Cmd::kWoClearDeviceErrors, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoClearDeviceErrors, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -1542,7 +1542,7 @@ bool Sx126x::SetTx(uint32_t time_out_us) {
       static_cast<uint8_t>(timeout),
   };
 
-  if (!WriteCommand(Cmd::kWoSetTx, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetTx, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -1741,7 +1741,7 @@ bool Sx126x::SetGfskModulationParams(
       static_cast<uint8_t>(buffer_freq_deviation_khz),
   };
 
-  if (!WriteCommand(Cmd::kWoSetModulationParams, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetModulationParams, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -1843,7 +1843,7 @@ bool Sx126x::SetGfskPacketParams(uint16_t preamble_length,
       static_cast<uint8_t>(whitening),
   };
 
-  if (!WriteCommand(Cmd::kWoSetPacketParams, buffer, sizeof(buffer))) {
+  if (!WriteCommand(Command::kWoSetPacketParams, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -2147,7 +2147,7 @@ bool Sx126x::GetGfskPacketStatus(uint32_t& status) {
   status = 0;
   uint8_t buffer[3] = {0};
 
-  if (!ReadCommand(Cmd::kRoGetPacketStatus, buffer, sizeof(buffer))) {
+  if (!ReadCommand(Command::kRoGetPacketStatus, buffer, sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadCommand failed\n");
     return false;
   }
@@ -2292,7 +2292,7 @@ bool Sx126x::ClearBuffer() {
 }
 
 bool Sx126x::SetTxContinuousWave() {
-  if (!WriteCommand(Cmd::kWoSetTxContinuousWave)) {
+  if (!WriteCommand(Command::kWoSetTxContinuousWave)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -2320,7 +2320,7 @@ bool Sx126x::SetSleep(SleepMode mode) {
   }
 
   const uint8_t buffer = mode_value;
-  if (!WriteCommand(Cmd::kWoSetSleep, &buffer, 1)) {
+  if (!WriteCommand(Command::kWoSetSleep, &buffer, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteCommand failed\n");
     return false;
   }
@@ -2347,7 +2347,7 @@ bool Sx126x::Wakeup() {
 
   uint8_t status = 0;
   // 直接读取任意命令触发cs引脚变化唤醒设备
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoGetStatus), &status)) {
+  if (!bus_->Read(static_cast<uint8_t>(Command::kRoGetStatus), &status)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -2383,7 +2383,7 @@ bool Sx126x::Wakeup() {
   return true;
 }
 
-bool Sx126x::WriteCommand(Cmd command, const uint8_t* data, size_t length) {
+bool Sx126x::WriteCommand(Command command, const uint8_t* data, size_t length) {
   if ((length > 0) && (data == nullptr)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
@@ -2410,7 +2410,7 @@ bool Sx126x::WriteCommand(Cmd command, const uint8_t* data, size_t length) {
   return true;
 }
 
-bool Sx126x::ReadCommand(Cmd command, uint8_t* data, size_t length) {
+bool Sx126x::ReadCommand(Command command, uint8_t* data, size_t length) {
   if ((length > 0) && (data == nullptr)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
@@ -2452,7 +2452,7 @@ bool Sx126x::WriteRegister(
   }
 
   std::array<uint8_t, kMaxSpiFrameSize> buffer = {};
-  buffer[0] = static_cast<uint8_t>(Cmd::kWoWriteRegister);
+  buffer[0] = static_cast<uint8_t>(Command::kWoWriteRegister);
   buffer[1] = static_cast<uint8_t>(address >> 8);
   buffer[2] = static_cast<uint8_t>(address);
   if (length > 0) {
@@ -2482,7 +2482,7 @@ bool Sx126x::ReadRegister(uint16_t address, uint8_t* data, size_t length) {
 
   std::array<uint8_t, kMaxSpiFrameSize> write_buffer = {};
   std::array<uint8_t, kMaxSpiFrameSize> read_buffer = {};
-  write_buffer[0] = static_cast<uint8_t>(Cmd::kWoReadRegister);
+  write_buffer[0] = static_cast<uint8_t>(Command::kWoReadRegister);
   write_buffer[1] = static_cast<uint8_t>(address >> 8);
   write_buffer[2] = static_cast<uint8_t>(address);
   write_buffer[3] = kNop;
@@ -2514,7 +2514,7 @@ bool Sx126x::WriteBufferRaw(
   }
 
   std::array<uint8_t, kMaxSpiFrameSize> buffer = {};
-  buffer[0] = static_cast<uint8_t>(Cmd::kWoWriteBuffer);
+  buffer[0] = static_cast<uint8_t>(Command::kWoWriteBuffer);
   buffer[1] = offset;
   if (length > 0) {
     std::memcpy(&buffer[2], data, length);
@@ -2543,7 +2543,7 @@ bool Sx126x::ReadBufferRaw(uint8_t offset, uint8_t* data, size_t length) {
 
   std::array<uint8_t, kMaxSpiFrameSize> write_buffer = {};
   std::array<uint8_t, kMaxSpiFrameSize> read_buffer = {};
-  write_buffer[0] = static_cast<uint8_t>(Cmd::kRoReadBuffer);
+  write_buffer[0] = static_cast<uint8_t>(Command::kRoReadBuffer);
   write_buffer[1] = offset;
   write_buffer[2] = kNop;
 

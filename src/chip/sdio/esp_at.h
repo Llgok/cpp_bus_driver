@@ -226,7 +226,7 @@ class EspAt final : public ChipSdioGuide {
   bool GetRealTime(RealTime& time, int16_t timeout_ms = 3000);
 
  private:
-  enum class Cmd {
+  enum class RegisterAddress {
     kSdIoCccrFnEnable = 0x00000002,
     kSdIoCccrFnReady,
     kSdIoCccrIntEnable,

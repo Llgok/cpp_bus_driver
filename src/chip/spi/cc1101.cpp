@@ -199,10 +199,10 @@ bool Cc1101::Configure(const Config& config) {
   // 配置过程需要使用目标晶振、频段和调制信息。
   config_ = config;
   bool result = Standby();
-  result &= WriteRegister(Cmd::kMcsm0, kDefaultMcsm0);
-  result &= WriteRegister(Cmd::kMcsm1, kDefaultMcsm1);
-  result &= WriteRegister(Cmd::kIocfg0, kGdoHighImpedance);
-  result &= WriteRegister(Cmd::kIocfg2, kGdoHighImpedance);
+  result &= WriteRegister(Register::kMcsm0, kDefaultMcsm0);
+  result &= WriteRegister(Register::kMcsm1, kDefaultMcsm1);
+  result &= WriteRegister(Register::kIocfg0, kGdoHighImpedance);
+  result &= WriteRegister(Register::kIocfg2, kGdoHighImpedance);
   result &= SetFrequency(config.frequency_mhz);
   result &= SetDataRate(config.data_rate_kbaud);
   result &= SetReceiveBandwidth(config.receive_bandwidth_khz);
@@ -227,7 +227,7 @@ bool Cc1101::Configure(const Config& config) {
       config.packet_length_mode, config.maximum_packet_length);
   result &= SetAddressCheck(config.address_check, config.device_address);
   result &= SetCrc(config.crc_enabled);
-  result &= UpdateRegisterBits(Cmd::kPktctrl1, kAppendStatusMask,
+  result &= UpdateRegisterBits(Register::kPktctrl1, kAppendStatusMask,
       config.append_status ? kAppendStatusMask : 0);
   result &= SetCrcAutoflush(config.crc_autoflush);
   result &= SetFec(config.fec_enabled);
@@ -254,7 +254,7 @@ bool Cc1101::ApplyRegisterSettings(
   }
   for (size_t index = 0; index < count; ++index) {
     if (!WriteRegister(
-            static_cast<Cmd>(settings[index].address), settings[index].value)) {
+            static_cast<Register>(settings[index].address), settings[index].value)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "Register setting failed (index: %zu)\n", index);
       return false;
@@ -264,39 +264,40 @@ bool Cc1101::ApplyRegisterSettings(
   return true;
 }
 
-bool Cc1101::WriteRegister(Cmd cmd, uint8_t value) {
-  if (GetMaximumBurstLength(cmd) == 0) {
+bool Cc1101::WriteRegister(Register register_id, uint8_t value) {
+  if (GetMaximumBurstLength(register_id) == 0) {
     return false;
   }
   const uint8_t buffer[] = {
-      static_cast<uint8_t>(cmd),
+      static_cast<uint8_t>(register_id),
       value,
   };
   uint8_t status[sizeof(buffer)] = {0};
   if (!Transfer(buffer, status, sizeof(buffer))) {
     return false;
   }
-  if (cmd == Cmd::kTest2) {
+  if (register_id == Register::kTest2) {
     test2_value_ = value;
-  } else if (cmd == Cmd::kTest1) {
+  } else if (register_id == Register::kTest1) {
     test1_value_ = value;
-  } else if (cmd == Cmd::kTest0) {
+  } else if (register_id == Register::kTest0) {
     test0_value_ = value;
-  } else if (cmd == Cmd::kFscal2) {
+  } else if (register_id == Register::kFscal2) {
     fscal2_value_ = value;
-  } else if (cmd == Cmd::kPatable) {
+  } else if (register_id == Register::kPatable) {
     pa_table_cache_[0] = value;
     pa_table_length_ = 1;
   }
   return true;
 }
 
-bool Cc1101::ReadRegister(Cmd cmd, uint8_t* value) {
-  if (value == nullptr || GetMaximumBurstLength(cmd) == 0) {
+bool Cc1101::ReadRegister(Register register_id, uint8_t* value) {
+  if (value == nullptr || GetMaximumBurstLength(register_id) == 0) {
     return false;
   }
   const uint8_t buffer[] = {
-      static_cast<uint8_t>(static_cast<uint8_t>(cmd) | kReadSingle),
+      static_cast<uint8_t>(
+          static_cast<uint8_t>(register_id) | kReadSingle),
       0,
   };
   uint8_t response[sizeof(buffer)] = {0};
@@ -307,33 +308,35 @@ bool Cc1101::ReadRegister(Cmd cmd, uint8_t* value) {
   return true;
 }
 
-bool Cc1101::WriteBurst(Cmd cmd, const uint8_t* data, size_t length) {
-  const size_t maximum_length = GetMaximumBurstLength(cmd);
+bool Cc1101::WriteBurst(
+    Register register_id, const uint8_t* data, size_t length) {
+  const size_t maximum_length = GetMaximumBurstLength(register_id);
   if (data == nullptr || length == 0 || length > maximum_length) {
     return false;
   }
   std::vector<uint8_t> buffer(length + 1, 0);
   std::vector<uint8_t> response(length + 1, 0);
-  buffer[0] = static_cast<uint8_t>(cmd) | kBurst;
+  buffer[0] = static_cast<uint8_t>(register_id) | kBurst;
   std::memcpy(&buffer[1], data, length);
   if (!Transfer(buffer.data(), response.data(), buffer.size())) {
     return false;
   }
-  if (cmd == Cmd::kPatable) {
+  if (register_id == Register::kPatable) {
     pa_table_length_ = std::min<size_t>(8, length);
     std::memcpy(pa_table_cache_, data, pa_table_length_);
   }
   return true;
 }
 
-bool Cc1101::ReadBurst(Cmd cmd, uint8_t* data, size_t length) {
-  const size_t maximum_length = GetMaximumBurstLength(cmd);
+bool Cc1101::ReadBurst(
+    Register register_id, uint8_t* data, size_t length) {
+  const size_t maximum_length = GetMaximumBurstLength(register_id);
   if (data == nullptr || length == 0 || length > maximum_length) {
     return false;
   }
   std::vector<uint8_t> buffer(length + 1, 0);
   std::vector<uint8_t> response(length + 1, 0);
-  buffer[0] = static_cast<uint8_t>(cmd) | kReadBurst;
+  buffer[0] = static_cast<uint8_t>(register_id) | kReadBurst;
   if (!Transfer(buffer.data(), response.data(), buffer.size())) {
     return false;
   }
@@ -341,13 +344,14 @@ bool Cc1101::ReadBurst(Cmd cmd, uint8_t* data, size_t length) {
   return true;
 }
 
-bool Cc1101::ReadStatusRegister(Cmd cmd, uint8_t* value) {
-  const uint8_t raw_address = static_cast<uint8_t>(cmd);
+bool Cc1101::ReadStatusRegister(Register register_id, uint8_t* value) {
+  const uint8_t raw_address = static_cast<uint8_t>(register_id);
   if (value == nullptr || raw_address < 0x30 || raw_address > 0x3D) {
     return false;
   }
   const uint8_t buffer[] = {
-      static_cast<uint8_t>(static_cast<uint8_t>(cmd) | kReadBurst),
+      static_cast<uint8_t>(
+          static_cast<uint8_t>(register_id) | kReadBurst),
       0,
   };
   uint8_t response[sizeof(buffer)] = {0};
@@ -388,7 +392,7 @@ bool Cc1101::SetFrequency(double frequency_mhz) {
       static_cast<uint8_t>(word >> 8),
       static_cast<uint8_t>(word),
   };
-  if (!WriteBurst(Cmd::kFreq2, values, sizeof(values))) {
+  if (!WriteBurst(Register::kFreq2, values, sizeof(values))) {
     return false;
   }
   config_.frequency_mhz = frequency_mhz;
@@ -425,8 +429,8 @@ bool Cc1101::SetDataRate(double data_rate_kbaud) {
     }
   }
 
-  bool result = UpdateRegisterBits(Cmd::kMdmcfg4, 0x0F, best_exponent);
-  result &= WriteRegister(Cmd::kMdmcfg3, best_mantissa);
+  bool result = UpdateRegisterBits(Register::kMdmcfg4, 0x0F, best_exponent);
+  result &= WriteRegister(Register::kMdmcfg3, best_mantissa);
   if (result) {
     config_.data_rate_kbaud = data_rate_kbaud;
   }
@@ -472,7 +476,7 @@ bool Cc1101::SetFrequencyDeviation(double deviation_khz) {
 
   const uint8_t value =
       static_cast<uint8_t>((best_exponent << 4) | best_mantissa);
-  if (!WriteRegister(Cmd::kDeviatn, value)) {
+  if (!WriteRegister(Register::kDeviatn, value)) {
     return false;
   }
   config_.frequency_deviation_khz = deviation_khz;
@@ -486,7 +490,7 @@ bool Cc1101::SetMskPhaseChangePeriod(uint8_t period) {
   if (!EnsureIdle()) {
     return false;
   }
-  if (!UpdateRegisterBits(Cmd::kDeviatn, 0x07, period)) {
+  if (!UpdateRegisterBits(Register::kDeviatn, 0x07, period)) {
     return false;
   }
   config_.msk_phase_change_period = period;
@@ -530,7 +534,7 @@ bool Cc1101::SetReceiveBandwidth(double bandwidth_khz) {
 
   const uint8_t value =
       static_cast<uint8_t>((best_exponent << 6) | (best_mantissa << 4));
-  if (!UpdateRegisterBits(Cmd::kMdmcfg4, 0xF0, value)) {
+  if (!UpdateRegisterBits(Register::kMdmcfg4, 0xF0, value)) {
     return false;
   }
   const double actual_bandwidth_khz =
@@ -540,11 +544,11 @@ bool Cc1101::SetReceiveBandwidth(double bandwidth_khz) {
       1000.0;
   const bool narrow_bandwidth =
       actual_bandwidth_khz <= kAdcRetentionBandwidthLimitKhz;
-  bool result = UpdateRegisterBits(Cmd::kFifothr, kAdcRetentionMask,
+  bool result = UpdateRegisterBits(Register::kFifothr, kAdcRetentionMask,
       narrow_bandwidth ? kAdcRetentionMask : 0);
-  result &= WriteRegister(Cmd::kTest2,
+  result &= WriteRegister(Register::kTest2,
       narrow_bandwidth ? kNarrowBandwidthTest2 : kWideBandwidthTest2);
-  result &= WriteRegister(Cmd::kTest1,
+  result &= WriteRegister(Register::kTest1,
       narrow_bandwidth ? kNarrowBandwidthTest1 : kWideBandwidthTest1);
   if (!result) {
     return false;
@@ -585,8 +589,8 @@ bool Cc1101::SetChannelSpacing(double spacing_khz) {
   }
 
   bool result = UpdateRegisterBits(
-      Cmd::kMdmcfg1, kChannelSpacingExponentMask, best_exponent);
-  result &= WriteRegister(Cmd::kMdmcfg0, best_mantissa);
+      Register::kMdmcfg1, kChannelSpacingExponentMask, best_exponent);
+  result &= WriteRegister(Register::kMdmcfg0, best_mantissa);
   if (result) {
     config_.channel_spacing_khz = spacing_khz;
   }
@@ -600,7 +604,7 @@ bool Cc1101::SetBitRateTolerance(uint8_t tolerance) {
   if (!EnsureIdle()) {
     return false;
   }
-  if (!UpdateRegisterBits(Cmd::kBscfg, kBitRateToleranceMask, tolerance)) {
+  if (!UpdateRegisterBits(Register::kBscfg, kBitRateToleranceMask, tolerance)) {
     return false;
   }
   config_.bit_rate_tolerance = tolerance;
@@ -633,16 +637,16 @@ bool Cc1101::SetOutputPowerRaw(uint8_t pa_value) {
 
   if (config_.modulation == Modulation::kAskOok) {
     const uint8_t values[] = {0, pa_value};
-    if (!WriteBurst(Cmd::kPatable, values, sizeof(values))) {
+    if (!WriteBurst(Register::kPatable, values, sizeof(values))) {
       return false;
     }
-    return UpdateRegisterBits(Cmd::kFrend0, 0x07, 0x01);
+    return UpdateRegisterBits(Register::kFrend0, 0x07, 0x01);
   }
 
-  if (!WriteRegister(Cmd::kPatable, pa_value)) {
+  if (!WriteRegister(Register::kPatable, pa_value)) {
     return false;
   }
-  return UpdateRegisterBits(Cmd::kFrend0, 0x07, 0);
+  return UpdateRegisterBits(Register::kFrend0, 0x07, 0);
 }
 
 bool Cc1101::SetModulation(Modulation modulation) {
@@ -668,7 +672,7 @@ bool Cc1101::SetModulation(Modulation modulation) {
     return false;
   }
   const uint8_t value = static_cast<uint8_t>(modulation) << 4;
-  if (!UpdateRegisterBits(Cmd::kMdmcfg2, kModulationMask, value)) {
+  if (!UpdateRegisterBits(Register::kMdmcfg2, kModulationMask, value)) {
     return false;
   }
   config_.modulation = modulation;
@@ -693,18 +697,18 @@ bool Cc1101::SetEncoding(Encoding encoding) {
   bool result = true;
   switch (encoding) {
     case Encoding::kNrz:
-      result &= UpdateRegisterBits(Cmd::kMdmcfg2, kManchesterMask, 0);
-      result &= UpdateRegisterBits(Cmd::kPktctrl0, kWhiteningMask, 0);
+      result &= UpdateRegisterBits(Register::kMdmcfg2, kManchesterMask, 0);
+      result &= UpdateRegisterBits(Register::kPktctrl0, kWhiteningMask, 0);
       break;
     case Encoding::kManchester:
       result &=
-          UpdateRegisterBits(Cmd::kMdmcfg2, kManchesterMask, kManchesterMask);
-      result &= UpdateRegisterBits(Cmd::kPktctrl0, kWhiteningMask, 0);
+          UpdateRegisterBits(Register::kMdmcfg2, kManchesterMask, kManchesterMask);
+      result &= UpdateRegisterBits(Register::kPktctrl0, kWhiteningMask, 0);
       break;
     case Encoding::kWhitening:
-      result &= UpdateRegisterBits(Cmd::kMdmcfg2, kManchesterMask, 0);
+      result &= UpdateRegisterBits(Register::kMdmcfg2, kManchesterMask, 0);
       result &=
-          UpdateRegisterBits(Cmd::kPktctrl0, kWhiteningMask, kWhiteningMask);
+          UpdateRegisterBits(Register::kPktctrl0, kWhiteningMask, kWhiteningMask);
       break;
     default:
       return false;
@@ -720,9 +724,9 @@ bool Cc1101::SetSyncWord(uint8_t high, uint8_t low, SyncMode mode) {
     return false;
   }
   const uint8_t values[] = {high, low};
-  bool result = WriteBurst(Cmd::kSync1, values, sizeof(values));
+  bool result = WriteBurst(Register::kSync1, values, sizeof(values));
   result &= UpdateRegisterBits(
-      Cmd::kMdmcfg2, kSyncModeMask, static_cast<uint8_t>(mode));
+      Register::kMdmcfg2, kSyncModeMask, static_cast<uint8_t>(mode));
   if (result) {
     config_.sync_word_high = high;
     config_.sync_word_low = low;
@@ -768,7 +772,7 @@ bool Cc1101::SetPreambleLength(uint16_t length_bits) {
   }
 
   bool result = UpdateRegisterBits(
-      Cmd::kMdmcfg1, kPreambleMask, static_cast<uint8_t>(value << 4));
+      Register::kMdmcfg1, kPreambleMask, static_cast<uint8_t>(value << 4));
   if (result) {
     config_.preamble_length_bits = length_bits;
   }
@@ -782,7 +786,7 @@ bool Cc1101::SetPreambleQualityThreshold(uint8_t threshold) {
   if (!EnsureIdle()) {
     return false;
   }
-  if (!UpdateRegisterBits(Cmd::kPktctrl1, kPreambleQualityMask,
+  if (!UpdateRegisterBits(Register::kPktctrl1, kPreambleQualityMask,
           static_cast<uint8_t>(threshold << 5))) {
     return false;
   }
@@ -808,8 +812,8 @@ bool Cc1101::SetPacketLengthMode(
     return false;
   }
   bool result = UpdateRegisterBits(
-      Cmd::kPktctrl0, kPacketLengthMask, static_cast<uint8_t>(mode));
-  result &= WriteRegister(Cmd::kPktlen, maximum_length);
+      Register::kPktctrl0, kPacketLengthMask, static_cast<uint8_t>(mode));
+  result &= WriteRegister(Register::kPktlen, maximum_length);
   if (result) {
     config_.packet_length_mode = mode;
     config_.maximum_packet_length = maximum_length;
@@ -822,8 +826,8 @@ bool Cc1101::SetAddressCheck(AddressCheck check, uint8_t device_address) {
     return false;
   }
   bool result = UpdateRegisterBits(
-      Cmd::kPktctrl1, kAddressCheckMask, static_cast<uint8_t>(check));
-  result &= WriteRegister(Cmd::kAddr, device_address);
+      Register::kPktctrl1, kAddressCheckMask, static_cast<uint8_t>(check));
+  result &= WriteRegister(Register::kAddr, device_address);
   if (result) {
     config_.address_check = check;
     config_.device_address = device_address;
@@ -838,7 +842,7 @@ bool Cc1101::SetCrc(bool enabled) {
   if (!enabled && config_.crc_autoflush && !SetCrcAutoflush(false)) {
     return false;
   }
-  if (!UpdateRegisterBits(Cmd::kPktctrl0, kCrcMask, enabled ? kCrcMask : 0)) {
+  if (!UpdateRegisterBits(Register::kPktctrl0, kCrcMask, enabled ? kCrcMask : 0)) {
     return false;
   }
   config_.crc_enabled = enabled;
@@ -859,7 +863,7 @@ bool Cc1101::SetCrcAutoflush(bool enabled) {
     return false;
   }
   if (!UpdateRegisterBits(
-          Cmd::kPktctrl1, kCrcAutoflushMask, enabled ? kCrcAutoflushMask : 0)) {
+          Register::kPktctrl1, kCrcAutoflushMask, enabled ? kCrcAutoflushMask : 0)) {
     return false;
   }
   config_.crc_autoflush = enabled;
@@ -876,7 +880,7 @@ bool Cc1101::SetFec(bool enabled) {
   if (!EnsureIdle()) {
     return false;
   }
-  if (!UpdateRegisterBits(Cmd::kMdmcfg1, kFecMask, enabled ? kFecMask : 0)) {
+  if (!UpdateRegisterBits(Register::kMdmcfg1, kFecMask, enabled ? kFecMask : 0)) {
     return false;
   }
   config_.fec_enabled = enabled;
@@ -887,7 +891,7 @@ bool Cc1101::SetChannel(uint8_t channel) {
   if (!EnsureIdle()) {
     return false;
   }
-  if (!WriteRegister(Cmd::kChannr, channel)) {
+  if (!WriteRegister(Register::kChannr, channel)) {
     return false;
   }
   config_.channel = channel;
@@ -907,9 +911,9 @@ bool Cc1101::SetCarrierSenseThreshold(
       static_cast<uint8_t>(absolute_threshold) & kCarrierSenseAbsoluteMask;
   const uint8_t relative = static_cast<uint8_t>(relative_threshold << 4);
   bool result =
-      UpdateRegisterBits(Cmd::kAgcctrl1, kCarrierSenseAbsoluteMask, absolute);
+      UpdateRegisterBits(Register::kAgcctrl1, kCarrierSenseAbsoluteMask, absolute);
   result &=
-      UpdateRegisterBits(Cmd::kAgcctrl1, kCarrierSenseRelativeMask, relative);
+      UpdateRegisterBits(Register::kAgcctrl1, kCarrierSenseRelativeMask, relative);
   if (result) {
     config_.carrier_sense_threshold = absolute_threshold;
     config_.carrier_sense_relative = relative_threshold;
@@ -925,7 +929,7 @@ bool Cc1101::SetCcaMode(CcaMode mode) {
     return false;
   }
   if (!UpdateRegisterBits(
-          Cmd::kMcsm1, kCcaModeMask, static_cast<uint8_t>(mode) << 4)) {
+          Register::kMcsm1, kCcaModeMask, static_cast<uint8_t>(mode) << 4)) {
     return false;
   }
   config_.cca_mode = mode;
@@ -936,12 +940,12 @@ bool Cc1101::SetGdoMapping(GdoPin pin, uint8_t signal, bool inverted) {
   if (signal > 0x3F) {
     return false;
   }
-  Cmd cmd = Cmd::kIocfg0;
+  Register register_id = Register::kIocfg0;
   switch (pin) {
     case GdoPin::kGdo0:
       break;
     case GdoPin::kGdo2:
-      cmd = Cmd::kIocfg2;
+      register_id = Register::kIocfg2;
       break;
     default:
       return false;
@@ -950,7 +954,7 @@ bool Cc1101::SetGdoMapping(GdoPin pin, uint8_t signal, bool inverted) {
     return false;
   }
   return WriteRegister(
-      cmd, static_cast<uint8_t>(signal | (inverted ? 0x40 : 0)));
+      register_id, static_cast<uint8_t>(signal | (inverted ? 0x40 : 0)));
 }
 
 bool Cc1101::Standby(uint32_t timeout_ms) {
@@ -972,19 +976,19 @@ bool Cc1101::Sleep() {
     return false;
   }
   uint8_t value = 0;
-  if (!ReadRegister(Cmd::kTest2, &value)) {
+  if (!ReadRegister(Register::kTest2, &value)) {
     return false;
   }
   test2_value_ = value;
-  if (!ReadRegister(Cmd::kTest1, &value)) {
+  if (!ReadRegister(Register::kTest1, &value)) {
     return false;
   }
   test1_value_ = value;
-  if (!ReadRegister(Cmd::kTest0, &value)) {
+  if (!ReadRegister(Register::kTest0, &value)) {
     return false;
   }
   test0_value_ = value;
-  if (!ReadRegister(Cmd::kFscal2, &value)) {
+  if (!ReadRegister(Register::kFscal2, &value)) {
     return false;
   }
   fscal2_value_ = value;
@@ -1020,8 +1024,8 @@ bool Cc1101::StartReceive() {
   bool result = Standby();
   result &= FlushRx();
   result &= UpdateRegisterBits(
-      Cmd::kFifothr, kFifoThresholdMask, kRxFifoThresholdMaximum);
-  result &= WriteRegister(Cmd::kIocfg0, kGdoSyncWord);
+      Register::kFifothr, kFifoThresholdMask, kRxFifoThresholdMaximum);
+  result &= WriteRegister(Register::kIocfg0, kGdoSyncWord);
   result &= Strobe(StrobeCmd::kReceive);
   return result;
 }
@@ -1067,7 +1071,7 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
 
   bool result = Standby();
   result &= FlushTx();
-  result &= WriteRegister(Cmd::kIocfg0, kGdoSyncWord);
+  result &= WriteRegister(Register::kIocfg0, kGdoSyncWord);
   if (!result) {
     return false;
   }
@@ -1083,10 +1087,10 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
 
   const size_t initial_payload = std::min(length, kFifoSize - prefix.size());
   if (!prefix.empty() &&
-      !WriteBurst(Cmd::kFifo, prefix.data(), prefix.size())) {
+      !WriteBurst(Register::kFifo, prefix.data(), prefix.size())) {
     return false;
   }
-  if (!WriteBurst(Cmd::kFifo, data, initial_payload)) {
+  if (!WriteBurst(Register::kFifo, data, initial_payload)) {
     return false;
   }
 
@@ -1112,7 +1116,7 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
     bool started_or_completed = GpioRead(gdo0_);
     while (!started_or_completed) {
       uint8_t tx_bytes = 0;
-      if (!ReadStableStatus(Cmd::kTxbytes, &tx_bytes) ||
+      if (!ReadStableStatus(Register::kTxbytes, &tx_bytes) ||
           (tx_bytes & kStatusFifoErrorMask) != 0) {
         result = false;
         break;
@@ -1145,7 +1149,7 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
   while (written < length) {
     // TXBYTES 属于连续变化状态寄存器，必须稳定读取后再补 FIFO。
     uint8_t tx_bytes = 0;
-    if (!ReadStableStatus(Cmd::kTxbytes, &tx_bytes) ||
+    if (!ReadStableStatus(Register::kTxbytes, &tx_bytes) ||
         (tx_bytes & kStatusFifoErrorMask) != 0) {
       result = false;
       break;
@@ -1153,7 +1157,7 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
     const size_t fifo_count = tx_bytes & kStatusFifoCountMask;
     if (fifo_count < kFifoSize) {
       const size_t count = std::min(kFifoSize - fifo_count, length - written);
-      if (!WriteBurst(Cmd::kFifo, &data[written], count)) {
+      if (!WriteBurst(Register::kFifo, &data[written], count)) {
         result = false;
         break;
       }
@@ -1212,8 +1216,8 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity, size_t* received,
 
   bool result = Standby();
   result &= FlushRx();
-  result &= UpdateRegisterBits(Cmd::kFifothr, kFifoThresholdMask, 0x07);
-  result &= WriteRegister(Cmd::kIocfg0, kGdoSyncWord);
+  result &= UpdateRegisterBits(Register::kFifothr, kFifoThresholdMask, 0x07);
+  result &= WriteRegister(Register::kIocfg0, kGdoSyncWord);
   result &= Strobe(StrobeCmd::kReceive);
   if (!result || !WaitForGdo0(true, timeout_ms)) {
     Standby();
@@ -1230,7 +1234,7 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity, size_t* received,
   while (GpioRead(gdo0_)) {
     // 保留至少一个 FIFO 字节，避免包仍在接收时误判 FIFO 为空。
     uint8_t rx_bytes = 0;
-    if (!ReadStableStatus(Cmd::kRxbytes, &rx_bytes) ||
+    if (!ReadStableStatus(Register::kRxbytes, &rx_bytes) ||
         (rx_bytes & kStatusFifoErrorMask) != 0) {
       result = false;
       break;
@@ -1238,7 +1242,7 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity, size_t* received,
     size_t fifo_count = rx_bytes & kStatusFifoCountMask;
     if (packet_length == 0 && fifo_count > 0) {
       uint8_t length_byte = 0;
-      if (!ReadRegister(Cmd::kFifo, &length_byte) || length_byte == 0) {
+      if (!ReadRegister(Register::kFifo, &length_byte) || length_byte == 0) {
         result = false;
         break;
       }
@@ -1247,7 +1251,7 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity, size_t* received,
     }
     if (address_pending && packet_length > 0 && fifo_count > 0) {
       uint8_t address = 0;
-      if (!ReadRegister(Cmd::kFifo, &address)) {
+      if (!ReadRegister(Register::kFifo, &address)) {
         result = false;
         break;
       }
@@ -1270,7 +1274,7 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity, size_t* received,
   }
 
   uint8_t final_rx_bytes = 0;
-  if (result && (!ReadStableStatus(Cmd::kRxbytes, &final_rx_bytes) ||
+  if (result && (!ReadStableStatus(Register::kRxbytes, &final_rx_bytes) ||
                     (final_rx_bytes & kStatusFifoErrorMask) != 0)) {
     result = false;
   }
@@ -1286,7 +1290,7 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity, size_t* received,
   }
   if (result && address_pending && packet_length > 0) {
     uint8_t address = 0;
-    if (!ReadRegister(Cmd::kFifo, &address)) {
+    if (!ReadRegister(Register::kFifo, &address)) {
       result = false;
     } else {
       --packet_length;
@@ -1302,7 +1306,7 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity, size_t* received,
 
   if (result && config_.append_status) {
     uint8_t status[2] = {0};
-    if (!ReadBurst(Cmd::kFifo, status, sizeof(status))) {
+    if (!ReadBurst(Register::kFifo, status, sizeof(status))) {
       result = false;
     } else {
       last_metrics_.rssi_dbm = DecodeRssi(status[0]);
@@ -1331,7 +1335,7 @@ bool Cc1101::ReadReceivedPacket(
   *received = 0;
 
   uint8_t rx_bytes = 0;
-  if (!ReadStableStatus(Cmd::kRxbytes, &rx_bytes) ||
+  if (!ReadStableStatus(Register::kRxbytes, &rx_bytes) ||
       (rx_bytes & kStatusFifoErrorMask) != 0) {
     Standby();
     FlushRx();
@@ -1352,7 +1356,7 @@ bool Cc1101::GetState(State* state) {
     return false;
   }
   uint8_t value = 0;
-  if (!ReadStableStatus(Cmd::kMarcstate, &value)) {
+  if (!ReadStableStatus(Register::kMarcstate, &value)) {
     return false;
   }
   *state = static_cast<State>(value & kMarcStateMask);
@@ -1369,11 +1373,11 @@ uint8_t Cc1101::GetChipId() {
 }
 
 bool Cc1101::GetPartNumber(uint8_t* part_number) {
-  return ReadStatusRegister(Cmd::kPartnum, part_number);
+  return ReadStatusRegister(Register::kPartnum, part_number);
 }
 
 bool Cc1101::GetVersion(uint8_t* version) {
-  return ReadStatusRegister(Cmd::kVersion, version);
+  return ReadStatusRegister(Register::kVersion, version);
 }
 
 bool Cc1101::GetRssi(float* rssi_dbm) {
@@ -1381,7 +1385,7 @@ bool Cc1101::GetRssi(float* rssi_dbm) {
     return false;
   }
   uint8_t raw = 0;
-  if (!ReadStableStatus(Cmd::kRssi, &raw)) {
+  if (!ReadStableStatus(Register::kRssi, &raw)) {
     return false;
   }
   *rssi_dbm = DecodeRssi(raw);
@@ -1393,7 +1397,7 @@ bool Cc1101::GetLqi(uint8_t* lqi) {
     return false;
   }
   uint8_t raw = 0;
-  if (!ReadStableStatus(Cmd::kLqi, &raw)) {
+  if (!ReadStableStatus(Register::kLqi, &raw)) {
     return false;
   }
   *lqi = raw & 0x7F;
@@ -1506,18 +1510,18 @@ bool Cc1101::WaitForState(State state, uint32_t timeout_ms) {
   return false;
 }
 
-bool Cc1101::ReadStableStatus(Cmd cmd, uint8_t* value) {
+bool Cc1101::ReadStableStatus(Register register_id, uint8_t* value) {
   if (value == nullptr) {
     return false;
   }
   // TI 勘误 SWRZ020：连续变化的状态寄存器应读取至两次结果一致。
   uint8_t previous = 0;
-  if (!ReadStatusRegister(cmd, &previous)) {
+  if (!ReadStatusRegister(register_id, &previous)) {
     return false;
   }
   for (uint8_t attempt = 0; attempt < 32; ++attempt) {
     uint8_t current = 0;
-    if (!ReadStatusRegister(cmd, &current)) {
+    if (!ReadStatusRegister(register_id, &current)) {
       return false;
     }
     if (current == previous) {
@@ -1527,18 +1531,20 @@ bool Cc1101::ReadStableStatus(Cmd cmd, uint8_t* value) {
     previous = current;
   }
   LogMessage(LogLevel::kError, __FILE__, __LINE__,
-      "Unstable status register (address: %#X)\n", static_cast<uint8_t>(cmd));
+      "Unstable status register (address: %#X)\n",
+      static_cast<uint8_t>(register_id));
   return false;
 }
 
-bool Cc1101::UpdateRegisterBits(Cmd cmd, uint8_t mask, uint8_t value) {
+bool Cc1101::UpdateRegisterBits(
+    Register register_id, uint8_t mask, uint8_t value) {
   uint8_t current = 0;
-  if (!ReadRegister(cmd, &current)) {
+  if (!ReadRegister(register_id, &current)) {
     return false;
   }
   current = static_cast<uint8_t>(
       (current & static_cast<uint8_t>(~mask)) | (value & mask));
-  return WriteRegister(cmd, current);
+  return WriteRegister(register_id, current);
 }
 
 bool Cc1101::ReadPacketFromFifo(uint8_t* data, size_t capacity,
@@ -1548,7 +1554,7 @@ bool Cc1101::ReadPacketFromFifo(uint8_t* data, size_t capacity,
   size_t required = config_.append_status ? 2 : 0;
   if (config_.packet_length_mode == PacketLengthMode::kVariable) {
     uint8_t length_byte = 0;
-    if (!ReadRegister(Cmd::kFifo, &length_byte) || length_byte == 0) {
+    if (!ReadRegister(Register::kFifo, &length_byte) || length_byte == 0) {
       return false;
     }
     packet_length = length_byte;
@@ -1563,7 +1569,7 @@ bool Cc1101::ReadPacketFromFifo(uint8_t* data, size_t capacity,
   }
   if (config_.address_check != AddressCheck::kDisabled) {
     uint8_t address = 0;
-    if (!ReadRegister(Cmd::kFifo, &address)) {
+    if (!ReadRegister(Register::kFifo, &address)) {
       return false;
     }
     if (packet_length == 0) {
@@ -1576,14 +1582,14 @@ bool Cc1101::ReadPacketFromFifo(uint8_t* data, size_t capacity,
         "Packet exceeds buffer (length: %zu)\n", packet_length);
     return false;
   }
-  if (!ReadBurst(Cmd::kFifo, data, packet_length)) {
+  if (!ReadBurst(Register::kFifo, data, packet_length)) {
     return false;
   }
   *received = packet_length;
 
   if (config_.append_status) {
     uint8_t status[2] = {0};
-    if (!ReadBurst(Cmd::kFifo, status, sizeof(status))) {
+    if (!ReadBurst(Register::kFifo, status, sizeof(status))) {
       return false;
     }
     last_metrics_.rssi_dbm = DecodeRssi(status[0]);
@@ -1606,7 +1612,7 @@ bool Cc1101::DrainReceiveFifo(
   if (bytes_to_read == 0) {
     return true;
   }
-  if (!ReadBurst(Cmd::kFifo, &data[*copied], bytes_to_read)) {
+  if (!ReadBurst(Register::kFifo, &data[*copied], bytes_to_read)) {
     return false;
   }
   *copied += bytes_to_read;
@@ -1616,8 +1622,8 @@ bool Cc1101::DrainReceiveFifo(
 bool Cc1101::ReadPacketMetrics(PacketMetrics* metrics) {
   uint8_t rssi = 0;
   uint8_t lqi = 0;
-  if (!ReadStableStatus(Cmd::kRssi, &rssi) ||
-      !ReadStableStatus(Cmd::kLqi, &lqi)) {
+  if (!ReadStableStatus(Register::kRssi, &rssi) ||
+      !ReadStableStatus(Register::kLqi, &lqi)) {
     return false;
   }
   last_metrics_.rssi_dbm = DecodeRssi(rssi);
@@ -1629,16 +1635,16 @@ bool Cc1101::ReadPacketMetrics(PacketMetrics* metrics) {
   return last_metrics_.crc_valid;
 }
 
-size_t Cc1101::GetMaximumBurstLength(Cmd cmd) const {
-  const uint8_t raw_address = static_cast<uint8_t>(cmd);
-  if (raw_address <= static_cast<uint8_t>(Cmd::kTest0)) {
+size_t Cc1101::GetMaximumBurstLength(Register register_id) const {
+  const uint8_t raw_address = static_cast<uint8_t>(register_id);
+  if (raw_address <= static_cast<uint8_t>(Register::kTest0)) {
     return static_cast<size_t>(
-        static_cast<uint8_t>(Cmd::kTest0) - raw_address + 1);
+        static_cast<uint8_t>(Register::kTest0) - raw_address + 1);
   }
-  if (cmd == Cmd::kPatable) {
+  if (register_id == Register::kPatable) {
     return 8;
   }
-  if (cmd == Cmd::kFifo) {
+  if (register_id == Register::kFifo) {
     return kFifoSize;
   }
   return 0;
@@ -1851,11 +1857,11 @@ uint32_t Cc1101::CalculateFifoPollIntervalUs() const {
 }
 
 bool Cc1101::RestoreAfterWakeup() {
-  bool result = WriteRegister(Cmd::kTest2, test2_value_);
-  result &= WriteRegister(Cmd::kTest1, test1_value_);
-  result &= WriteRegister(Cmd::kTest0, test0_value_);
-  result &= WriteRegister(Cmd::kFscal2, fscal2_value_);
-  result &= WriteBurst(Cmd::kPatable, pa_table_cache_, pa_table_length_);
+  bool result = WriteRegister(Register::kTest2, test2_value_);
+  result &= WriteRegister(Register::kTest1, test1_value_);
+  result &= WriteRegister(Register::kTest0, test0_value_);
+  result &= WriteRegister(Register::kFscal2, fscal2_value_);
+  result &= WriteBurst(Register::kPatable, pa_table_cache_, pa_table_length_);
   return result;
 }
 

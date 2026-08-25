@@ -54,7 +54,7 @@ class Sgm38121 final : public ChipI2cGuide {
   bool SetChannelStatus(Channel channel, Status status);
 
  private:
-  enum class Cmd {
+  enum class Register {
     kRoChipId = 0x00,
 
     kRwDischargeResistorSelection = 0X02,

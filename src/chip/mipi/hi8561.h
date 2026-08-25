@@ -107,7 +107,7 @@ class Hi8561 final : public ChipMipiGuide {
       int x_start, int y_start, int x_end, int y_end, const void* data);
 
  private:
-  enum class Cmd {
+  enum class DcsCommand {
     kRoChipIdStart = 0xDA,
 
     kWoSlpin = 0x10,

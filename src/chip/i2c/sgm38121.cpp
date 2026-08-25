@@ -58,7 +58,7 @@ bool Sgm38121::Deinit(bool delete_bus) {
 uint8_t Sgm38121::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRoChipId), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
@@ -82,7 +82,7 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
       }
       buffer = (voltage - 504) / 8;
       if (!bus_->Write(
-              static_cast<uint8_t>(Cmd::kRwDvdd1OutputVoltageLevel), buffer)) {
+              static_cast<uint8_t>(Register::kRwDvdd1OutputVoltageLevel), buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
@@ -99,7 +99,7 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
       }
       buffer = (voltage - 504) / 8;
       if (!bus_->Write(
-              static_cast<uint8_t>(Cmd::kRwDvdd2OutputVoltageLevel), buffer)) {
+              static_cast<uint8_t>(Register::kRwDvdd2OutputVoltageLevel), buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
@@ -116,7 +116,7 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
       }
       buffer = (voltage - 1384) / 8;
       if (!bus_->Write(
-              static_cast<uint8_t>(Cmd::kRwAvdd1OutputVoltageLevel), buffer)) {
+              static_cast<uint8_t>(Register::kRwAvdd1OutputVoltageLevel), buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
@@ -133,7 +133,7 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
       }
       buffer = (voltage - 1384) / 8;
       if (!bus_->Write(
-              static_cast<uint8_t>(Cmd::kRwAvdd2OutputVoltageLevel), buffer)) {
+              static_cast<uint8_t>(Register::kRwAvdd2OutputVoltageLevel), buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
@@ -148,7 +148,7 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
 
 bool Sgm38121::SetChannelStatus(Channel channel, Status status) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kRwEnableControl), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRwEnableControl), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -169,7 +169,7 @@ bool Sgm38121::SetChannelStatus(Channel channel, Status status) {
     default:
       break;
   }
-  if (!bus_->Write(static_cast<uint8_t>(Cmd::kRwEnableControl), buffer)) {
+  if (!bus_->Write(static_cast<uint8_t>(Register::kRwEnableControl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

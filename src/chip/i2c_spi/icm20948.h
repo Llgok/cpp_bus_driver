@@ -339,7 +339,7 @@ class Icm20948 final : public Tool {
   };
 
   // 高字节保存 USER BANK，低字节保存该 Bank 内的寄存器地址。
-  enum class Cmd : uint16_t {
+  enum class Register : uint16_t {
     // USER BANK 0 寄存器。
     kRoWhoAmI = 0x0000,
     kRwUserCtrl = 0x0003,
@@ -518,38 +518,40 @@ class Icm20948 final : public Tool {
 
   /**
    * @brief 读取一个或多个连续 ICM20948 寄存器
-   * @param cmd 起始寄存器命令
+   * @param register_id 起始寄存器
    * @param data 返回数据缓冲区
    * @param length 读取字节数
    * @return 读取成功返回 true，否则返回 false
    */
-  bool ReadRegister(Cmd cmd, uint8_t* data, size_t length = 1);
+  bool ReadRegister(Register register_id, uint8_t* data, size_t length = 1);
 
   /**
    * @brief 写入一个 ICM20948 寄存器
-   * @param cmd 目标寄存器命令
+   * @param register_id 目标寄存器
    * @param data 待写入值
    * @return 写入成功返回 true，否则返回 false
    */
-  bool WriteRegister(Cmd cmd, uint8_t data);
+  bool WriteRegister(Register register_id, uint8_t data);
 
   /**
    * @brief 写入一个或多个连续 ICM20948 寄存器
-   * @param cmd 起始寄存器命令
+   * @param register_id 起始寄存器
    * @param data 待写入数据缓冲区
    * @param length 写入字节数
    * @return 写入成功返回 true，否则返回 false
    */
-  bool WriteRegister(Cmd cmd, const uint8_t* data, size_t length);
+  bool WriteRegister(
+      Register register_id, const uint8_t* data, size_t length);
 
   /**
    * @brief 以读改写方式更新 ICM20948 寄存器位
-   * @param cmd 目标寄存器命令
+   * @param register_id 目标寄存器
    * @param clear_mask 需要先清零的位掩码
    * @param set_mask 需要置位的位掩码
    * @return 更新成功返回 true，否则返回 false
    */
-  bool UpdateRegister(Cmd cmd, uint8_t clear_mask, uint8_t set_mask);
+  bool UpdateRegister(
+      Register register_id, uint8_t clear_mask, uint8_t set_mask);
 
   /**
    * @brief 通过自动选择的 I2C 或 SPI 总线读取寄存器
@@ -571,17 +573,17 @@ class Icm20948 final : public Tool {
 
   /**
    * @brief 从寄存器命令中解析用户 Bank
-   * @param cmd 寄存器命令
+   * @param register_id 寄存器
    * @return 命令对应的用户 Bank
    */
-  static Bank GetBank(Cmd cmd);
+  static Bank GetBank(Register register_id);
 
   /**
    * @brief 从寄存器命令中解析 Bank 内地址
-   * @param cmd 寄存器命令
+   * @param register_id 寄存器
    * @return Bank 内八位寄存器地址
    */
-  static uint8_t GetRegisterAddress(Cmd cmd);
+  static uint8_t GetRegisterAddress(Register register_id);
 
   /**
    * @brief 将大端序两字节数据解析为有符号十六位值

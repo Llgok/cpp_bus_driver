@@ -658,7 +658,7 @@ class Nrf24l01x final : public ChipSpiGuide {
 
  private:
   // nRF24L01 系列 SPI 可访问寄存器。
-  enum class Cmd : uint8_t {
+  enum class Register : uint8_t {
     kConfig = 0x00,                    // 中断、CRC、电源和角色配置
     kEnableAutoAcknowledgment = 0x01,  // 六条管道的自动应答位图
     kEnableRxAddress = 0x02,           // 接收管道启用开关
@@ -713,56 +713,59 @@ class Nrf24l01x final : public ChipSpiGuide {
   /**
    * @brief 将地址目标映射为 RX_ADDR_Px 或 TX_ADDR 寄存器。
    * @param address 已验证有效的 P0~P5 或 TX。
-   * @return 对应寄存器命令。
+   * @return 对应寄存器。
    */
-  static Cmd CmdForAddress(Address address);
+  static Register RegisterForAddress(Address address);
 
   /**
    * @brief 根据管道号计算 RX_PW_Px 寄存器。
    * @param pipe 已限制在 0~5 的索引。
-   * @return 对应静态负载长度寄存器命令。
+   * @return 对应静态负载长度寄存器。
    */
-  static Cmd CmdForPayloadWidth(uint8_t pipe);
+  static Register RegisterForPayloadWidth(uint8_t pipe);
 
   /**
    * @brief 读取一个寄存器并可选返回同一事务的 STATUS。
-   * @param address 寄存器地址。
+   * @param register_id 寄存器地址。
    * @param value 返回第二个 SPI 字节。
    * @param status 可选的首字节状态快照。
    * @return R_REGISTER 访问成功时为 true。
    */
-  bool ReadRegister(Cmd cmd, uint8_t* value, uint8_t* status = nullptr);
+  bool ReadRegister(
+      Register register_id, uint8_t* value, uint8_t* status = nullptr);
 
   /**
    * @brief 写入一个寄存器并可选返回同一事务的 STATUS。
-   * @param address 目标寄存器。
+   * @param register_id 目标寄存器。
    * @param value 新的 8 位内容。
    * @param status 可选的写入前状态。
    * @return W_REGISTER 命令执行成功时为 true。
    */
-  bool WriteRegister(Cmd cmd, uint8_t value, uint8_t* status = nullptr);
+  bool WriteRegister(
+      Register register_id, uint8_t value, uint8_t* status = nullptr);
 
   /**
    * @brief 连续读取多字节地址寄存器。
-   * @param address 起始寄存器。
+   * @param register_id 起始寄存器。
    * @param data 保存回读内容的数组。
    * @param length 需要继续产生时钟的字节数。
    * @param status 可选 STATUS 输出。
    * @return 长度在内部事务缓冲区范围内且传输完成时为 true。
    */
   bool ReadBuffer(
-      Cmd cmd, uint8_t* data, std::size_t length, uint8_t* status = nullptr);
+      Register register_id, uint8_t* data, std::size_t length,
+      uint8_t* status = nullptr);
 
   /**
    * @brief 向多字节寄存器连续写入地址或其他原始数据。
-   * @param address 写入起点。
+   * @param register_id 写入起点。
    * @param data 连续发送内容。
    * @param length 数据字节数。
    * @param status 可选的命令响应状态。
    * @return CSN 包围的完整突发事务成功时为 true。
    */
-  bool WriteBuffer(Cmd cmd, const uint8_t* data, std::size_t length,
-      uint8_t* status = nullptr);
+  bool WriteBuffer(Register register_id, const uint8_t* data,
+      std::size_t length, uint8_t* status = nullptr);
 
   /**
    * @brief 执行单字节 SPI 事务。
@@ -816,12 +819,13 @@ class Nrf24l01x final : public ChipSpiGuide {
 
   /**
    * @brief 以读改写方式只更新寄存器中的指定掩码。
-   * @param address 目标寄存器。
+   * @param register_id 目标寄存器。
    * @param mask 允许改变的位。
    * @param value 掩码范围内的新值。
    * @return 读取失败或写入失败时为 false。
    */
-  bool UpdateRegisterBits(Cmd cmd, uint8_t mask, uint8_t value);
+  bool UpdateRegisterBits(
+      Register register_id, uint8_t mask, uint8_t value);
 
   /**
    * @brief 修改 FEATURE 位并对锁定功能自动执行一次 ACTIVATE。

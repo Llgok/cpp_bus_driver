@@ -120,7 +120,7 @@ bool Sgm41562xx::Deinit(bool delete_bus) {
 
 bool Sgm41562xx::GetChipId(uint8_t& chip_id) {
   uint8_t value = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kChipId), &value)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kChipId), &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read chip id failed\n");
     return false;
   }
@@ -167,9 +167,9 @@ Sgm41562xx::ChipType Sgm41562xx::DetectChipType(uint8_t chip_id) {
 Sgm41562xx::ChipType Sgm41562xx::DetectIdZeroChipType() {
   uint8_t charge_voltage_control = 0;
   uint8_t system_voltage_regulation = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kChargeVoltageControl),
+  if (!bus_->Read(static_cast<uint8_t>(Register::kChargeVoltageControl),
           &charge_voltage_control) ||
-      !bus_->Read(static_cast<uint8_t>(Cmd::kSystemVoltageRegulation),
+      !bus_->Read(static_cast<uint8_t>(Register::kSystemVoltageRegulation),
           &system_voltage_regulation)) {
     LogMessage(
         LogLevel::kError, __FILE__, __LINE__, "Read reset values failed\n");
@@ -194,9 +194,9 @@ Sgm41562xx::ChipType Sgm41562xx::DetectIdZeroChipType() {
 
 bool Sgm41562xx::ResetRegisters() {
   uint8_t charge_current_control = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kChargeCurrentControl),
+  if (!bus_->Read(static_cast<uint8_t>(Register::kChargeCurrentControl),
           &charge_current_control) ||
-      !bus_->Write(static_cast<uint8_t>(Cmd::kChargeCurrentControl),
+      !bus_->Write(static_cast<uint8_t>(Register::kChargeCurrentControl),
           static_cast<uint8_t>(charge_current_control | kRegisterResetMask))) {
     LogMessage(
         LogLevel::kError, __FILE__, __LINE__, "Reset registers failed\n");
@@ -207,16 +207,17 @@ bool Sgm41562xx::ResetRegisters() {
   return true;
 }
 
-bool Sgm41562xx::UpdateRegisterBits(Cmd cmd, uint8_t mask, uint8_t value) {
+bool Sgm41562xx::UpdateRegisterBits(
+    Register register_id, uint8_t mask, uint8_t value) {
   uint8_t current_value = 0;
-  if (!bus_->Read(static_cast<uint8_t>(cmd), &current_value)) {
+  if (!bus_->Read(static_cast<uint8_t>(register_id), &current_value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read register failed\n");
     return false;
   }
 
   const uint8_t new_value =
       static_cast<uint8_t>((current_value & ~mask) | (value & mask));
-  if (!bus_->Write(static_cast<uint8_t>(cmd), new_value)) {
+  if (!bus_->Write(static_cast<uint8_t>(register_id), new_value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write register failed\n");
     return false;
   }
@@ -224,12 +225,13 @@ bool Sgm41562xx::UpdateRegisterBits(Cmd cmd, uint8_t mask, uint8_t value) {
   return true;
 }
 
-bool Sgm41562xx::ReadRegister(Cmd cmd, uint8_t& value, const char* name) {
-  if (!bus_->Read(static_cast<uint8_t>(cmd), &value)) {
+bool Sgm41562xx::ReadRegister(
+    Register register_id, uint8_t& value, const char* name) {
+  if (!bus_->Read(static_cast<uint8_t>(register_id), &value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Read %s failed (command: %#X)\n",
         name == nullptr ? "unknown register" : name,
-        static_cast<unsigned int>(static_cast<uint8_t>(cmd)));
+        static_cast<unsigned int>(static_cast<uint8_t>(register_id)));
     return false;
   }
 
@@ -252,7 +254,7 @@ bool Sgm41562xx::GetIrqStatus(IrqStatus& status) {
 
   uint8_t irq_status = 0;
   if (!bus_->Read(
-          static_cast<uint8_t>(Cmd::kFaultAndShippingControl), &irq_status)) {
+          static_cast<uint8_t>(Register::kFaultAndShippingControl), &irq_status)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -275,7 +277,7 @@ bool Sgm41562xx::SetChargeEnable(bool enable) {
     return false;
   }
 
-  return UpdateRegisterBits(Cmd::kPowerOnConfiguration, kChargeDisableMask,
+  return UpdateRegisterBits(Register::kPowerOnConfiguration, kChargeDisableMask,
       enable ? 0x00 : kChargeDisableMask);
 }
 
@@ -285,7 +287,7 @@ bool Sgm41562xx::GetChipStatus(ChipStatus& status) {
   }
 
   uint8_t chip_status = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Cmd::kSystemStatus), &chip_status)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kSystemStatus), &chip_status)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -321,11 +323,11 @@ bool Sgm41562xx::ReadInputConfig(ChargerConfig& config) {
   uint8_t input_source_control = 0;
   uint8_t power_on_configuration = 0;
   uint8_t system_status = 0;
-  if (!ReadRegister(Cmd::kInputSourceControl, input_source_control,
+  if (!ReadRegister(Register::kInputSourceControl, input_source_control,
           "REG00 input source control") ||
-      !ReadRegister(Cmd::kPowerOnConfiguration, power_on_configuration,
+      !ReadRegister(Register::kPowerOnConfiguration, power_on_configuration,
           "REG01 power-on configuration") ||
-      !ReadRegister(Cmd::kSystemStatus, system_status, "REG08 system status")) {
+      !ReadRegister(Register::kSystemStatus, system_status, "REG08 system status")) {
     return false;
   }
 
@@ -337,7 +339,7 @@ bool Sgm41562xx::ReadInputConfig(ChargerConfig& config) {
 
   if (HasExtendedRegisterMap()) {
     uint8_t extended_input_current_control = 0;
-    if (!ReadRegister(Cmd::kExtendedInputCurrentControl,
+    if (!ReadRegister(Register::kExtendedInputCurrentControl,
             extended_input_current_control,
             "REG0C extended input current control")) {
       return false;
@@ -365,12 +367,12 @@ bool Sgm41562xx::ReadChargeConfig(ChargerConfig& config) {
   uint8_t charge_current_control = 0;
   uint8_t discharge_termination_current = 0;
   uint8_t charge_voltage_control = 0;
-  if (!ReadRegister(Cmd::kChargeCurrentControl, charge_current_control,
+  if (!ReadRegister(Register::kChargeCurrentControl, charge_current_control,
           "REG02 charge current control") ||
-      !ReadRegister(Cmd::kDischargeTerminationCurrent,
+      !ReadRegister(Register::kDischargeTerminationCurrent,
           discharge_termination_current,
           "REG03 discharge and termination current") ||
-      !ReadRegister(Cmd::kChargeVoltageControl, charge_voltage_control,
+      !ReadRegister(Register::kChargeVoltageControl, charge_voltage_control,
           "REG04 charge voltage control")) {
     return false;
   }
@@ -380,7 +382,7 @@ bool Sgm41562xx::ReadChargeConfig(ChargerConfig& config) {
   uint8_t extended_current_control = 0;
   if (extended_register_map) {
     fast_charge_current_code = charge_current_control & 0x7F;
-    if (!ReadRegister(Cmd::kExtendedCurrentControl, extended_current_control,
+    if (!ReadRegister(Register::kExtendedCurrentControl, extended_current_control,
             "REG0D extended current control")) {
       return false;
     }
@@ -410,11 +412,11 @@ bool Sgm41562xx::ReadProtectionConfig(ChargerConfig& config) {
   uint8_t charge_timer_control = 0;
   uint8_t miscellaneous_control = 0;
   uint8_t system_voltage_regulation = 0;
-  if (!ReadRegister(Cmd::kChargeTerminationTimerControl, charge_timer_control,
+  if (!ReadRegister(Register::kChargeTerminationTimerControl, charge_timer_control,
           "REG05 charge termination and timer control") ||
-      !ReadRegister(Cmd::kMiscellaneousOperationControl, miscellaneous_control,
+      !ReadRegister(Register::kMiscellaneousOperationControl, miscellaneous_control,
           "REG06 miscellaneous operation control") ||
-      !ReadRegister(Cmd::kSystemVoltageRegulation, system_voltage_regulation,
+      !ReadRegister(Register::kSystemVoltageRegulation, system_voltage_regulation,
           "REG07 system voltage regulation")) {
     return false;
   }
@@ -467,7 +469,7 @@ bool Sgm41562xx::SetShippingModeEnable(bool enable) {
     return false;
   }
 
-  return UpdateRegisterBits(Cmd::kMiscellaneousOperationControl,
+  return UpdateRegisterBits(Register::kMiscellaneousOperationControl,
       kShippingModeEnableMask, enable ? kShippingModeEnableMask : 0x00);
 }
 
@@ -483,7 +485,7 @@ bool Sgm41562xx::SetShippingModeDelay(ShippingModeDelay delay) {
     return false;
   }
 
-  return UpdateRegisterBits(Cmd::kFaultAndShippingControl,
+  return UpdateRegisterBits(Register::kFaultAndShippingControl,
       kShippingModeDelayMask, static_cast<uint8_t>(delay_value << 6));
 }
 

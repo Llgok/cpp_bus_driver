@@ -157,7 +157,7 @@ uint16_t Es8311::GetChipId() {
   for (uint8_t i = 0; i < 2; i++) {
     if (!ChipI2cGuide::bus_->Read(
             static_cast<uint8_t>(
-                static_cast<uint8_t>(Cmd::kRoChipIdStart) + i),
+                static_cast<uint8_t>(Register::kRoChipIdStart) + i),
             &buffer[i])) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return -1;
@@ -171,7 +171,7 @@ bool Es8311::SoftwareReset(bool enable) {
   // 启动复位
   if (enable) {
     if (!ChipI2cGuide::bus_->Write(
-            static_cast<uint8_t>(Cmd::kRwResetSerialPortModeControl),
+            static_cast<uint8_t>(Register::kRwResetSerialPortModeControl),
             static_cast<uint8_t>(0x1F))) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
@@ -179,13 +179,13 @@ bool Es8311::SoftwareReset(bool enable) {
   } else  // 关闭复位
   {
     if (!ChipI2cGuide::bus_->Write(
-            static_cast<uint8_t>(Cmd::kRwResetSerialPortModeControl),
+            static_cast<uint8_t>(Register::kRwResetSerialPortModeControl),
             static_cast<uint8_t>(0x00))) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
     if (!ChipI2cGuide::bus_->Write(
-            static_cast<uint8_t>(Cmd::kRwResetSerialPortModeControl),
+            static_cast<uint8_t>(Register::kRwResetSerialPortModeControl),
             static_cast<uint8_t>(0x80))) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
@@ -199,13 +199,13 @@ bool Es8311::SetMasterClockSource(ClockSource clock) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwClockManager1), &buffer)) {
+          static_cast<uint8_t>(Register::kRwClockManager1), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B01111111) | (static_cast<uint8_t>(clock) << 7);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwClockManager1), buffer)) {
+          static_cast<uint8_t>(Register::kRwClockManager1), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -219,7 +219,7 @@ bool Es8311::SetClock(ClockSource clock, bool enalbe, bool invert) {
   switch (clock) {
     case ClockSource::kAdcDacMclk:
       if (!ChipI2cGuide::bus_->Read(
-              static_cast<uint8_t>(Cmd::kRwClockManager1), &buffer)) {
+              static_cast<uint8_t>(Register::kRwClockManager1), &buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
         return false;
       }
@@ -235,14 +235,14 @@ bool Es8311::SetClock(ClockSource clock, bool enalbe, bool invert) {
       buffer = (buffer & 0B11111110) | (static_cast<uint8_t>(enalbe));
 
       if (!ChipI2cGuide::bus_->Write(
-              static_cast<uint8_t>(Cmd::kRwClockManager1), buffer)) {
+              static_cast<uint8_t>(Register::kRwClockManager1), buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
       break;
     case ClockSource::kAdcDacBclk: {
       if (!ChipI2cGuide::bus_->Read(
-              static_cast<uint8_t>(Cmd::kRwClockManager1), &buffer)) {
+              static_cast<uint8_t>(Register::kRwClockManager1), &buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
         return false;
       }
@@ -256,19 +256,19 @@ bool Es8311::SetClock(ClockSource clock, bool enalbe, bool invert) {
       // 未知位，必须置1才能正常工作
       buffer = (buffer & 0B11111110) | (static_cast<uint8_t>(enalbe));
       if (!ChipI2cGuide::bus_->Write(
-              static_cast<uint8_t>(Cmd::kRwClockManager1), buffer)) {
+              static_cast<uint8_t>(Register::kRwClockManager1), buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
 
       if (!ChipI2cGuide::bus_->Read(
-              static_cast<uint8_t>(Cmd::kRwClockManager6), &buffer)) {
+              static_cast<uint8_t>(Register::kRwClockManager6), &buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
         return false;
       }
       buffer = (buffer & 0B11011111) | (static_cast<uint8_t>(invert) << 5);
       if (!ChipI2cGuide::bus_->Write(
-              static_cast<uint8_t>(Cmd::kRwClockManager6), buffer)) {
+              static_cast<uint8_t>(Register::kRwClockManager6), buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
@@ -283,7 +283,7 @@ bool Es8311::SetClock(ClockSource clock, bool enalbe, bool invert) {
 
 bool Es8311::SetDacVolume(uint8_t volume) {
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwDacVolume), volume)) {
+          static_cast<uint8_t>(Register::kRwDacVolume), volume)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -293,7 +293,7 @@ bool Es8311::SetDacVolume(uint8_t volume) {
 
 bool Es8311::SetAdcVolume(uint8_t volume) {
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwAdcVolume), volume)) {
+          static_cast<uint8_t>(Register::kRwAdcVolume), volume)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -305,13 +305,13 @@ bool Es8311::SetAdcAutoVolumeControl(bool enable) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwAdcAlc), &buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcAlc), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B01111111) | (static_cast<uint8_t>(enable) << 7);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwAdcAlc), buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcAlc), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -323,14 +323,14 @@ bool Es8311::SetMic(MicType type, MicInput input) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwAdcDmicPgaGain), &buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcDmicPgaGain), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B10111111) | (static_cast<uint8_t>(type) << 6);
   buffer = (buffer & 0B11001111) | (static_cast<uint8_t>(input) << 4);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwAdcDmicPgaGain), buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcDmicPgaGain), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -349,7 +349,7 @@ bool Es8311::SetPowerStatus(PowerStatus status) {
       static_cast<uint8_t>(status.vmid);
 
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwPowerUpPowerDownContorl), buffer)) {
+          static_cast<uint8_t>(Register::kRwPowerUpPowerDownContorl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -368,7 +368,7 @@ bool Es8311::SetLowPowerStatus(LowPowerStatus status) {
                    static_cast<uint8_t>(status.int1);
 
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwLowPowerControl), buffer)) {
+          static_cast<uint8_t>(Register::kRwLowPowerControl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -392,7 +392,7 @@ bool Es8311::SetClockCoeff(uint16_t mclk_multiple, uint32_t sample_rate_hz) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwClockManager2), &buffer)) {
+          static_cast<uint8_t>(Register::kRwClockManager2), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -400,19 +400,19 @@ bool Es8311::SetClockCoeff(uint16_t mclk_multiple, uint32_t sample_rate_hz) {
   buffer |= (buffer_clock_coeff->pre_div - 1) << 5;
   buffer |= buffer_clock_coeff->pre_multi << 3;
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwClockManager2), buffer)) {
+          static_cast<uint8_t>(Register::kRwClockManager2), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   buffer = (buffer_clock_coeff->fs_mode << 6) | buffer_clock_coeff->adc_osr;
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwClockManager3), buffer)) {
+          static_cast<uint8_t>(Register::kRwClockManager3), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
-  if (!ChipI2cGuide::bus_->Write(static_cast<uint8_t>(Cmd::kRwClockManager4),
+  if (!ChipI2cGuide::bus_->Write(static_cast<uint8_t>(Register::kRwClockManager4),
           buffer_clock_coeff->dac_osr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -421,13 +421,13 @@ bool Es8311::SetClockCoeff(uint16_t mclk_multiple, uint32_t sample_rate_hz) {
   buffer = ((buffer_clock_coeff->adc_div - 1) << 4) |
            (buffer_clock_coeff->dac_div - 1);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwClockManager5), buffer)) {
+          static_cast<uint8_t>(Register::kRwClockManager5), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwClockManager6), &buffer)) {
+          static_cast<uint8_t>(Register::kRwClockManager6), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -438,25 +438,25 @@ bool Es8311::SetClockCoeff(uint16_t mclk_multiple, uint32_t sample_rate_hz) {
     buffer |= (buffer_clock_coeff->bclk_div) << 0;
   }
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwClockManager6), buffer)) {
+          static_cast<uint8_t>(Register::kRwClockManager6), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwClockManager7), &buffer)) {
+          static_cast<uint8_t>(Register::kRwClockManager7), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer &= 0xC0;
   buffer |= buffer_clock_coeff->lrck_h << 0;
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwClockManager7), buffer)) {
+          static_cast<uint8_t>(Register::kRwClockManager7), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
-  if (!ChipI2cGuide::bus_->Write(static_cast<uint8_t>(Cmd::kRwClockManager8),
+  if (!ChipI2cGuide::bus_->Write(static_cast<uint8_t>(Register::kRwClockManager8),
           buffer_clock_coeff->lrck_l)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -471,26 +471,26 @@ bool Es8311::SetSdpDataBitLength(Sdp dsp, BitsPerSample length) {
   switch (dsp) {
     case Sdp::kDac:
       if (!ChipI2cGuide::bus_->Read(
-              static_cast<uint8_t>(Cmd::kRwSdpInFormat), &buffer)) {
+              static_cast<uint8_t>(Register::kRwSdpInFormat), &buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
         return false;
       }
       buffer = (buffer & 0B11100011) | (static_cast<uint8_t>(length) << 2);
       if (!ChipI2cGuide::bus_->Write(
-              static_cast<uint8_t>(Cmd::kRwSdpInFormat), buffer)) {
+              static_cast<uint8_t>(Register::kRwSdpInFormat), buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
       break;
     case Sdp::kAdc:
       if (!ChipI2cGuide::bus_->Read(
-              static_cast<uint8_t>(Cmd::kRwSdpOutFormat), &buffer)) {
+              static_cast<uint8_t>(Register::kRwSdpOutFormat), &buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
         return false;
       }
       buffer = (buffer & 0B11100011) | (static_cast<uint8_t>(length) << 2);
       if (!ChipI2cGuide::bus_->Write(
-              static_cast<uint8_t>(Cmd::kRwSdpOutFormat), buffer)) {
+              static_cast<uint8_t>(Register::kRwSdpOutFormat), buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
@@ -507,13 +507,13 @@ bool Es8311::SetPgaPower(bool enable) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwPgaAdcModulatorPowerControl), &buffer)) {
+          static_cast<uint8_t>(Register::kRwPgaAdcModulatorPowerControl), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B10111111) | (static_cast<uint8_t>(!enable) << 6);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwPgaAdcModulatorPowerControl), buffer)) {
+          static_cast<uint8_t>(Register::kRwPgaAdcModulatorPowerControl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -525,14 +525,14 @@ bool Es8311::SetAdcPower(bool enable) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwPgaAdcModulatorPowerControl), &buffer)) {
+          static_cast<uint8_t>(Register::kRwPgaAdcModulatorPowerControl), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11011111) | (static_cast<uint8_t>(!enable) << 5);
   buffer = (buffer & 0B11101111) | (static_cast<uint8_t>(!enable) << 4);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwPgaAdcModulatorPowerControl), buffer)) {
+          static_cast<uint8_t>(Register::kRwPgaAdcModulatorPowerControl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -549,7 +549,7 @@ bool Es8311::SetDacPower(bool enable) {
     buffer = 0x02;  // 默认值
   }
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwDacPowerControl), buffer)) {
+          static_cast<uint8_t>(Register::kRwDacPowerControl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -566,7 +566,7 @@ bool Es8311::SetOutputToHpDrive(bool enable) {
     buffer = 0x40;  // 默认值
   }
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwOutputToHpDriveControl), buffer)) {
+          static_cast<uint8_t>(Register::kRwOutputToHpDriveControl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -578,13 +578,13 @@ bool Es8311::SetAdcOffsetFreeze(AdcOffsetFreeze offset_freeze) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwAdcEqualizerBypass), &buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcEqualizerBypass), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11011111) | (static_cast<uint8_t>(offset_freeze) << 5);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwAdcEqualizerBypass), buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcEqualizerBypass), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -596,13 +596,13 @@ bool Es8311::SetAdcHpfStage2Coeff(uint8_t coeff) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwAdcEqualizerBypass), &buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcEqualizerBypass), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11100000) | coeff;
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwAdcEqualizerBypass), buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcEqualizerBypass), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -614,13 +614,13 @@ bool Es8311::SetDacEqualizer(bool enable) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwDacRamprateEqbypass), &buffer)) {
+          static_cast<uint8_t>(Register::kRwDacRamprateEqbypass), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11110111) | (static_cast<uint8_t>(!enable) << 3);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwDacRamprateEqbypass), buffer)) {
+          static_cast<uint8_t>(Register::kRwDacRamprateEqbypass), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -722,13 +722,13 @@ bool Es8311::SetAdcGain(AdcGain gain) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwAdcGainScaleUp), &buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcGainScaleUp), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11111000) | static_cast<uint8_t>(gain);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwAdcGainScaleUp), buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcGainScaleUp), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -740,13 +740,13 @@ bool Es8311::SetAdcDataToDac(bool enable) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwAdcDacControlAdcdatSel), &buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcDacControlAdcdatSel), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B01111111) | (static_cast<uint8_t>(enable) << 7);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwAdcDacControlAdcdatSel), buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcDacControlAdcdatSel), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -758,13 +758,13 @@ bool Es8311::SetAdcPgaGain(AdcPgaGain gain) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwAdcDmicPgaGain), &buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcDmicPgaGain), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11110000) | static_cast<uint8_t>(gain);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwAdcDmicPgaGain), buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcDmicPgaGain), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -776,14 +776,14 @@ bool Es8311::SetSerialPortMode(SerialPortMode mode) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwResetSerialPortModeControl), &buffer)) {
+          static_cast<uint8_t>(Register::kRwResetSerialPortModeControl), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B10111011) | (static_cast<uint8_t>(mode) << 6) |
            (!static_cast<uint8_t>(mode) << 2);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwResetSerialPortModeControl), buffer)) {
+          static_cast<uint8_t>(Register::kRwResetSerialPortModeControl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -795,13 +795,13 @@ bool Es8311::SetAdcDataFormat(AdcDataFormat format) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Cmd::kRwAdcDacControlAdcdatSel), &buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcDacControlAdcdatSel), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B10001111) | (static_cast<uint8_t>(format) << 4);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Cmd::kRwAdcDacControlAdcdatSel), buffer)) {
+          static_cast<uint8_t>(Register::kRwAdcDacControlAdcdatSel), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

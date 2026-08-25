@@ -448,7 +448,7 @@ class Aw862xx final : public ChipI2cGuide {
   bool StopRamPlaybackWaveform();
 
  private:
-  enum class Cmd {
+  enum class Register {
     kRoChipId = 0x00,
     kWoSrst = kRoChipId,
     kRoSysst,

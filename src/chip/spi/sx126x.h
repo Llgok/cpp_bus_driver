@@ -1300,7 +1300,7 @@ class Sx126x final : public ChipSpiGuide {
   bool Wakeup();
 
  private:
-  enum class Cmd {
+  enum class Command {
     kWoResetStats = 0x00,
     kWoClearIrqStatus = 0x02,
     kWoClearDeviceErrors = 0x07,
@@ -1438,22 +1438,22 @@ class Sx126x final : public ChipSpiGuide {
 
   /**
    * @brief 写入SX126x命令和命令参数
-   * @param command 使用 Cmd:: 配置，需要写入的命令
+   * @param command 使用 Command:: 配置，需要写入的命令
    * @param data 命令参数数据指针，没有参数时为 nullptr
    * @param length 命令参数长度
    * @return 写入成功返回 true，失败返回 false
    */
   bool WriteCommand(
-      Cmd command, const uint8_t* data = nullptr, size_t length = 0);
+      Command command, const uint8_t* data = nullptr, size_t length = 0);
 
   /**
    * @brief 读取SX126x命令返回数据
-   * @param command 使用 Cmd:: 配置，需要读取的命令
+   * @param command 使用 Command:: 配置，需要读取的命令
    * @param data 读取数据保存指针
    * @param length 读取数据长度
    * @return 读取成功返回 true，失败返回 false
    */
-  bool ReadCommand(Cmd command, uint8_t* data, size_t length);
+  bool ReadCommand(Command command, uint8_t* data, size_t length);
 
   /**
    * @brief 写入SX126x寄存器

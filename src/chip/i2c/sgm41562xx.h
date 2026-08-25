@@ -162,7 +162,7 @@ class Sgm41562xx final : public ChipI2cGuide {
   bool SetShippingModeDelay(ShippingModeDelay delay);
 
  private:
-  enum class Cmd {
+  enum class Register {
     kInputSourceControl = 0x00,
     kPowerOnConfiguration = 0x01,
     kChargeCurrentControl = 0x02,
@@ -189,27 +189,27 @@ class Sgm41562xx final : public ChipI2cGuide {
   static constexpr uint8_t kInitSequenceAb[] = {
       // 禁用PCB过温保护，保持输入电压环路和默认系统调节参数
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kSystemVoltageRegulation),
+      static_cast<uint8_t>(Register::kSystemVoltageRegulation),
       0xB7,
 
       // 禁用NTC，保留默认的两倍安全定时器功能
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kMiscellaneousOperationControl),
+      static_cast<uint8_t>(Register::kMiscellaneousOperationControl),
       0x40,
 
       // 禁用看门狗，保留充电终止功能和5小时安全定时器
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kChargeTerminationTimerControl),
+      static_cast<uint8_t>(Register::kChargeTerminationTimerControl),
       0x1A,
 
       // 解除输入电流限制
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kSystemStatus),
+      static_cast<uint8_t>(Register::kSystemStatus),
       0x40,
 
       // 完成其他配置后开启充电
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kPowerOnConfiguration),
+      static_cast<uint8_t>(Register::kPowerOnConfiguration),
       0xA4,
   };
 
@@ -217,32 +217,32 @@ class Sgm41562xx final : public ChipI2cGuide {
   static constexpr uint8_t kInitSequenceS[] = {
       // 保持输入电压环路和默认热调节、系统调节参数
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kSystemVoltageRegulation),
+      static_cast<uint8_t>(Register::kSystemVoltageRegulation),
       0x73,
 
       // 禁用NTC，保留默认的两倍安全定时器功能
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kMiscellaneousOperationControl),
+      static_cast<uint8_t>(Register::kMiscellaneousOperationControl),
       0x40,
 
       // 禁用看门狗，保留充电终止功能和5小时安全定时器
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kChargeTerminationTimerControl),
+      static_cast<uint8_t>(Register::kChargeTerminationTimerControl),
       0x1A,
 
       // 禁用PCB过温保护，保持默认输入过压阈值
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kSystemStatus),
+      static_cast<uint8_t>(Register::kSystemStatus),
       0x40,
 
       // 将输入电流限制设置为800mA
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kExtendedInputCurrentControl),
+      static_cast<uint8_t>(Register::kExtendedInputCurrentControl),
       0xCA,
 
       // 完成其他配置后开启充电
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kPowerOnConfiguration),
+      static_cast<uint8_t>(Register::kPowerOnConfiguration),
       0xA4,
   };
 
@@ -267,21 +267,21 @@ class Sgm41562xx final : public ChipI2cGuide {
 
   /**
    * @brief 通过读改写方式更新寄存器中的指定位
-   * @param cmd 需要更新的寄存器命令
+   * @param register_id 需要更新的寄存器
    * @param mask 需要更新的位掩码
    * @param value 写入掩码范围内的目标值
    * @return 更新成功返回true，失败返回false
    */
-  bool UpdateRegisterBits(Cmd cmd, uint8_t mask, uint8_t value);
+  bool UpdateRegisterBits(Register register_id, uint8_t mask, uint8_t value);
 
   /**
    * @brief 读取指定寄存器
-   * @param cmd 需要读取的寄存器命令
+   * @param register_id 需要读取的寄存器
    * @param value 返回读取到的寄存器值
    * @param name 寄存器名称，用于输出错误日志
    * @return 读取成功返回true，失败返回false
    */
-  bool ReadRegister(Cmd cmd, uint8_t& value, const char* name);
+  bool ReadRegister(Register register_id, uint8_t& value, const char* name);
 
   /**
    * @brief 读取并解析输入与电源路径关键配置

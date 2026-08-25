@@ -65,7 +65,7 @@ bool Sh8601::SetRenderWindow(int x_start, int y_start, int x_end, int y_end) {
   y_end += y_offset_;
 
   uint8_t buffer[] = {
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       static_cast<uint8_t>(
           static_cast<uint32_t>(Reg::kWoColumnAddressSet) >> 16),
       static_cast<uint8_t>(
@@ -78,7 +78,7 @@ bool Sh8601::SetRenderWindow(int x_start, int y_start, int x_end, int y_end) {
       static_cast<uint8_t>(x_end),
   };
   uint8_t buffer_2[] = {
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoPageAddressSet) >> 16),
       static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoPageAddressSet) >> 8),
       static_cast<uint8_t>(Reg::kWoPageAddressSet),
@@ -89,7 +89,7 @@ bool Sh8601::SetRenderWindow(int x_start, int y_start, int x_end, int y_end) {
       static_cast<uint8_t>(y_end),
   };
   uint8_t buffer_3[] = {
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       static_cast<uint8_t>(
           static_cast<uint32_t>(Reg::kWoMemoryWriteStart) >> 16),
       static_cast<uint8_t>(
@@ -177,7 +177,7 @@ bool Sh8601::SetWriteStreamMode(WriteStreamMode mode) {
 
   switch (mode) {
     case WriteStreamMode::kWrite1lanes:
-      buffer[0] = static_cast<uint8_t>(Cmd::kWoWriteColorStream1lanesCmd);
+      buffer[0] = static_cast<uint8_t>(ColorStreamOpcode::kOneLane);
       buffer[1] = static_cast<uint8_t>(
           static_cast<uint32_t>(Reg::kWoMemoryStartWrite) >> 16);
       buffer[2] = static_cast<uint8_t>(
@@ -185,7 +185,7 @@ bool Sh8601::SetWriteStreamMode(WriteStreamMode mode) {
       buffer[3] = static_cast<uint8_t>(Reg::kWoMemoryStartWrite);
       break;
     case WriteStreamMode::kWrite4lanes:
-      buffer[0] = static_cast<uint8_t>(Cmd::kWoWriteColorStream4lanesCmd1);
+      buffer[0] = static_cast<uint8_t>(ColorStreamOpcode::kFourLaneCommand1);
       buffer[1] = static_cast<uint8_t>(
           static_cast<uint32_t>(Reg::kWoMemoryStartWrite) >> 16);
       buffer[2] = static_cast<uint8_t>(
@@ -193,7 +193,7 @@ bool Sh8601::SetWriteStreamMode(WriteStreamMode mode) {
       buffer[3] = static_cast<uint8_t>(Reg::kWoMemoryStartWrite);
       break;
     case WriteStreamMode::kContinuousWrite1lanes:
-      buffer[0] = static_cast<uint8_t>(Cmd::kWoWriteColorStream1lanesCmd);
+      buffer[0] = static_cast<uint8_t>(ColorStreamOpcode::kOneLane);
       buffer[1] = static_cast<uint8_t>(
           static_cast<uint32_t>(Reg::kWoMemoryContinuousWrite) >> 16);
       buffer[2] = static_cast<uint8_t>(
@@ -201,7 +201,7 @@ bool Sh8601::SetWriteStreamMode(WriteStreamMode mode) {
       buffer[3] = static_cast<uint8_t>(Reg::kWoMemoryContinuousWrite);
       break;
     case WriteStreamMode::kContinuousWrite4lanes:
-      buffer[0] = static_cast<uint8_t>(Cmd::kWoWriteColorStream4lanesCmd1);
+      buffer[0] = static_cast<uint8_t>(ColorStreamOpcode::kFourLaneCommand1);
       buffer[1] = static_cast<uint8_t>(
           static_cast<uint32_t>(Reg::kWoMemoryContinuousWrite) >> 16);
       buffer[2] = static_cast<uint8_t>(
@@ -222,7 +222,7 @@ bool Sh8601::SetWriteStreamMode(WriteStreamMode mode) {
 }
 
 bool Sh8601::SetBrightness(uint8_t value) {
-  uint8_t buffer[] = {static_cast<uint8_t>(Cmd::kWoWriteRegister),
+  uint8_t buffer[] = {static_cast<uint8_t>(RegisterOpcode::kWrite),
       static_cast<uint8_t>(
           static_cast<uint32_t>(Reg::kWoWriteDisplayBrightness) >> 16),
       static_cast<uint8_t>(
@@ -241,7 +241,7 @@ bool Sh8601::SetBrightness(uint8_t value) {
 
 bool Sh8601::SetSleep(bool enable) {
   uint8_t buffer[] = {
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoSleepIn) >> 16),
       static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoSleepIn) >> 8),
       static_cast<uint8_t>(Reg::kWoSleepIn),
@@ -265,7 +265,7 @@ bool Sh8601::SetSleep(bool enable) {
 
 bool Sh8601::SetScreenOff(bool enable) {
   uint8_t buffer[] = {
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoDisplayOff) >> 16),
       static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoDisplayOff) >> 8),
       static_cast<uint8_t>(Reg::kWoDisplayOff),
@@ -289,7 +289,7 @@ bool Sh8601::SetScreenOff(bool enable) {
 
 bool Sh8601::SetColorEnhance(ColorEnhance mode) {
   uint8_t buffer[] = {
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       static_cast<uint8_t>(
           static_cast<uint32_t>(Reg::kWoSetColorEnhance) >> 16),
       static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoSetColorEnhance) >> 8),
@@ -308,7 +308,7 @@ bool Sh8601::SetColorEnhance(ColorEnhance mode) {
 
 bool Sh8601::SetColorFormat(ColorFormat format) {
   uint8_t buffer[] = {
-      static_cast<uint8_t>(Cmd::kWoWriteRegister),
+      static_cast<uint8_t>(RegisterOpcode::kWrite),
       static_cast<uint8_t>(
           static_cast<uint32_t>(Reg::kWoInterfacePixelFormat) >> 16),
       static_cast<uint8_t>(

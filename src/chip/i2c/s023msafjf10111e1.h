@@ -69,7 +69,7 @@ class S023msafjf10111e1 final : public ChipI2cGuide {
   bool SetBrightness(uint16_t value);
 
  private:
-  enum class Cmd {
+  enum class Register {
     kRwInternalTestModeRegisterControl1 = 0x0124,
 
     kRwInternalTestModeRegisterControl2 = 0x5128,

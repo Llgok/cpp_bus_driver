@@ -60,7 +60,7 @@ class Ft3x68 final : public ChipI2cGuide {
   bool GetMultipleTouchPoint(TouchPoint& tp);
 
  private:
-  enum class Cmd {
+  enum class Register {
     // 芯片标识映射：0x00 为 kFt6456，0x04 为 kFt3268，
     // 0x01 为 kFt3067，0x05 为 kFt3368，0x02 为 kFt3068，0x03 为 kFt3168。
     kRoChipId = 0xA0,

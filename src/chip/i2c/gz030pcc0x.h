@@ -77,7 +77,7 @@ class Gz030pcc0x final : public ChipI2cGuide {
   bool SetBrightness(uint8_t value);
 
  private:
-  enum class Cmd {
+  enum class Register {
     kRwInternalTestModeInputDataFormat = 0x0001,
     kRwHorizontalVerticalMirror,
 

@@ -599,7 +599,7 @@ class Bq27220 final : public ChipI2cGuide {
       const CedvProfile& profile, const GaugingConfig& config);
 
  private:
-  enum class Cmd : uint8_t {
+  enum class StandardCommand : uint8_t {
     kControl = 0x00,
     kAtRate = 0x02,
     kAtRateTimeToEmpty = 0x04,
@@ -667,27 +667,27 @@ class Bq27220 final : public ChipI2cGuide {
 
   /**
    * @brief 读取标准命令 16bit 无符号值
-   * @param cmd 标准命令地址
+   * @param command 标准命令地址
    * @param value 输出数据
    * @return 读取成功返回 true，失败返回 false
    */
-  bool ReadU16(Cmd cmd, uint16_t* value);
+  bool ReadU16(StandardCommand command, uint16_t* value);
 
   /**
    * @brief 按小端顺序写入标准命令 16bit 值
-   * @param cmd 标准命令地址
+   * @param command 标准命令地址
    * @param value 写入数据
    * @return 写入成功返回 true，失败返回 false
    */
-  bool WriteU16(Cmd cmd, uint16_t value);
+  bool WriteU16(StandardCommand command, uint16_t value);
 
   /**
    * @brief 读取标准命令 16bit 有符号值
-   * @param cmd 标准命令地址
+   * @param command 标准命令地址
    * @param value 输出数据
    * @return 读取成功返回 true，失败返回 false
    */
-  bool ReadS16(Cmd cmd, int16_t* value);
+  bool ReadS16(StandardCommand command, int16_t* value);
 
   /**
    * @brief 写入 Data Memory 字节块并自动计算 checksum

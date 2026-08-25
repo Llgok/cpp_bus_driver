@@ -257,30 +257,30 @@ bool EspAt::SetDeepSleep(uint32_t sleep_time_ms, int16_t timeout_ms) {
 bool EspAt::InitSequence() {
   // 启用功能 1
   if (!bus_->Write(
-          0, static_cast<uint32_t>(Cmd::kSdIoCccrFnEnable), 6, nullptr)) {
+          0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrFnEnable), 6, nullptr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(
-          0, static_cast<uint32_t>(Cmd::kSdIoCccrFnReady), 6, nullptr)) {
+          0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrFnReady), 6, nullptr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   // 启用功能 1、功能 2 和主中断
   if (!bus_->Write(
-          0, static_cast<uint32_t>(Cmd::kSdIoCccrIntEnable), 7, nullptr)) {
+          0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrIntEnable), 7, nullptr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (!bus_->Write(
-          0, static_cast<uint32_t>(Cmd::kSdIoCccrBlksizel), 0, nullptr)) {
+          0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrBlksizel), 0, nullptr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   if (!bus_->Write(
-          0, static_cast<uint32_t>(Cmd::kSdIoCccrBlksizeh), 2, nullptr)) {
+          0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrBlksizeh), 2, nullptr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -424,7 +424,7 @@ uint32_t EspAt::GetIrqFlag() {
 
   uint32_t buffer = 0;
 
-  if (!bus_->Read(1, static_cast<uint32_t>(Cmd::kInterruptRaw), &buffer,
+  if (!bus_->Read(1, static_cast<uint32_t>(RegisterAddress::kInterruptRaw), &buffer,
           sizeof(uint32_t))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     SetConnectCount(1);
@@ -441,7 +441,7 @@ bool EspAt::ClearIrqFlag(uint32_t irq_mask) {
     return false;
   }
 
-  if (!bus_->Write(1, static_cast<uint32_t>(Cmd::kInterruptClear), &irq_mask,
+  if (!bus_->Write(1, static_cast<uint32_t>(RegisterAddress::kInterruptClear), &irq_mask,
           sizeof(uint32_t))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     SetConnectCount(1);
@@ -473,7 +473,7 @@ uint32_t EspAt::GetRxDataLength() {
 
   uint32_t buffer = 0;
 
-  if (!bus_->Read(1, static_cast<uint32_t>(Cmd::kPacketLength), &buffer,
+  if (!bus_->Read(1, static_cast<uint32_t>(RegisterAddress::kPacketLength), &buffer,
           sizeof(uint32_t))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     SetConnectCount(1);
@@ -509,7 +509,7 @@ bool EspAt::ReceivePacket(std::vector<uint8_t>& data) {
   if (buffer_block_length != 0) {
     // 多字节对齐读取
     if (!bus_->ReadBlock(1,
-            static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
+            static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) - buffer_lenght,
             data.data(), buffer_block_length)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadBlock failed\n");
       connect_.status = false;
@@ -525,7 +525,7 @@ bool EspAt::ReceivePacket(std::vector<uint8_t>& data) {
     const size_t aligned_length = AlignTo4(buffer_lenght);
     std::vector<uint8_t> read_buffer(aligned_length);
     if (!bus_->Read(1,
-            static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
+            static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) - buffer_lenght,
             read_buffer.data(), aligned_length)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       SetConnectCount(1);
@@ -573,7 +573,7 @@ bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
   if (buffer_block_length != 0) {
     // 多字节对齐读取
     if (!bus_->ReadBlock(1,
-            static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
+            static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) - buffer_lenght,
             data, buffer_block_length)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadBlock failed\n");
       *byte = 0;
@@ -590,7 +590,7 @@ bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
     const size_t aligned_length = AlignTo4(buffer_lenght);
     std::vector<uint8_t> read_buffer(aligned_length);
     if (!bus_->Read(1,
-            static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
+            static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) - buffer_lenght,
             read_buffer.data(), aligned_length)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       *byte = 0;
@@ -634,7 +634,7 @@ bool EspAt::ReceivePacket(std::unique_ptr<uint8_t[]>& data, size_t* byte) {
   if (buffer_block_length != 0) {
     // 多字节对齐读取
     if (!bus_->ReadBlock(1,
-            static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
+            static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) - buffer_lenght,
             data.get(), buffer_block_length)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadBlock failed\n");
       *byte = 0;
@@ -651,7 +651,7 @@ bool EspAt::ReceivePacket(std::unique_ptr<uint8_t[]>& data, size_t* byte) {
     const size_t aligned_length = AlignTo4(buffer_lenght);
     std::vector<uint8_t> read_buffer(aligned_length);
     if (!bus_->Read(1,
-            static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_lenght,
+            static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) - buffer_lenght,
             read_buffer.data(), aligned_length)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       *byte = 0;
@@ -676,7 +676,7 @@ uint32_t EspAt::GetTxBlockBufferLength() {
 
   uint32_t buffer = 0;
 
-  if (!bus_->Read(1, static_cast<uint32_t>(Cmd::kTokenRdata), &buffer,
+  if (!bus_->Read(1, static_cast<uint32_t>(RegisterAddress::kTokenRdata), &buffer,
           sizeof(uint32_t))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     SetConnectCount(1);
@@ -720,7 +720,7 @@ bool EspAt::SendPacket(const char* data, size_t byte) {
   if (buffer_block_length != 0) {
     // 多字节对齐发送
     if (!bus_->WriteBlock(1,
-            static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - byte, data,
+            static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) - byte, data,
             buffer_block_length)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteBlock failed\n");
       SetConnectCount(1);
@@ -734,7 +734,7 @@ bool EspAt::SendPacket(const char* data, size_t byte) {
     const size_t aligned_length = AlignTo4(byte);
     std::vector<uint8_t> write_buffer(aligned_length, 0);
     std::memcpy(write_buffer.data(), data + buffer_block_length, byte);
-    if (!bus_->Write(1, static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - byte,
+    if (!bus_->Write(1, static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) - byte,
             write_buffer.data(), aligned_length)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       SetConnectCount(1);
@@ -782,7 +782,7 @@ bool EspAt::SendPacket(const std::string& data) {
   if (buffer_block_length != 0) {
     // 多字节对齐发送
     if (!bus_->WriteBlock(1,
-            static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_length,
+            static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) - buffer_length,
             data.data(), buffer_block_length)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteBlock failed\n");
       SetConnectCount(1);
@@ -798,7 +798,7 @@ bool EspAt::SendPacket(const std::string& data) {
     std::memcpy(
         write_buffer.data(), data.data() + buffer_block_length, buffer_length);
     if (!bus_->Write(1,
-            static_cast<uint32_t>(Cmd::kSlaveCmd53EndAddr) - buffer_length,
+            static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) - buffer_length,
             write_buffer.data(), aligned_length)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       SetConnectCount(1);

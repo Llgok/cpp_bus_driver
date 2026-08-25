@@ -539,7 +539,7 @@ class Cc1101 final : public ChipSpiGuide {
 
  private:
   // CC1101 配置、状态、PATABLE 和 FIFO 寄存器地址
-  enum class Cmd : uint8_t {
+  enum class Register : uint8_t {
     kIocfg2 = 0x00,
     kIocfg1 = 0x01,
     kIocfg0 = 0x02,
@@ -620,45 +620,45 @@ class Cc1101 final : public ChipSpiGuide {
 
   /**
    * @brief 写入单个配置寄存器。
-   * @param cmd 目标配置寄存器命令。
+   * @param register_id 目标配置寄存器。
    * @param value 需要写入的值。
    * @return 写入成功返回 true，失败返回 false。
    */
-  bool WriteRegister(Cmd cmd, uint8_t value);
+  bool WriteRegister(Register register_id, uint8_t value);
 
   /**
    * @brief 读取单个配置寄存器或 FIFO 字节。
-   * @param cmd 目标寄存器命令。
+   * @param register_id 目标寄存器。
    * @param value 读取结果输出地址。
    * @return 读取成功返回 true，失败返回 false。
    */
-  bool ReadRegister(Cmd cmd, uint8_t* value);
+  bool ReadRegister(Register register_id, uint8_t* value);
 
   /**
    * @brief 从指定命令开始执行 SPI 连续写入。
-   * @param cmd 连续写入的起始命令。
+   * @param register_id 连续写入的起始寄存器。
    * @param data 需要写入的数据。
    * @param length 写入字节数。
    * @return 连续写入成功返回 true，失败返回 false。
    */
-  bool WriteBurst(Cmd cmd, const uint8_t* data, size_t length);
+  bool WriteBurst(Register register_id, const uint8_t* data, size_t length);
 
   /**
    * @brief 从指定命令开始执行 SPI 连续读取。
-   * @param cmd 连续读取的起始命令。
+   * @param register_id 连续读取的起始寄存器。
    * @param data 读取数据输出缓冲区。
    * @param length 读取字节数。
    * @return 连续读取成功返回 true，失败返回 false。
    */
-  bool ReadBurst(Cmd cmd, uint8_t* data, size_t length);
+  bool ReadBurst(Register register_id, uint8_t* data, size_t length);
 
   /**
    * @brief 读取状态寄存器。
-   * @param cmd 目标状态寄存器命令。
+   * @param register_id 目标状态寄存器。
    * @param value 读取结果输出地址。
    * @return 读取成功返回 true，失败返回 false。
    */
-  bool ReadStatusRegister(Cmd cmd, uint8_t* value);
+  bool ReadStatusRegister(Register register_id, uint8_t* value);
 
   /**
    * @brief 执行一次满足 CC1101 CHIP_RDYn 时序要求的 SPI 传输。
@@ -702,20 +702,20 @@ class Cc1101 final : public ChipSpiGuide {
 
   /**
    * @brief 按 TI 勘误要求稳定读取连续变化的状态寄存器。
-   * @param cmd 需要读取的状态寄存器命令。
+   * @param register_id 需要读取的状态寄存器。
    * @param value 两次连续读数一致后的输出值。
    * @return 获得稳定读数返回 true，失败返回 false。
    */
-  bool ReadStableStatus(Cmd cmd, uint8_t* value);
+  bool ReadStableStatus(Register register_id, uint8_t* value);
 
   /**
    * @brief 读取、修改并写回配置寄存器中的指定位。
-   * @param cmd 配置寄存器命令。
+   * @param register_id 配置寄存器。
    * @param mask 需要更新的位掩码。
    * @param value 掩码范围内的新值。
    * @return 寄存器更新成功返回 true，失败返回 false。
    */
-  bool UpdateRegisterBits(Cmd cmd, uint8_t mask, uint8_t value);
+  bool UpdateRegisterBits(Register register_id, uint8_t mask, uint8_t value);
 
   /**
    * @brief 从 RX FIFO 解析并读取一个已完整到达的数据包。
@@ -752,7 +752,7 @@ class Cc1101 final : public ChipSpiGuide {
    * @param cmd 连续访问起始命令。
    * @return 允许长度；返回 0 表示不支持连续访问。
    */
-  size_t GetMaximumBurstLength(Cmd cmd) const;
+  size_t GetMaximumBurstLength(Register register_id) const;
 
   /**
    * @brief 按当前频段选择 TI 推荐的 PATABLE 值。

@@ -176,7 +176,7 @@ class Pcf8563x final : public ChipI2cGuide {
   bool ClearScheduledAlarmFlag();
 
  private:
-  enum class Cmd {
+  enum class Register {
     kRoChipId = 0x00,
 
     kRwControlStatus1 = 0x00,
@@ -200,7 +200,7 @@ class Pcf8563x final : public ChipI2cGuide {
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x51;
   static constexpr uint8_t kInitSequence[] = {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Cmd::kRwClkoutControl), 0B00000000};
+      static_cast<uint8_t>(Register::kRwClkoutControl), 0B00000000};
 
   int32_t rst_;
 };

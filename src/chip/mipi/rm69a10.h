@@ -67,7 +67,7 @@ class Rm69a10 final : public ChipMipiGuide {
       int x_start, int y_start, int x_end, int y_end, const void* data);
 
  private:
-  enum class Cmd {
+  enum class DcsCommand {
     kRoChipId = 0xA1,
 
     kWoSlpin = 0x10,

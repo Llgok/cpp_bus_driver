@@ -73,17 +73,17 @@ bool IsPipeAddress(Nrf24l01x::Address address) {
 
 }  // namespace
 
-Nrf24l01x::Cmd Nrf24l01x::CmdForAddress(Address address) {
+Nrf24l01x::Register Nrf24l01x::RegisterForAddress(Address address) {
   if (address == Address::kTransmit) {
-    return Cmd::kTxAddress;
+    return Register::kTxAddress;
   }
-  return static_cast<Cmd>(static_cast<uint8_t>(Cmd::kRxAddressPipe0) +
+  return static_cast<Register>(static_cast<uint8_t>(Register::kRxAddressPipe0) +
                           static_cast<uint8_t>(address));
 }
 
-Nrf24l01x::Cmd Nrf24l01x::CmdForPayloadWidth(uint8_t pipe) {
-  return static_cast<Cmd>(
-      static_cast<uint8_t>(Cmd::kRxPayloadWidthPipe0) + pipe);
+Nrf24l01x::Register Nrf24l01x::RegisterForPayloadWidth(uint8_t pipe) {
+  return static_cast<Register>(
+      static_cast<uint8_t>(Register::kRxPayloadWidthPipe0) + pipe);
 }
 
 bool Nrf24l01x::Init(int32_t frequency_hz) {
@@ -232,32 +232,33 @@ bool Nrf24l01x::Configure(const Config& config) {
     feature |= kDynamicAckFeatureMask;
   }
 
-  result &= WriteRegister(Cmd::kConfig, config_value);
+  result &= WriteRegister(Register::kConfig, config_value);
   result &=
-      WriteRegister(Cmd::kEnableAutoAcknowledgment, config.auto_ack_pipe_mask);
-  result &= WriteRegister(Cmd::kEnableRxAddress, config.enabled_pipe_mask);
-  result &= WriteRegister(Cmd::kSetupAddressWidth, address_width);
-  result &= WriteRegister(Cmd::kSetupRetransmission, retransmission);
-  result &= WriteRegister(Cmd::kRfChannel, config.rf_channel);
-  result &= WriteRegister(Cmd::kRfSetup, rf_setup);
+      WriteRegister(Register::kEnableAutoAcknowledgment, config.auto_ack_pipe_mask);
+  result &= WriteRegister(Register::kEnableRxAddress, config.enabled_pipe_mask);
+  result &= WriteRegister(Register::kSetupAddressWidth, address_width);
+  result &= WriteRegister(Register::kSetupRetransmission, retransmission);
+  result &= WriteRegister(Register::kRfChannel, config.rf_channel);
+  result &= WriteRegister(Register::kRfSetup, rf_setup);
   for (uint8_t pipe = 0; pipe < config.rx_payload_width.size(); ++pipe) {
     result &=
-        WriteRegister(CmdForPayloadWidth(pipe), config.rx_payload_width[pipe]);
+        WriteRegister(
+            RegisterForPayloadWidth(pipe), config.rx_payload_width[pipe]);
   }
 
-  bool feature_result = WriteRegister(Cmd::kFeature, feature);
+  bool feature_result = WriteRegister(Register::kFeature, feature);
   uint8_t feature_readback = 0;
-  feature_result &= ReadRegister(Cmd::kFeature, &feature_readback);
+  feature_result &= ReadRegister(Register::kFeature, &feature_readback);
   if (feature_result && feature_readback != feature) {
     // 旧 nRF24L01 或部分兼容芯片在 ACTIVATE 之前锁定 FEATURE。
     feature_result = ActivateFeatures();
-    feature_result &= WriteRegister(Cmd::kFeature, feature);
-    feature_result &= ReadRegister(Cmd::kFeature, &feature_readback);
+    feature_result &= WriteRegister(Register::kFeature, feature);
+    feature_result &= ReadRegister(Register::kFeature, &feature_readback);
     feature_result &= feature_readback == feature;
   }
   result &= feature_result;
   result &=
-      WriteRegister(Cmd::kDynamicPayload, config.dynamic_payload_pipe_mask);
+      WriteRegister(Register::kDynamicPayload, config.dynamic_payload_pipe_mask);
 
   uint8_t ignored_flags = 0;
   result &= GetClearIrqFlags(&ignored_flags);
@@ -285,19 +286,19 @@ bool Nrf24l01x::Probe() {
 
   uint8_t original_channel = 0;
   uint8_t status = 0;
-  if (!ReadRegister(Cmd::kRfChannel, &original_channel, &status) ||
+  if (!ReadRegister(Register::kRfChannel, &original_channel, &status) ||
       (status & 0x80U) != 0 || original_channel > 125U) {
     return false;
   }
 
   const uint8_t probe_channel = original_channel == 0x55U ? 0x2AU : 0x55U;
   uint8_t readback = 0;
-  const bool probe_written = WriteRegister(Cmd::kRfChannel, probe_channel);
+  const bool probe_written = WriteRegister(Register::kRfChannel, probe_channel);
   const bool probe_read =
-      probe_written && ReadRegister(Cmd::kRfChannel, &readback);
+      probe_written && ReadRegister(Register::kRfChannel, &readback);
   // 即使回读失败也尝试还原 RF_CH，避免诊断流程改变后续工作信道。
   const bool channel_restored =
-      WriteRegister(Cmd::kRfChannel, original_channel);
+      WriteRegister(Register::kRfChannel, original_channel);
   return probe_written && probe_read && channel_restored &&
          readback == probe_channel;
 }
@@ -309,7 +310,7 @@ bool Nrf24l01x::SetOperationMode(OperationMode mode) {
   }
   const uint8_t value =
       mode == OperationMode::kPrimaryReceiver ? kConfigPrimaryRxMask : 0;
-  if (!UpdateRegisterBits(Cmd::kConfig, kConfigPrimaryRxMask, value)) {
+  if (!UpdateRegisterBits(Register::kConfig, kConfigPrimaryRxMask, value)) {
     return false;
   }
   config_.operation_mode = mode;
@@ -327,7 +328,7 @@ bool Nrf24l01x::SetPowerMode(PowerMode mode) {
     receiving_ = false;
   }
   const uint8_t value = mode == PowerMode::kPowerUp ? kConfigPowerUpMask : 0;
-  if (!UpdateRegisterBits(Cmd::kConfig, kConfigPowerUpMask, value)) {
+  if (!UpdateRegisterBits(Register::kConfig, kConfigPowerUpMask, value)) {
     return false;
   }
 
@@ -353,7 +354,7 @@ bool Nrf24l01x::SetCrcMode(CrcMode mode) {
     value |= kConfigCrcLengthMask;
   }
   if (!UpdateRegisterBits(
-          Cmd::kConfig, kConfigCrcEnableMask | kConfigCrcLengthMask, value)) {
+          Register::kConfig, kConfigCrcEnableMask | kConfigCrcLengthMask, value)) {
     return false;
   }
   config_.crc_mode = mode;
@@ -365,7 +366,7 @@ bool Nrf24l01x::SetIrqMode(IrqSource source, bool enabled) {
     return false;
   }
   const uint8_t mask = BitForIrq(source);
-  if (!UpdateRegisterBits(Cmd::kConfig, mask, enabled ? 0 : mask)) {
+  if (!UpdateRegisterBits(Register::kConfig, mask, enabled ? 0 : mask)) {
     return false;
   }
   switch (source) {
@@ -387,7 +388,7 @@ bool Nrf24l01x::GetIrqMode(IrqSource source, bool* enabled) {
     return false;
   }
   uint8_t config = 0;
-  if (!ReadRegister(Cmd::kConfig, &config)) {
+  if (!ReadRegister(Register::kConfig, &config)) {
     return false;
   }
   *enabled = (config & BitForIrq(source)) == 0;
@@ -399,7 +400,7 @@ bool Nrf24l01x::GetClearIrqFlags(uint8_t* flags) {
     return false;
   }
   uint8_t status = 0;
-  if (!WriteRegister(Cmd::kStatus, kAllIrqMask, &status)) {
+  if (!WriteRegister(Register::kStatus, kAllIrqMask, &status)) {
     return false;
   }
   *flags = status & kAllIrqMask;
@@ -412,7 +413,7 @@ bool Nrf24l01x::ClearIrqFlagsGetStatus(uint8_t* status) {
   }
   uint8_t previous = 0;
   uint8_t current = 0;
-  if (!WriteRegister(Cmd::kStatus, kAllIrqMask, &previous) ||
+  if (!WriteRegister(Register::kStatus, kAllIrqMask, &previous) ||
       !NoOperation(&current)) {
     return false;
   }
@@ -425,7 +426,7 @@ bool Nrf24l01x::ClearIrqFlag(IrqSource source) {
   if (!IsValidIrqSource(source)) {
     return false;
   }
-  return WriteRegister(Cmd::kStatus, BitForIrq(source));
+  return WriteRegister(Register::kStatus, BitForIrq(source));
 }
 
 bool Nrf24l01x::GetIrqFlags(uint8_t* flags) {
@@ -443,8 +444,8 @@ bool Nrf24l01x::GetIrqFlags(uint8_t* flags) {
 bool Nrf24l01x::OpenPipe(Address pipe, bool auto_ack) {
   uint8_t enabled_pipes = 0;
   uint8_t auto_ack_pipes = 0;
-  if (!ReadRegister(Cmd::kEnableRxAddress, &enabled_pipes) ||
-      !ReadRegister(Cmd::kEnableAutoAcknowledgment, &auto_ack_pipes)) {
+  if (!ReadRegister(Register::kEnableRxAddress, &enabled_pipes) ||
+      !ReadRegister(Register::kEnableAutoAcknowledgment, &auto_ack_pipes)) {
     return false;
   }
 
@@ -464,8 +465,8 @@ bool Nrf24l01x::OpenPipe(Address pipe, bool auto_ack) {
   }
 
   const bool result =
-      WriteRegister(Cmd::kEnableRxAddress, enabled_pipes) &&
-      WriteRegister(Cmd::kEnableAutoAcknowledgment, auto_ack_pipes);
+      WriteRegister(Register::kEnableRxAddress, enabled_pipes) &&
+      WriteRegister(Register::kEnableAutoAcknowledgment, auto_ack_pipes);
   if (result) {
     config_.enabled_pipe_mask = enabled_pipes;
     config_.auto_ack_pipe_mask = auto_ack_pipes;
@@ -476,8 +477,8 @@ bool Nrf24l01x::OpenPipe(Address pipe, bool auto_ack) {
 bool Nrf24l01x::ClosePipe(Address pipe) {
   uint8_t enabled_pipes = 0;
   uint8_t auto_ack_pipes = 0;
-  if (!ReadRegister(Cmd::kEnableRxAddress, &enabled_pipes) ||
-      !ReadRegister(Cmd::kEnableAutoAcknowledgment, &auto_ack_pipes)) {
+  if (!ReadRegister(Register::kEnableRxAddress, &enabled_pipes) ||
+      !ReadRegister(Register::kEnableAutoAcknowledgment, &auto_ack_pipes)) {
     return false;
   }
 
@@ -493,8 +494,8 @@ bool Nrf24l01x::ClosePipe(Address pipe) {
   }
 
   const bool result =
-      WriteRegister(Cmd::kEnableRxAddress, enabled_pipes) &&
-      WriteRegister(Cmd::kEnableAutoAcknowledgment, auto_ack_pipes);
+      WriteRegister(Register::kEnableRxAddress, enabled_pipes) &&
+      WriteRegister(Register::kEnableAutoAcknowledgment, auto_ack_pipes);
   if (result) {
     config_.enabled_pipe_mask = enabled_pipes;
     config_.auto_ack_pipe_mask = auto_ack_pipes;
@@ -520,7 +521,7 @@ bool Nrf24l01x::SetAddress(
   if (length != required_length) {
     return false;
   }
-  return WriteBuffer(CmdForAddress(address), data, required_length);
+  return WriteBuffer(RegisterForAddress(address), data, required_length);
 }
 
 bool Nrf24l01x::GetAddress(
@@ -541,7 +542,7 @@ bool Nrf24l01x::GetAddress(
   if (capacity < required_length) {
     return false;
   }
-  if (!ReadBuffer(CmdForAddress(address), data, required_length)) {
+  if (!ReadBuffer(RegisterForAddress(address), data, required_length)) {
     return false;
   }
   *length = required_length;
@@ -555,7 +556,7 @@ bool Nrf24l01x::SetAutoRetransmit(uint8_t count, uint16_t delay_us) {
   }
   const uint8_t delay = static_cast<uint8_t>((delay_us / 250U) - 1U);
   const uint8_t value = static_cast<uint8_t>((delay << 4) | count);
-  if (!WriteRegister(Cmd::kSetupRetransmission, value)) {
+  if (!WriteRegister(Register::kSetupRetransmission, value)) {
     return false;
   }
   config_.retransmit_count = count;
@@ -567,7 +568,7 @@ bool Nrf24l01x::SetAddressWidth(AddressWidth width) {
   const uint8_t width_value = static_cast<uint8_t>(width);
   if (width_value < 3U || width_value > 5U ||
       !WriteRegister(
-          Cmd::kSetupAddressWidth, static_cast<uint8_t>(width_value - 2U))) {
+          Register::kSetupAddressWidth, static_cast<uint8_t>(width_value - 2U))) {
     return false;
   }
   config_.address_width = width;
@@ -579,7 +580,7 @@ bool Nrf24l01x::GetAddressWidth(uint8_t* width) {
     return false;
   }
   uint8_t encoded_width = 0;
-  if (!ReadRegister(Cmd::kSetupAddressWidth, &encoded_width) ||
+  if (!ReadRegister(Register::kSetupAddressWidth, &encoded_width) ||
       encoded_width < 1U || encoded_width > 3U) {
     return false;
   }
@@ -589,7 +590,7 @@ bool Nrf24l01x::GetAddressWidth(uint8_t* width) {
 
 bool Nrf24l01x::SetRxPayloadWidth(uint8_t pipe, uint8_t width) {
   if (pipe > 5U || width > kMaximumPayloadLength ||
-      !WriteRegister(CmdForPayloadWidth(pipe), width)) {
+      !WriteRegister(RegisterForPayloadWidth(pipe), width)) {
     return false;
   }
   config_.rx_payload_width[pipe] = width;
@@ -600,7 +601,7 @@ bool Nrf24l01x::GetRxPayloadWidth(uint8_t pipe, uint8_t* width) {
   if (pipe > 5U || width == nullptr) {
     return false;
   }
-  return ReadRegister(CmdForPayloadWidth(pipe), width);
+  return ReadRegister(RegisterForPayloadWidth(pipe), width);
 }
 
 bool Nrf24l01x::GetPipeStatus(uint8_t pipe, uint8_t* status) {
@@ -609,8 +610,8 @@ bool Nrf24l01x::GetPipeStatus(uint8_t pipe, uint8_t* status) {
   }
   uint8_t enabled_pipes = 0;
   uint8_t auto_ack_pipes = 0;
-  if (!ReadRegister(Cmd::kEnableRxAddress, &enabled_pipes) ||
-      !ReadRegister(Cmd::kEnableAutoAcknowledgment, &auto_ack_pipes)) {
+  if (!ReadRegister(Register::kEnableRxAddress, &enabled_pipes) ||
+      !ReadRegister(Register::kEnableAutoAcknowledgment, &auto_ack_pipes)) {
     return false;
   }
   const uint8_t enabled = static_cast<uint8_t>((enabled_pipes >> pipe) & 0x01U);
@@ -621,7 +622,7 @@ bool Nrf24l01x::GetPipeStatus(uint8_t pipe, uint8_t* status) {
 }
 
 bool Nrf24l01x::GetAutoRetransmitStatus(uint8_t* status) {
-  return status != nullptr && ReadRegister(Cmd::kObserveTx, status);
+  return status != nullptr && ReadRegister(Register::kObserveTx, status);
 }
 
 bool Nrf24l01x::GetPacketLostCount(uint8_t* count) {
@@ -629,7 +630,7 @@ bool Nrf24l01x::GetPacketLostCount(uint8_t* count) {
     return false;
   }
   uint8_t observe_tx = 0;
-  if (!ReadRegister(Cmd::kObserveTx, &observe_tx)) {
+  if (!ReadRegister(Register::kObserveTx, &observe_tx)) {
     return false;
   }
   *count = static_cast<uint8_t>((observe_tx & kObservePacketLostMask) >> 4);
@@ -637,7 +638,7 @@ bool Nrf24l01x::GetPacketLostCount(uint8_t* count) {
 }
 
 bool Nrf24l01x::SetRfChannel(uint8_t channel) {
-  if (channel > 125U || !WriteRegister(Cmd::kRfChannel, channel)) {
+  if (channel > 125U || !WriteRegister(Register::kRfChannel, channel)) {
     return false;
   }
   config_.rf_channel = channel;
@@ -650,7 +651,7 @@ bool Nrf24l01x::SetOutputPower(OutputPower power) {
     return false;
   }
   const uint8_t value = static_cast<uint8_t>(static_cast<uint8_t>(power) << 1);
-  if (!UpdateRegisterBits(Cmd::kRfSetup, kRfSetupPowerMask, value)) {
+  if (!UpdateRegisterBits(Register::kRfSetup, kRfSetupPowerMask, value)) {
     return false;
   }
   config_.output_power = power;
@@ -668,7 +669,7 @@ bool Nrf24l01x::SetDataRate(DataRate data_rate) {
   } else if (data_rate == DataRate::k250Kbps) {
     value = kRfSetupDataRateLowMask;
   }
-  if (!UpdateRegisterBits(Cmd::kRfSetup,
+  if (!UpdateRegisterBits(Register::kRfSetup,
           kRfSetupDataRateHighMask | kRfSetupDataRateLowMask, value)) {
     return false;
   }
@@ -726,7 +727,7 @@ bool Nrf24l01x::GetRxFifoStatus(uint8_t* status) {
 }
 
 bool Nrf24l01x::GetFifoStatus(uint8_t* status) {
-  return status != nullptr && ReadRegister(Cmd::kFifoStatus, status);
+  return status != nullptr && ReadRegister(Register::kFifoStatus, status);
 }
 
 bool Nrf24l01x::RxFifoEmpty(bool* empty) {
@@ -758,7 +759,7 @@ bool Nrf24l01x::GetTransmitAttempts(uint8_t* count) {
     return false;
   }
   uint8_t observe_tx = 0;
-  if (!ReadRegister(Cmd::kObserveTx, &observe_tx)) {
+  if (!ReadRegister(Register::kObserveTx, &observe_tx)) {
     return false;
   }
   *count = observe_tx & kObserveRetransmitMask;
@@ -770,7 +771,7 @@ bool Nrf24l01x::GetCarrierDetect(bool* detected) {
     return false;
   }
   uint8_t received_power = 0;
-  if (!ReadRegister(Cmd::kReceivedPowerDetector, &received_power)) {
+  if (!ReadRegister(Register::kReceivedPowerDetector, &received_power)) {
     return false;
   }
   *detected = (received_power & 0x01U) != 0;
@@ -784,7 +785,7 @@ bool Nrf24l01x::ActivateFeatures() {
 
 bool Nrf24l01x::SetupDynamicPayload(uint8_t pipe_mask) {
   if ((pipe_mask & ~kAllPipeMask) != 0 ||
-      !WriteRegister(Cmd::kDynamicPayload, pipe_mask)) {
+      !WriteRegister(Register::kDynamicPayload, pipe_mask)) {
     return false;
   }
   config_.dynamic_payload_pipe_mask = pipe_mask;
@@ -851,8 +852,8 @@ bool Nrf24l01x::ReadRxPayload(uint8_t* payload, std::size_t capacity,
   uint8_t feature = 0;
   uint8_t dynamic_payload = 0;
   if (!GetRxDataSource(&source) || source == kInvalidRxPipe ||
-      !ReadRegister(Cmd::kFeature, &feature) ||
-      !ReadRegister(Cmd::kDynamicPayload, &dynamic_payload)) {
+      !ReadRegister(Register::kFeature, &feature) ||
+      !ReadRegister(Register::kDynamicPayload, &dynamic_payload)) {
     return false;
   }
 
@@ -921,7 +922,7 @@ bool Nrf24l01x::NoOperation(uint8_t* status) {
 
 bool Nrf24l01x::SetPllMode(bool locked) {
   return UpdateRegisterBits(
-      Cmd::kRfSetup, kRfSetupPllLockMask, locked ? kRfSetupPllLockMask : 0);
+      Register::kRfSetup, kRfSetupPllLockMask, locked ? kRfSetupPllLockMask : 0);
 }
 
 bool Nrf24l01x::SetLnaGain(bool high_current) {
@@ -930,44 +931,49 @@ bool Nrf24l01x::SetLnaGain(bool high_current) {
         "nRF24L01+ does not support LNA high-current mode\n");
     return false;
   }
-  return UpdateRegisterBits(Cmd::kRfSetup, kRfSetupLnaHighCurrentMask, 0);
+  return UpdateRegisterBits(Register::kRfSetup, kRfSetupLnaHighCurrentMask, 0);
 }
 
 bool Nrf24l01x::EnableContinuousWave(bool enabled) {
-  return UpdateRegisterBits(Cmd::kRfSetup, kRfSetupContinuousWaveMask,
+  return UpdateRegisterBits(Register::kRfSetup, kRfSetupContinuousWaveMask,
       enabled ? kRfSetupContinuousWaveMask : 0);
 }
 
-bool Nrf24l01x::ReadRegister(Cmd cmd, uint8_t* value, uint8_t* status) {
+bool Nrf24l01x::ReadRegister(
+    Register register_id, uint8_t* value, uint8_t* status) {
   if (value == nullptr) {
     return false;
   }
-  const uint8_t command = static_cast<uint8_t>(cmd) & kRegisterMask;
+  const uint8_t command = static_cast<uint8_t>(register_id) & kRegisterMask;
   return Exchange(command, nullptr, value, 1, status);
 }
 
-bool Nrf24l01x::WriteRegister(Cmd cmd, uint8_t value, uint8_t* status) {
+bool Nrf24l01x::WriteRegister(
+    Register register_id, uint8_t value, uint8_t* status) {
   const uint8_t command =
-      kWriteRegisterCommand | (static_cast<uint8_t>(cmd) & kRegisterMask);
+      kWriteRegisterCommand |
+      (static_cast<uint8_t>(register_id) & kRegisterMask);
   return Exchange(command, &value, nullptr, 1, status);
 }
 
 bool Nrf24l01x::ReadBuffer(
-    Cmd cmd, uint8_t* data, std::size_t length, uint8_t* status) {
+    Register register_id, uint8_t* data, std::size_t length, uint8_t* status) {
   if (data == nullptr || length == 0 || length > kMaximumPayloadLength) {
     return false;
   }
-  const uint8_t command = static_cast<uint8_t>(cmd) & kRegisterMask;
+  const uint8_t command = static_cast<uint8_t>(register_id) & kRegisterMask;
   return Exchange(command, nullptr, data, length, status);
 }
 
 bool Nrf24l01x::WriteBuffer(
-    Cmd cmd, const uint8_t* data, std::size_t length, uint8_t* status) {
+    Register register_id, const uint8_t* data, std::size_t length,
+    uint8_t* status) {
   if (data == nullptr || length == 0 || length > kMaximumPayloadLength) {
     return false;
   }
   const uint8_t command =
-      kWriteRegisterCommand | (static_cast<uint8_t>(cmd) & kRegisterMask);
+      kWriteRegisterCommand |
+      (static_cast<uint8_t>(register_id) & kRegisterMask);
   return Exchange(command, data, nullptr, length, status);
 }
 
@@ -1192,19 +1198,20 @@ bool Nrf24l01x::ReadCommand(
          Exchange(static_cast<uint8_t>(command), nullptr, data, length, status);
 }
 
-bool Nrf24l01x::UpdateRegisterBits(Cmd cmd, uint8_t mask, uint8_t value) {
+bool Nrf24l01x::UpdateRegisterBits(
+    Register register_id, uint8_t mask, uint8_t value) {
   uint8_t current = 0;
-  if (!ReadRegister(cmd, &current)) {
+  if (!ReadRegister(register_id, &current)) {
     return false;
   }
   const uint8_t next = static_cast<uint8_t>(
       (current & static_cast<uint8_t>(~mask)) | (value & mask));
-  return next == current || WriteRegister(cmd, next);
+  return next == current || WriteRegister(register_id, next);
 }
 
 bool Nrf24l01x::UpdateFeatureBits(uint8_t mask, bool enabled) {
   uint8_t feature = 0;
-  if (!ReadRegister(Cmd::kFeature, &feature)) {
+  if (!ReadRegister(Register::kFeature, &feature)) {
     return false;
   }
   const uint8_t next = enabled ? static_cast<uint8_t>(feature | mask)
@@ -1214,8 +1221,8 @@ bool Nrf24l01x::UpdateFeatureBits(uint8_t mask, bool enabled) {
   }
 
   uint8_t readback = 0;
-  bool result = WriteRegister(Cmd::kFeature, next) &&
-                ReadRegister(Cmd::kFeature, &readback);
+  bool result = WriteRegister(Register::kFeature, next) &&
+                ReadRegister(Register::kFeature, &readback);
   if (!result) {
     return false;
   }
@@ -1224,8 +1231,8 @@ bool Nrf24l01x::UpdateFeatureBits(uint8_t mask, bool enabled) {
   }
 
   result = ActivateFeatures();
-  result &= WriteRegister(Cmd::kFeature, next);
-  result &= ReadRegister(Cmd::kFeature, &readback);
+  result &= WriteRegister(Register::kFeature, next);
+  result &= ReadRegister(Register::kFeature, &readback);
   return result && readback == next;
 }
 

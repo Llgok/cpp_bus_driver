@@ -70,7 +70,7 @@ uint16_t Hi8561::GetChipId() {
 
   for (uint8_t i = 0; i < 2; i++) {
     if (!bus_->Read(
-            static_cast<uint8_t>(Cmd::kRoChipIdStart) + i, &buffer[i], 1)) {
+            static_cast<uint8_t>(DcsCommand::kRoChipIdStart) + i, &buffer[i], 1)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return -1;
     }
@@ -81,8 +81,8 @@ uint16_t Hi8561::GetChipId() {
 }
 
 bool Hi8561::SetSleep(bool enable) {
-  if (!bus_->Write(enable ? static_cast<uint8_t>(Cmd::kWoSlpin)
-                          : static_cast<uint8_t>(Cmd::kWoSlpout))) {
+  if (!bus_->Write(enable ? static_cast<uint8_t>(DcsCommand::kWoSlpin)
+                          : static_cast<uint8_t>(DcsCommand::kWoSlpout))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -97,8 +97,8 @@ bool Hi8561::SetSleep(bool enable) {
 }
 
 bool Hi8561::SetScreenOff(bool enable) {
-  if (!bus_->Write(enable ? static_cast<uint8_t>(Cmd::kWoDispoff)
-                          : static_cast<uint8_t>(Cmd::kWoDispon))) {
+  if (!bus_->Write(enable ? static_cast<uint8_t>(DcsCommand::kWoDispoff)
+                          : static_cast<uint8_t>(DcsCommand::kWoDispon))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -132,7 +132,7 @@ bool Hi8561::SetMirror(MirrorMode mode) {
       break;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Cmd::kWoMadctl), madctl_data_)) {
+  if (!bus_->Write(static_cast<uint8_t>(DcsCommand::kWoMadctl), madctl_data_)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -141,8 +141,8 @@ bool Hi8561::SetMirror(MirrorMode mode) {
 }
 
 bool Hi8561::SetInversion(bool enable) {
-  if (!bus_->Write(enable ? static_cast<uint8_t>(Cmd::kWoInvon)
-                          : static_cast<uint8_t>(Cmd::kWoInvoff))) {
+  if (!bus_->Write(enable ? static_cast<uint8_t>(DcsCommand::kWoInvon)
+                          : static_cast<uint8_t>(DcsCommand::kWoInvoff))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -151,7 +151,7 @@ bool Hi8561::SetInversion(bool enable) {
 }
 
 bool Hi8561::SetBrightness(uint8_t brightness) {
-  if (!bus_->Write(static_cast<uint8_t>(Cmd::kWoWrdisbv), brightness)) {
+  if (!bus_->Write(static_cast<uint8_t>(DcsCommand::kWoWrdisbv), brightness)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -163,7 +163,7 @@ bool Hi8561::SetColorOrder(ColorOrder order) {
   madctl_data_ =
       (madctl_data_ & 0xB11110111) | (static_cast<uint8_t>(order) << 3);
 
-  if (!bus_->Write(static_cast<uint8_t>(Cmd::kWoMadctl), madctl_data_)) {
+  if (!bus_->Write(static_cast<uint8_t>(DcsCommand::kWoMadctl), madctl_data_)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -173,7 +173,7 @@ bool Hi8561::SetColorOrder(ColorOrder order) {
 
 bool Hi8561::SetCabcMode(CabcMode mode) {
   if (!bus_->Write(
-          static_cast<uint8_t>(Cmd::kWoWrcabc), static_cast<uint8_t>(mode))) {
+          static_cast<uint8_t>(DcsCommand::kWoWrcabc), static_cast<uint8_t>(mode))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

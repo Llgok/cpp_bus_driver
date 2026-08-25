@@ -390,7 +390,7 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
   bool SetAdcDataFormat(AdcDataFormat format);
 
  private:
-  enum class Cmd {
+  enum class Register {
     kRoChipIdStart = 0xFD,  // 连续读取两次返回芯片ID 0x8311
 
     kRwResetSerialPortModeControl = 0x00,
