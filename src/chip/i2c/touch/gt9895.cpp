@@ -202,6 +202,13 @@ bool Gt9895::SetRefreshRateIndex(uint8_t index) {
   return SendCommand(Command::kRefreshRate, &index, sizeof(index));
 }
 
+bool Gt9895::EnterGestureMode() {
+  constexpr uint8_t kDoubleTapGestureConfiguration[] = {0xFF, 0xFF};
+  return SendCommand(Command::kEnterGestureMode,
+      kDoubleTapGestureConfiguration,
+      sizeof(kDoubleTapGestureConfiguration));
+}
+
 bool Gt9895::ExitGestureMode() {
   return SendCommand(Command::kExitGestureMode, nullptr, 0);
 }
@@ -272,8 +279,14 @@ TouchReadStatus Gt9895::ReadTouchReport(
       }
       continue;
     }
+    frame->event_flags = report[0];
+    frame->sequence = report[1];
+    const bool gesture_event_received =
+        (report[0] & kGestureEventMask) != 0;
+    if (gesture_event_received) {
+      frame->gesture = report[4];
+    }
     if ((report[0] & kTouchEventMask) == 0) {
-      frame->event_flags = report[0];
       const uint8_t reported_contact_count = report[2] & 0x0F;
       LogTouchReport(
           mode, report.data(), report_size, reported_contact_count, *frame);
@@ -282,7 +295,8 @@ TouchReadStatus Gt9895::ReadTouchReport(
             "GT9895 read touch report failed (event acknowledgement)\n");
         return TouchReadStatus::kBusError;
       }
-      return TouchReadStatus::kNoData;
+      return gesture_event_received ? TouchReadStatus::kSuccess
+                                    : TouchReadStatus::kNoData;
     }
 
     uint8_t reported_contact_count = report[2] & 0x0F;
@@ -295,7 +309,6 @@ TouchReadStatus Gt9895::ReadTouchReport(
       return TouchReadStatus::kInvalidData;
     }
     if (reported_contact_count == 0) {
-      frame->event_flags = report[0];
       LogTouchReport(
           mode, report.data(), report_size, reported_contact_count, *frame);
       if (!ClearTouchStatus()) {
@@ -303,7 +316,8 @@ TouchReadStatus Gt9895::ReadTouchReport(
             "GT9895 read touch report failed (event acknowledgement)\n");
         return TouchReadStatus::kBusError;
       }
-      return TouchReadStatus::kNoData;
+      return gesture_event_received ? TouchReadStatus::kSuccess
+                                    : TouchReadStatus::kNoData;
     }
 
     if (reported_contact_count > prefetched_contact_count &&
@@ -358,7 +372,6 @@ TouchReadStatus Gt9895::ReadTouchReport(
       continue;
     }
 
-    frame->event_flags = report[0];
     const size_t parsed_contact_count =
         std::min(contact_limit, static_cast<size_t>(reported_contact_count));
     for (size_t i = 0; i < parsed_contact_count; ++i) {

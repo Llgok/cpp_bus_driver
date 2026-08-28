@@ -55,6 +55,12 @@ class Gt9895 final : public ChipI2cGuide {
     kSynchronized = 0x81,
   };
 
+  // 固件手势事件代码。
+  enum class Gesture : uint8_t {
+    kNone = 0x00,
+    kDoubleTap = 0xCC,
+  };
+
   // 固件握持防误触区域对应的屏幕方向。
   enum class EdgeRejectionOrientation : uint8_t {
     kPortrait,
@@ -145,6 +151,12 @@ class Gt9895 final : public ChipI2cGuide {
   bool SetRefreshRateIndex(uint8_t index);
 
   /**
+   * @brief 进入仅检测双击的低功耗手势模式
+   * @return 命令被固件接受返回 true，否则返回 false
+   */
+  bool EnterGestureMode();
+
+  /**
    * @brief 退出手势识别模式
    * @return 命令被固件接受返回 true，否则返回 false
    */
@@ -202,6 +214,7 @@ class Gt9895 final : public ChipI2cGuide {
     kCallHover = 0x93,
     kMutualFrequency = 0x9C,
     kRefreshRate = 0x9D,
+    kEnterGestureMode = 0xA6,
     kExitGestureMode = 0xA7,
     kChargerMode = 0xAF,
     kHighRefreshRate = 0xC0,
@@ -238,6 +251,7 @@ class Gt9895 final : public ChipI2cGuide {
   static constexpr int64_t kDebugReportIntervalMs = 1000;
   static constexpr int64_t kFailureReportIntervalMs = 1000;
   static constexpr uint8_t kTouchEventMask = 0x80;
+  static constexpr uint8_t kGestureEventMask = 0x20;
   static constexpr uint8_t kStylusHoverType = 0x01;
   static constexpr uint8_t kStylusType = 0x03;
   static constexpr size_t kMaximumCommandDataSize = 16;
