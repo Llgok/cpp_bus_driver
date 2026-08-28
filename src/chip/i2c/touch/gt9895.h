@@ -191,6 +191,24 @@ class Gt9895 final : public ChipI2cGuide {
   bool WakeUp();
 
  private:
+  // GT9895 固件实时命令字。
+  enum class Command : uint8_t {
+    kEnterLandscapeEdgeRejection = 0x17,
+    kExitLandscapeEdgeRejection = 0x18,
+    kPocketMode = 0x70,
+    kUpdateMutualCapacitanceBaseline = 0x83,
+    kSleep = 0x84,
+    kTouchReporting = 0x91,
+    kCallHover = 0x93,
+    kMutualFrequency = 0x9C,
+    kRefreshRate = 0x9D,
+    kExitGestureMode = 0xA7,
+    kChargerMode = 0xAF,
+    kHighRefreshRate = 0xC0,
+    kPeriodicReporting = 0xC1,
+    kGameMode = 0xC2,
+  };
+
   static constexpr uint32_t kFirmwareVersionAddress = 0x00010014;
   static constexpr uint32_t kRuntimeInfoAddress = 0x00010070;
   static constexpr uint16_t kExpectedProductId = 0x9895;
@@ -280,7 +298,7 @@ class Gt9895 final : public ChipI2cGuide {
    * @return 命令被固件接受返回 true，否则返回 false
    */
   bool SendCommand(
-      uint8_t command, const uint8_t* data, size_t data_length);
+      Command command, const uint8_t* data, size_t data_length);
 
   /**
    * @brief 发送带单字节开关参数的实时命令
@@ -288,7 +306,7 @@ class Gt9895 final : public ChipI2cGuide {
    * @param enabled 是否启用
    * @return 命令被固件接受返回 true，否则返回 false
    */
-  bool SendBooleanCommand(uint8_t command, bool enabled);
+  bool SendBooleanCommand(Command command, bool enabled);
 
   /**
    * @brief 清除当前已消费的触摸事件状态

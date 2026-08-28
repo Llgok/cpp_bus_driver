@@ -16,23 +16,6 @@ namespace cpp_bus_driver {
 
 namespace {
 
-enum class Command : uint8_t {
-  kEnterLandscapeEdgeRejection = 0x17,
-  kExitLandscapeEdgeRejection = 0x18,
-  kPocketMode = 0x70,
-  kUpdateMutualCapacitanceBaseline = 0x83,
-  kSleep = 0x84,
-  kTouchReporting = 0x91,
-  kCallHover = 0x93,
-  kMutualFrequency = 0x9C,
-  kRefreshRate = 0x9D,
-  kExitGestureMode = 0xA7,
-  kChargerMode = 0xAF,
-  kHighRefreshRate = 0xC0,
-  kPeriodicReporting = 0xC1,
-  kGameMode = 0xC2,
-};
-
 uint16_t ReadLittleEndian16(const uint8_t* data) {
   return static_cast<uint16_t>(data[0]) |
          (static_cast<uint16_t>(data[1]) << 8);
@@ -143,27 +126,23 @@ TouchReadStatus Gt9895::ReadTouchFrame(TouchFrame* frame) {
 }
 
 bool Gt9895::SetPocketModeEnabled(bool enabled) {
-  return SendBooleanCommand(
-      static_cast<uint8_t>(Command::kPocketMode), enabled);
+  return SendBooleanCommand(Command::kPocketMode, enabled);
 }
 
 bool Gt9895::SetEdgeRejectionOrientation(
     EdgeRejectionOrientation orientation) {
   switch (orientation) {
     case EdgeRejectionOrientation::kPortrait:
-      return SendCommand(static_cast<uint8_t>(
-                             Command::kExitLandscapeEdgeRejection),
-          nullptr, 0);
+      return SendCommand(
+          Command::kExitLandscapeEdgeRejection, nullptr, 0);
     case EdgeRejectionOrientation::kLandscapeLeft: {
       constexpr uint8_t kLandscapeLeft = 0;
-      return SendCommand(static_cast<uint8_t>(
-                             Command::kEnterLandscapeEdgeRejection),
+      return SendCommand(Command::kEnterLandscapeEdgeRejection,
           &kLandscapeLeft, sizeof(kLandscapeLeft));
     }
     case EdgeRejectionOrientation::kLandscapeRight: {
       constexpr uint8_t kLandscapeRight = 1;
-      return SendCommand(static_cast<uint8_t>(
-                             Command::kEnterLandscapeEdgeRejection),
+      return SendCommand(Command::kEnterLandscapeEdgeRejection,
           &kLandscapeRight, sizeof(kLandscapeRight));
     }
     default:
@@ -176,8 +155,7 @@ bool Gt9895::SetEdgeRejectionOrientation(
 }
 
 bool Gt9895::UpdateMutualCapacitanceBaseline() {
-  return SendCommand(static_cast<uint8_t>(
-                         Command::kUpdateMutualCapacitanceBaseline),
+  return SendCommand(Command::kUpdateMutualCapacitanceBaseline,
       nullptr, 0);
 }
 
@@ -195,13 +173,11 @@ bool Gt9895::SetTouchReportingMode(TouchReportingMode mode) {
   }
 
   const uint8_t data = static_cast<uint8_t>(mode);
-  return SendCommand(static_cast<uint8_t>(Command::kTouchReporting),
-      &data, sizeof(data));
+  return SendCommand(Command::kTouchReporting, &data, sizeof(data));
 }
 
 bool Gt9895::SetCallHoverEnabled(bool enabled) {
-  return SendBooleanCommand(
-      static_cast<uint8_t>(Command::kCallHover), enabled);
+  return SendBooleanCommand(Command::kCallHover, enabled);
 }
 
 bool Gt9895::SetMutualFrequencyIndex(uint8_t index) {
@@ -212,8 +188,7 @@ bool Gt9895::SetMutualFrequencyIndex(uint8_t index) {
         static_cast<unsigned int>(runtime_info_.mutual_frequency_count));
     return false;
   }
-  return SendCommand(static_cast<uint8_t>(Command::kMutualFrequency),
-      &index, sizeof(index));
+  return SendCommand(Command::kMutualFrequency, &index, sizeof(index));
 }
 
 bool Gt9895::SetRefreshRateIndex(uint8_t index) {
@@ -224,33 +199,27 @@ bool Gt9895::SetRefreshRateIndex(uint8_t index) {
         static_cast<unsigned int>(runtime_info_.active_scan_rate_count));
     return false;
   }
-  return SendCommand(static_cast<uint8_t>(Command::kRefreshRate),
-      &index, sizeof(index));
+  return SendCommand(Command::kRefreshRate, &index, sizeof(index));
 }
 
 bool Gt9895::ExitGestureMode() {
-  return SendCommand(
-      static_cast<uint8_t>(Command::kExitGestureMode), nullptr, 0);
+  return SendCommand(Command::kExitGestureMode, nullptr, 0);
 }
 
 bool Gt9895::SetChargerModeEnabled(bool enabled) {
-  return SendBooleanCommand(
-      static_cast<uint8_t>(Command::kChargerMode), enabled);
+  return SendBooleanCommand(Command::kChargerMode, enabled);
 }
 
 bool Gt9895::SetHighRefreshRateEnabled(bool enabled) {
-  return SendBooleanCommand(
-      static_cast<uint8_t>(Command::kHighRefreshRate), enabled);
+  return SendBooleanCommand(Command::kHighRefreshRate, enabled);
 }
 
 bool Gt9895::SetPeriodicReportingEnabled(bool enabled) {
-  return SendBooleanCommand(
-      static_cast<uint8_t>(Command::kPeriodicReporting), enabled);
+  return SendBooleanCommand(Command::kPeriodicReporting, enabled);
 }
 
 bool Gt9895::SetGameModeEnabled(bool enabled) {
-  return SendBooleanCommand(
-      static_cast<uint8_t>(Command::kGameMode), enabled);
+  return SendBooleanCommand(Command::kGameMode, enabled);
 }
 
 TouchReadStatus Gt9895::ReadTouchReport(
@@ -797,12 +766,13 @@ bool Gt9895::WriteRegister(
 }
 
 bool Gt9895::SendCommand(
-    uint8_t command, const uint8_t* data, size_t data_length) {
+    Command command, const uint8_t* data, size_t data_length) {
+  const uint8_t command_value = static_cast<uint8_t>(command);
   if (data_length > kMaximumCommandDataSize ||
       (data_length > 0 && data == nullptr)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "GT9895 command failed (command: 0X%02X, invalid data size: %zu)\n",
-        static_cast<unsigned int>(command), data_length);
+        static_cast<unsigned int>(command_value), data_length);
     return false;
   }
 
@@ -810,7 +780,7 @@ bool Gt9895::SendCommand(
   std::array<uint8_t, kMaximumCommandPacketSize> packet{};
   const size_t command_length = 4 + data_length;
   packet[2] = static_cast<uint8_t>(command_length);
-  packet[3] = command;
+  packet[3] = command_value;
   if (data_length > 0) {
     std::copy_n(data, data_length, packet.begin() + 4);
   }
@@ -827,7 +797,7 @@ bool Gt9895::SendCommand(
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "GT9895 command failed (command: 0X%02X, packet size: %zu, "
         "firmware limit: %u)\n",
-        static_cast<unsigned int>(command), packet_length,
+        static_cast<unsigned int>(command_value), packet_length,
         static_cast<unsigned int>(runtime_info_.command_max_length));
     return false;
   }
@@ -839,7 +809,7 @@ bool Gt9895::SendCommand(
             packet_length)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "GT9895 command failed (command: 0X%02X, write attempt: %zu)\n",
-          static_cast<unsigned int>(command), attempt + 1);
+          static_cast<unsigned int>(command_value), attempt + 1);
       return false;
     }
 
@@ -848,7 +818,7 @@ bool Gt9895::SendCommand(
               acknowledgement.size())) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__,
             "GT9895 command failed (command: 0X%02X, ACK read failed)\n",
-            static_cast<unsigned int>(command));
+            static_cast<unsigned int>(command_value));
         return false;
       }
 
@@ -873,7 +843,7 @@ bool Gt9895::SendCommand(
 
   LogMessage(LogLevel::kError, __FILE__, __LINE__,
       "GT9895 command failed (command: 0X%02X, ACK: 0X%02X%s)\n",
-      static_cast<unsigned int>(command),
+      static_cast<unsigned int>(command_value),
       static_cast<unsigned int>(last_acknowledgement),
       last_acknowledgement == kCommandAckChecksumError
           ? ", checksum rejected"
@@ -881,7 +851,7 @@ bool Gt9895::SendCommand(
   return false;
 }
 
-bool Gt9895::SendBooleanCommand(uint8_t command, bool enabled) {
+bool Gt9895::SendBooleanCommand(Command command, bool enabled) {
   const uint8_t data = enabled ? 1 : 0;
   return SendCommand(command, &data, sizeof(data));
 }
