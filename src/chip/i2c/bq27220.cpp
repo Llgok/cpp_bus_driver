@@ -250,6 +250,45 @@ bool Bq27220::SetDesignCapacity(uint16_t capacity) {
   return true;
 }
 
+bool Bq27220::SetBatteryCapacity(uint16_t capacity) {
+  if (capacity == 0 || capacity > INT16_MAX) {
+    return false;
+  }
+
+  uint16_t design_capacity = 0;
+  uint16_t full_charge_capacity = 0;
+  if (ReadDataMemory(
+          DataMemoryAddress::kDesignCapacity, &design_capacity) &&
+      ReadDataMemory(DataMemoryAddress::kFullChargeCapacity,
+          &full_charge_capacity) &&
+      design_capacity == capacity && full_charge_capacity == capacity) {
+    return true;
+  }
+
+  if (!EnterConfigUpdate()) {
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "EnterConfigUpdate failed\n");
+    return false;
+  }
+  bool result = WriteDataMemory(
+      DataMemoryAddress::kFullChargeCapacity, capacity);
+  result &= WriteDataMemory(DataMemoryAddress::kDesignCapacity, capacity);
+  result &= ExitConfigUpdate(true);
+  if (result) {
+    const bool read_back_succeeded =
+        ReadDataMemory(DataMemoryAddress::kFullChargeCapacity,
+            &full_charge_capacity) &&
+        ReadDataMemory(DataMemoryAddress::kDesignCapacity, &design_capacity);
+    result = read_back_succeeded && full_charge_capacity == capacity &&
+        design_capacity == capacity;
+  }
+  if (!result) {
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SetBatteryCapacity failed\n");
+  }
+  return result;
+}
+
 uint16_t Bq27220::GetTimeToEmpty() {
   uint16_t value = 0;
   if (!ReadU16(StandardCommand::kTimeToEmpty, &value)) {

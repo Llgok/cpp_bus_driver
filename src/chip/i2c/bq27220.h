@@ -305,6 +305,13 @@ class Bq27220 final : public ChipI2cGuide {
   bool SetDesignCapacity(uint16_t capacity);
 
   /**
+   * @brief 在配置更新模式中同步设置设计容量和满充容量
+   * @param capacity 电池额定容量，范围 1-32767 mAh
+   * @return 容量已匹配或写入并重新初始化成功返回 true
+   */
+  bool SetBatteryCapacity(uint16_t capacity);
+
+  /**
    * @brief 读取预计放空时间
    * @return 放空时间(min)，0xFFFF 表示不可用
    */
