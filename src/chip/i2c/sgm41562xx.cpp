@@ -2,7 +2,7 @@
  * @Description: SGM41562 系列电池充电管理芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-08-03 16:11:25
+ * @LastEditTime: 2026-09-02 16:15:41
  * @License: GPL 3.0
  */
 #include "sgm41562xx.h"
@@ -253,8 +253,8 @@ bool Sgm41562xx::GetIrqStatus(IrqStatus& status) {
   }
 
   uint8_t irq_status = 0;
-  if (!bus_->Read(
-          static_cast<uint8_t>(Register::kFaultAndShippingControl), &irq_status)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kFaultAndShippingControl),
+          &irq_status)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -287,7 +287,8 @@ bool Sgm41562xx::GetChipStatus(ChipStatus& status) {
   }
 
   uint8_t chip_status = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kSystemStatus), &chip_status)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kSystemStatus), &chip_status)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -327,7 +328,8 @@ bool Sgm41562xx::ReadInputConfig(ChargerConfig& config) {
           "REG00 input source control") ||
       !ReadRegister(Register::kPowerOnConfiguration, power_on_configuration,
           "REG01 power-on configuration") ||
-      !ReadRegister(Register::kSystemStatus, system_status, "REG08 system status")) {
+      !ReadRegister(
+          Register::kSystemStatus, system_status, "REG08 system status")) {
     return false;
   }
 
@@ -382,8 +384,8 @@ bool Sgm41562xx::ReadChargeConfig(ChargerConfig& config) {
   uint8_t extended_current_control = 0;
   if (extended_register_map) {
     fast_charge_current_code = charge_current_control & 0x7F;
-    if (!ReadRegister(Register::kExtendedCurrentControl, extended_current_control,
-            "REG0D extended current control")) {
+    if (!ReadRegister(Register::kExtendedCurrentControl,
+            extended_current_control, "REG0D extended current control")) {
       return false;
     }
   } else if (fast_charge_current_code > 56) {
@@ -412,12 +414,12 @@ bool Sgm41562xx::ReadProtectionConfig(ChargerConfig& config) {
   uint8_t charge_timer_control = 0;
   uint8_t miscellaneous_control = 0;
   uint8_t system_voltage_regulation = 0;
-  if (!ReadRegister(Register::kChargeTerminationTimerControl, charge_timer_control,
-          "REG05 charge termination and timer control") ||
-      !ReadRegister(Register::kMiscellaneousOperationControl, miscellaneous_control,
-          "REG06 miscellaneous operation control") ||
-      !ReadRegister(Register::kSystemVoltageRegulation, system_voltage_regulation,
-          "REG07 system voltage regulation")) {
+  if (!ReadRegister(Register::kChargeTerminationTimerControl,
+          charge_timer_control, "REG05 charge termination and timer control") ||
+      !ReadRegister(Register::kMiscellaneousOperationControl,
+          miscellaneous_control, "REG06 miscellaneous operation control") ||
+      !ReadRegister(Register::kSystemVoltageRegulation,
+          system_voltage_regulation, "REG07 system voltage regulation")) {
     return false;
   }
 

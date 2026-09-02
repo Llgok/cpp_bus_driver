@@ -2,7 +2,7 @@
  * @Description: AW862xx 触觉反馈驱动芯片接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-06-03 09:45:41
+ * @LastEditTime: 2026-09-02 16:15:17
  * @License: GPL 3.0
  */
 #pragma once
@@ -596,8 +596,8 @@ class Aw862xx final : public ChipI2cGuide {
    * @param length 波形数据长度
    * @return 返回校验结果
    */
-  RamVerificationResult VerifyRamData(uint16_t ram_addr,
-      const uint8_t* expected_data, size_t length);
+  RamVerificationResult VerifyRamData(
+      uint16_t ram_addr, const uint8_t* expected_data, size_t length);
 
   int32_t rst_;
   uint32_t f0_value_ = 1700;

@@ -2,7 +2,7 @@
  * @Description: TI CC1101 亚 GHz 无线收发芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-12 00:00:00
- * @LastEditTime: 2026-08-03 16:11:47
+ * @LastEditTime: 2026-09-02 16:15:58
  * @License: GPL 3.0
  */
 #include "cc1101.h"
@@ -107,8 +107,7 @@ bool Cc1101::Init(int32_t freq_hz) {
   uint8_t part_number = 0;
   const auto chip_id = GetChipId();
   if (!GetPartNumber(&part_number) || part_number != kPartNumberCc1101 ||
-      (!IsOfficialChipId(chip_id) &&
-          chip_id != kCompatibleCloneChipId)) {
+      (!IsOfficialChipId(chip_id) && chip_id != kCompatibleCloneChipId)) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "Get cc1101 chip id failed (error id: %#X)\n", chip_id);
     bus_->Deinit(false);
@@ -253,8 +252,8 @@ bool Cc1101::ApplyRegisterSettings(
     return false;
   }
   for (size_t index = 0; index < count; ++index) {
-    if (!WriteRegister(
-            static_cast<Register>(settings[index].address), settings[index].value)) {
+    if (!WriteRegister(static_cast<Register>(settings[index].address),
+            settings[index].value)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "Register setting failed (index: %zu)\n", index);
       return false;
@@ -296,8 +295,7 @@ bool Cc1101::ReadRegister(Register register_id, uint8_t* value) {
     return false;
   }
   const uint8_t buffer[] = {
-      static_cast<uint8_t>(
-          static_cast<uint8_t>(register_id) | kReadSingle),
+      static_cast<uint8_t>(static_cast<uint8_t>(register_id) | kReadSingle),
       0,
   };
   uint8_t response[sizeof(buffer)] = {0};
@@ -328,8 +326,7 @@ bool Cc1101::WriteBurst(
   return true;
 }
 
-bool Cc1101::ReadBurst(
-    Register register_id, uint8_t* data, size_t length) {
+bool Cc1101::ReadBurst(Register register_id, uint8_t* data, size_t length) {
   const size_t maximum_length = GetMaximumBurstLength(register_id);
   if (data == nullptr || length == 0 || length > maximum_length) {
     return false;
@@ -350,8 +347,7 @@ bool Cc1101::ReadStatusRegister(Register register_id, uint8_t* value) {
     return false;
   }
   const uint8_t buffer[] = {
-      static_cast<uint8_t>(
-          static_cast<uint8_t>(register_id) | kReadBurst),
+      static_cast<uint8_t>(static_cast<uint8_t>(register_id) | kReadBurst),
       0,
   };
   uint8_t response[sizeof(buffer)] = {0};
@@ -701,14 +697,14 @@ bool Cc1101::SetEncoding(Encoding encoding) {
       result &= UpdateRegisterBits(Register::kPktctrl0, kWhiteningMask, 0);
       break;
     case Encoding::kManchester:
-      result &=
-          UpdateRegisterBits(Register::kMdmcfg2, kManchesterMask, kManchesterMask);
+      result &= UpdateRegisterBits(
+          Register::kMdmcfg2, kManchesterMask, kManchesterMask);
       result &= UpdateRegisterBits(Register::kPktctrl0, kWhiteningMask, 0);
       break;
     case Encoding::kWhitening:
       result &= UpdateRegisterBits(Register::kMdmcfg2, kManchesterMask, 0);
-      result &=
-          UpdateRegisterBits(Register::kPktctrl0, kWhiteningMask, kWhiteningMask);
+      result &= UpdateRegisterBits(
+          Register::kPktctrl0, kWhiteningMask, kWhiteningMask);
       break;
     default:
       return false;
@@ -842,7 +838,8 @@ bool Cc1101::SetCrc(bool enabled) {
   if (!enabled && config_.crc_autoflush && !SetCrcAutoflush(false)) {
     return false;
   }
-  if (!UpdateRegisterBits(Register::kPktctrl0, kCrcMask, enabled ? kCrcMask : 0)) {
+  if (!UpdateRegisterBits(
+          Register::kPktctrl0, kCrcMask, enabled ? kCrcMask : 0)) {
     return false;
   }
   config_.crc_enabled = enabled;
@@ -862,8 +859,8 @@ bool Cc1101::SetCrcAutoflush(bool enabled) {
   if (!EnsureIdle()) {
     return false;
   }
-  if (!UpdateRegisterBits(
-          Register::kPktctrl1, kCrcAutoflushMask, enabled ? kCrcAutoflushMask : 0)) {
+  if (!UpdateRegisterBits(Register::kPktctrl1, kCrcAutoflushMask,
+          enabled ? kCrcAutoflushMask : 0)) {
     return false;
   }
   config_.crc_autoflush = enabled;
@@ -880,7 +877,8 @@ bool Cc1101::SetFec(bool enabled) {
   if (!EnsureIdle()) {
     return false;
   }
-  if (!UpdateRegisterBits(Register::kMdmcfg1, kFecMask, enabled ? kFecMask : 0)) {
+  if (!UpdateRegisterBits(
+          Register::kMdmcfg1, kFecMask, enabled ? kFecMask : 0)) {
     return false;
   }
   config_.fec_enabled = enabled;
@@ -910,10 +908,10 @@ bool Cc1101::SetCarrierSenseThreshold(
   const uint8_t absolute =
       static_cast<uint8_t>(absolute_threshold) & kCarrierSenseAbsoluteMask;
   const uint8_t relative = static_cast<uint8_t>(relative_threshold << 4);
-  bool result =
-      UpdateRegisterBits(Register::kAgcctrl1, kCarrierSenseAbsoluteMask, absolute);
-  result &=
-      UpdateRegisterBits(Register::kAgcctrl1, kCarrierSenseRelativeMask, relative);
+  bool result = UpdateRegisterBits(
+      Register::kAgcctrl1, kCarrierSenseAbsoluteMask, absolute);
+  result &= UpdateRegisterBits(
+      Register::kAgcctrl1, kCarrierSenseRelativeMask, relative);
   if (result) {
     config_.carrier_sense_threshold = absolute_threshold;
     config_.carrier_sense_relative = relative_threshold;

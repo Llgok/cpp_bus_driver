@@ -2,7 +2,7 @@
  * @Description: HI8561 电容触摸控制器驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-08-11 00:00:00
+ * @LastEditTime: 2026-09-02 16:18:24
  * @License: GPL 3.0
  */
 #include "hi8561_touch.h"
@@ -49,8 +49,7 @@ bool Hi8561Touch::Init(int32_t freq_hz) {
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HI8561 init success (touch address: 0X%08lX, report size: %u)\n",
-      static_cast<unsigned long>(
-          runtime_layout_.coordinate_report.address),
+      static_cast<unsigned long>(runtime_layout_.coordinate_report.address),
       static_cast<unsigned int>(runtime_layout_.coordinate_report.length));
   last_debug_report_ms_ = GetSystemTimeMs();
   return true;
@@ -83,8 +82,7 @@ TouchReadStatus Hi8561Touch::ReadPrimaryTouch(TouchFrame* frame) {
   }
   *frame = TouchFrame();
 
-  if (!IsSectionValid(
-          runtime_layout_.coordinate_report, kPrimaryReportSize)) {
+  if (!IsSectionValid(runtime_layout_.coordinate_report, kPrimaryReportSize)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 read primary touch failed (driver is not initialized)\n");
     return TouchReadStatus::kInvalidData;
@@ -138,8 +136,7 @@ TouchReadStatus Hi8561Touch::ReadPrimaryTouch(TouchFrame* frame) {
           "HI8561 read primary touch failed (contact data exceeds report: "
           "count %u, size %lu)\n",
           static_cast<unsigned int>(reported_contact_count),
-          static_cast<unsigned long>(
-              runtime_layout_.coordinate_report.length));
+          static_cast<unsigned long>(runtime_layout_.coordinate_report.length));
       return TouchReadStatus::kInvalidData;
     }
     const uint32_t last_contact_address =
@@ -170,13 +167,12 @@ TouchReadStatus Hi8561Touch::ReadTouchFrame(TouchFrame* frame) {
   }
   *frame = TouchFrame();
 
-  if (!IsSectionValid(runtime_layout_.coordinate_report,
-          kTouchReportReadSize)) {
+  if (!IsSectionValid(
+          runtime_layout_.coordinate_report, kTouchReportReadSize)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 read touch frame failed (invalid report section: "
         "address 0X%08lX, size %lu)\n",
-        static_cast<unsigned long>(
-            runtime_layout_.coordinate_report.address),
+        static_cast<unsigned long>(runtime_layout_.coordinate_report.address),
         static_cast<unsigned long>(runtime_layout_.coordinate_report.length));
     return TouchReadStatus::kInvalidData;
   }
@@ -259,8 +255,7 @@ bool Hi8561Touch::ReadFirmwareInfo(FirmwareInfo* firmware_info) {
   }
   *firmware_info = FirmwareInfo();
 
-  if (runtime_layout_.dsram_section_count <=
-      kDsramFirmwareConfigSectionIndex) {
+  if (runtime_layout_.dsram_section_count <= kDsramFirmwareConfigSectionIndex) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "HI8561 read firmware info failed (driver is not initialized)\n");
     return false;
@@ -268,8 +263,8 @@ bool Hi8561Touch::ReadFirmwareInfo(FirmwareInfo* firmware_info) {
 
   SectionInfo firmware_config;
   if (!ReadSectionInfo(kDsramSectionTableAddress,
-          runtime_layout_.dsram_section_count,
-          kDsramFirmwareConfigSectionIndex, &firmware_config) ||
+          runtime_layout_.dsram_section_count, kDsramFirmwareConfigSectionIndex,
+          &firmware_config) ||
       !IsSectionValid(firmware_config, kFirmwareConfigSize)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "HI8561 read firmware info failed (firmware section unavailable: "
@@ -299,11 +294,11 @@ void Hi8561Touch::LogTouchReport(const char* mode, const uint8_t* report,
   std::array<char, kTouchReportReadSize * 3> raw_text{};
   size_t raw_used = 0;
   for (size_t i = 0; i < report_size; ++i) {
-    const int written = std::snprintf(raw_text.data() + raw_used,
-        raw_text.size() - raw_used, i == 0 ? "%02X" : " %02X",
-        static_cast<unsigned int>(report[i]));
-    if (written < 0 || static_cast<size_t>(written) >=
-                           raw_text.size() - raw_used) {
+    const int written =
+        std::snprintf(raw_text.data() + raw_used, raw_text.size() - raw_used,
+            i == 0 ? "%02X" : " %02X", static_cast<unsigned int>(report[i]));
+    if (written < 0 ||
+        static_cast<size_t>(written) >= raw_text.size() - raw_used) {
       break;
     }
     raw_used += static_cast<size_t>(written);
@@ -314,16 +309,15 @@ void Hi8561Touch::LogTouchReport(const char* mode, const uint8_t* report,
   for (size_t i = 0; i < frame.contact_count; ++i) {
     const TouchContact& contact = frame.contacts[i];
     const int written = std::snprintf(point_text.data() + point_used,
-        point_text.size() - point_used,
-        "%sP%u{id:%u,x:%u,y:%u,p:%u,tool:%u}", i == 0 ? "" : " ",
-        static_cast<unsigned int>(i + 1),
+        point_text.size() - point_used, "%sP%u{id:%u,x:%u,y:%u,p:%u,tool:%u}",
+        i == 0 ? "" : " ", static_cast<unsigned int>(i + 1),
         static_cast<unsigned int>(contact.id),
         static_cast<unsigned int>(contact.x),
         static_cast<unsigned int>(contact.y),
         static_cast<unsigned int>(contact.pressure),
         static_cast<unsigned int>(contact.tool));
-    if (written < 0 || static_cast<size_t>(written) >=
-                           point_text.size() - point_used) {
+    if (written < 0 ||
+        static_cast<size_t>(written) >= point_text.size() - point_used) {
       break;
     }
     point_used += static_cast<size_t>(written);
@@ -336,8 +330,7 @@ void Hi8561Touch::LogTouchReport(const char* mode, const uint8_t* report,
       mode, static_cast<unsigned int>(reported_contact_count),
       static_cast<unsigned int>(frame.contact_count),
       static_cast<unsigned int>(frame.sequence),
-      static_cast<unsigned int>(frame.gesture),
-      frame.edge_touch ? "yes" : "no",
+      static_cast<unsigned int>(frame.gesture), frame.edge_touch ? "yes" : "no",
       static_cast<unsigned int>(frame.state[0]),
       static_cast<unsigned int>(frame.state[1]),
       static_cast<unsigned int>(frame.state[2]),
@@ -374,8 +367,7 @@ bool Hi8561Touch::IsEdgeContact(const uint8_t* data) {
 
 bool Hi8561Touch::SetHighSensitivityEnabled(bool enabled) {
   std::lock_guard<std::mutex> lock(mutex_);
-  return WriteHostBooleanSetting(
-      kHighSensitivityOffset, enabled, 0x3A, 0xA3);
+  return WriteHostBooleanSetting(kHighSensitivityOffset, enabled, 0x3A, 0xA3);
 }
 
 bool Hi8561Touch::SetGestureWakeEnabled(bool enabled) {
@@ -421,8 +413,7 @@ bool Hi8561Touch::SetRotationBorderMode(RotationBorderMode mode) {
       static_cast<uint8_t>(value >> 8),
   };
   return WriteRuntimeMemory(
-      runtime_layout_.host.address + kRotationBorderOffset, data,
-      sizeof(data));
+      runtime_layout_.host.address + kRotationBorderOffset, data, sizeof(data));
 }
 
 bool Hi8561Touch::SetEarphoneConnected(
@@ -441,14 +432,12 @@ bool Hi8561Touch::SetEarphoneConnected(
       static_cast<uint8_t>(usb_connected ? 1 : 0),
   };
   return WriteRuntimeMemory(
-      runtime_layout_.host.address + kEarphoneStateOffset, data,
-      sizeof(data));
+      runtime_layout_.host.address + kEarphoneStateOffset, data, sizeof(data));
 }
 
 bool Hi8561Touch::SetVirtualProximityEnabled(bool enabled) {
   std::lock_guard<std::mutex> lock(mutex_);
-  return WriteHostBooleanSetting(
-      kVirtualProximityOffset, enabled, 0x3A, 0xA3);
+  return WriteHostBooleanSetting(kVirtualProximityOffset, enabled, 0x3A, 0xA3);
 }
 
 bool Hi8561Touch::GetFrequencyBand(uint8_t* frequency_band) {
@@ -543,8 +532,7 @@ bool Hi8561Touch::DiscoverRuntimeLayout() {
 
   if (!IsSectionValid(coordinate, kPrimaryReportSize) ||
       coordinate.address < kEramAddress ||
-      coordinate.address + kPrimaryReportSize >
-          kEramAddress + kEramSize) {
+      coordinate.address + kPrimaryReportSize > kEramAddress + kEramSize) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 dynamic section discovery failed (invalid required section: "
         "host 0X%08lX/%lu, coordinate 0X%08lX/%lu)\n",
@@ -562,8 +550,7 @@ bool Hi8561Touch::DiscoverRuntimeLayout() {
 }
 
 bool Hi8561Touch::ReadFirmwareInfoFromSection(
-    const SectionInfo& firmware_config_section,
-    FirmwareInfo* firmware_info) {
+    const SectionInfo& firmware_config_section, FirmwareInfo* firmware_info) {
   if (firmware_info == nullptr) {
     return false;
   }
@@ -580,13 +567,11 @@ bool Hi8561Touch::ReadFirmwareInfoFromSection(
 
   const bool config_read = ReadBackdoorMemory(
       firmware_config_section.address, config, sizeof(config));
-  const bool version_supported =
-      IsSectionValid(runtime_layout_.host,
-          kFirmwareVersionOffset + kFirmwareVersionSize);
+  const bool version_supported = IsSectionValid(
+      runtime_layout_.host, kFirmwareVersionOffset + kFirmwareVersionSize);
   const bool version_read =
       !version_supported ||
-      ReadBackdoorMemory(
-          runtime_layout_.host.address + kFirmwareVersionOffset,
+      ReadBackdoorMemory(runtime_layout_.host.address + kFirmwareVersionOffset,
           version_info, sizeof(version_info));
   const bool panel_supported = IsSectionValid(
       runtime_layout_.host, kPanelInfoOffset + kRuntimeFieldSize);

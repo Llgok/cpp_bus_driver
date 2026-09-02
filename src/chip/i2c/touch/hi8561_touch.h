@@ -2,7 +2,7 @@
  * @Description: HI8561 电容触摸控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-08-11 00:00:00
+ * @LastEditTime: 2026-09-02 16:18:26
  * @License: GPL 3.0
  */
 #pragma once
@@ -191,8 +191,7 @@ class Hi8561Touch final : public ChipI2cGuide {
   static constexpr size_t kPrimaryReportSize =
       kTouchCoordinateOffset + kTouchBytesPerContact;
   static constexpr size_t kTouchStateOffset =
-      kTouchCoordinateOffset +
-      kMaxTouchContactCount * kTouchBytesPerContact;
+      kTouchCoordinateOffset + kMaxTouchContactCount * kTouchBytesPerContact;
   // 仅读取公开的触点和状态字段，不假设不同固件私有尾部的校验布局。
   static constexpr size_t kTouchReportReadSize =
       kTouchStateOffset + kTouchStateSize;

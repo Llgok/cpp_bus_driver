@@ -2,7 +2,7 @@
  * @Description: S023MSAFJF10111E1 显示面板辅助控制驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-04-20 15:09:40
+ * @LastEditTime: 2026-09-02 16:15:37
  * @License: GPL 3.0
  */
 #include "s023msafjf10111e1.h"
@@ -48,30 +48,30 @@ bool S023msafjf10111e1::Deinit(bool delete_bus) {
 bool S023msafjf10111e1::SetDataFormat(DataFormat format) {
   switch (format) {
     case DataFormat::kRgb888:
-      if (!bus_->Write(
-              static_cast<uint16_t>(Register::kRwInternalTestModeRegisterControl1),
+      if (!bus_->Write(static_cast<uint16_t>(
+                           Register::kRwInternalTestModeRegisterControl1),
               0x14)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
 
-      if (!bus_->Write(
-              static_cast<uint16_t>(Register::kRwInternalTestModeRegisterControl2),
+      if (!bus_->Write(static_cast<uint16_t>(
+                           Register::kRwInternalTestModeRegisterControl2),
               0x40)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
       break;
     case DataFormat::kInternalTestMode:
-      if (!bus_->Write(
-              static_cast<uint16_t>(Register::kRwInternalTestModeRegisterControl1),
+      if (!bus_->Write(static_cast<uint16_t>(
+                           Register::kRwInternalTestModeRegisterControl1),
               0x15)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
 
-      if (!bus_->Write(
-              static_cast<uint16_t>(Register::kRwInternalTestModeRegisterControl2),
+      if (!bus_->Write(static_cast<uint16_t>(
+                           Register::kRwInternalTestModeRegisterControl2),
               0x80)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
@@ -137,13 +137,15 @@ bool S023msafjf10111e1::SetShowDirection(ShowDirection direction) {
       return false;
   }
 
-  if (!bus_->Write(static_cast<uint16_t>(Register::kRwHorizontalVerticalMirror1),
+  if (!bus_->Write(
+          static_cast<uint16_t>(Register::kRwHorizontalVerticalMirror1),
           buffer[0])) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
-  if (!bus_->Write(static_cast<uint16_t>(Register::kRwHorizontalVerticalMirror2),
+  if (!bus_->Write(
+          static_cast<uint16_t>(Register::kRwHorizontalVerticalMirror2),
           buffer[1])) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;

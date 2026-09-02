@@ -2,7 +2,7 @@
  * @Description: ICN6211 MIPI-DSI 转 RGB 桥接芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-01-16 11:57:07
- * @LastEditTime: 2026-04-23 17:15:51
+ * @LastEditTime: 2026-09-02 16:15:33
  * @License: GPL 3.0
  */
 #include "icn6211.h"
@@ -316,14 +316,14 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
   }
 
   // 设置PLL相关寄存器
-  if (!bus_->Write(
-          static_cast<uint8_t>(Register::kPllWtLock), static_cast<uint8_t>(0xFF))) {
+  if (!bus_->Write(static_cast<uint8_t>(Register::kPllWtLock),
+          static_cast<uint8_t>(0xFF))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
-  if (!bus_->Write(
-          static_cast<uint8_t>(Register::kPllCtrl1), static_cast<uint8_t>(0x20))) {
+  if (!bus_->Write(static_cast<uint8_t>(Register::kPllCtrl1),
+          static_cast<uint8_t>(0x20))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -353,7 +353,8 @@ bool Icn6211::SetPolarityEnable(bool de, bool vsync, bool hsync) {
     buffer |= 0x04;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kSyncPolarityTestMode), buffer)) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kSyncPolarityTestMode), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -389,7 +390,8 @@ bool Icn6211::SetRgbOutputFormat(
 bool Icn6211::SetTestMode(TestMode mode) {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kSyncPolarityTestMode), &buffer)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kSyncPolarityTestMode), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -419,7 +421,8 @@ bool Icn6211::SetTestMode(TestMode mode) {
   buffer = (buffer & 0B00000111) | static_cast<uint8_t>(mode);
 
   // 写入 kBist 模式
-  if (!bus_->Write(static_cast<uint8_t>(Register::kSyncPolarityTestMode), buffer)) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kSyncPolarityTestMode), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -430,7 +433,8 @@ bool Icn6211::SetTestMode(TestMode mode) {
 bool Icn6211::SetChipEnable(bool enable) {
   uint8_t buffer = enable << 4;
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kConfigFinishSoftReset), buffer)) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kConfigFinishSoftReset), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

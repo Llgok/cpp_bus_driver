@@ -2,7 +2,7 @@
  * @Description: AXP517 电源管理芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-02-03 15:06:34
- * @LastEditTime: 2026-08-03 16:11:02
+ * @LastEditTime: 2026-09-02 16:15:24
  * @License: GPL 3.0
  */
 #pragma once

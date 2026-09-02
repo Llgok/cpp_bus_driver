@@ -2,7 +2,7 @@
  * @Description: HI8561 MIPI-DSI 显示面板驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-04-20 15:35:57
+ * @LastEditTime: 2026-09-02 16:15:50
  * @License: GPL 3.0
  */
 #include "hi8561.h"
@@ -69,8 +69,8 @@ uint16_t Hi8561::GetChipId() {
   uint8_t buffer[2] = {0};
 
   for (uint8_t i = 0; i < 2; i++) {
-    if (!bus_->Read(
-            static_cast<uint8_t>(DcsCommand::kRoChipIdStart) + i, &buffer[i], 1)) {
+    if (!bus_->Read(static_cast<uint8_t>(DcsCommand::kRoChipIdStart) + i,
+            &buffer[i], 1)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return -1;
     }
@@ -172,8 +172,8 @@ bool Hi8561::SetColorOrder(ColorOrder order) {
 }
 
 bool Hi8561::SetCabcMode(CabcMode mode) {
-  if (!bus_->Write(
-          static_cast<uint8_t>(DcsCommand::kWoWrcabc), static_cast<uint8_t>(mode))) {
+  if (!bus_->Write(static_cast<uint8_t>(DcsCommand::kWoWrcabc),
+          static_cast<uint8_t>(mode))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

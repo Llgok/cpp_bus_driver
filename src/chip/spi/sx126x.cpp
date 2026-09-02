@@ -2,7 +2,7 @@
  * @Description: Semtech SX1261/SX1262 无线收发芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-08-03 16:11:59
+ * @LastEditTime: 2026-09-02 16:18:11
  * @License: GPL 3.0
  */
 #include "sx126x.h"
@@ -100,8 +100,8 @@ bool Sx126x::Deinit(bool delete_bus) {
 
 bool Sx126x::GetChipId(ChipId& chip_id) {
   chip_id = ChipId{};
-  if (!ReadRegister(static_cast<uint16_t>(Reg::kRoChipId),
-          chip_id.bytes.data(), chip_id.bytes.size())) {
+  if (!ReadRegister(static_cast<uint16_t>(Reg::kRoChipId), chip_id.bytes.data(),
+          chip_id.bytes.size())) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }

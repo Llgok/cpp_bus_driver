@@ -2,7 +2,7 @@
  * @Description: Semtech SX1261/SX1262 无线收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-08-19 16:32:57
+ * @LastEditTime: 2026-09-02 16:18:12
  * @License: GPL 3.0
  */
 #pragma once
@@ -562,7 +562,7 @@ class Sx126x final : public ChipSpiGuide {
    * @return 读取成功返回 true，否则返回 false。
    */
   bool GetChipId(ChipId& chip_id);
-  
+
   bool IsInitialized() const { return initialized_; }
   bool IsSleeping() const { return sleeping_; }
   bool IsConfigured() const { return configured_; }

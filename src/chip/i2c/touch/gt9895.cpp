@@ -2,7 +2,7 @@
  * @Description: GT9895 电容触摸控制器驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-07-09 09:15:31
- * @LastEditTime: 2026-08-11 00:00:00
+ * @LastEditTime: 2026-09-02 16:18:20
  * @License: GPL 3.0
  */
 #include "gt9895.h"
@@ -17,8 +17,7 @@ namespace cpp_bus_driver {
 namespace {
 
 uint16_t ReadLittleEndian16(const uint8_t* data) {
-  return static_cast<uint16_t>(data[0]) |
-         (static_cast<uint16_t>(data[1]) << 8);
+  return static_cast<uint16_t>(data[0]) | (static_cast<uint16_t>(data[1]) << 8);
 }
 
 uint32_t ReadLittleEndian32(const uint8_t* data) {
@@ -129,16 +128,14 @@ bool Gt9895::SetPocketModeEnabled(bool enabled) {
   return SendBooleanCommand(Command::kPocketMode, enabled);
 }
 
-bool Gt9895::SetEdgeRejectionOrientation(
-    EdgeRejectionOrientation orientation) {
+bool Gt9895::SetEdgeRejectionOrientation(EdgeRejectionOrientation orientation) {
   switch (orientation) {
     case EdgeRejectionOrientation::kPortrait:
-      return SendCommand(
-          Command::kExitLandscapeEdgeRejection, nullptr, 0);
+      return SendCommand(Command::kExitLandscapeEdgeRejection, nullptr, 0);
     case EdgeRejectionOrientation::kLandscapeLeft: {
       constexpr uint8_t kLandscapeLeft = 0;
-      return SendCommand(Command::kEnterLandscapeEdgeRejection,
-          &kLandscapeLeft, sizeof(kLandscapeLeft));
+      return SendCommand(Command::kEnterLandscapeEdgeRejection, &kLandscapeLeft,
+          sizeof(kLandscapeLeft));
     }
     case EdgeRejectionOrientation::kLandscapeRight: {
       constexpr uint8_t kLandscapeRight = 1;
@@ -155,8 +152,7 @@ bool Gt9895::SetEdgeRejectionOrientation(
 }
 
 bool Gt9895::UpdateMutualCapacitanceBaseline() {
-  return SendCommand(Command::kUpdateMutualCapacitanceBaseline,
-      nullptr, 0);
+  return SendCommand(Command::kUpdateMutualCapacitanceBaseline, nullptr, 0);
 }
 
 bool Gt9895::SetTouchReportingMode(TouchReportingMode mode) {
@@ -204,8 +200,7 @@ bool Gt9895::SetRefreshRateIndex(uint8_t index) {
 
 bool Gt9895::EnterGestureMode() {
   constexpr uint8_t kDoubleTapGestureConfiguration[] = {0xFF, 0xFF};
-  return SendCommand(Command::kEnterGestureMode,
-      kDoubleTapGestureConfiguration,
+  return SendCommand(Command::kEnterGestureMode, kDoubleTapGestureConfiguration,
       sizeof(kDoubleTapGestureConfiguration));
 }
 
@@ -281,8 +276,7 @@ TouchReadStatus Gt9895::ReadTouchReport(
     }
     frame->event_flags = report[0];
     frame->sequence = report[1];
-    const bool gesture_event_received =
-        (report[0] & kGestureEventMask) != 0;
+    const bool gesture_event_received = (report[0] & kGestureEventMask) != 0;
     if (gesture_event_received) {
       frame->gesture = report[4];
     }
@@ -301,8 +295,7 @@ TouchReadStatus Gt9895::ReadTouchReport(
 
     uint8_t reported_contact_count = report[2] & 0x0F;
     if (reported_contact_count > kMaxTouchContactCount) {
-      LogInvalidTouchReport(
-          "contact count", report.data(), report_size, 0);
+      LogInvalidTouchReport("contact count", report.data(), report_size, 0);
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "GT9895 read touch report failed (contact count: %u)\n",
           static_cast<unsigned int>(reported_contact_count));
@@ -330,8 +323,7 @@ TouchReadStatus Gt9895::ReadTouchReport(
           complete_report_size - initial_report_size;
       // 首次读取已经取得报告前缀，只续读剩余数据，避免重新读取整帧时
       // 控制器更新报告区导致前后两次数据属于不同帧。
-      if (!ReadRegister(
-              runtime_info_.touch_data_address + initial_report_size,
+      if (!ReadRegister(runtime_info_.touch_data_address + initial_report_size,
               report.data() + initial_report_size, remaining_report_size)) {
         failure_status = TouchReadStatus::kBusError;
         if (!retry_available) {
@@ -410,11 +402,11 @@ void Gt9895::LogTouchReport(const char* mode, const uint8_t* report,
   std::array<char, kMaximumReportSize * 3> raw_text{};
   size_t raw_used = 0;
   for (size_t i = 0; i < report_size; ++i) {
-    const int written = std::snprintf(raw_text.data() + raw_used,
-        raw_text.size() - raw_used, i == 0 ? "%02X" : " %02X",
-        static_cast<unsigned int>(report[i]));
-    if (written < 0 || static_cast<size_t>(written) >=
-                           raw_text.size() - raw_used) {
+    const int written =
+        std::snprintf(raw_text.data() + raw_used, raw_text.size() - raw_used,
+            i == 0 ? "%02X" : " %02X", static_cast<unsigned int>(report[i]));
+    if (written < 0 ||
+        static_cast<size_t>(written) >= raw_text.size() - raw_used) {
       break;
     }
     raw_used += static_cast<size_t>(written);
@@ -425,16 +417,15 @@ void Gt9895::LogTouchReport(const char* mode, const uint8_t* report,
   for (size_t i = 0; i < frame.contact_count; ++i) {
     const TouchContact& contact = frame.contacts[i];
     const int written = std::snprintf(point_text.data() + point_used,
-        point_text.size() - point_used,
-        "%sP%u{id:%u,x:%u,y:%u,p:%u,tool:%u}", i == 0 ? "" : " ",
-        static_cast<unsigned int>(i + 1),
+        point_text.size() - point_used, "%sP%u{id:%u,x:%u,y:%u,p:%u,tool:%u}",
+        i == 0 ? "" : " ", static_cast<unsigned int>(i + 1),
         static_cast<unsigned int>(contact.id),
         static_cast<unsigned int>(contact.x),
         static_cast<unsigned int>(contact.y),
         static_cast<unsigned int>(contact.pressure),
         static_cast<unsigned int>(contact.tool));
-    if (written < 0 || static_cast<size_t>(written) >=
-                           point_text.size() - point_used) {
+    if (written < 0 ||
+        static_cast<size_t>(written) >= point_text.size() - point_used) {
       break;
     }
     point_used += static_cast<size_t>(written);
@@ -473,11 +464,11 @@ void Gt9895::LogInvalidTouchReport(const char* reason, const uint8_t* report,
   std::array<char, kMaximumReportSize * 3> raw_text{};
   size_t raw_used = 0;
   for (size_t i = 0; i < report_size; ++i) {
-    const int written = std::snprintf(raw_text.data() + raw_used,
-        raw_text.size() - raw_used, i == 0 ? "%02X" : " %02X",
-        static_cast<unsigned int>(report[i]));
-    if (written < 0 || static_cast<size_t>(written) >=
-                           raw_text.size() - raw_used) {
+    const int written =
+        std::snprintf(raw_text.data() + raw_used, raw_text.size() - raw_used,
+            i == 0 ? "%02X" : " %02X", static_cast<unsigned int>(report[i]));
+    if (written < 0 ||
+        static_cast<size_t>(written) >= raw_text.size() - raw_used) {
       break;
     }
     raw_used += static_cast<size_t>(written);
@@ -492,7 +483,7 @@ void Gt9895::LogInvalidTouchReport(const char* reason, const uint8_t* report,
       (static_cast<uint16_t>(report[kEventHeaderSize - 1]) << 8);
 
   const bool payload_available = payload_size >= kChecksumSize &&
-      kEventHeaderSize + payload_size <= report_size;
+                                 kEventHeaderSize + payload_size <= report_size;
   uint32_t payload_sum = 0;
   uint16_t payload_expected = 0;
   if (payload_available) {
@@ -512,8 +503,7 @@ void Gt9895::LogInvalidTouchReport(const char* reason, const uint8_t* report,
       static_cast<unsigned int>(report[2] & 0x0F),
       static_cast<unsigned int>(static_cast<uint16_t>(header_sum)),
       static_cast<unsigned int>(header_expected),
-      static_cast<unsigned int>(payload_size),
-      payload_available ? "yes" : "no",
+      static_cast<unsigned int>(payload_size), payload_available ? "yes" : "no",
       static_cast<unsigned int>(static_cast<uint16_t>(payload_sum)),
       static_cast<unsigned int>(payload_expected),
       static_cast<unsigned int>(report_size), raw_text.data());
@@ -545,8 +535,7 @@ bool Gt9895::EnterSleep() {
       0x88,
       0x00,
   };
-  if (!WriteRegister(
-          runtime_info_.command_address, command, sizeof(command))) {
+  if (!WriteRegister(runtime_info_.command_address, command, sizeof(command))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "GT9895 sleep failed (command transfer failed)\n");
     return false;
@@ -661,8 +650,8 @@ bool Gt9895::ReadRuntimeInfo(RuntimeInfo* runtime_info) {
     return false;
   }
   const size_t length = ReadLittleEndian16(length_data);
-  const size_t minimum_length = sizeof(length_data) +
-      kRuntimeInfoVersionSize + kRuntimeInfoFeatureSize +
+  const size_t minimum_length =
+      sizeof(length_data) + kRuntimeInfoVersionSize + kRuntimeInfoFeatureSize +
       kRuntimeInfoFixedParameterSize + kRuntimeInfoVariableArrayCount +
       kRuntimeInfoMiscMinimumSize + kChecksumSize;
   if (length < minimum_length || length > kMaximumRuntimeInfoSize) {
@@ -691,17 +680,15 @@ bool Gt9895::ReadRuntimeInfo(RuntimeInfo* runtime_info) {
   parsed.config_version = data[offset + 8];
   offset += kRuntimeInfoVersionSize;
 
-  parsed.frequency_hopping_feature =
-      ReadLittleEndian16(data.get() + offset);
-  parsed.calibration_feature =
-      ReadLittleEndian16(data.get() + offset + 2);
+  parsed.frequency_hopping_feature = ReadLittleEndian16(data.get() + offset);
+  parsed.calibration_feature = ReadLittleEndian16(data.get() + offset + 2);
   parsed.gesture_feature = ReadLittleEndian16(data.get() + offset + 4);
   parsed.side_touch_feature = ReadLittleEndian16(data.get() + offset + 6);
   parsed.stylus_feature = ReadLittleEndian16(data.get() + offset + 8);
   offset += kRuntimeInfoFeatureSize + kRuntimeInfoFixedParameterSize;
 
-  for (size_t array_index = 0;
-       array_index < kRuntimeInfoVariableArrayCount; ++array_index) {
+  for (size_t array_index = 0; array_index < kRuntimeInfoVariableArrayCount;
+      ++array_index) {
     if (offset >= length - kChecksumSize) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "GT9895 runtime information is invalid (parameter header)\n");
@@ -730,10 +717,8 @@ bool Gt9895::ReadRuntimeInfo(RuntimeInfo* runtime_info) {
     return false;
   }
   parsed.command_address = ReadLittleEndian32(data.get() + offset);
-  parsed.command_max_length =
-      ReadLittleEndian16(data.get() + offset + 4);
-  parsed.touch_data_address =
-      ReadLittleEndian32(data.get() + offset + 44);
+  parsed.command_max_length = ReadLittleEndian16(data.get() + offset + 4);
+  parsed.touch_data_address = ReadLittleEndian32(data.get() + offset + 44);
   if (parsed.command_address == 0 || parsed.command_max_length < 6 ||
       parsed.touch_data_address == 0) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
@@ -764,8 +749,7 @@ bool Gt9895::ReadRegister(uint32_t address, uint8_t* data, size_t length) {
 
 bool Gt9895::WriteRegister(
     uint32_t address, const uint8_t* data, size_t length) {
-  if (data == nullptr || length == 0 ||
-      length > kMaximumCommandPacketSize) {
+  if (data == nullptr || length == 0 || length > kMaximumCommandPacketSize) {
     return false;
   }
 
@@ -818,8 +802,8 @@ bool Gt9895::SendCommand(
   std::array<uint8_t, 2> acknowledgement{};
   uint8_t last_acknowledgement = 0;
   for (size_t attempt = 0; attempt < kCommandRetryCount; ++attempt) {
-    if (!WriteRegister(runtime_info_.command_address, packet.data(),
-            packet_length)) {
+    if (!WriteRegister(
+            runtime_info_.command_address, packet.data(), packet_length)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "GT9895 command failed (command: 0X%02X, write attempt: %zu)\n",
           static_cast<unsigned int>(command_value), attempt + 1);
@@ -858,9 +842,8 @@ bool Gt9895::SendCommand(
       "GT9895 command failed (command: 0X%02X, ACK: 0X%02X%s)\n",
       static_cast<unsigned int>(command_value),
       static_cast<unsigned int>(last_acknowledgement),
-      last_acknowledgement == kCommandAckChecksumError
-          ? ", checksum rejected"
-          : "");
+      last_acknowledgement == kCommandAckChecksumError ? ", checksum rejected"
+                                                       : "");
   return false;
 }
 

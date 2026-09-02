@@ -509,9 +509,8 @@ int64_t Tool::GetSystemTimeMs() {
 }
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-bool Tool::InitGpioInterrupt(
-    uint32_t pin, InterruptMode mode, void (*interrupt)(void*), void* args,
-    GpioStatus status) {
+bool Tool::InitGpioInterrupt(uint32_t pin, InterruptMode mode,
+    void (*interrupt)(void*), void* args, GpioStatus status) {
   if (pin >= static_cast<uint32_t>(GPIO_NUM_MAX)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Value out of range (gpio pin: %u)\n", pin);

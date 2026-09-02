@@ -2,7 +2,7 @@
  * @Description: XL95x5 GPIO 扩展芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-05-26 17:40:38
+ * @LastEditTime: 2026-09-02 16:15:45
  * @License: GPL 3.0
  */
 #include "xl95x5.h"
@@ -209,8 +209,8 @@ bool Xl95x5::ClearIrqFlag() {
   uint8_t buffer = 0;
 
   for (uint8_t i = 0; i < 2; i++) {
-    if (!bus_->Read(
-            static_cast<uint8_t>(static_cast<uint8_t>(Register::kRoInputPort0) + i),
+    if (!bus_->Read(static_cast<uint8_t>(
+                        static_cast<uint8_t>(Register::kRoInputPort0) + i),
             &buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return false;

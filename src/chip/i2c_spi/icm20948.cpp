@@ -2,7 +2,7 @@
  * @Description: ICM20948 九轴惯性传感器 I2C/SPI 共用驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-31 15:20:00
- * @LastEditTime: 2026-08-03 16:11:40
+ * @LastEditTime: 2026-09-02 16:15:53
  * @License: GPL 3.0
  */
 #include "icm20948.h"
@@ -237,8 +237,8 @@ bool Icm20948::SetSensorEnabled(bool accelerometer_enabled,
   config_.accelerometer_enabled = accelerometer_enabled;
   config_.gyroscope_enabled = gyroscope_enabled;
 
-  if (!UpdateRegister(
-          Register::kRwPowerManagement1, 0x08, temperature_enabled ? 0x00 : 0x08)) {
+  if (!UpdateRegister(Register::kRwPowerManagement1, 0x08,
+          temperature_enabled ? 0x00 : 0x08)) {
     return false;
   }
   config_.temperature_enabled = temperature_enabled;
@@ -336,8 +336,8 @@ bool Icm20948::SetAccelSampleRateDivider(uint16_t divider) {
           static_cast<uint8_t>((divider >> 8) & 0x0F))) {
     return false;
   }
-  if (!WriteRegister(
-          Register::kRwAccelSampleRateDividerLow, static_cast<uint8_t>(divider))) {
+  if (!WriteRegister(Register::kRwAccelSampleRateDividerLow,
+          static_cast<uint8_t>(divider))) {
     const bool rollback_result =
         WriteRegister(Register::kRwAccelSampleRateDividerHigh,
             static_cast<uint8_t>((previous_divider >> 8) & 0x0F)) &&
@@ -359,7 +359,8 @@ bool Icm20948::SetGyroSampleRateDivider(uint8_t divider) {
     return false;
   }
 
-  const bool result = WriteRegister(Register::kRwGyroSampleRateDivider, divider);
+  const bool result =
+      WriteRegister(Register::kRwGyroSampleRateDivider, divider);
   if (result) {
     config_.gyro_sample_rate_divider = divider;
   }
@@ -549,7 +550,8 @@ bool Icm20948::ReadMagnetometer(Vector3& magnetic_field_ut, bool& data_ready,
   }
 
   uint8_t buffer[9] = {0};
-  if (!ReadRegister(Register::kRoExternalSensorData00, buffer, sizeof(buffer))) {
+  if (!ReadRegister(
+          Register::kRoExternalSensorData00, buffer, sizeof(buffer))) {
     return false;
   }
 
@@ -712,8 +714,8 @@ bool Icm20948::ConfigureDevice(const Config& config) {
 
   if (!WriteRegister(Register::kRwGyroConfig1, gyro_config) ||
       !WriteRegister(Register::kRwAccelConfig, accel_config) ||
-      !WriteRegister(
-          Register::kRwGyroSampleRateDivider, config.gyro_sample_rate_divider) ||
+      !WriteRegister(Register::kRwGyroSampleRateDivider,
+          config.gyro_sample_rate_divider) ||
       !WriteRegister(Register::kRwAccelSampleRateDividerHigh,
           static_cast<uint8_t>(
               (config.accel_sample_rate_divider >> 8) & 0x0F)) ||
@@ -923,14 +925,14 @@ bool Icm20948::ReadAk09916Register(
 
   uint8_t ignored_status = 0;
   if (result) {
-    result =
-        ReadRegister(Register::kRoI2cMasterStatus, &ignored_status) &&
-        WriteRegister(Register::kRwI2cSlave4Address,
-            static_cast<uint8_t>(kAk09916Address | 0x80)) &&
-        WriteRegister(Register::kRwI2cSlave4Register, static_cast<uint8_t>(cmd)) &&
-        WriteRegister(Register::kRwI2cSlave4Ctrl, 0x80) &&
-        WaitForAuxiliaryTransaction() &&
-        ReadRegister(Register::kRoI2cSlave4DataIn, &data);
+    result = ReadRegister(Register::kRoI2cMasterStatus, &ignored_status) &&
+             WriteRegister(Register::kRwI2cSlave4Address,
+                 static_cast<uint8_t>(kAk09916Address | 0x80)) &&
+             WriteRegister(
+                 Register::kRwI2cSlave4Register, static_cast<uint8_t>(cmd)) &&
+             WriteRegister(Register::kRwI2cSlave4Ctrl, 0x80) &&
+             WaitForAuxiliaryTransaction() &&
+             ReadRegister(Register::kRoI2cSlave4DataIn, &data);
   }
 
   if (restore_stream &&
@@ -954,7 +956,8 @@ bool Icm20948::WriteAk09916Register(Ak09916Cmd cmd, uint8_t data) {
   }
   return ReadRegister(Register::kRoI2cMasterStatus, &ignored_status) &&
          WriteRegister(Register::kRwI2cSlave4Address, kAk09916Address) &&
-         WriteRegister(Register::kRwI2cSlave4Register, static_cast<uint8_t>(cmd)) &&
+         WriteRegister(
+             Register::kRwI2cSlave4Register, static_cast<uint8_t>(cmd)) &&
          WriteRegister(Register::kRwI2cSlave4DataOut, data) &&
          WriteRegister(Register::kRwI2cSlave4Ctrl, 0x80) &&
          WaitForAuxiliaryTransaction();

@@ -2,7 +2,7 @@
  * @Description: AW862xx 触觉反馈驱动芯片实现
  * @Author: LILYGO_L
  * @Date: 2024-12-26 11:13:26
- * @LastEditTime: 2026-08-03 16:10:56
+ * @LastEditTime: 2026-09-02 16:15:15
  * @License: GPL 3.0
  */
 #include "aw862xx.h"
@@ -217,13 +217,13 @@ bool Aw862xx::Init(int32_t freq_hz) {
   // 正常工作时芯片标识可能暂时不可读，因此用状态寄存器确认设备存在。
   uint8_t buffer = 0;
   if (!bus_->Read(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Get aw862xx chip id failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "Get aw862xx chip id failed\n");
     return false;
   }
 
-  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "Get aw862xx chip id success\n");
+  LogMessage(
+      LogLevel::kInfo, __FILE__, __LINE__, "Get aw862xx chip id success\n");
 
   return true;
 }
@@ -254,11 +254,12 @@ Aw862xx::ChipType Aw862xx::GetChipId() {
   chip_type_ = ChipType::kUnknown;
 
   uint8_t chip_id_high = 0;
-  if (bus_->Read(static_cast<uint8_t>(Register::kRoChipIdHigh), &chip_id_high)) {
+  if (bus_->Read(
+          static_cast<uint8_t>(Register::kRoChipIdHigh), &chip_id_high)) {
     if (chip_id_high == 0x23) {
       uint8_t chip_id_low = 0;
-      if (bus_->Read(
-              static_cast<uint8_t>(Register::kRoAw8623xChipIdLow), &chip_id_low)) {
+      if (bus_->Read(static_cast<uint8_t>(Register::kRoAw8623xChipIdLow),
+              &chip_id_low)) {
         switch ((static_cast<uint16_t>(chip_id_high) << 8) | chip_id_low) {
           case 0x2330:
             chip_type_ = ChipType::kAw86233;
@@ -278,8 +279,8 @@ Aw862xx::ChipType Aw862xx::GetChipId() {
 
     if (chip_id_high == 0x24) {
       uint8_t chip_id_low = 0;
-      if (bus_->Read(
-              static_cast<uint8_t>(Register::kRoAw8624xChipIdLow), &chip_id_low)) {
+      if (bus_->Read(static_cast<uint8_t>(Register::kRoAw8624xChipIdLow),
+              &chip_id_low)) {
         switch ((static_cast<uint16_t>(chip_id_high) << 8) | chip_id_low) {
           case 0x2430:
             chip_type_ = ChipType::kAw86243;
@@ -344,8 +345,8 @@ Aw862xx::ChipType Aw862xx::GetChipId() {
 }
 
 bool Aw862xx::SoftwareReset() {
-  if (!bus_->Write(
-          static_cast<uint8_t>(Register::kWoSrst), static_cast<uint8_t>(0xAA))) {
+  if (!bus_->Write(static_cast<uint8_t>(Register::kWoSrst),
+          static_cast<uint8_t>(0xAA))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return -1;
   }
@@ -782,8 +783,8 @@ uint32_t Aw862xx::GetF0Detection() {
   uint8_t buffer[2] = {0};
 
   for (uint8_t i = 0; i < 2; i++) {
-    if (!bus_->Read(
-            static_cast<uint8_t>(static_cast<uint8_t>(Register::kRoContrd14) + i),
+    if (!bus_->Read(static_cast<uint8_t>(
+                        static_cast<uint8_t>(Register::kRoContrd14) + i),
             &buffer[i])) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return -1;
@@ -901,8 +902,8 @@ bool Aw862xx::SetRamInit(bool enable) {
 }
 
 bool Aw862xx::SetRrtModeGain(uint8_t gain) {
-  if (!bus_->Write(
-          static_cast<uint8_t>(Register::kRwPlaycfg2), static_cast<uint8_t>(gain))) {
+  if (!bus_->Write(static_cast<uint8_t>(Register::kRwPlaycfg2),
+          static_cast<uint8_t>(gain))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -1031,8 +1032,8 @@ bool Aw862xx::SetRamAddress(uint16_t ram_addr) {
   const uint8_t buffer[2] = {static_cast<uint8_t>(ram_addr >> 8),
       static_cast<uint8_t>(ram_addr & 0xFF)};
 
-  if (!bus_->Write(
-          static_cast<uint8_t>(Register::kRwRamaddrh), buffer, sizeof(buffer))) {
+  if (!bus_->Write(static_cast<uint8_t>(Register::kRwRamaddrh), buffer,
+          sizeof(buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -1040,8 +1041,8 @@ bool Aw862xx::SetRamAddress(uint16_t ram_addr) {
   return true;
 }
 
-Aw862xx::RamVerificationResult Aw862xx::VerifyRamData(uint16_t ram_addr,
-    const uint8_t* expected_data, size_t length) {
+Aw862xx::RamVerificationResult Aw862xx::VerifyRamData(
+    uint16_t ram_addr, const uint8_t* expected_data, size_t length) {
   constexpr size_t kRamReadChunkSize = 32;
   constexpr uint16_t kRamAddressLimit = 0x1000;
 
@@ -1049,16 +1050,14 @@ Aw862xx::RamVerificationResult Aw862xx::VerifyRamData(uint16_t ram_addr,
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Verify ram data failed (reason: expected data is null, base "
         "address: %#X, length: %u)\n",
-        static_cast<unsigned int>(ram_addr),
-        static_cast<unsigned int>(length));
+        static_cast<unsigned int>(ram_addr), static_cast<unsigned int>(length));
     return RamVerificationResult::kError;
   }
   if (length == 0) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Verify ram data failed (reason: data is empty, base address: %#X, "
         "length: %u)\n",
-        static_cast<unsigned int>(ram_addr),
-        static_cast<unsigned int>(length));
+        static_cast<unsigned int>(ram_addr), static_cast<unsigned int>(length));
     return RamVerificationResult::kError;
   }
   if (ram_addr >= kRamAddressLimit) {
@@ -1083,10 +1082,8 @@ Aw862xx::RamVerificationResult Aw862xx::VerifyRamData(uint16_t ram_addr,
   uint8_t read_buffer[kRamReadChunkSize] = {};
   size_t offset = 0;
   while (offset < length) {
-    const size_t chunk_length =
-        std::min(kRamReadChunkSize, length - offset);
-    const uint16_t chunk_address =
-        static_cast<uint16_t>(ram_addr + offset);
+    const size_t chunk_length = std::min(kRamReadChunkSize, length - offset);
+    const uint16_t chunk_address = static_cast<uint16_t>(ram_addr + offset);
 
     // 每次分块读取前都显式设置地址，避免依赖不同 I2C 后端在事务之间
     // 保持 AW86224 SRAM 数据指针。
@@ -1227,8 +1224,8 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
     }
 #else
     if (operation_result &&
-        !bus_->Write(
-            static_cast<uint8_t>(Register::kRwRamadata), waveform_data, length)) {
+        !bus_->Write(static_cast<uint8_t>(Register::kRwRamadata), waveform_data,
+            length)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       operation_result = false;
     }
@@ -1315,8 +1312,8 @@ bool Aw862xx::SetRamWaveformSequence(
     return false;
   }
 
-  if (!bus_->Write(
-          static_cast<uint8_t>(static_cast<uint8_t>(Register::kRwWavcfg1) + slot),
+  if (!bus_->Write(static_cast<uint8_t>(
+                       static_cast<uint8_t>(Register::kRwWavcfg1) + slot),
           waveform_sequence_number)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -1337,7 +1334,8 @@ bool Aw862xx::SetRamWaveformLoop(uint8_t slot, uint8_t loop_count) {
   }
 
   uint8_t buffer = 0;
-  const uint8_t loop_reg = static_cast<uint8_t>(Register::kRwWavcfg9) + (slot / 2);
+  const uint8_t loop_reg =
+      static_cast<uint8_t>(Register::kRwWavcfg9) + (slot / 2);
   if (!bus_->Read(loop_reg, &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -1404,8 +1402,8 @@ bool Aw862xx::ConfigureRamPlaybackWaveform(uint8_t waveform_sequence_number,
   }
 
   // 设置停止
-  if (!bus_->Write(
-          static_cast<uint8_t>(Register::kRwWavcfg2), static_cast<uint8_t>(0))) {
+  if (!bus_->Write(static_cast<uint8_t>(Register::kRwWavcfg2),
+          static_cast<uint8_t>(0))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

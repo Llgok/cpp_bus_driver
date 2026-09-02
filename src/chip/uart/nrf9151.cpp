@@ -2,7 +2,7 @@
  * @Description: nRF9151 蜂窝通信与 GNSS 模块驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-11 11:58:39
- * @LastEditTime: 2026-08-03 16:12:04
+ * @LastEditTime: 2026-09-02 16:18:18
  * @License: GPL 3.0
  */
 #include "nrf9151.h"
@@ -102,8 +102,7 @@ bool Nrf9151::Init(int32_t baud_rate) {
   return Init(baud_rate, kDefaultInitializationTimeoutMs);
 }
 
-bool Nrf9151::Init(
-    int32_t baud_rate, uint32_t initialization_timeout_ms) {
+bool Nrf9151::Init(int32_t baud_rate, uint32_t initialization_timeout_ms) {
   if (initialization_timeout_ms == 0) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
@@ -124,8 +123,8 @@ bool Nrf9151::Init(
       break;
     }
 
-    const uint32_t remaining_ms = static_cast<uint32_t>(
-        initialization_timeout_ms - elapsed_ms);
+    const uint32_t remaining_ms =
+        static_cast<uint32_t>(initialization_timeout_ms - elapsed_ms);
     const uint32_t command_timeout_ms =
         std::min(kDefaultCommandTimeoutMs, remaining_ms);
     ++probe_attempts;

@@ -2,7 +2,7 @@
  * @Description: SGM38121 多通道 LDO 稳压器驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-08-03 16:11:23
+ * @LastEditTime: 2026-09-02 16:15:39
  * @License: GPL 3.0
  */
 #include "sgm38121.h"
@@ -82,7 +82,8 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
       }
       buffer = (voltage - 504) / 8;
       if (!bus_->Write(
-              static_cast<uint8_t>(Register::kRwDvdd1OutputVoltageLevel), buffer)) {
+              static_cast<uint8_t>(Register::kRwDvdd1OutputVoltageLevel),
+              buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
@@ -99,7 +100,8 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
       }
       buffer = (voltage - 504) / 8;
       if (!bus_->Write(
-              static_cast<uint8_t>(Register::kRwDvdd2OutputVoltageLevel), buffer)) {
+              static_cast<uint8_t>(Register::kRwDvdd2OutputVoltageLevel),
+              buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
@@ -116,7 +118,8 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
       }
       buffer = (voltage - 1384) / 8;
       if (!bus_->Write(
-              static_cast<uint8_t>(Register::kRwAvdd1OutputVoltageLevel), buffer)) {
+              static_cast<uint8_t>(Register::kRwAvdd1OutputVoltageLevel),
+              buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
@@ -133,7 +136,8 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
       }
       buffer = (voltage - 1384) / 8;
       if (!bus_->Write(
-              static_cast<uint8_t>(Register::kRwAvdd2OutputVoltageLevel), buffer)) {
+              static_cast<uint8_t>(Register::kRwAvdd2OutputVoltageLevel),
+              buffer)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }

@@ -2,7 +2,7 @@
  * @Description: FT3x68 电容触摸控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-08-03 16:11:09
+ * @LastEditTime: 2026-09-02 16:15:29
  * @License: GPL 3.0
  */
 #pragma once

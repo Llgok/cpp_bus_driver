@@ -2,7 +2,7 @@
  * @Description: Nordic nRF24L01 系列 2.4 GHz 射频收发芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-31 10:00:00
- * @LastEditTime: 2026-07-31 10:00:00
+ * @LastEditTime: 2026-09-02 16:18:03
  * @License: GPL 3.0
  */
 #include "nrf24l01x.h"
@@ -78,7 +78,7 @@ Nrf24l01x::Register Nrf24l01x::RegisterForAddress(Address address) {
     return Register::kTxAddress;
   }
   return static_cast<Register>(static_cast<uint8_t>(Register::kRxAddressPipe0) +
-                          static_cast<uint8_t>(address));
+                               static_cast<uint8_t>(address));
 }
 
 Nrf24l01x::Register Nrf24l01x::RegisterForPayloadWidth(uint8_t pipe) {
@@ -233,17 +233,16 @@ bool Nrf24l01x::Configure(const Config& config) {
   }
 
   result &= WriteRegister(Register::kConfig, config_value);
-  result &=
-      WriteRegister(Register::kEnableAutoAcknowledgment, config.auto_ack_pipe_mask);
+  result &= WriteRegister(
+      Register::kEnableAutoAcknowledgment, config.auto_ack_pipe_mask);
   result &= WriteRegister(Register::kEnableRxAddress, config.enabled_pipe_mask);
   result &= WriteRegister(Register::kSetupAddressWidth, address_width);
   result &= WriteRegister(Register::kSetupRetransmission, retransmission);
   result &= WriteRegister(Register::kRfChannel, config.rf_channel);
   result &= WriteRegister(Register::kRfSetup, rf_setup);
   for (uint8_t pipe = 0; pipe < config.rx_payload_width.size(); ++pipe) {
-    result &=
-        WriteRegister(
-            RegisterForPayloadWidth(pipe), config.rx_payload_width[pipe]);
+    result &= WriteRegister(
+        RegisterForPayloadWidth(pipe), config.rx_payload_width[pipe]);
   }
 
   bool feature_result = WriteRegister(Register::kFeature, feature);
@@ -257,8 +256,8 @@ bool Nrf24l01x::Configure(const Config& config) {
     feature_result &= feature_readback == feature;
   }
   result &= feature_result;
-  result &=
-      WriteRegister(Register::kDynamicPayload, config.dynamic_payload_pipe_mask);
+  result &= WriteRegister(
+      Register::kDynamicPayload, config.dynamic_payload_pipe_mask);
 
   uint8_t ignored_flags = 0;
   result &= GetClearIrqFlags(&ignored_flags);
@@ -353,8 +352,8 @@ bool Nrf24l01x::SetCrcMode(CrcMode mode) {
   if (mode == CrcMode::k16Bit) {
     value |= kConfigCrcLengthMask;
   }
-  if (!UpdateRegisterBits(
-          Register::kConfig, kConfigCrcEnableMask | kConfigCrcLengthMask, value)) {
+  if (!UpdateRegisterBits(Register::kConfig,
+          kConfigCrcEnableMask | kConfigCrcLengthMask, value)) {
     return false;
   }
   config_.crc_mode = mode;
@@ -567,8 +566,8 @@ bool Nrf24l01x::SetAutoRetransmit(uint8_t count, uint16_t delay_us) {
 bool Nrf24l01x::SetAddressWidth(AddressWidth width) {
   const uint8_t width_value = static_cast<uint8_t>(width);
   if (width_value < 3U || width_value > 5U ||
-      !WriteRegister(
-          Register::kSetupAddressWidth, static_cast<uint8_t>(width_value - 2U))) {
+      !WriteRegister(Register::kSetupAddressWidth,
+          static_cast<uint8_t>(width_value - 2U))) {
     return false;
   }
   config_.address_width = width;
@@ -921,8 +920,8 @@ bool Nrf24l01x::NoOperation(uint8_t* status) {
 }
 
 bool Nrf24l01x::SetPllMode(bool locked) {
-  return UpdateRegisterBits(
-      Register::kRfSetup, kRfSetupPllLockMask, locked ? kRfSetupPllLockMask : 0);
+  return UpdateRegisterBits(Register::kRfSetup, kRfSetupPllLockMask,
+      locked ? kRfSetupPllLockMask : 0);
 }
 
 bool Nrf24l01x::SetLnaGain(bool high_current) {
@@ -950,9 +949,8 @@ bool Nrf24l01x::ReadRegister(
 
 bool Nrf24l01x::WriteRegister(
     Register register_id, uint8_t value, uint8_t* status) {
-  const uint8_t command =
-      kWriteRegisterCommand |
-      (static_cast<uint8_t>(register_id) & kRegisterMask);
+  const uint8_t command = kWriteRegisterCommand |
+                          (static_cast<uint8_t>(register_id) & kRegisterMask);
   return Exchange(command, &value, nullptr, 1, status);
 }
 
@@ -965,15 +963,13 @@ bool Nrf24l01x::ReadBuffer(
   return Exchange(command, nullptr, data, length, status);
 }
 
-bool Nrf24l01x::WriteBuffer(
-    Register register_id, const uint8_t* data, std::size_t length,
-    uint8_t* status) {
+bool Nrf24l01x::WriteBuffer(Register register_id, const uint8_t* data,
+    std::size_t length, uint8_t* status) {
   if (data == nullptr || length == 0 || length > kMaximumPayloadLength) {
     return false;
   }
-  const uint8_t command =
-      kWriteRegisterCommand |
-      (static_cast<uint8_t>(register_id) & kRegisterMask);
+  const uint8_t command = kWriteRegisterCommand |
+                          (static_cast<uint8_t>(register_id) & kRegisterMask);
   return Exchange(command, data, nullptr, length, status);
 }
 

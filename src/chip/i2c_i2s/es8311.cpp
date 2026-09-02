@@ -2,7 +2,7 @@
  * @Description: ES8311 音频编解码芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-08-03 16:11:43
+ * @LastEditTime: 2026-09-02 16:15:48
  * @License: GPL 3.0
  */
 #include "es8311.h"
@@ -412,7 +412,8 @@ bool Es8311::SetClockCoeff(uint16_t mclk_multiple, uint32_t sample_rate_hz) {
     return false;
   }
 
-  if (!ChipI2cGuide::bus_->Write(static_cast<uint8_t>(Register::kRwClockManager4),
+  if (!ChipI2cGuide::bus_->Write(
+          static_cast<uint8_t>(Register::kRwClockManager4),
           buffer_clock_coeff->dac_osr)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -456,7 +457,8 @@ bool Es8311::SetClockCoeff(uint16_t mclk_multiple, uint32_t sample_rate_hz) {
     return false;
   }
 
-  if (!ChipI2cGuide::bus_->Write(static_cast<uint8_t>(Register::kRwClockManager8),
+  if (!ChipI2cGuide::bus_->Write(
+          static_cast<uint8_t>(Register::kRwClockManager8),
           buffer_clock_coeff->lrck_l)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -507,13 +509,15 @@ bool Es8311::SetPgaPower(bool enable) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Register::kRwPgaAdcModulatorPowerControl), &buffer)) {
+          static_cast<uint8_t>(Register::kRwPgaAdcModulatorPowerControl),
+          &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B10111111) | (static_cast<uint8_t>(!enable) << 6);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Register::kRwPgaAdcModulatorPowerControl), buffer)) {
+          static_cast<uint8_t>(Register::kRwPgaAdcModulatorPowerControl),
+          buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -525,14 +529,16 @@ bool Es8311::SetAdcPower(bool enable) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Register::kRwPgaAdcModulatorPowerControl), &buffer)) {
+          static_cast<uint8_t>(Register::kRwPgaAdcModulatorPowerControl),
+          &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B11011111) | (static_cast<uint8_t>(!enable) << 5);
   buffer = (buffer & 0B11101111) | (static_cast<uint8_t>(!enable) << 4);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Register::kRwPgaAdcModulatorPowerControl), buffer)) {
+          static_cast<uint8_t>(Register::kRwPgaAdcModulatorPowerControl),
+          buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -776,14 +782,16 @@ bool Es8311::SetSerialPortMode(SerialPortMode mode) {
   uint8_t buffer = 0;
 
   if (!ChipI2cGuide::bus_->Read(
-          static_cast<uint8_t>(Register::kRwResetSerialPortModeControl), &buffer)) {
+          static_cast<uint8_t>(Register::kRwResetSerialPortModeControl),
+          &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
   buffer = (buffer & 0B10111011) | (static_cast<uint8_t>(mode) << 6) |
            (!static_cast<uint8_t>(mode) << 2);
   if (!ChipI2cGuide::bus_->Write(
-          static_cast<uint8_t>(Register::kRwResetSerialPortModeControl), buffer)) {
+          static_cast<uint8_t>(Register::kRwResetSerialPortModeControl),
+          buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

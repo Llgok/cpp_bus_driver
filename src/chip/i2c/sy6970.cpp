@@ -2,7 +2,7 @@
  * @Description: SY6970 电池充电与电源路径管理芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-08-03 16:11:28
+ * @LastEditTime: 2026-09-02 16:15:43
  * @License: GPL 3.0
  */
 #include "sy6970.h"
@@ -76,7 +76,8 @@ uint8_t Sy6970::GetChipId() {
 
 bool Sy6970::SetHizModeEnable(bool enable) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwInputSourceControl), &buffer)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwInputSourceControl), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -87,7 +88,8 @@ bool Sy6970::SetHizModeEnable(bool enable) {
     buffer &= 0x7F;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwInputSourceControl), buffer)) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwInputSourceControl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -97,7 +99,8 @@ bool Sy6970::SetHizModeEnable(bool enable) {
 
 bool Sy6970::SetIlimPinEnable(bool enable) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwInputSourceControl), &buffer)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwInputSourceControl), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -108,7 +111,8 @@ bool Sy6970::SetIlimPinEnable(bool enable) {
     buffer &= 0xBF;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwInputSourceControl), buffer)) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwInputSourceControl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -122,14 +126,16 @@ bool Sy6970::SetInputCurrentLimit(uint16_t current_ma) {
   }
 
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwInputSourceControl), &buffer)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwInputSourceControl), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = (buffer & 0xC0) | static_cast<uint8_t>((current_ma - 100) / 50);
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwInputSourceControl), buffer)) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwInputSourceControl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -143,16 +149,16 @@ bool Sy6970::SetBoostHotThreshold(uint8_t threshold) {
   }
 
   uint8_t buffer = 0;
-  if (!bus_->Read(
-          static_cast<uint8_t>(Register::kRwTemperatureMonitorControl), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRwTemperatureMonitorControl),
+          &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = (buffer & 0x3F) | static_cast<uint8_t>(threshold << 6);
 
-  if (!bus_->Write(
-          static_cast<uint8_t>(Register::kRwTemperatureMonitorControl), buffer)) {
+  if (!bus_->Write(static_cast<uint8_t>(Register::kRwTemperatureMonitorControl),
+          buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -162,8 +168,8 @@ bool Sy6970::SetBoostHotThreshold(uint8_t threshold) {
 
 bool Sy6970::SetBoostColdThreshold(bool threshold) {
   uint8_t buffer = 0;
-  if (!bus_->Read(
-          static_cast<uint8_t>(Register::kRwTemperatureMonitorControl), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRwTemperatureMonitorControl),
+          &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -174,8 +180,8 @@ bool Sy6970::SetBoostColdThreshold(bool threshold) {
     buffer &= 0xDF;
   }
 
-  if (!bus_->Write(
-          static_cast<uint8_t>(Register::kRwTemperatureMonitorControl), buffer)) {
+  if (!bus_->Write(static_cast<uint8_t>(Register::kRwTemperatureMonitorControl),
+          buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -189,16 +195,16 @@ bool Sy6970::SetVindpmOffset(uint16_t offset_mv) {
   }
 
   uint8_t buffer = 0;
-  if (!bus_->Read(
-          static_cast<uint8_t>(Register::kRwTemperatureMonitorControl), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRwTemperatureMonitorControl),
+          &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = (buffer & 0xE0) | static_cast<uint8_t>(offset_mv / 100);
 
-  if (!bus_->Write(
-          static_cast<uint8_t>(Register::kRwTemperatureMonitorControl), buffer)) {
+  if (!bus_->Write(static_cast<uint8_t>(Register::kRwTemperatureMonitorControl),
+          buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -542,8 +548,8 @@ bool Sy6970::SetPrechargeCurrentLimit(uint16_t current_ma) {
   }
 
   uint8_t buffer = 0;
-  if (!bus_->Read(
-          static_cast<uint8_t>(Register::kRwPrechrgTermCurrentControl), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRwPrechrgTermCurrentControl),
+          &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -551,8 +557,8 @@ bool Sy6970::SetPrechargeCurrentLimit(uint16_t current_ma) {
   buffer =
       (buffer & 0x0F) | static_cast<uint8_t>(((current_ma - 64) / 64) << 4);
 
-  if (!bus_->Write(
-          static_cast<uint8_t>(Register::kRwPrechrgTermCurrentControl), buffer)) {
+  if (!bus_->Write(static_cast<uint8_t>(Register::kRwPrechrgTermCurrentControl),
+          buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -566,16 +572,16 @@ bool Sy6970::SetTerminationCurrentLimit(uint16_t current_ma) {
   }
 
   uint8_t buffer = 0;
-  if (!bus_->Read(
-          static_cast<uint8_t>(Register::kRwPrechrgTermCurrentControl), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRwPrechrgTermCurrentControl),
+          &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = (buffer & 0xF0) | static_cast<uint8_t>((current_ma - 64) / 64);
 
-  if (!bus_->Write(
-          static_cast<uint8_t>(Register::kRwPrechrgTermCurrentControl), buffer)) {
+  if (!bus_->Write(static_cast<uint8_t>(Register::kRwPrechrgTermCurrentControl),
+          buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -655,7 +661,8 @@ bool Sy6970::SetBatteryRechargeThreshold(bool high_threshold) {
 
 bool Sy6970::SetChargeTerminationEnable(bool enable) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -667,7 +674,8 @@ bool Sy6970::SetChargeTerminationEnable(bool enable) {
     buffer &= 0x7F;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -678,7 +686,8 @@ bool Sy6970::SetChargeTerminationEnable(bool enable) {
 
 bool Sy6970::SetStatPinDisable(bool disable) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -690,7 +699,8 @@ bool Sy6970::SetStatPinDisable(bool disable) {
     buffer &= 0xBF;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -719,7 +729,8 @@ bool Sy6970::SetWatchdogTimer(uint16_t timer_s) {
   }
 
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -727,7 +738,8 @@ bool Sy6970::SetWatchdogTimer(uint16_t timer_s) {
 
   buffer = (buffer & 0xCF) | static_cast<uint8_t>(value << 4);
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -738,7 +750,8 @@ bool Sy6970::SetWatchdogTimer(uint16_t timer_s) {
 
 bool Sy6970::SetChargeSafetyTimerEnable(bool enable) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -750,7 +763,8 @@ bool Sy6970::SetChargeSafetyTimerEnable(bool enable) {
     buffer &= 0xF7;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -779,7 +793,8 @@ bool Sy6970::SetFastChargeTimer(uint8_t timer_hr) {
   }
 
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -787,7 +802,8 @@ bool Sy6970::SetFastChargeTimer(uint8_t timer_hr) {
 
   buffer = (buffer & 0xF9) | static_cast<uint8_t>(value << 1);
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -798,7 +814,8 @@ bool Sy6970::SetFastChargeTimer(uint8_t timer_hr) {
 
 bool Sy6970::SetJeitaLowTempCurrent(bool low_current) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -810,7 +827,8 @@ bool Sy6970::SetJeitaLowTempCurrent(bool low_current) {
     buffer &= 0xFE;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwChargeTerminationTimerControl),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -904,7 +922,8 @@ bool Sy6970::SetThermalRegulationThreshold(uint8_t temperature) {
 
 bool Sy6970::SetForceAdaptiveCurrentLimit(bool force) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -916,7 +935,8 @@ bool Sy6970::SetForceAdaptiveCurrentLimit(bool force) {
     buffer &= 0x7F;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -927,7 +947,8 @@ bool Sy6970::SetForceAdaptiveCurrentLimit(bool force) {
 
 bool Sy6970::SetSafetyTimerSlowdown(bool enable) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -939,7 +960,8 @@ bool Sy6970::SetSafetyTimerSlowdown(bool enable) {
     buffer &= 0xBF;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -950,7 +972,8 @@ bool Sy6970::SetSafetyTimerSlowdown(bool enable) {
 
 bool Sy6970::SetShippingModeEnable(bool enable) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -962,7 +985,8 @@ bool Sy6970::SetShippingModeEnable(bool enable) {
     buffer &= 0xDF;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -973,7 +997,8 @@ bool Sy6970::SetShippingModeEnable(bool enable) {
 
 bool Sy6970::SetJeitaHighTempVoltage(bool normal_voltage) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -985,7 +1010,8 @@ bool Sy6970::SetJeitaHighTempVoltage(bool normal_voltage) {
     buffer &= 0xEF;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -996,7 +1022,8 @@ bool Sy6970::SetJeitaHighTempVoltage(bool normal_voltage) {
 
 bool Sy6970::SetBatfetTurnoffDelay(bool delay) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -1008,7 +1035,8 @@ bool Sy6970::SetBatfetTurnoffDelay(bool delay) {
     buffer &= 0xF7;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -1019,7 +1047,8 @@ bool Sy6970::SetBatfetTurnoffDelay(bool delay) {
 
 bool Sy6970::SetBatfetResetEnable(bool enable) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -1031,7 +1060,8 @@ bool Sy6970::SetBatfetResetEnable(bool enable) {
     buffer &= 0xFB;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -1042,7 +1072,8 @@ bool Sy6970::SetBatfetResetEnable(bool enable) {
 
 bool Sy6970::SetPumpControl(bool up, bool down) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
@@ -1060,7 +1091,8 @@ bool Sy6970::SetPumpControl(bool up, bool down) {
     buffer &= 0xFE;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwMiscellaneousOperationControl),
           buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -1075,7 +1107,8 @@ bool Sy6970::SetBoostVoltage(uint16_t voltage_mv) {
   }
 
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwBoostModeControl), &buffer)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwBoostModeControl), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -1083,7 +1116,8 @@ bool Sy6970::SetBoostVoltage(uint16_t voltage_mv) {
   buffer =
       (buffer & 0x0F) | static_cast<uint8_t>(((voltage_mv - 4550) / 64) << 4);
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwBoostModeControl), buffer)) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwBoostModeControl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -1123,14 +1157,16 @@ bool Sy6970::SetBoostCurrentLimit(uint16_t current_ma) {
   }
 
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwBoostModeControl), &buffer)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwBoostModeControl), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = (buffer & 0xF8) | value;
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwBoostModeControl), buffer)) {
+  if (!bus_->Write(
+          static_cast<uint8_t>(Register::kRwBoostModeControl), buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -1322,7 +1358,8 @@ uint32_t Sy6970::ReadNtcVoltagePercentage() {
 
 bool Sy6970::ReadBusConnectionStatus() {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRdBusVoltageStatus), &buffer)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRdBusVoltageStatus), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -1332,7 +1369,8 @@ bool Sy6970::ReadBusConnectionStatus() {
 
 uint16_t Sy6970::GetBusVoltage() {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRdBusVoltageStatus), &buffer)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRdBusVoltageStatus), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return 0;
   }
@@ -1352,8 +1390,8 @@ uint16_t Sy6970::GetChargingCurrent() {
 
 bool Sy6970::ReadVindpmStatus() {
   uint8_t buffer = 0;
-  if (!bus_->Read(
-          static_cast<uint8_t>(Register::kRdInputCurrentLimitStatus), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRdInputCurrentLimitStatus),
+          &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -1363,8 +1401,8 @@ bool Sy6970::ReadVindpmStatus() {
 
 bool Sy6970::ReadIindpmStatus() {
   uint8_t buffer = 0;
-  if (!bus_->Read(
-          static_cast<uint8_t>(Register::kRdInputCurrentLimitStatus), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRdInputCurrentLimitStatus),
+          &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -1374,8 +1412,8 @@ bool Sy6970::ReadIindpmStatus() {
 
 uint16_t Sy6970::ReadInputCurrentLimitSetting() {
   uint8_t buffer = 0;
-  if (!bus_->Read(
-          static_cast<uint8_t>(Register::kRdInputCurrentLimitStatus), &buffer)) {
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRdInputCurrentLimitStatus),
+          &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return 0;
   }

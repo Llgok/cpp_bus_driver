@@ -238,8 +238,8 @@ bool Pcf8563x::GetTime(Time& time) {
   uint8_t buffer[7] = {0};
 
   for (uint8_t i = 0; i < 7; i++) {
-    if (!bus_->Read(
-            static_cast<uint8_t>(static_cast<uint8_t>(Register::kRwVlSeconds) + i),
+    if (!bus_->Read(static_cast<uint8_t>(
+                        static_cast<uint8_t>(Register::kRwVlSeconds) + i),
             &buffer[i])) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return false;
@@ -335,8 +335,8 @@ bool Pcf8563x::SetDay(uint8_t day) {
 }
 
 bool Pcf8563x::SetWeek(Week week) {
-  if (!bus_->Write(
-          static_cast<uint8_t>(Register::kRwWeekdays), static_cast<uint8_t>(week))) {
+  if (!bus_->Write(static_cast<uint8_t>(Register::kRwWeekdays),
+          static_cast<uint8_t>(week))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
@@ -425,7 +425,8 @@ bool Pcf8563x::SetTime(Time time) {
     return false;
   }
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwCenturyMonths), &buffer[5])) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(Register::kRwCenturyMonths), &buffer[5])) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
@@ -441,8 +442,8 @@ bool Pcf8563x::SetTime(Time time) {
   buffer[6] = (((time.year / 10) << 4) | (time.year % 10));
 
   for (uint8_t i = 0; i < 7; i++) {
-    if (!bus_->Write(
-            static_cast<uint8_t>(static_cast<uint8_t>(Register::kRwVlSeconds) + i),
+    if (!bus_->Write(static_cast<uint8_t>(
+                         static_cast<uint8_t>(Register::kRwVlSeconds) + i),
             buffer[i])) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
@@ -533,8 +534,8 @@ bool Pcf8563x::StopScheduledAlarm() {
 
   // 关闭报警
   for (uint8_t i = 0; i < 4; i++) {
-    if (!bus_->Write(
-            static_cast<uint8_t>(static_cast<uint8_t>(Register::kRwMinuteAlarm) + i),
+    if (!bus_->Write(static_cast<uint8_t>(
+                         static_cast<uint8_t>(Register::kRwMinuteAlarm) + i),
             buffer)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;

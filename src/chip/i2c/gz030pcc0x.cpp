@@ -2,7 +2,7 @@
  * @Description: GZ030PCC0X 显示面板辅助控制驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-04-20 14:50:19
+ * @LastEditTime: 2026-09-02 16:15:31
  * @License: GPL 3.0
  */
 #include "gz030pcc0x.h"
@@ -53,7 +53,8 @@ bool Gz030pcc0x::Deinit(bool delete_bus) {
 float Gz030pcc0x::GetTemperatureCelsius() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint16_t>(Register::kRoTemperatureReading), &buffer)) {
+  if (!bus_->Read(
+          static_cast<uint16_t>(Register::kRoTemperatureReading), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
@@ -116,7 +117,8 @@ bool Gz030pcc0x::SetShowDirection(ShowDirection direction) {
 }
 
 bool Gz030pcc0x::SetBrightness(uint8_t value) {
-  if (!bus_->Write(static_cast<uint16_t>(Register::kRwDisplayBrightness), value)) {
+  if (!bus_->Write(
+          static_cast<uint16_t>(Register::kRwDisplayBrightness), value)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

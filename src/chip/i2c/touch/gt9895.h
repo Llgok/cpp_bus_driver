@@ -2,7 +2,7 @@
  * @Description: GT9895 电容触摸控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2025-07-09 09:15:31
- * @LastEditTime: 2026-08-11 00:00:00
+ * @LastEditTime: 2026-09-02 16:18:22
  * @License: GPL 3.0
  */
 #pragma once
@@ -113,8 +113,7 @@ class Gt9895 final : public ChipI2cGuide {
    * @param orientation 屏幕方向
    * @return 命令被固件接受返回 true，否则返回 false
    */
-  bool SetEdgeRejectionOrientation(
-      EdgeRejectionOrientation orientation);
+  bool SetEdgeRejectionOrientation(EdgeRejectionOrientation orientation);
 
   /**
    * @brief 立即更新互容触摸基准
@@ -301,8 +300,7 @@ class Gt9895 final : public ChipI2cGuide {
    * @param length 待写入的字节数
    * @return 写入成功返回 true，参数无效或通信失败返回 false
    */
-  bool WriteRegister(
-      uint32_t address, const uint8_t* data, size_t length);
+  bool WriteRegister(uint32_t address, const uint8_t* data, size_t length);
 
   /**
    * @brief 按 GT9895 实时命令协议发送命令并检查固件 ACK
@@ -311,8 +309,7 @@ class Gt9895 final : public ChipI2cGuide {
    * @param data_length 命令参数长度
    * @return 命令被固件接受返回 true，否则返回 false
    */
-  bool SendCommand(
-      Command command, const uint8_t* data, size_t data_length);
+  bool SendCommand(Command command, const uint8_t* data, size_t data_length);
 
   /**
    * @brief 发送带单字节开关参数的实时命令
@@ -334,8 +331,7 @@ class Gt9895 final : public ChipI2cGuide {
    * @param frame 接收解析后的触摸帧
    * @return 触摸帧读取状态
    */
-  TouchReadStatus ReadTouchReport(
-      size_t max_contacts, TouchFrame* frame);
+  TouchReadStatus ReadTouchReport(size_t max_contacts, TouchFrame* frame);
 
   /**
    * @brief 按限频策略输出完整触摸报告调试信息

@@ -2,7 +2,7 @@
  * @Description: ICM20948 九轴惯性传感器 I2C/SPI 共用驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-07-31 15:20:00
- * @LastEditTime: 2026-08-03 16:11:41
+ * @LastEditTime: 2026-09-02 16:15:55
  * @License: GPL 3.0
  */
 #pragma once
@@ -540,8 +540,7 @@ class Icm20948 final : public Tool {
    * @param length 写入字节数
    * @return 写入成功返回 true，否则返回 false
    */
-  bool WriteRegister(
-      Register register_id, const uint8_t* data, size_t length);
+  bool WriteRegister(Register register_id, const uint8_t* data, size_t length);
 
   /**
    * @brief 以读改写方式更新 ICM20948 寄存器位

@@ -2,7 +2,7 @@
  * @Description: BQ27220 单节电池 CEDV 电量计驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-08-03 16:11:04
+ * @LastEditTime: 2026-09-02 16:15:26
  * @License: GPL 3.0
  */
 #include "bq27220.h"
@@ -257,10 +257,9 @@ bool Bq27220::SetBatteryCapacity(uint16_t capacity) {
 
   uint16_t design_capacity = 0;
   uint16_t full_charge_capacity = 0;
-  if (ReadDataMemory(
-          DataMemoryAddress::kDesignCapacity, &design_capacity) &&
-      ReadDataMemory(DataMemoryAddress::kFullChargeCapacity,
-          &full_charge_capacity) &&
+  if (ReadDataMemory(DataMemoryAddress::kDesignCapacity, &design_capacity) &&
+      ReadDataMemory(
+          DataMemoryAddress::kFullChargeCapacity, &full_charge_capacity) &&
       design_capacity == capacity && full_charge_capacity == capacity) {
     return true;
   }
@@ -270,17 +269,17 @@ bool Bq27220::SetBatteryCapacity(uint16_t capacity) {
         LogLevel::kError, __FILE__, __LINE__, "EnterConfigUpdate failed\n");
     return false;
   }
-  bool result = WriteDataMemory(
-      DataMemoryAddress::kFullChargeCapacity, capacity);
+  bool result =
+      WriteDataMemory(DataMemoryAddress::kFullChargeCapacity, capacity);
   result &= WriteDataMemory(DataMemoryAddress::kDesignCapacity, capacity);
   result &= ExitConfigUpdate(true);
   if (result) {
     const bool read_back_succeeded =
-        ReadDataMemory(DataMemoryAddress::kFullChargeCapacity,
-            &full_charge_capacity) &&
+        ReadDataMemory(
+            DataMemoryAddress::kFullChargeCapacity, &full_charge_capacity) &&
         ReadDataMemory(DataMemoryAddress::kDesignCapacity, &design_capacity);
     result = read_back_succeeded && full_charge_capacity == capacity &&
-        design_capacity == capacity;
+             design_capacity == capacity;
   }
   if (!result) {
     LogMessage(
@@ -940,8 +939,8 @@ bool Bq27220::WriteDataMemoryBytes(
   };
   std::memcpy(&buffer[2], data, length);
 
-  if (!bus_->Write(
-          static_cast<uint8_t>(StandardCommand::kSelectSubclass), buffer, length + 2)) {
+  if (!bus_->Write(static_cast<uint8_t>(StandardCommand::kSelectSubclass),
+          buffer, length + 2)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     if (entered_config_update) {
       ExitConfigUpdate(false);
@@ -955,8 +954,8 @@ bool Bq27220::WriteDataMemoryBytes(
       checksum,
       static_cast<uint8_t>(length + 4),
   };
-  if (!bus_->Write(static_cast<uint8_t>(StandardCommand::kMacDataSum), checksum_buffer,
-          sizeof(checksum_buffer))) {
+  if (!bus_->Write(static_cast<uint8_t>(StandardCommand::kMacDataSum),
+          checksum_buffer, sizeof(checksum_buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     if (entered_config_update) {
       ExitConfigUpdate(false);
@@ -988,14 +987,15 @@ bool Bq27220::ReadDataMemoryBytes(
       static_cast<uint8_t>(address),
       static_cast<uint8_t>(address >> 8),
   };
-  if (!bus_->Write(static_cast<uint8_t>(StandardCommand::kSelectSubclass), address_buffer,
-          sizeof(address_buffer))) {
+  if (!bus_->Write(static_cast<uint8_t>(StandardCommand::kSelectSubclass),
+          address_buffer, sizeof(address_buffer))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   DelayMs(10);
 
-  if (!bus_->Read(static_cast<uint8_t>(StandardCommand::kMacData), data, length)) {
+  if (!bus_->Read(
+          static_cast<uint8_t>(StandardCommand::kMacData), data, length)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
