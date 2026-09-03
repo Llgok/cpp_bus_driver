@@ -39,6 +39,7 @@
 | --- | --- | --- |
 | ESP-IDF | 推荐 | 从v2.0.0起，最小支持的ESP-IDF版本为v5.5.3 |
 | Arduino NRF | 支持 | 适用于部分 NRF52840 Arduino 场景 |
+| Arduino ESP32 | 部分支持 | 基于ESP-IDF v5.5.3的核心支持`HardwareI2c1`及I2C芯片驱动 |
 
 > [!NOTE]
 > 不同框架下可用的总线和芯片能力可能不同。ESP-IDF 是当前功能最完整的适配目标。
@@ -95,8 +96,9 @@ compiler.libraries.ldflags=-lstdc++
 ```
 
 > [!IMPORTANT]
-> 当前 Arduino 实现只支持定义了 `NRF52840_XXAA` 的 nRF52840 构建。ESP32 等
-> 其他 Arduino 架构暂不支持。
+> Arduino实现支持定义了`NRF52840_XXAA`的nRF52840构建。Arduino ESP32
+> 当前仅支持ESP-IDF I2C主机后端及其I2C芯片驱动，并要求底层为ESP-IDF
+> v5.5.3或更高版本的Arduino核心。
 
 #### 作为 Git submodule 使用
 

@@ -2,7 +2,7 @@
  * @Description: SGM41562 系列电池充电管理芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-08-03 16:11:27
+ * @LastEditTime: 2026-09-03 18:00:00
  * @License: GPL 3.0
  */
 #pragma once
@@ -35,7 +35,15 @@ class Sgm41562xx final : public ChipI2cGuide {
     k8Seconds,
   };
 
-  struct IrqStatus {
+  enum class InterruptType : uint8_t {
+    kInputPowerGood = 0x10,
+    kChargeComplete = 0x08,
+    kChargeStatus = 0x04,
+    kNtc = 0x02,
+    kBatteryOvervoltage = 0x01,
+  };
+
+  struct FaultStatus {
     bool input_power_fault = false;
     bool thermal_shutdown = false;
     bool battery_overvoltage_fault = false;
@@ -53,26 +61,54 @@ class Sgm41562xx final : public ChipI2cGuide {
   };
 
   struct ChargerConfig {
-    bool charge_enabled = false;                  // 充电使能状态
-    bool high_impedance_enabled = false;          // 输入高阻模式状态
-    bool input_current_limit_enabled = true;      // 输入限流是否生效
-    uint16_t input_voltage_limit_mv = 0;          // 最低输入电压限制
-    uint16_t input_current_limit_ma = 0;          // 输入电流限制
-    uint16_t fast_charge_current_ma = 0;          // 快充电流
-    uint16_t termination_current_ma = 0;          // 充电终止电流
-    uint16_t charge_voltage_limit_mv = 0;         // 充电目标电压
-    uint16_t system_voltage_regulation_mv = 0;    // 系统调节电压
-    uint16_t input_overvoltage_threshold_mv = 0;  // 输入过压阈值
-    bool watchdog_enabled = false;                // 看门狗使能状态
-    uint16_t watchdog_timeout_s = 0;              // 看门狗超时时间
-    bool charge_termination_enabled = false;      // 充电终止使能状态
-    bool safety_timer_enabled = false;            // 安全定时器使能状态
-    uint8_t safety_timer_hours = 0;               // 安全定时器时长
-    bool safety_timer_extended_in_ppm = false;    // PPM模式下定时器倍增状态
-    bool ntc_enabled = false;                     // NTC检测使能状态
-    uint8_t thermal_regulation_threshold_c = 0;   // 热调节阈值
-    bool input_voltage_loop_enabled = false;      // 输入电压环路使能状态
-    bool pcb_overtemperature_protection_enabled = false;  // PCB过温保护状态
+    uint8_t i2c_address = 0;
+    bool charge_enabled = false;
+    bool high_impedance_enabled = false;
+    uint8_t reset_pull_down_time_s = 0;
+    uint8_t battery_fet_off_time_s = 0;
+    uint16_t battery_undervoltage_threshold_mv = 0;
+    uint16_t minimum_input_voltage_limit_mv = 0;
+    uint16_t input_current_limit_ma = 0;
+    bool input_current_limit_enabled = true;
+    bool input_current_limit_200_ma_offset_enabled = false;
+    uint16_t fast_charge_current_ma = 0;
+    bool quarter_charge_current_scale_enabled = false;
+    uint16_t precharge_current_ma = 0;
+    uint16_t termination_current_ma = 0;
+    uint16_t discharge_current_limit_ma = 0;
+    uint16_t charge_voltage_limit_mv = 0;
+    uint16_t precharge_to_fast_charge_threshold_mv = 0;
+    uint16_t recharge_threshold_mv = 0;
+    bool watchdog_in_discharge_enabled = false;
+    bool watchdog_enabled = false;
+    uint16_t watchdog_timeout_s = 0;
+    bool charge_termination_enabled = false;
+    bool safety_timer_enabled = false;
+    uint8_t safety_timer_hours = 0;
+    bool charge_after_termination_enabled = false;
+    bool safety_timer_extended_in_ppm = false;
+    bool ntc_enabled = false;
+    bool shipping_mode_enabled = false;
+    bool input_power_good_interrupt_enabled = false;
+    bool charge_complete_interrupt_enabled = false;
+    bool charge_status_interrupt_enabled = false;
+    bool ntc_interrupt_enabled = false;
+    bool battery_overvoltage_interrupt_enabled = false;
+    uint8_t thermal_regulation_threshold_c = 0;
+    uint16_t system_voltage_regulation_mv = 0;
+    bool input_voltage_loop_enabled = false;
+    bool pcb_overtemperature_protection_enabled = false;
+    uint16_t input_overvoltage_threshold_mv = 0;
+    uint8_t shipping_mode_delay_s = 0;
+    bool force_power_path_switch_enabled = false;
+    bool battery_power_enabled = false;
+    bool input_overvoltage_protection_enabled = false;
+    uint16_t exit_shipping_mode_interrupt_delay_ms = 0;
+    uint16_t exit_shipping_mode_input_delay_ms = 0;
+    uint16_t termination_deglitch_time_ms = 0;
+    bool shipping_mode_interrupt_enabled = false;
+    bool precharge_current_multiplier_six_enabled = false;
+    bool termination_current_multiplier_six_enabled = false;
   };
 
   /**
@@ -124,7 +160,7 @@ class Sgm41562xx final : public ChipI2cGuide {
    * @param status 返回解析后的故障状态
    * @return 读取成功返回true，失败返回false
    */
-  bool GetIrqStatus(IrqStatus& status);
+  bool GetFaultStatus(FaultStatus& status);
 
   /**
    * @brief 设置充电使能
@@ -134,6 +170,230 @@ class Sgm41562xx final : public ChipI2cGuide {
   bool SetChargeEnable(bool enable);
 
   /**
+   * @brief 设置输入高阻模式
+   * @param enable true：关闭Qbypass，false：开启Qbypass
+   * @return 设置成功返回true，失败返回false
+   */
+  bool SetHighImpedanceModeEnable(bool enable);
+
+  /**
+   * @brief 设置最低输入电压限制
+   * @param voltage_mv 范围3880mV至5080mV，步进80mV
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetMinimumInputVoltageLimit(uint16_t voltage_mv);
+
+  /**
+   * @brief 设置输入电流限制
+   * @param current_ma A/B系列上限500mA，S/SA系列上限980mA，步进30mA
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetInputCurrentLimit(uint16_t current_ma);
+
+  /**
+   * @brief 设置电池欠压锁定阈值
+   * @param voltage_mv 范围2400mV至3030mV，步进90mV
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetBatteryUndervoltageThreshold(uint16_t voltage_mv);
+
+  /**
+   * @brief 设置快速充电电流限制
+   * @param current_ma 电流必须符合芯片型号与精细比例对应的范围和步进
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetFastChargeCurrentLimit(uint16_t current_ma);
+
+  /**
+   * @brief 设置BAT到SYS放电电流限制
+   * @param current_ma 范围400mA至3200mA，步进200mA
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetDischargeCurrentLimit(uint16_t current_ma);
+
+  /**
+   * @brief 设置充电终止电流并关闭六倍比例
+   * @param current_ma 范围1mA至31mA，步进2mA
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetTerminationCurrentLimit(uint16_t current_ma);
+
+  /**
+   * @brief 设置S/SA型号预充电电流并关闭六倍比例
+   * @param current_ma 范围1mA至31mA，步进2mA
+   * @return 设置成功返回true，型号或参数无效及通信失败返回false
+   */
+  bool SetPrechargeCurrentLimit(uint16_t current_ma);
+
+  /**
+   * @brief 设置充电目标电压限制
+   * @param voltage_mv A/B系列步进15mV，S/SA系列步进10mV
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetChargeVoltageLimit(uint16_t voltage_mv);
+
+  /**
+   * @brief 设置系统调节电压
+   * @param voltage_mv A/B与S/SA系列均为50mV步进
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetSystemRegulationVoltage(uint16_t voltage_mv);
+
+  /**
+   * @brief 设置预充电转快速充电的电压阈值
+   * @param voltage_mv 可设置为2800mV或3000mV
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetPrechargeToFastChargeThreshold(uint16_t voltage_mv);
+
+  /**
+   * @brief 设置充电完成后的再充电压差阈值
+   * @param voltage_mv 可设置为100mV或200mV
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetRechargeThreshold(uint16_t voltage_mv);
+
+  /**
+   * @brief 设置看门狗超时时间
+   * @param timeout_s 设置为0关闭，其他有效值随芯片型号为40倍或64倍
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetWatchdogTimer(uint16_t timeout_s);
+
+  /**
+   * @brief 复位I2C看门狗计数器
+   * @return 复位成功返回true，失败返回false
+   */
+  bool ResetWatchdogTimer();
+
+  /**
+   * @brief 设置放电模式下的看门狗功能
+   * @param enable true：启用，false：禁用
+   * @return 设置成功返回true，失败返回false
+   */
+  bool SetWatchdogInDischargeEnable(bool enable);
+
+  /**
+   * @brief 设置充电终止功能
+   * @param enable true：启用，false：禁用
+   * @return 设置成功返回true，失败返回false
+   */
+  bool SetChargeTerminationEnable(bool enable);
+
+  /**
+   * @brief 设置充电安全定时器
+   * @param enable true：启用，false：禁用
+   * @return 设置成功返回true，失败返回false
+   */
+  bool SetSafetyTimerEnable(bool enable);
+
+  /**
+   * @brief 设置充电安全定时器时长
+   * @param duration_hours 可设置为3、5、8或12小时
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetSafetyTimerDuration(uint8_t duration_hours);
+
+  /**
+   * @brief 设置充电终止后继续保持充电电流的定时功能
+   * @param enable true：终止后继续，false：终止后暂停
+   * @return 设置成功返回true，失败返回false
+   */
+  bool SetChargeAfterTerminationEnable(bool enable);
+
+  /**
+   * @brief 设置NTC温度检测功能
+   * @param enable true：启用，false：禁用
+   * @return 设置成功返回true，失败返回false
+   */
+  bool SetNtcEnable(bool enable);
+
+  /**
+   * @brief 设置PPM模式下安全定时器两倍延长功能
+   * @param enable true：启用两倍延长，false：禁用
+   * @return 设置成功返回true，失败返回false
+   */
+  bool SetPpmSafetyTimerExtensionEnable(bool enable);
+
+  /**
+   * @brief 设置指定中断源使能
+   * @param interrupt_type 中断源
+   * @param enable true：启用中断，false：屏蔽中断
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetInterruptEnable(InterruptType interrupt_type, bool enable);
+
+  /**
+   * @brief 设置输入电压环路功能
+   * @param enable true：启用，false：禁用
+   * @return 设置成功返回true，失败返回false
+   */
+  bool SetInputVoltageLoopEnable(bool enable);
+
+  /**
+   * @brief 设置PCB过温保护功能
+   * @param enable true：启用，false：禁用
+   * @return 设置成功返回true，失败返回false
+   */
+  bool SetPcbOvertemperatureProtectionEnable(bool enable);
+
+  /**
+   * @brief 设置热调节温度阈值
+   * @param temperature_c 可设置为60、80、100或120摄氏度
+   * @return 设置成功返回true，参数无效或通信失败返回false
+   */
+  bool SetThermalRegulationThreshold(uint8_t temperature_c);
+
+  /**
+   * @brief 设置A/B系列输入限流释放功能
+   * @param enable true：释放限流，false：使用输入限流设置
+   * @return 设置成功返回true，型号无效或通信失败返回false
+   */
+  bool SetInputCurrentLimitReleaseEnable(bool enable);
+
+  /**
+   * @brief 设置A/B系列输入限流额外增加200mA功能
+   * @param enable true：额外增加200mA，false：不增加
+   * @return 设置成功返回true，型号无效或通信失败返回false
+   */
+  bool SetInputCurrentLimitOffsetEnable(bool enable);
+
+  /**
+   * @brief 设置S/SA型号输入过压阈值
+   * @param voltage_mv 可设置为6000mV或19000mV
+   * @return 设置成功返回true，型号或参数无效及通信失败返回false
+   */
+  bool SetInputOvervoltageThreshold(uint16_t voltage_mv);
+
+  /**
+   * @brief 设置放电模式下强制开启Qswitch
+   * @param enable true：强制开启，false：使用正常电源路径
+   * @return 设置成功返回true，失败返回false
+   */
+  bool SetForcePowerPathSwitchEnable(bool enable);
+
+  /**
+   * @brief 设置移除VIN后的电池供电功能
+   * @param enable true：允许电池供电，false：关闭电池供电
+   * @return 设置成功返回true，失败返回false
+   */
+  bool SetBatteryPowerEnable(bool enable);
+
+  /**
+   * @brief 设置输入过压锁定检测功能
+   * @param enable true：启用检测，false：禁用检测
+   * @return 设置成功返回true，失败返回false
+   */
+  bool SetInputOvervoltageProtectionEnable(bool enable);
+
+  /**
+   * @brief 设置充电电流四分之一精细比例
+   * @param enable true：使用四分之一比例，false：使用正常比例
+   * @return 设置成功返回true，失败返回false
+   */
+  bool SetQuarterChargeCurrentScaleEnable(bool enable);
+
+  /**
    * @brief 读取并解析REG08中的芯片状态
    * @param status 返回解析后的芯片状态
    * @return 读取成功返回true，失败返回false
@@ -141,8 +401,8 @@ class Sgm41562xx final : public ChipI2cGuide {
   bool GetChipStatus(ChipStatus& status);
 
   /**
-   * @brief 读取测试所需的关键充电与保护配置
-   * @param config 返回解析后的关键配置
+   * @brief 读取官方寄存器定义的全部常用充电与保护配置
+   * @param config 返回解析后的完整常用配置
    * @return 读取成功返回true，失败返回false
    */
   bool GetChargerConfig(ChargerConfig& config);
@@ -187,17 +447,7 @@ class Sgm41562xx final : public ChipI2cGuide {
 
   // SGM41562、SGM41562A和SGM41562B寄存器初始化序列
   static constexpr uint8_t kInitSequenceAb[] = {
-      // 禁用PCB过温保护，保持输入电压环路和默认系统调节参数
-      static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Register::kSystemVoltageRegulation),
-      0xB7,
-
-      // 禁用NTC，保留默认的两倍安全定时器功能
-      static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Register::kMiscellaneousOperationControl),
-      0x40,
-
-      // 禁用看门狗，保留充电终止功能和5小时安全定时器
+      // 禁用看门狗
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Register::kChargeTerminationTimerControl),
       0x1A,
@@ -215,30 +465,15 @@ class Sgm41562xx final : public ChipI2cGuide {
 
   // SGM41562S和SGM41562SA寄存器初始化序列
   static constexpr uint8_t kInitSequenceS[] = {
-      // 保持输入电压环路和默认热调节、系统调节参数
-      static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Register::kSystemVoltageRegulation),
-      0x73,
-
-      // 禁用NTC，保留默认的两倍安全定时器功能
-      static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Register::kMiscellaneousOperationControl),
-      0x40,
-
-      // 禁用看门狗，保留充电终止功能和5小时安全定时器
+      // 禁用看门狗
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Register::kChargeTerminationTimerControl),
       0x1A,
 
-      // 禁用PCB过温保护，保持默认输入过压阈值
-      static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Register::kSystemStatus),
-      0x40,
-
-      // 将输入电流限制设置为800mA
+      // 将输入电流限制设置为芯片可配置的最高值980mA
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Register::kExtendedInputCurrentControl),
-      0xCA,
+      0xFA,
 
       // 完成其他配置后开启充电
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
@@ -317,14 +552,14 @@ class Sgm41562xx final : public ChipI2cGuide {
   bool IsInitialized();
 
   /**
-   * @brief 解析REG09寄存器值，不将0xFF视为读取失败
-   * @param irq_status REG09寄存器值
+   * @brief 解析REG09故障状态寄存器值
+   * @param fault_status REG09寄存器值
    * @param status 返回解析后的故障状态
    */
-  static void ParseIrqStatus(uint8_t irq_status, IrqStatus& status);
+  static void ParseFaultStatus(uint8_t fault_status, FaultStatus& status);
 
   /**
-   * @brief 解析REG08寄存器值，不将0xFF视为读取失败
+   * @brief 解析REG08芯片状态寄存器值
    * @param chip_status REG08寄存器值
    * @param status 返回解析后的芯片状态
    */

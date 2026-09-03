@@ -39,6 +39,7 @@ The supported bus drivers and chip drivers will continue to evolve with future v
 | --- | --- | --- |
 | ESP-IDF | Recommended | Starting from v2.0.0, the minimum supported ESP-IDF version is v5.5.3 |
 | Arduino NRF | Supported | Suitable for some NRF52840 Arduino scenarios |
+| Arduino ESP32 | Partial | ESP-IDF v5.5.3-based cores support `HardwareI2c1` and I2C chip drivers |
 
 > [!NOTE]
 > Available bus and chip features may vary between frameworks. ESP-IDF is currently the most complete adaptation target.
@@ -97,9 +98,10 @@ entry header:
 ```
 
 > [!IMPORTANT]
-> The Arduino implementation currently supports only builds that define
-> `NRF52840_XXAA` (nRF52840). Other Arduino architectures, including ESP32,
-> are not supported.
+> The Arduino implementation supports builds that define `NRF52840_XXAA`
+> (nRF52840). Arduino ESP32 support is currently limited to the ESP-IDF I2C
+> master backend and its I2C chip drivers, and requires an Arduino core based
+> on ESP-IDF v5.5.3 or later.
 
 #### Use as a Git Submodule
 

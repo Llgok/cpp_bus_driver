@@ -134,15 +134,16 @@ class Tool {
    * @brief 获取当前系统微秒时间
    * @return 当前系统时间，单位为微秒
    */
-  int64_t GetSystemTimeUs();
+  int64_t GetSystemTimeUs() const;
 
   /**
    * @brief 获取当前系统毫秒时间
    * @return 当前系统时间，单位为毫秒
    */
-  int64_t GetSystemTimeMs();
+  int64_t GetSystemTimeMs() const;
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF) || \
+    defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP)
   bool InitGpioInterrupt(uint32_t pin, InterruptMode mode,
       void (*interrupt)(void* arg), void* args = nullptr,
       GpioStatus status = GpioStatus::kDisable);

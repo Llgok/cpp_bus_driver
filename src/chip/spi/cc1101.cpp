@@ -1864,24 +1864,11 @@ bool Cc1101::RestoreAfterWakeup() {
 }
 
 int64_t Cc1101::CurrentTimeUs() const {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  return esp_timer_get_time();
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  const uint32_t current = micros();
-  if (current < last_micros_) {
-    micros_epoch_ += (1ULL << 32);
-  }
-  last_micros_ = current;
-  return static_cast<int64_t>(micros_epoch_ + current);
-#endif
+  return GetSystemTimeUs();
 }
 
 int64_t Cc1101::CurrentTimeMs() const {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  return esp_timer_get_time() / 1000;
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  return CurrentTimeUs() / 1000;
-#endif
+  return GetSystemTimeMs();
 }
 
 float Cc1101::DecodeRssi(uint8_t raw) const {

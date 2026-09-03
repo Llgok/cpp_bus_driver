@@ -32,7 +32,8 @@ constexpr Tool::LogLevel kDefaultMinimumLogLevel = Tool::LogLevel::kInfo;
 
 std::atomic<Tool::LogLevel> g_minimum_log_level{kDefaultMinimumLogLevel};
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF) || \
+    defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP)
 std::mutex g_gpio_isr_service_mutex;
 bool g_gpio_isr_service_installed = false;
 
@@ -269,7 +270,8 @@ bool Tool::SetGpioMode(int32_t pin, GpioMode mode, GpioStatus status) {
     return false;
   }
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF) || \
+    defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP)
   if (pin >= static_cast<int32_t>(GPIO_NUM_MAX)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Value out of range (gpio pin: %d)\n", pin);
@@ -383,7 +385,8 @@ bool Tool::GpioWrite(int32_t pin, bool value) {
     return false;
   }
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF) || \
+    defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP)
   if (pin >= static_cast<int32_t>(GPIO_NUM_MAX)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Value out of range (gpio pin: %d)\n", pin);
@@ -414,7 +417,8 @@ bool Tool::GpioRead(int32_t pin) {
     return false;
   }
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF) || \
+    defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP)
   if (pin >= static_cast<int32_t>(GPIO_NUM_MAX)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Value out of range (gpio pin: %d)\n", pin);
@@ -436,7 +440,8 @@ bool Tool::ResetGpio(int32_t pin) {
     return false;
   }
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF) || \
+    defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP)
   if (pin >= static_cast<int32_t>(GPIO_NUM_MAX)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Value out of range (gpio pin: %d)\n", pin);
@@ -476,7 +481,8 @@ bool Tool::ResetGpio(int32_t pin) {
 }
 
 void Tool::DelayMs(uint32_t value) {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF) || \
+    defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP)
   // 默认状态下 vTaskDelay 在小于 10ms 延时时不精确
   usleep(value * 1000);
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
@@ -485,30 +491,34 @@ void Tool::DelayMs(uint32_t value) {
 }
 
 void Tool::DelayUs(uint32_t value) {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF) || \
+    defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP)
   usleep(value);
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   delayMicroseconds(value);
 #endif
 }
 
-int64_t Tool::GetSystemTimeUs() {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+int64_t Tool::GetSystemTimeUs() const {
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF) || \
+    defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP)
   return esp_timer_get_time();
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   return static_cast<int64_t>(micros());
 #endif
 }
 
-int64_t Tool::GetSystemTimeMs() {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+int64_t Tool::GetSystemTimeMs() const {
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF) || \
+    defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP)
   return esp_timer_get_time() / 1000;
 #elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   return static_cast<int64_t>(millis());
 #endif
 }
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF) || \
+    defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP)
 bool Tool::InitGpioInterrupt(uint32_t pin, InterruptMode mode,
     void (*interrupt)(void*), void* args, GpioStatus status) {
   if (pin >= static_cast<uint32_t>(GPIO_NUM_MAX)) {

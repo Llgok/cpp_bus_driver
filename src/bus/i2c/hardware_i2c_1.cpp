@@ -8,7 +8,8 @@
 #include "hardware_i2c_1.h"
 
 namespace cpp_bus_driver {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF) || \
+    defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP)
 bool HardwareI2c1::InitBus(uint32_t freq_hz) {
   if (freq_hz == static_cast<uint32_t>(kDefaultValue)) {
     freq_hz = kDefaultI2cFreqHz;

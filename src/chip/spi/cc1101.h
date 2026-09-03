@@ -865,7 +865,5 @@ class Cc1101 final : public ChipSpiGuide {
   bool sleeping_ = false;
   bool initialized_ = false;
   int32_t spi_frequency_hz_ = kDefaultSpiFrequencyHz;
-  mutable uint32_t last_micros_ = 0;
-  mutable uint64_t micros_epoch_ = 0;
 };
 }  // namespace cpp_bus_driver

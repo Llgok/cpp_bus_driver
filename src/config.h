@@ -22,7 +22,30 @@
 #include <string>
 #include <vector>
 
-#if defined(CONFIG_IDF_INIT_VERSION)
+#if defined(ARDUINO)
+#include "Arduino.h"
+
+#if defined(ARDUINO_ARCH_ESP32)
+
+#define CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP
+
+#include "driver/gpio.h"
+#include "driver/i2c_master.h"
+#include "esp_timer.h"
+
+#elif defined(NRF52840_XXAA)
+
+#define CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
+#define CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
+#define CPP_BUS_DRIVER_CUSTOM_TEMPLATE_MAKE_UNIQUE
+
+#include "SPI.h"
+#include "Wire.h"
+#include "nrfx_i2s.h"
+
+#endif
+
+#elif defined(CONFIG_IDF_INIT_VERSION)
 #define CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
@@ -46,21 +69,6 @@
 #endif
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
-
-#elif defined(ARDUINO)
-#include "Arduino.h"
-#include "SPI.h"
-#include "Wire.h"
-
-#if defined(NRF52840_XXAA)
-
-#define CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF
-#define CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_CPP11_SUPPORT
-#define CPP_BUS_DRIVER_CUSTOM_TEMPLATE_MAKE_UNIQUE
-
-#include "nrfx_i2s.h"
-
-#endif
 
 #else
 #error "Missing required macro definition."
