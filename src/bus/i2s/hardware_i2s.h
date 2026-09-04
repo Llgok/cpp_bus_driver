@@ -2,7 +2,7 @@
  * @Description: 跨平台硬件 I2S 音频总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-08-03 16:10:35
+ * @LastEditTime: 2026-09-03 17:45:24
  * @License: GPL 3.0
  */
 #pragma once
@@ -83,6 +83,10 @@ class HardwareI2s final : public BusI2sGuide {
   bool Deinit() override;
 
  private:
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+  static constexpr int kDefaultWaitTimeoutMs = 1000;
+#endif
+
   int32_t data_in_, data_out_;
   int32_t ws_lrck_, bclk_, mclk_;
 

@@ -2,7 +2,7 @@
  * @Description: 跨平台硬件 SPI 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-08-03 16:10:47
+ * @LastEditTime: 2026-09-03 17:45:24
  * @License: GPL 3.0
  */
 #include "hardware_spi.h"
@@ -92,7 +92,7 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
 #endif
 
   if (freq_hz == kDefaultValue) {
-    freq_hz = kDefaultSpiFreqHz;
+    freq_hz = kDefaultFrequencyHz;
   }
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)

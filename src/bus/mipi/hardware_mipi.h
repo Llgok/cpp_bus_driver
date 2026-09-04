@@ -2,7 +2,7 @@
  * @Description: ESP-IDF MIPI-DSI 显示总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-08-03 16:10:37
+ * @LastEditTime: 2026-09-03 17:45:24
  * @License: GPL 3.0
  */
 #pragma once
@@ -54,6 +54,9 @@ class HardwareMipi final : public BusMipiGuide {
   esp_lcd_panel_handle_t device_handle();
 
  private:
+  static constexpr float kDefaultFrequencyMhz = 60.0F;
+  static constexpr float kDefaultLaneBitRateMbps = 1000.0F;
+
   uint32_t width_, height_, hsync_, hbp_, hfp_, vsync_, vbp_, vfp_;
   uint8_t num_data_lane_;
   ColorFormat color_format_;

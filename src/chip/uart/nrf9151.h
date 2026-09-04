@@ -2,7 +2,7 @@
  * @Description: nRF9151 蜂窝通信与 GNSS 模块驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-07-11 11:58:39
- * @LastEditTime: 2026-07-11 14:48:32
+ * @LastEditTime: 2026-09-04 09:04:20
  * @License: GPL 3.0
  */
 #pragma once
@@ -12,12 +12,6 @@
 namespace cpp_bus_driver {
 class Nrf9151 final : public ChipUartGuide {
  public:
-  // AT 指令默认超时时间，单位为毫秒
-  static constexpr uint32_t kDefaultCommandTimeoutMs = 500;
-
-  // 模块初始化默认总超时时间，单位为毫秒
-  static constexpr uint32_t kDefaultInitializationTimeoutMs = 3000;
-
   // ncs-serial-modem 及其构建环境的版本信息
   struct SerialModemVersion {
     std::string application;  // ncs-serial-modem 应用版本
@@ -40,7 +34,7 @@ class Nrf9151 final : public ChipUartGuide {
    * @param baud_rate UART 波特率
    * @return UART 初始化且芯片型号验证成功时返回 true，否则返回 false
    */
-  bool Init(int32_t baud_rate = kDefaultUartBaudRate) override;
+  bool Init(int32_t baud_rate = kDefaultBaudRate) override;
 
   /**
    * @brief 初始化 UART，并在总超时内重复使用 AT+CGMM 验证芯片型号
@@ -105,6 +99,14 @@ class Nrf9151 final : public ChipUartGuide {
   const std::string& chip_id() const { return chip_id_; }
 
  private:
+  static constexpr int32_t kDefaultBaudRate = 115200;
+
+  // AT 指令默认超时时间，单位为毫秒
+  static constexpr uint32_t kDefaultCommandTimeoutMs = 500;
+
+  // 模块初始化默认总超时时间，单位为毫秒
+  static constexpr uint32_t kDefaultInitializationTimeoutMs = 3000;
+
   // 允许接收的 AT 响应最大长度，单位为字节
   static constexpr size_t kMaxResponseLength = 4096;
 

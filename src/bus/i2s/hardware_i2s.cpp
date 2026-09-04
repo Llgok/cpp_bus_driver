@@ -2,7 +2,7 @@
  * @Description: 跨平台硬件 I2S 音频总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-08-03 16:10:34
+ * @LastEditTime: 2026-09-03 17:45:24
  * @License: GPL 3.0
  */
 #include "hardware_i2s.h"
@@ -470,7 +470,7 @@ bool HardwareI2s::Init(i2s_mclk_multiple_t mclk_multiple,
 size_t HardwareI2s::Read(void* data, size_t byte) {
   size_t buffer = 0;
   esp_err_t result = i2s_channel_read(
-      rx_handle_, data, byte, &buffer, kDefaultI2sWaitTimeoutMs);
+      rx_handle_, data, byte, &buffer, kDefaultWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "i2s_channel_read failed (error code: %#X)\n", result);
@@ -483,7 +483,7 @@ size_t HardwareI2s::Read(void* data, size_t byte) {
 size_t HardwareI2s::Write(const void* data, size_t byte) {
   size_t buffer = 0;
   esp_err_t result = i2s_channel_write(
-      tx_handle_, data, byte, &buffer, kDefaultI2sWaitTimeoutMs);
+      tx_handle_, data, byte, &buffer, kDefaultWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "i2s_channel_write failed (error code: %#X)\n", result);

@@ -2,7 +2,7 @@
  * @Description: 跨平台硬件 I2C 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-04-30 13:45:04
+ * @LastEditTime: 2026-09-03 17:45:24
  * @License: GPL 3.0
  */
 #pragma once
@@ -44,6 +44,11 @@ class HardwareI2c2 final : public BusI2cGuide {
 #endif
 
  private:
+  static constexpr uint32_t kDefaultFrequencyHz = 100000;
+#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+  static constexpr int kDefaultWaitTimeoutMs = 1000;
+#endif
+
   int32_t sda_, scl_;
 
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)

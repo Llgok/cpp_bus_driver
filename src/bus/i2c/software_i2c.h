@@ -2,7 +2,7 @@
  * @Description: 软件模拟 I2C 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-04-30 13:45:12
+ * @LastEditTime: 2026-09-03 17:45:24
  * @License: GPL 3.0
  */
 #pragma once
@@ -45,6 +45,8 @@ class SoftwareI2c final : public BusI2cGuide {
   bool WriteAck(AckBit ack);
 
  private:
+  static constexpr uint32_t kDefaultFrequencyHz = 100000;
+
   int32_t sda_, scl_;
   uint16_t address_ = kDefaultValue;
   uint32_t freq_hz_ = kDefaultValue;

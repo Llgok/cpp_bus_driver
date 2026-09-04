@@ -2,7 +2,7 @@
  * @Description: 软件模拟 I2C 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-04-29 14:22:26
+ * @LastEditTime: 2026-09-03 17:45:24
  * @License: GPL 3.0
  */
 #include "software_i2c.h"
@@ -11,7 +11,7 @@ namespace cpp_bus_driver {
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
 bool SoftwareI2c::Init(uint32_t freq_hz, uint16_t address) {
   if (freq_hz == kDefaultValue) {
-    freq_hz = kDefaultI2cFreqHz;
+    freq_hz = kDefaultFrequencyHz;
   }
 
   uint32_t buffer_transmit_delay_us = static_cast<uint32_t>(

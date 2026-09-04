@@ -2,7 +2,7 @@
  * @Description: 基于 ESP-IDF 新版主机接口的硬件 I2C 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-04-30 13:44:59
+ * @LastEditTime: 2026-09-03 17:45:24
  * @License: GPL 3.0
  */
 #pragma once
@@ -35,6 +35,9 @@ class HardwareI2c1 final : public BusI2cGuide {
   i2c_master_bus_handle_t bus_handle();
 
  private:
+  static constexpr uint32_t kDefaultFrequencyHz = 100000;
+  static constexpr int kDefaultWaitTimeoutMs = 1000;
+
   int32_t sda_, scl_;
   i2c_port_t port_;
   uint16_t address_ = kDefaultValue;

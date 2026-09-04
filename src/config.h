@@ -2,7 +2,7 @@
  * @Description: cpp_bus_driver 编译配置、平台选择与公共依赖声明
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2026-07-14 01:41:50
+ * @LastEditTime: 2026-09-03 17:26:07
  * @License: GPL 3.0
  */
 #pragma once
@@ -79,26 +79,6 @@
 namespace cpp_bus_driver {
 
 constexpr int kDefaultValue = -1;
-
-constexpr int kDefaultI2cFreqHz = 100000;
-constexpr int kDefaultI2cWaitTimeoutMs = 1000;
-
-constexpr int kDefaultSpiFreqHz = 10000000;
-
-constexpr int kDefaultQspiFreqHz = 10000000;
-constexpr int kDefaultQspiWaitTimeoutMs = 1000;
-
-constexpr int kDefaultUartBaudRate = 115200;
-constexpr int kDefaultUartWaitTimeoutMs = 1000;
-
-constexpr int kDefaultI2sWaitTimeoutMs = 1000;
-
-constexpr float kDefaultMipiFreqMhz = 60.0F;
-constexpr float kDefaultMipiLaneBitRateMbps = 1000.0F;
-
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-constexpr int kDefaultSdioFreqHz = SDMMC_FREQ_DEFAULT;
-#endif
 
 }  // namespace cpp_bus_driver
 

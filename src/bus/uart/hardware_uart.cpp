@@ -2,7 +2,7 @@
  * @Description: ESP-IDF 硬件 UART 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:26:23
- * @LastEditTime: 2026-08-03 16:10:50
+ * @LastEditTime: 2026-09-03 17:45:24
  * @License: GPL 3.0
  */
 #include "hardware_uart.h"
@@ -17,7 +17,7 @@ bool HardwareUart::Init(int32_t baud_rate) {
   }
 
   if (baud_rate == kDefaultValue) {
-    baud_rate = kDefaultUartBaudRate;
+    baud_rate = kDefaultBaudRate;
   }
 
   LogMessage(
@@ -91,7 +91,7 @@ bool HardwareUart::Init(int32_t baud_rate) {
 
 int32_t HardwareUart::Read(void* data, uint32_t length) {
   int32_t buffer_size = uart_read_bytes(static_cast<uart_port_t>(port_), data,
-      length, pdMS_TO_TICKS(kDefaultUartWaitTimeoutMs));
+      length, pdMS_TO_TICKS(kDefaultWaitTimeoutMs));
   if (buffer_size == (-1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "uart_read_bytes failed (uart_read_bytes == (-1))\n");

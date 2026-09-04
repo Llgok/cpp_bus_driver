@@ -2,7 +2,7 @@
  * @Description: ESP-IDF MIPI-DSI 显示总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-05-15 23:11:14
+ * @LastEditTime: 2026-09-03 17:45:24
  * @License: GPL 3.0
  */
 #include "hardware_mipi.h"
@@ -22,11 +22,11 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
   }
 
   if (freq_mhz == static_cast<float>(kDefaultValue)) {
-    freq_mhz = kDefaultMipiFreqMhz;
+    freq_mhz = kDefaultFrequencyMhz;
   }
 
   if (lane_bit_rate_mbps == static_cast<float>(kDefaultValue)) {
-    lane_bit_rate_mbps = kDefaultMipiLaneBitRateMbps;
+    lane_bit_rate_mbps = kDefaultLaneBitRateMbps;
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,

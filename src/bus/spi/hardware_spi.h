@@ -2,7 +2,7 @@
  * @Description: 跨平台硬件 SPI 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-08-03 16:10:48
+ * @LastEditTime: 2026-09-03 17:45:24
  * @License: GPL 3.0
  */
 #pragma once
@@ -61,6 +61,8 @@ class HardwareSpi final : public BusSpiGuide {
 #endif
 
  private:
+  static constexpr int32_t kDefaultFrequencyHz = 10000000;
+
 #if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   enum class BusInitState : uint8_t {
     kNotStarted,

@@ -2,7 +2,7 @@
  * @Description: ESP-IDF 硬件 QSPI 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-07-01 11:46:31
+ * @LastEditTime: 2026-09-03 17:45:24
  * @License: GPL 3.0
  */
 #include "hardware_qspi.h"
@@ -17,7 +17,7 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
   }
 
   if (freq_hz == kDefaultValue) {
-    freq_hz = kDefaultQspiFreqHz;
+    freq_hz = kDefaultFrequencyHz;
   }
 
   if (flags_ == kDefaultValue) {

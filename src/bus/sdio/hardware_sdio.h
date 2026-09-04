@@ -2,7 +2,7 @@
  * @Description: ESP-IDF SDIO 主机通信驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-08-03 16:10:43
+ * @LastEditTime: 2026-09-03 17:45:24
  * @License: GPL 3.0
  */
 #pragma once
@@ -105,6 +105,7 @@ class HardwareSdio final : public BusSdioGuide {
       size_t byte) override;
 
  private:
+  static constexpr int32_t kDefaultFrequencyHz = SDMMC_FREQ_DEFAULT;
   static constexpr uint8_t kSdioBusInitTimeoutCount = 30;
 
   uint8_t width_ = 1;
