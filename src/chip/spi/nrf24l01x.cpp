@@ -5,7 +5,7 @@
  * @LastEditTime: 2026-09-02 16:18:03
  * @License: GPL 3.0
  */
-#include "nrf24l01x.h"
+#include "chip/spi/nrf24l01x.h"
 
 #include <algorithm>
 #include <array>
@@ -90,13 +90,10 @@ bool Nrf24l01x::Init(int32_t frequency_hz) {
   if (initialized_) {
     return true;
   }
-  if (bus_ == nullptr || cs_ == kDefaultValue || ce_ == kDefaultValue) {
+  if (bus_ == nullptr || cs_ == kPinNotConnected || ce_ == kPinNotConnected) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Invalid nRF24L01x bus or GPIO argument\n");
     return false;
-  }
-  if (frequency_hz == kDefaultValue) {
-    frequency_hz = kMaximumSpiFrequencyHz;
   }
   if (frequency_hz <= 0 || frequency_hz > kMaximumSpiFrequencyHz) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
@@ -106,7 +103,7 @@ bool Nrf24l01x::Init(int32_t frequency_hz) {
 
   bool result = SetGpioMode(cs_, GpioMode::kOutput);
   result &= SetGpioMode(ce_, GpioMode::kOutput);
-  if (irq_ != kDefaultValue) {
+  if (irq_ != kPinNotConnected) {
     result &= SetGpioMode(irq_, GpioMode::kInput, GpioStatus::kPullup);
   }
   result &= GpioWrite(cs_, true);
@@ -115,7 +112,7 @@ bool Nrf24l01x::Init(int32_t frequency_hz) {
     return FailInitialization("GPIO initialization failed");
   }
 
-  if (!bus_->Init(frequency_hz, kDefaultValue)) {
+  if (!bus_->Init(frequency_hz, kPinNotConnected)) {
     return FailInitialization("SPI initialization failed");
   }
   bus_initialized_ = true;
@@ -156,13 +153,13 @@ bool Nrf24l01x::DeinitLocalResources(bool delete_bus) {
   if (bus_initialized_) {
     result &= bus_ != nullptr && bus_->Deinit(delete_bus);
   }
-  if (cs_ != kDefaultValue) {
+  if (cs_ != kPinNotConnected) {
     result &= ResetGpio(cs_);
   }
-  if (ce_ != kDefaultValue) {
+  if (ce_ != kPinNotConnected) {
     result &= ResetGpio(ce_);
   }
-  if (irq_ != kDefaultValue) {
+  if (irq_ != kPinNotConnected) {
     result &= ResetGpio(irq_);
   }
 
@@ -170,7 +167,7 @@ bool Nrf24l01x::DeinitLocalResources(bool delete_bus) {
   initialized_ = false;
   powered_up_ = false;
   receiving_ = false;
-  spi_frequency_hz_ = kDefaultValue;
+  spi_frequency_hz_ = 0;
   return result;
 }
 
@@ -1025,7 +1022,7 @@ bool Nrf24l01x::PulseCe(uint32_t high_time_us) {
 }
 
 bool Nrf24l01x::IrqActive(bool* active) {
-  if (active == nullptr || irq_ == kDefaultValue) {
+  if (active == nullptr || irq_ == kPinNotConnected) {
     return false;
   }
   *active = !GpioRead(irq_);
@@ -1285,7 +1282,7 @@ bool Nrf24l01x::ValidateConfig(const Config& config) const {
 }
 
 bool Nrf24l01x::SetCe(bool enabled) {
-  if (ce_ == kDefaultValue) {
+  if (ce_ == kPinNotConnected) {
     return false;
   }
   return GpioWrite(ce_, enabled);
@@ -1293,29 +1290,29 @@ bool Nrf24l01x::SetCe(bool enabled) {
 
 bool Nrf24l01x::FailInitialization(const char* reason) {
   LogMessage(LogLevel::kError, __FILE__, __LINE__, "%s\n", reason);
-  if (ce_ != kDefaultValue) {
+  if (ce_ != kPinNotConnected) {
     GpioWrite(ce_, false);
   }
-  if (cs_ != kDefaultValue) {
+  if (cs_ != kPinNotConnected) {
     GpioWrite(cs_, true);
   }
   if (bus_initialized_ && bus_ != nullptr) {
     bus_->Deinit(false);
   }
-  if (cs_ != kDefaultValue) {
+  if (cs_ != kPinNotConnected) {
     ResetGpio(cs_);
   }
-  if (ce_ != kDefaultValue) {
+  if (ce_ != kPinNotConnected) {
     ResetGpio(ce_);
   }
-  if (irq_ != kDefaultValue) {
+  if (irq_ != kPinNotConnected) {
     ResetGpio(irq_);
   }
   bus_initialized_ = false;
   initialized_ = false;
   powered_up_ = false;
   receiving_ = false;
-  spi_frequency_hz_ = kDefaultValue;
+  spi_frequency_hz_ = 0;
   return false;
 }
 

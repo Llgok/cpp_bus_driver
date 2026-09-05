@@ -1,18 +1,27 @@
 /*
- * @Description: 基于 ESP-IDF 新版主机接口的硬件 I2C 总线驱动实现
+ * @Description: ESP-IDF 后端硬件 I2C 总线驱动实现
  * @Author: LILYGO_L
- * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-09-03 17:45:24
+ * @Date: 2026-09-04 10:14:25
+ * @LastEditTime: 2026-09-05 14:57:28
  * @License: GPL 3.0
  */
-#include "hardware_i2c_1.h"
+#include "bus/i2c/hardware_i2c.h"
+
+#include <limits>
+
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+
+#include "driver/gpio.h"
+#include "driver/i2c_master.h"
+#include "freertos/FreeRTOS.h"
 
 namespace cpp_bus_driver {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF) || \
-    defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_ESP)
-bool HardwareI2c1::InitBus(uint32_t freq_hz) {
-  if (freq_hz == static_cast<uint32_t>(kDefaultValue)) {
-    freq_hz = kDefaultFrequencyHz;
+bool HardwareI2c::InitBus(uint32_t freq_hz) {
+  if (freq_hz == 0 ||
+      freq_hz > static_cast<uint32_t>(std::numeric_limits<int32_t>::max())) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Invalid I2C frequency\n");
+    return false;
   }
 
   if (shared_bus_provider_ != nullptr) {
@@ -26,7 +35,6 @@ bool HardwareI2c1::InitBus(uint32_t freq_hz) {
     }
 
     bus_handle_ = shared_bus_provider_->bus_handle();
-    freq_hz_ = freq_hz;
     delete_bus_on_deinit_ = false;
     if (bus_handle_ != nullptr) {
       bus_init_state_.store(BusInitState::kReady);
@@ -78,38 +86,38 @@ bool HardwareI2c1::InitBus(uint32_t freq_hz) {
     return false;
   }
 
-  freq_hz_ = freq_hz;
   delete_bus_on_deinit_ = true;
   bus_init_state_.store(BusInitState::kReady);
 
   return true;
 }
 
-bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
-  if (freq_hz == static_cast<uint32_t>(kDefaultValue)) {
-    freq_hz = kDefaultFrequencyHz;
+bool HardwareI2c::Init(uint32_t freq_hz, uint16_t address) {
+  if (freq_hz == 0 ||
+      freq_hz > static_cast<uint32_t>(std::numeric_limits<int32_t>::max())) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Invalid I2C frequency\n");
+    return false;
   }
   const bool had_bus = bus_handle_ != nullptr;
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "HardwareI2c1 config address: %#X\n", address);
+      "HardwareI2c config address: %#X\n", address);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "HardwareI2c1 config port_: %d\n", port_);
+      "HardwareI2c config port_: %d\n", port_);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "HardwareI2c1 config sda_: %d\n", sda_);
+      "HardwareI2c config sda_: %d\n", sda_);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "HardwareI2c1 config scl_: %d\n", scl_);
+      "HardwareI2c config scl_: %d\n", scl_);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "HardwareI2c1 config freq_hz: %d hz\n", freq_hz);
+      "HardwareI2c config freq_hz: %d hz\n", freq_hz);
 
   if (!InitBus(freq_hz)) {
     return false;
   }
   const bool created_bus = !had_bus && delete_bus_on_deinit_;
 
-  if (address == static_cast<uint16_t>(kDefaultValue)) {
+  if (address == kNoDeviceAddress) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "address is null\n");
-    freq_hz_ = freq_hz;
     address_ = address;
     return true;
   }
@@ -136,13 +144,12 @@ bool HardwareI2c1::Init(uint32_t freq_hz, uint16_t address) {
     }
   }
 
-  freq_hz_ = freq_hz;
   address_ = address;
 
   return true;
 }
 
-bool HardwareI2c1::Deinit(bool delete_bus) {
+bool HardwareI2c::Deinit(bool delete_bus) {
   bool result = true;
 
   if (device_handle_ != nullptr) {
@@ -172,10 +179,10 @@ bool HardwareI2c1::Deinit(bool delete_bus) {
       bus_handle_ = nullptr;
       delete_bus_on_deinit_ = false;
       bus_init_state_.store(BusInitState::kNotStarted);
-      if (sda_ != kDefaultValue) {
+      if (sda_ != kPinNotConnected) {
         result &= ResetGpio(sda_);
       }
-      if (scl_ != kDefaultValue) {
+      if (scl_ != kPinNotConnected) {
         result &= ResetGpio(scl_);
       }
     }
@@ -184,9 +191,9 @@ bool HardwareI2c1::Deinit(bool delete_bus) {
   return result;
 }
 
-bool HardwareI2c1::Read(uint8_t* data, size_t length) {
-  esp_err_t result = i2c_master_receive(
-      device_handle_, data, length, kDefaultWaitTimeoutMs);
+bool HardwareI2c::Read(uint8_t* data, size_t length) {
+  esp_err_t result =
+      i2c_master_receive(device_handle_, data, length, kDefaultWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "i2c_master_receive failed (error code: %#X)\n", result);
@@ -196,9 +203,9 @@ bool HardwareI2c1::Read(uint8_t* data, size_t length) {
   return true;
 }
 
-bool HardwareI2c1::Write(const uint8_t* data, size_t length) {
-  esp_err_t result = i2c_master_transmit(
-      device_handle_, data, length, kDefaultWaitTimeoutMs);
+bool HardwareI2c::Write(const uint8_t* data, size_t length) {
+  esp_err_t result =
+      i2c_master_transmit(device_handle_, data, length, kDefaultWaitTimeoutMs);
   if (result != ESP_OK) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "i2c_master_transmit failed (error code: %#X)\n", result);
@@ -208,7 +215,7 @@ bool HardwareI2c1::Write(const uint8_t* data, size_t length) {
   return true;
 }
 
-bool HardwareI2c1::WriteRead(const uint8_t* write_data, size_t write_length,
+bool HardwareI2c::WriteRead(const uint8_t* write_data, size_t write_length,
     uint8_t* read_data, size_t read_length) {
   esp_err_t result = i2c_master_transmit_receive(device_handle_, write_data,
       write_length, read_data, read_length, kDefaultWaitTimeoutMs);
@@ -221,7 +228,7 @@ bool HardwareI2c1::WriteRead(const uint8_t* write_data, size_t write_length,
   return true;
 }
 
-bool HardwareI2c1::Probe(const uint16_t address) {
+bool HardwareI2c::Probe(const uint16_t address) {
   esp_err_t result =
       i2c_master_probe(bus_handle_, address, kDefaultWaitTimeoutMs);
   if (result != ESP_OK) {
@@ -231,7 +238,7 @@ bool HardwareI2c1::Probe(const uint16_t address) {
   return true;
 }
 
-bool HardwareI2c1::set_bus_handle(i2c_master_bus_handle_t bus_handle) {
+bool HardwareI2c::set_bus_handle(i2c_master_bus_handle_t bus_handle) {
   if (bus_handle == nullptr) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
@@ -239,7 +246,7 @@ bool HardwareI2c1::set_bus_handle(i2c_master_bus_handle_t bus_handle) {
   if (device_handle_ != nullptr ||
       (bus_handle_ != nullptr && delete_bus_on_deinit_)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "HardwareI2c1 has been initialized\n");
+        "HardwareI2c has been initialized\n");
     return false;
   }
 
@@ -251,7 +258,7 @@ bool HardwareI2c1::set_bus_handle(i2c_master_bus_handle_t bus_handle) {
   return true;
 }
 
-i2c_master_bus_handle_t HardwareI2c1::bus_handle() {
+i2c_master_bus_handle_t HardwareI2c::bus_handle() {
   if (bus_handle_ == nullptr) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return nullptr;
@@ -259,5 +266,7 @@ i2c_master_bus_handle_t HardwareI2c1::bus_handle() {
 
   return bus_handle_;
 }
-#endif
+
 }  // namespace cpp_bus_driver
+
+#endif

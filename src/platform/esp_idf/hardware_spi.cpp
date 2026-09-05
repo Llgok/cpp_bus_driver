@@ -1,14 +1,20 @@
 /*
- * @Description: 跨平台硬件 SPI 总线驱动实现
+ * @Description: ESP-IDF 后端硬件 SPI 总线驱动实现
  * @Author: LILYGO_L
- * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-09-03 17:45:24
+ * @Date: 2026-09-04 10:14:25
+ * @LastEditTime: 2026-09-05 14:57:37
  * @License: GPL 3.0
  */
-#include "hardware_spi.h"
+#include "bus/spi/hardware_spi.h"
+
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+
+#include "driver/spi_master.h"
 
 namespace cpp_bus_driver {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
 bool HardwareSpi::InitBus() {
   if (shared_bus_provider_ != nullptr) {
     if (!shared_bus_provider_->InitBus()) {
@@ -79,27 +85,17 @@ void HardwareSpi::set_bus_init_flag(bool enable) {
       enable ? BusInitState::kReady : BusInitState::kNotStarted);
   delete_bus_on_deinit_ = false;
 }
-#endif
 
 bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+  if (freq_hz <= 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Invalid bus frequency\n");
+    return false;
+  }
   if (bus_init_state_.load() == BusInitState::kReady && device_init_flag_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HardwareSpi has been initialized\n");
     return true;
   }
-
-#endif
-
-  if (freq_hz == kDefaultValue) {
-    freq_hz = kDefaultFrequencyHz;
-  }
-
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  if (flags_ == kDefaultValue) {
-    flags_ = 0;
-  }
-#endif
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareSpi config mosi_: %d\n", mosi_);
@@ -110,31 +106,20 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
   LogMessage(
       LogLevel::kInfo, __FILE__, __LINE__, "HardwareSpi config cs: %d\n", cs);
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareSpi config port_: %d\n", port_);
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "HardwareSpi config port_ address: %#X\n", port_);
-#endif
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareSpi config mode_: %d\n", mode_);
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareSpi config clock_source_: %d\n", clock_source_);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareSpi config flags_: %d\n", flags_);
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "HardwareSpi config bit_order_: %d\n", bit_order_);
-#endif
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareSpi config freq_hz: %d hz\n", freq_hz);
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   const bool had_bus = bus_init_state_.load() == BusInitState::kReady;
   if (!InitBus()) {
     return false;
@@ -171,34 +156,12 @@ bool HardwareSpi::Init(int32_t freq_hz, int32_t cs) {
     device_init_flag_ = true;
   }
 
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  spi_handle_ = std::make_unique<SPIClass>(port_, static_cast<uint8_t>(miso_),
-      static_cast<uint8_t>(sclk_), static_cast<uint8_t>(mosi_));
-  bool result = true;
-  if (cs != kDefaultValue) {
-    result &= SetGpioMode(cs, GpioMode::kOutput);
-    result &= GpioWrite(cs, 1);
-  }
-  if (!result) {
-    return false;
-  }
-  spi_settings_ = SPISettings(freq_hz, bit_order_, mode_);
-
-  spi_handle_->begin();
-
-#else
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
-  return false;
-#endif
-
-  freq_hz_ = freq_hz;
   cs_ = cs;
 
   return true;
 }
 
 bool HardwareSpi::Deinit(bool delete_bus) {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   bool result = true;
 
   if (device_init_flag_) {
@@ -210,10 +173,10 @@ bool HardwareSpi::Deinit(bool delete_bus) {
     } else {
       spi_device_ = nullptr;
       device_init_flag_ = false;
-      if (cs_ != kDefaultValue) {
+      if (cs_ != kPinNotConnected) {
         result &= ResetGpio(cs_);
       }
-      cs_ = kDefaultValue;
+      cs_ = kPinNotConnected;
     }
   }
 
@@ -232,38 +195,22 @@ bool HardwareSpi::Deinit(bool delete_bus) {
     } else {
       bus_init_state_.store(BusInitState::kNotStarted);
       delete_bus_on_deinit_ = false;
-      if (mosi_ != kDefaultValue) {
+      if (mosi_ != kPinNotConnected) {
         result &= ResetGpio(mosi_);
       }
-      if (miso_ != kDefaultValue) {
+      if (miso_ != kPinNotConnected) {
         result &= ResetGpio(miso_);
       }
-      if (sclk_ != kDefaultValue) {
+      if (sclk_ != kPinNotConnected) {
         result &= ResetGpio(sclk_);
       }
     }
   }
 
   return result;
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  bool result = true;
-  if (spi_handle_ != nullptr) {
-    spi_handle_->end();
-    spi_handle_.reset();
-  }
-  if (cs_ != kDefaultValue) {
-    result &= ResetGpio(cs_);
-  }
-  cs_ = kDefaultValue;
-  return result;
-#else
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
-  return false;
-#endif
 }
 
 bool HardwareSpi::Write(const void* data, size_t byte) {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   spi_transaction_t buffer = {
       .flags = 0,
       .cmd = 0,
@@ -284,30 +231,9 @@ bool HardwareSpi::Write(const void* data, size_t byte) {
   }
 
   return true;
-
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  bool result = true;
-  spi_handle_->beginTransaction(spi_settings_);
-  if (cs_ != kDefaultValue) {
-    result &= GpioWrite(cs_, 0);
-  }
-  if (result) {
-    spi_handle_->transfer(const_cast<void*>(data), byte);
-  }
-  if (cs_ != kDefaultValue) {
-    result &= GpioWrite(cs_, 1);
-  }
-  spi_handle_->endTransaction();
-
-  return result;
-#else
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
-  return false;
-#endif
 }
 
 bool HardwareSpi::Read(void* data, size_t byte) {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   spi_transaction_t buffer = {
       .flags = 0,
       .cmd = 0,
@@ -328,32 +254,10 @@ bool HardwareSpi::Read(void* data, size_t byte) {
   }
 
   return true;
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  std::vector<uint8_t> buffer(byte, 0);
-
-  bool result = true;
-  spi_handle_->beginTransaction(spi_settings_);
-  if (cs_ != kDefaultValue) {
-    result &= GpioWrite(cs_, 0);
-  }
-  if (result) {
-    spi_handle_->transfer(buffer.data(), data, byte);
-  }
-  if (cs_ != kDefaultValue) {
-    result &= GpioWrite(cs_, 1);
-  }
-  spi_handle_->endTransaction();
-
-  return result;
-#else
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
-  return false;
-#endif
 }
 
 bool HardwareSpi::WriteRead(
     const void* write_data, void* read_data, size_t data_byte) {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   spi_transaction_t buffer = {
       .flags = 0,
       .cmd = 0,
@@ -374,24 +278,9 @@ bool HardwareSpi::WriteRead(
   }
 
   return true;
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
-  bool result = true;
-  spi_handle_->beginTransaction(spi_settings_);
-  if (cs_ != kDefaultValue) {
-    result &= GpioWrite(cs_, 0);
-  }
-  if (result) {
-    spi_handle_->transfer(write_data, read_data, data_byte);
-  }
-  if (cs_ != kDefaultValue) {
-    result &= GpioWrite(cs_, 1);
-  }
-  spi_handle_->endTransaction();
-
-  return result;
-#else
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRead failed\n");
-  return false;
-#endif
 }
+#endif
+
 }  // namespace cpp_bus_driver
+
+#endif

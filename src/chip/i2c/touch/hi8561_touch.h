@@ -12,12 +12,12 @@
 #include <memory>
 #include <mutex>
 
-#include "../../chip_guide.h"
-#include "touch_types.h"
+#include "chip/chip_base.h"
+#include "chip/i2c/touch/touch_types.h"
 
 namespace cpp_bus_driver {
 
-class Hi8561Touch final : public ChipI2cGuide {
+class Hi8561Touch final : public I2cChipBase {
  public:
   // HI8561 固件上报的手势编号。
   enum class Gesture : uint8_t {
@@ -66,11 +66,12 @@ class Hi8561Touch final : public ChipI2cGuide {
     uint8_t panel_version = 0;
   };
 
-  explicit Hi8561Touch(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
-      : ChipI2cGuide(bus, address), rst_(rst) {}
+  explicit Hi8561Touch(std::shared_ptr<I2cBusBase> bus,
+      int16_t address = kDeviceI2cAddressDefault,
+      int32_t rst = kPinNotConnected)
+      : I2cChipBase(bus, address), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = kDefaultValue) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
 
   bool Deinit(bool delete_bus = true) override;
 
@@ -147,6 +148,9 @@ class Hi8561Touch final : public ChipI2cGuide {
   bool GetFrequencyBand(uint8_t* frequency_band);
 
  private:
+  // 默认 I2C 总线时钟，单位 Hz。
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
+
   // 动态内存区的地址和长度。
   struct SectionInfo {
     uint32_t address = 0;

@@ -7,10 +7,15 @@
  */
 #pragma once
 
-#include "../chip_guide.h"
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
+
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
-class Nrf9151 final : public ChipUartGuide {
+class Nrf9151 final : public UartChipBase {
  public:
   // ncs-serial-modem 及其构建环境的版本信息
   struct SerialModemVersion {
@@ -27,7 +32,7 @@ class Nrf9151 final : public ChipUartGuide {
     kIoError,  // UART 读写失败
   };
 
-  explicit Nrf9151(std::shared_ptr<BusUartGuide> bus) : ChipUartGuide(bus) {}
+  explicit Nrf9151(std::shared_ptr<UartBusBase> bus) : UartChipBase(bus) {}
 
   /**
    * @brief 初始化 UART，并使用 AT+CGMM 验证设备是否为 nRF9151
@@ -78,7 +83,7 @@ class Nrf9151 final : public ChipUartGuide {
   /**
    * @brief 发送 AT 指令并等待 OK、错误响应或超时
    * @param command 不包含结束符的 AT 指令
-   * @param response 用于保存完整响应的指针
+   * @param response 用于保存完整响应的指针，响应最多 4096 字节
    * @param timeout_ms 等待最终响应的总超时时间，单位为毫秒
    * @return AT 指令执行结果
    */

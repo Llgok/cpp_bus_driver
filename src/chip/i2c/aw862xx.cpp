@@ -5,11 +5,13 @@
  * @LastEditTime: 2026-09-02 16:15:15
  * @License: GPL 3.0
  */
-#include "aw862xx.h"
+#include "chip/i2c/aw862xx.h"
+
+#include <algorithm>
 
 namespace cpp_bus_driver {
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_NRF52
 constexpr uint8_t Aw862xx::kHapticWaveformRtpData[];
 constexpr uint8_t Aw862xx::kHapticWaveformRam12k101635_130[];
 constexpr uint8_t Aw862xx::kHapticWaveformRam12k0809_170[];
@@ -196,7 +198,7 @@ const char* Aw862xx::SampleRateToString(SampleRate sample_rate) {
 }
 
 bool Aw862xx::Init(int32_t freq_hz) {
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
     result &= GpioWrite(rst_, 0);
@@ -209,7 +211,7 @@ bool Aw862xx::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipI2cGuide::Init(freq_hz)) {
+  if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -231,12 +233,12 @@ bool Aw862xx::Init(int32_t freq_hz) {
 bool Aw862xx::Deinit(bool delete_bus) {
   bool result = true;
 
-  if (!ChipI2cGuide::Deinit(delete_bus)) {
+  if (!I2cChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
   return result;
@@ -1201,7 +1203,7 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
       operation_result = false;
     }
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_NRF52
     if (operation_result) {
       // Arduino nRF 的 Wire 默认发送缓存为64字节，环形缓冲可用63字节，
       // 扣除1字节寄存器地址。

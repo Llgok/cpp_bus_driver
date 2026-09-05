@@ -2,17 +2,25 @@
  * @Description: ESP-IDF MIPI-DSI 显示总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-09-03 17:45:24
+ * @LastEditTime: 2026-09-05 08:57:19
  * @License: GPL 3.0
  */
 #pragma once
 
-#include "../bus_guide.h"
+#include <cstddef>
+#include <cstdint>
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-#if defined(CPP_BUS_DRIVER_CHIP_ESP32P4)
+#include "bus/bus_base.h"
+
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+#if SOC_MIPI_DSI_SUPPORTED
+#include "esp_lcd_mipi_dsi.h"
+#include "esp_lcd_panel_io.h"
+#include "esp_lcd_panel_ops.h"
+
 namespace cpp_bus_driver {
-class HardwareMipi final : public BusMipiGuide {
+class HardwareMipi final : public MipiBusBase {
  public:
   enum class ColorFormat {
     kRgb565,
@@ -38,8 +46,8 @@ class HardwareMipi final : public BusMipiGuide {
         num_frame_buffer_(num_frame_buffer),
         port_(port) {}
 
-  bool Init(float freq_mhz = kDefaultValue,
-      float lane_bit_rate_mbps = kDefaultValue,
+  bool Init(float freq_mhz = kDefaultFrequencyMhz,
+      float lane_bit_rate_mbps = kDefaultLaneBitRateMbps,
       InitSequenceFormat init_sequence_format =
           InitSequenceFormat::kWriteC8D8) override;
 
@@ -54,6 +62,7 @@ class HardwareMipi final : public BusMipiGuide {
   esp_lcd_panel_handle_t device_handle();
 
  private:
+  // 默认像素时钟和 DSI 数据通道速率，单位分别为 MHz 和 Mbps。
   static constexpr float kDefaultFrequencyMhz = 60.0F;
   static constexpr float kDefaultLaneBitRateMbps = 1000.0F;
 

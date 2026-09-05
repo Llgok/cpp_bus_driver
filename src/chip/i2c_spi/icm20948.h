@@ -7,14 +7,20 @@
  */
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
+#include <memory>
 #include <mutex>
 
-#include "../chip_guide.h"
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
 
-class Icm20948 final : public Tool {
+class Icm20948 final : public DriverBase {
  public:
+  // 根据实际连接的 I2C 或 SPI 总线选择芯片默认时钟。
+  static constexpr int32_t kAutoFrequencyHz = 0;
+
   enum class Interface {
     kI2c,  // 使用 I2C 主接口。
     kSpi,  // 使用四线 SPI 主接口。
@@ -113,7 +119,7 @@ class Icm20948 final : public Tool {
    * @param bus I2C 总线
    * @param address ICM20948 七位 I2C 地址
    */
-  explicit Icm20948(std::shared_ptr<BusI2cGuide> bus,
+  explicit Icm20948(std::shared_ptr<I2cBusBase> bus,
       int16_t address = kDeviceI2cAddressDefault)
       : i2c_bus_(bus), i2c_address_(address) {}
 
@@ -122,7 +128,7 @@ class Icm20948 final : public Tool {
    * @param bus SPI Mode 0 总线
    * @param cs ICM20948 片选 GPIO
    */
-  explicit Icm20948(std::shared_ptr<BusSpiGuide> bus, int32_t cs)
+  explicit Icm20948(std::shared_ptr<SpiBusBase> bus, int32_t cs)
       : spi_bus_(bus), spi_cs_(cs) {}
 
   /**
@@ -130,7 +136,7 @@ class Icm20948 final : public Tool {
    * @param freq_hz 主机总线频率；默认值按 I2C/SPI 接口分别选择
    * @return 初始化成功返回 true，失败返回 false
    */
-  bool Init(int32_t freq_hz = kDefaultValue);
+  bool Init(int32_t freq_hz = kAutoFrequencyHz);
 
   /**
    * @brief 使用指定配置初始化 ICM20948
@@ -138,7 +144,7 @@ class Icm20948 final : public Tool {
    * @param freq_hz 主机总线频率；默认值按 I2C/SPI 接口分别选择
    * @return 初始化成功返回 true，失败返回 false
    */
-  bool Init(const Config& config, int32_t freq_hz = kDefaultValue);
+  bool Init(const Config& config, int32_t freq_hz = kAutoFrequencyHz);
 
   /**
    * @brief 释放 ICM20948 对应的总线设备
@@ -646,10 +652,10 @@ class Icm20948 final : public Tool {
    */
   bool UsesI2c() const { return i2c_bus_ != nullptr; }
 
-  std::shared_ptr<BusI2cGuide> i2c_bus_;
-  std::shared_ptr<BusSpiGuide> spi_bus_;
+  std::shared_ptr<I2cBusBase> i2c_bus_;
+  std::shared_ptr<SpiBusBase> spi_bus_;
   int16_t i2c_address_ = kDeviceI2cAddressDefault;
-  int32_t spi_cs_ = kDefaultValue;
+  int32_t spi_cs_ = kPinNotConnected;
   Config config_;  // 当前成功应用的传感器配置。
   MagnetometerMode active_magnetometer_mode_ =
       MagnetometerMode::kPowerDown;  // 当前 AK09916 硬件模式。

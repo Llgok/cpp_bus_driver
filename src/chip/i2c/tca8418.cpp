@@ -2,18 +2,18 @@
  * @Description: TCA8418 键盘扫描与 GPIO 扩展芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-08-03 16:11:31
+ * @LastEditTime: 2026-09-05 14:56:56
  * @License: GPL 3.0
  */
-#include "tca8418.h"
+#include "chip/i2c/tca8418.h"
 
 namespace cpp_bus_driver {
 
 bool Tca8418::Init(int32_t freq_hz) {
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
-    result &=
-        SetGpioMode(rst_, Tool::GpioMode::kOutput, Tool::GpioStatus::kPullup);
+    result &= SetGpioMode(
+        rst_, PlatformHal::GpioMode::kOutput, PlatformHal::GpioStatus::kPullup);
     result &= GpioWrite(rst_, 0);
     DelayMs(10);
     result &= GpioWrite(rst_, 1);
@@ -24,7 +24,7 @@ bool Tca8418::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipI2cGuide::Init(freq_hz)) {
+  if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -54,12 +54,12 @@ bool Tca8418::Init(int32_t freq_hz) {
 bool Tca8418::Deinit(bool delete_bus) {
   bool result = true;
 
-  if (!ChipI2cGuide::Deinit(delete_bus)) {
+  if (!I2cChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
 
@@ -307,10 +307,6 @@ uint32_t Tca8418::GetClearGpioIrqFlag() {
   }
   return status;
 }
-
-bool Tca8418::SetIrqGpioMode(IrqMask mode) { return SetInterruptEnable(mode); }
-
-bool Tca8418::SetIrqGpioMode(uint8_t mode) { return SetInterruptEnable(mode); }
 
 bool Tca8418::ParseTouchNum(uint8_t num, TouchPosition& position) {
   if ((num < kKeypadFirstEvent) || (num > kKeypadLastEvent)) {

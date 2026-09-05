@@ -2,24 +2,29 @@
  * @Description: ESP-IDF LEDC PWM 驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-08-10 18:07:50
- * @LastEditTime: 2026-08-11 09:12:05
+ * @LastEditTime: 2026-09-05 14:57:44
  * @License: GPL 3.0
  */
 #pragma once
 
 #include <cstdint>
 
-#include "tool.h"
+#include "../../core/logger.h"
+#include "cpp_bus_driver_config.h"
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
 #include <mutex>
+
+#include "driver/ledc.h"
 #endif
 
 namespace cpp_bus_driver {
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
 
-class Pwm final : private Tool {
+class Pwm final : private Logger {
  public:
   enum class FadeMode : uint8_t {
     kWaitForCompletion,
@@ -54,7 +59,7 @@ class Pwm final : private Tool {
 
   explicit Pwm(int32_t pin) : pin_(pin) {}
 
-  ~Pwm() override { Deinit(); }
+  ~Pwm() { Deinit(); }
 
   // PWM 对象独占硬件资源，不支持复制或移动。
   Pwm(const Pwm&) = delete;

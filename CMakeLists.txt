@@ -2,6 +2,10 @@ set(
         src_dirs 
         "./src"
 
+        "./src/core"
+        "./src/parser"
+        "./src/utility"
+
         "./src/bus"
         "./src/bus/i2c"
         "./src/bus/spi"
@@ -9,6 +13,8 @@ set(
         "./src/bus/i2s"
         "./src/bus/sdio"
         "./src/bus/mipi"
+
+        "./src/platform/esp_idf"
 
         "./src/chip"
         "./src/chip/i2c"

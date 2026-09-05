@@ -7,11 +7,15 @@
  */
 #pragma once
 
-#include "../bus_guide.h"
+#include <cstddef>
+#include <cstdint>
+
+#include "bus/bus_base.h"
 
 namespace cpp_bus_driver {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-class SoftwareI2c final : public BusI2cGuide {
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+class SoftwareI2c final : public I2cBusBase {
  public:
   // i2c通信中，应答(ack)是低电平(0)，非应答(nack)是高电平(1)
   enum class AckBit {
@@ -21,8 +25,8 @@ class SoftwareI2c final : public BusI2cGuide {
 
   explicit SoftwareI2c(int32_t sda, int32_t scl) : sda_(sda), scl_(scl) {}
 
-  bool Init(uint32_t freq_hz = kDefaultValue,
-      uint16_t address = kDefaultValue) override;
+  bool Init(uint32_t freq_hz = kDefaultFrequencyHz,
+      uint16_t address = kNoDeviceAddress) override;
   bool Deinit(bool delete_bus = true) override;
 
   bool StartTransmit() override;
@@ -45,11 +49,11 @@ class SoftwareI2c final : public BusI2cGuide {
   bool WriteAck(AckBit ack);
 
  private:
+  // 默认总线时钟，单位 Hz。
   static constexpr uint32_t kDefaultFrequencyHz = 100000;
 
   int32_t sda_, scl_;
-  uint16_t address_ = kDefaultValue;
-  uint32_t freq_hz_ = kDefaultValue;
+  uint16_t address_ = kNoDeviceAddress;
   uint32_t transmit_delay_us_ = 0;
 };
 #endif

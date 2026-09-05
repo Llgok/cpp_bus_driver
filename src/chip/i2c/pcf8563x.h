@@ -7,10 +7,13 @@
  */
 #pragma once
 
-#include "../chip_guide.h"
+#include <cstdint>
+#include <memory>
+
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
-class Pcf8563x final : public ChipI2cGuide {
+class Pcf8563x final : public I2cChipBase {
  public:
   enum class Week {
     kSunday = 0x00,
@@ -68,11 +71,12 @@ class Pcf8563x final : public ChipI2cGuide {
     uint8_t year = -1;
   };
 
-  explicit Pcf8563x(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
-      : ChipI2cGuide(bus, address), rst_(rst) {}
+  explicit Pcf8563x(std::shared_ptr<I2cBusBase> bus,
+      int16_t address = kDeviceI2cAddressDefault,
+      int32_t rst = kPinNotConnected)
+      : I2cChipBase(bus, address), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = kDefaultValue) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -176,6 +180,12 @@ class Pcf8563x final : public ChipI2cGuide {
   bool ClearScheduledAlarmFlag();
 
  private:
+  // 默认 I2C 总线时钟，单位 Hz。
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
+
+  // 芯片标识读取失败时返回的无效值。
+  static constexpr uint8_t kInvalidChipId = 0xFF;
+
   enum class Register {
     kRoChipId = 0x00,
 

@@ -5,17 +5,17 @@
  * @LastEditTime: 2026-09-02 16:15:21
  * @License: GPL 3.0
  */
-#include "axp517.h"
+#include "chip/i2c/axp517.h"
 
 namespace cpp_bus_driver {
 bool Axp517::Init(int32_t freq_hz) {
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
-    result &= Tool::SetGpioMode(
-        rst_, Tool::GpioMode::kOutput, Tool::GpioStatus::kPullup);
-    result &= Tool::GpioWrite(rst_, 0);
+    result &= PlatformHal::SetGpioMode(
+        rst_, PlatformHal::GpioMode::kOutput, PlatformHal::GpioStatus::kPullup);
+    result &= PlatformHal::GpioWrite(rst_, 0);
     DelayMs(10);
-    result &= Tool::GpioWrite(rst_, 1);
+    result &= PlatformHal::GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
@@ -23,7 +23,7 @@ bool Axp517::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipI2cGuide::Init(freq_hz)) {
+  if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -53,13 +53,13 @@ bool Axp517::Init(int32_t freq_hz) {
 bool Axp517::Deinit(bool delete_bus) {
   bool result = true;
 
-  if (!ChipI2cGuide::Deinit(delete_bus)) {
+  if (!I2cChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
-  if (rst_ != kDefaultValue) {
-    result &= Tool::ResetGpio(rst_);
+  if (rst_ != kPinNotConnected) {
+    result &= PlatformHal::ResetGpio(rst_);
   }
 
   return result;

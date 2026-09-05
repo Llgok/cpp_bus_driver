@@ -2,14 +2,16 @@
  * @Description: BQ27220 单节电池 CEDV 电量计驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-09-02 16:15:26
+ * @LastEditTime: 2026-09-05 14:56:49
  * @License: GPL 3.0
  */
-#include "bq27220.h"
+#include "chip/i2c/bq27220.h"
+
+#include <cstring>
 
 namespace cpp_bus_driver {
 bool Bq27220::Init(int32_t freq_hz) {
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
     result &= GpioWrite(rst_, 0);
@@ -22,7 +24,7 @@ bool Bq27220::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipI2cGuide::Init(freq_hz)) {
+  if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -42,12 +44,12 @@ bool Bq27220::Init(int32_t freq_hz) {
 bool Bq27220::Deinit(bool delete_bus) {
   bool result = true;
 
-  if (!ChipI2cGuide::Deinit(delete_bus)) {
+  if (!I2cChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
 
@@ -893,7 +895,7 @@ bool Bq27220::ReadU16(StandardCommand command, uint16_t* value) {
 }
 
 bool Bq27220::WriteU16(StandardCommand command, uint16_t value) {
-  if (!bus_->Write(static_cast<uint8_t>(command), value, Endian::kLittle)) {
+  if (!bus_->Write(static_cast<uint8_t>(command), value, ByteOrder::kLittle)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }

@@ -5,11 +5,11 @@
  * @LastEditTime: 2026-09-02 16:15:37
  * @License: GPL 3.0
  */
-#include "s023msafjf10111e1.h"
+#include "chip/i2c/s023msafjf10111e1.h"
 
 namespace cpp_bus_driver {
 bool S023msafjf10111e1::Init(int32_t freq_hz) {
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
     result &= GpioWrite(rst_, 0);
@@ -22,7 +22,7 @@ bool S023msafjf10111e1::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipI2cGuide::Init(freq_hz)) {
+  if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -33,12 +33,12 @@ bool S023msafjf10111e1::Init(int32_t freq_hz) {
 bool S023msafjf10111e1::Deinit(bool delete_bus) {
   bool result = true;
 
-  if (!ChipI2cGuide::Deinit(delete_bus)) {
+  if (!I2cChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
 

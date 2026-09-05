@@ -2,16 +2,29 @@
  * @Description: ESP-IDF MIPI-DSI 显示总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-09-03 17:45:24
+ * @LastEditTime: 2026-09-05 14:57:32
  * @License: GPL 3.0
  */
-#include "hardware_mipi.h"
+#include "bus/mipi/hardware_mipi.h"
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-#if defined(CPP_BUS_DRIVER_CHIP_ESP32P4)
+#include <cmath>
+
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+#if SOC_MIPI_DSI_SUPPORTED
+
+#include "esp_lcd_mipi_dsi.h"
+#include "esp_lcd_panel_io.h"
+#include "esp_lcd_panel_ops.h"
+
 namespace cpp_bus_driver {
 bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
     InitSequenceFormat init_sequence_format) {
+  if (!std::isfinite(freq_mhz) || freq_mhz <= 0.0F ||
+      !std::isfinite(lane_bit_rate_mbps) || lane_bit_rate_mbps <= 0.0F) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Invalid MIPI clock\n");
+    return false;
+  }
   if ((bus_handle_ != nullptr) || (io_handle_ != nullptr) ||
       (device_handle_ != nullptr)) {
     if (!Deinit()) {
@@ -19,14 +32,6 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
           LogLevel::kError, __FILE__, __LINE__, "HardwareMipi deinit failed\n");
       return false;
     }
-  }
-
-  if (freq_mhz == static_cast<float>(kDefaultValue)) {
-    freq_mhz = kDefaultFrequencyMhz;
-  }
-
-  if (lane_bit_rate_mbps == static_cast<float>(kDefaultValue)) {
-    lane_bit_rate_mbps = kDefaultLaneBitRateMbps;
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,

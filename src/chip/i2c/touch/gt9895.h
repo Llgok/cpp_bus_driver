@@ -13,12 +13,12 @@
 #include <memory>
 #include <mutex>
 
-#include "../../chip_guide.h"
-#include "touch_types.h"
+#include "chip/chip_base.h"
+#include "chip/i2c/touch/touch_types.h"
 
 namespace cpp_bus_driver {
 
-class Gt9895 final : public ChipI2cGuide {
+class Gt9895 final : public I2cChipBase {
  public:
   static constexpr uint8_t kDefaultI2cAddress = 0x5D;
   static constexpr uint8_t kAlternateI2cAddress = 0x14;
@@ -68,17 +68,17 @@ class Gt9895 final : public ChipI2cGuide {
     kLandscapeRight,
   };
 
-  explicit Gt9895(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDefaultI2cAddress, int32_t rst = kDefaultValue,
-      int32_t irq = kDefaultValue,
+  explicit Gt9895(std::shared_ptr<I2cBusBase> bus,
+      int16_t address = kDefaultI2cAddress, int32_t rst = kPinNotConnected,
+      int32_t irq = kPinNotConnected,
       TouchCoordinateTransform coordinate_transform = {})
-      : ChipI2cGuide(bus, address),
+      : I2cChipBase(bus, address),
         i2c_address_(address),
         rst_(rst),
         irq_(irq),
         coordinate_transform_(coordinate_transform) {}
 
-  bool Init(int32_t freq_hz = kDefaultValue) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
 
   bool Deinit(bool delete_bus = true) override;
 
@@ -202,6 +202,9 @@ class Gt9895 final : public ChipI2cGuide {
   bool WakeUp();
 
  private:
+  // 默认 I2C 总线时钟，单位 Hz。
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
+
   // GT9895 固件实时命令字。
   enum class Command : uint8_t {
     kEnterLandscapeEdgeRejection = 0x17,

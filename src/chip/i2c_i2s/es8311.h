@@ -7,11 +7,15 @@
  */
 #pragma once
 
-#include "../chip_guide.h"
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
 
-class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
+class Es8311 final : public I2cChipBase, public I2sChipBase {
  public:
   enum class ClockSource {
     kAdcDacMclk = 0,
@@ -43,11 +47,12 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
   };
 
   enum class BitsPerSample {
-    kData24bit = 0,
-    kData20bit,
-    kData18bit,
-    kData16bit,
-    kData32bit,
+    kData24Bit = 0,
+    kData20Bit,
+    kData18Bit,
+    kData16Bit,
+    kData32Bit,
+
   };
 
   enum class AdcOffsetFreeze {
@@ -63,28 +68,30 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
   };
 
   enum class AdcGain {
-    kGain0db = 0,
-    kGain6db,
-    kGain12db,
-    kGain18db,
-    kGain24db,
-    kGain30db,
-    kGain36db,
-    kGain42db,
+    kGain0Db = 0,
+    kGain6Db,
+    kGain12Db,
+    kGain18Db,
+    kGain24Db,
+    kGain30Db,
+    kGain36Db,
+    kGain42Db,
+
   };
 
   enum class AdcPgaGain {
-    kGain0db = 0,
-    kGain3db,
-    kGain6db,
-    kGain9db,
-    kGain12db,
-    kGain15db,
-    kGain18db,
-    kGain21db,
-    kGain24db,
-    kGain27db,
-    kGain30db,
+    kGain0Db = 0,
+    kGain3Db,
+    kGain6Db,
+    kGain9Db,
+    kGain12Db,
+    kGain15Db,
+    kGain18Db,
+    kGain21Db,
+    kGain24Db,
+    kGain27Db,
+    kGain30Db,
+
   };
 
   enum class SerialPortMode {
@@ -130,12 +137,12 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
     bool int1 = false;   // 中断
   };
 
-  explicit Es8311(std::shared_ptr<BusI2cGuide> i2c_bus,
-      std::shared_ptr<BusI2sGuide> i2s_bus, int16_t i2c_address,
-      int32_t rst = kDefaultValue)
-      : ChipI2cGuide(i2c_bus, i2c_address), ChipI2sGuide(i2s_bus), rst_(rst) {}
+  explicit Es8311(std::shared_ptr<I2cBusBase> i2c_bus,
+      std::shared_ptr<I2sBusBase> i2s_bus, int16_t i2c_address,
+      int32_t rst = kPinNotConnected)
+      : I2cChipBase(i2c_bus, i2c_address), I2sChipBase(i2s_bus), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = kDefaultValue) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
   bool Init(uint16_t mclk_multiple, uint32_t sample_rate_hz,
       uint8_t data_bit_width) override;
@@ -278,7 +285,8 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    */
   bool SetDacEqualizer(bool enable);
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
   /**
    * @brief 读取I2s数据
    * @param data 接收数据指针
@@ -301,7 +309,7 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * @param sample_rate_hz 采样率
    * @return 设置成功返回 true，失败返回 false
    */
-  bool SetClockReconfig(uint16_t mclk_multiple, uint32_t sample_rate_hz);
+  bool ReconfigureClock(uint16_t mclk_multiple, uint32_t sample_rate_hz);
 
   /**
    * @brief 设置i2s通道使能
@@ -309,7 +317,7 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetI2sChannelEnable(bool enable);
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+#elif CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_NRF52
 
   /**
    * @brief 开始 I2S 数据流传输
@@ -390,6 +398,9 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
   bool SetAdcDataFormat(AdcDataFormat format);
 
  private:
+  // 默认 I2C 总线时钟，单位 Hz。
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
+
   enum class Register {
     kRoChipIdStart = 0xFD,  // 连续读取两次返回芯片ID 0x8311
 
@@ -562,7 +573,6 @@ class Es8311 final : public ChipI2cGuide, public ChipI2sGuide {
       const ClockCoeff* library, size_t library_length,
       size_t* search_index = nullptr);
 
-  ClockCoeff clock_coeff_;
   int32_t rst_;
 };
 }  // namespace cpp_bus_driver

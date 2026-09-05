@@ -2,27 +2,43 @@
  * @Description: ESP-IDF SDIO 主机通信驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-09-03 17:45:24
+ * @LastEditTime: 2026-09-05 14:57:35
  * @License: GPL 3.0
  */
-#include "hardware_sdio.h"
+#include "bus/sdio/hardware_sdio.h"
+
+#include <memory>
+#include <new>
+
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+#if SOC_SDMMC_HOST_SUPPORTED
+#include "driver/gpio.h"
+#include "driver/sdmmc_host.h"
+#include "freertos/FreeRTOS.h"
+#include "sdmmc_cmd.h"
+#endif
+#endif
 
 namespace cpp_bus_driver {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+#if SOC_SDMMC_HOST_SUPPORTED
 bool HardwareSdio::Init(int32_t freq_hz) {
+  if (freq_hz <= 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Invalid bus frequency\n");
+    return false;
+  }
   if (sdio_handle_ != nullptr) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "HardwareSdio has been initialized\n");
     return true;
   }
 
-  if (freq_hz == kDefaultValue) {
-    freq_hz = kDefaultFrequencyHz;
-  } else if ((freq_hz != SDMMC_FREQ_DEFAULT) &&
-             (freq_hz != SDMMC_FREQ_HIGHSPEED) &&
-             (freq_hz != SDMMC_FREQ_PROBING) && (freq_hz != SDMMC_FREQ_52M) &&
-             (freq_hz != SDMMC_FREQ_26M)) {
-    freq_hz = kDefaultFrequencyHz;
+  if ((freq_hz != SDMMC_FREQ_DEFAULT) && (freq_hz != SDMMC_FREQ_HIGHSPEED) &&
+      (freq_hz != SDMMC_FREQ_PROBING) && (freq_hz != SDMMC_FREQ_52M) &&
+      (freq_hz != SDMMC_FREQ_26M)) {
+    freq_hz = kDefaultFrequencyKhz;
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
@@ -50,12 +66,13 @@ bool HardwareSdio::Init(int32_t freq_hz) {
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareSdio config d7_: %d\n", d7_);
 
-  if (d1_ != kDefaultValue && d2_ != kDefaultValue && d3_ != kDefaultValue &&
-      d4_ != kDefaultValue && d5_ != kDefaultValue && d6_ != kDefaultValue &&
-      d7_ != kDefaultValue) {
+  if (d1_ != kPinNotConnected && d2_ != kPinNotConnected &&
+      d3_ != kPinNotConnected && d4_ != kPinNotConnected &&
+      d5_ != kPinNotConnected && d6_ != kPinNotConnected &&
+      d7_ != kPinNotConnected) {
     width_ = 8;
-  } else if (d1_ != kDefaultValue && d2_ != kDefaultValue &&
-             d3_ != kDefaultValue) {
+  } else if (d1_ != kPinNotConnected && d2_ != kPinNotConnected &&
+             d3_ != kPinNotConnected) {
     width_ = 4;
   } else {
     width_ = 1;
@@ -93,9 +110,10 @@ bool HardwareSdio::Init(int32_t freq_hz) {
     return false;
   }
 
-  sdio_handle_ = std::make_unique<sdmmc_card_t>();
+  sdio_handle_.reset(new (std::nothrow) sdmmc_card_t());
   if (sdio_handle_ == nullptr) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Allocate SDIO card handle failed\n");
     Deinit();
     return false;
   }
@@ -131,8 +149,6 @@ bool HardwareSdio::Init(int32_t freq_hz) {
     return false;
   }
 
-  freq_hz_ = freq_hz;
-
   return true;
 }
 
@@ -149,34 +165,34 @@ bool HardwareSdio::Deinit() {
       result = false;
     } else {
       host_init_flag_ = false;
-      if (clk_ != kDefaultValue) {
+      if (clk_ != kPinNotConnected) {
         result &= ResetGpio(clk_);
       }
-      if (cmd_ != kDefaultValue) {
+      if (cmd_ != kPinNotConnected) {
         result &= ResetGpio(cmd_);
       }
-      if (d0_ != kDefaultValue) {
+      if (d0_ != kPinNotConnected) {
         result &= ResetGpio(d0_);
       }
-      if (d1_ != kDefaultValue) {
+      if (d1_ != kPinNotConnected) {
         result &= ResetGpio(d1_);
       }
-      if (d2_ != kDefaultValue) {
+      if (d2_ != kPinNotConnected) {
         result &= ResetGpio(d2_);
       }
-      if (d3_ != kDefaultValue) {
+      if (d3_ != kPinNotConnected) {
         result &= ResetGpio(d3_);
       }
-      if (d4_ != kDefaultValue) {
+      if (d4_ != kPinNotConnected) {
         result &= ResetGpio(d4_);
       }
-      if (d5_ != kDefaultValue) {
+      if (d5_ != kPinNotConnected) {
         result &= ResetGpio(d5_);
       }
-      if (d6_ != kDefaultValue) {
+      if (d6_ != kPinNotConnected) {
         result &= ResetGpio(d6_);
       }
-      if (d7_ != kDefaultValue) {
+      if (d7_ != kPinNotConnected) {
         result &= ResetGpio(d7_);
       }
     }
@@ -276,5 +292,6 @@ bool HardwareSdio::WriteBlock(
   return true;
 }
 
+#endif
 #endif
 }  // namespace cpp_bus_driver

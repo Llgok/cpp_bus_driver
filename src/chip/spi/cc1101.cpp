@@ -2,10 +2,15 @@
  * @Description: TI CC1101 亚 GHz 无线收发芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-12 00:00:00
- * @LastEditTime: 2026-09-02 16:15:58
+ * @LastEditTime: 2026-09-05 14:57:07
  * @License: GPL 3.0
  */
-#include "cc1101.h"
+#include "chip/spi/cc1101.h"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <cstring>
 
 namespace cpp_bus_driver {
 namespace {
@@ -60,7 +65,7 @@ bool IsOfficialChipId(uint8_t chip_id) {
 }  // namespace
 
 bool Cc1101::Init(int32_t freq_hz) {
-  if (bus_ == nullptr || cs_ == kDefaultValue || miso_ == kDefaultValue) {
+  if (bus_ == nullptr || cs_ == kPinNotConnected || miso_ == kPinNotConnected) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
@@ -68,10 +73,10 @@ bool Cc1101::Init(int32_t freq_hz) {
   bool result = true;
   result &= SetGpioMode(cs_, GpioMode::kOutput);
   result &= SetGpioMode(miso_, GpioMode::kInput);
-  if (gdo0_ != kDefaultValue) {
+  if (gdo0_ != kPinNotConnected) {
     result &= SetGpioMode(gdo0_, GpioMode::kInput);
   }
-  if (gdo2_ != kDefaultValue) {
+  if (gdo2_ != kPinNotConnected) {
     result &= SetGpioMode(gdo2_, GpioMode::kInput);
   }
   result &= GpioWrite(cs_, true);
@@ -81,16 +86,13 @@ bool Cc1101::Init(int32_t freq_hz) {
     return false;
   }
 
-  if (freq_hz == kDefaultValue) {
-    freq_hz = kDefaultSpiFrequencyHz;
-  }
   if (freq_hz <= 0 || freq_hz > kMaximumSpiFrequencyHz) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "Invalid SPI frequency (frequency: %d)\n", freq_hz);
     return false;
   }
 
-  const int32_t bus_cs = kDefaultValue;
+  const int32_t bus_cs = kPinNotConnected;
   if (!bus_->Init(freq_hz, bus_cs)) {
     LogMessage(
         LogLevel::kError, __FILE__, __LINE__, "SPI initialization failed\n");
@@ -144,13 +146,13 @@ bool Cc1101::Deinit(bool delete_bus) {
 bool Cc1101::DeinitLocalResources(bool delete_bus) {
   bool result = true;
   result &= bus_ != nullptr && bus_->Deinit(delete_bus);
-  if (cs_ != kDefaultValue) {
+  if (cs_ != kPinNotConnected) {
     result &= ResetGpio(cs_);
   }
-  if (gdo0_ != kDefaultValue) {
+  if (gdo0_ != kPinNotConnected) {
     result &= ResetGpio(gdo0_);
   }
-  if (gdo2_ != kDefaultValue) {
+  if (gdo2_ != kPinNotConnected) {
     result &= ResetGpio(gdo2_);
   }
   initialized_ = false;
@@ -309,14 +311,15 @@ bool Cc1101::ReadRegister(Register register_id, uint8_t* value) {
 bool Cc1101::WriteBurst(
     Register register_id, const uint8_t* data, size_t length) {
   const size_t maximum_length = GetMaximumBurstLength(register_id);
-  if (data == nullptr || length == 0 || length > maximum_length) {
+  if (data == nullptr || length == 0 || length > maximum_length ||
+      length > kFifoSize) {
     return false;
   }
-  std::vector<uint8_t> buffer(length + 1, 0);
-  std::vector<uint8_t> response(length + 1, 0);
+  std::array<uint8_t, kFifoSize + 1> buffer{};
+  std::array<uint8_t, kFifoSize + 1> response{};
   buffer[0] = static_cast<uint8_t>(register_id) | kBurst;
   std::memcpy(&buffer[1], data, length);
-  if (!Transfer(buffer.data(), response.data(), buffer.size())) {
+  if (!Transfer(buffer.data(), response.data(), length + 1)) {
     return false;
   }
   if (register_id == Register::kPatable) {
@@ -328,13 +331,14 @@ bool Cc1101::WriteBurst(
 
 bool Cc1101::ReadBurst(Register register_id, uint8_t* data, size_t length) {
   const size_t maximum_length = GetMaximumBurstLength(register_id);
-  if (data == nullptr || length == 0 || length > maximum_length) {
+  if (data == nullptr || length == 0 || length > maximum_length ||
+      length > kFifoSize) {
     return false;
   }
-  std::vector<uint8_t> buffer(length + 1, 0);
-  std::vector<uint8_t> response(length + 1, 0);
+  std::array<uint8_t, kFifoSize + 1> buffer{};
+  std::array<uint8_t, kFifoSize + 1> response{};
   buffer[0] = static_cast<uint8_t>(register_id) | kReadBurst;
-  if (!Transfer(buffer.data(), response.data(), buffer.size())) {
+  if (!Transfer(buffer.data(), response.data(), length + 1)) {
     return false;
   }
   std::memcpy(data, &response[1], length);
@@ -1074,18 +1078,19 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
     return false;
   }
 
-  std::vector<uint8_t> prefix;
+  std::array<uint8_t, 2> prefix{};
+  size_t prefix_length = 0;
   // 可变包先写空中包长；目标地址字段也属于空中包长。
   if (config_.packet_length_mode == PacketLengthMode::kVariable) {
-    prefix.push_back(static_cast<uint8_t>(air_length));
+    prefix[prefix_length++] = static_cast<uint8_t>(air_length);
   }
   if (has_address) {
-    prefix.push_back(destination);
+    prefix[prefix_length++] = destination;
   }
 
-  const size_t initial_payload = std::min(length, kFifoSize - prefix.size());
-  if (!prefix.empty() &&
-      !WriteBurst(Register::kFifo, prefix.data(), prefix.size())) {
+  const size_t initial_payload = std::min(length, kFifoSize - prefix_length);
+  if (prefix_length != 0 &&
+      !WriteBurst(Register::kFifo, prefix.data(), prefix_length)) {
     return false;
   }
   if (!WriteBurst(Register::kFifo, data, initial_payload)) {
@@ -1110,7 +1115,7 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
     return false;
   }
   const int64_t deadline = CurrentTimeMs() + timeout_ms;
-  if (gdo0_ != kDefaultValue) {
+  if (gdo0_ != kPinNotConnected) {
     bool started_or_completed = GpioRead(gdo0_);
     while (!started_or_completed) {
       uint8_t tx_bytes = 0;
@@ -1168,7 +1173,7 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
     DelayUs(CalculateFifoPollIntervalUs());
   }
 
-  if (result && gdo0_ != kDefaultValue) {
+  if (result && gdo0_ != kPinNotConnected) {
     result &= WaitForGdo0(false, static_cast<uint32_t>(std::max<int64_t>(
                                      1, deadline - CurrentTimeMs())));
   }
@@ -1188,7 +1193,7 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
 bool Cc1101::Receive(uint8_t* data, size_t capacity, size_t* received,
     PacketMetrics* metrics, uint32_t timeout_ms) {
   if (data == nullptr || received == nullptr || capacity == 0 ||
-      gdo0_ == kDefaultValue) {
+      gdo0_ == kPinNotConnected) {
     return false;
   }
   if (config_.packet_length_mode == PacketLengthMode::kInfinite) {
@@ -1471,7 +1476,7 @@ bool Cc1101::WaitForReady(uint32_t timeout_us) {
 }
 
 bool Cc1101::WaitForGdo0(bool level, uint32_t timeout_ms) {
-  if (gdo0_ == kDefaultValue) {
+  if (gdo0_ == kPinNotConnected) {
     return false;
   }
   const int64_t deadline = CurrentTimeMs() + timeout_ms;
@@ -1863,13 +1868,9 @@ bool Cc1101::RestoreAfterWakeup() {
   return result;
 }
 
-int64_t Cc1101::CurrentTimeUs() const {
-  return GetSystemTimeUs();
-}
+int64_t Cc1101::CurrentTimeUs() const { return GetSystemTimeUs(); }
 
-int64_t Cc1101::CurrentTimeMs() const {
-  return GetSystemTimeMs();
-}
+int64_t Cc1101::CurrentTimeMs() const { return GetSystemTimeMs(); }
 
 float Cc1101::DecodeRssi(uint8_t raw) const {
   const int16_t signed_value =

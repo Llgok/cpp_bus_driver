@@ -7,11 +7,25 @@
  */
 #pragma once
 
-#include "../bus_guide.h"
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+
+#include "bus/bus_base.h"
+
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+#if SOC_SDMMC_HOST_SUPPORTED
+#include "driver/sdmmc_host.h"
+#include "sdmmc_cmd.h"
+#endif
+#endif
 
 namespace cpp_bus_driver {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-class HardwareSdio final : public BusSdioGuide {
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+#if SOC_SDMMC_HOST_SUPPORTED
+class HardwareSdio final : public SdioBusBase {
  public:
   enum class SdioPort {
     kSlot0 = 0,  // 只能用作于固定GPIO口，专用于 Uhs-I 模式
@@ -19,10 +33,10 @@ class HardwareSdio final : public BusSdioGuide {
   };
 
   explicit HardwareSdio(int32_t clk, int32_t cmd, int32_t d0,
-      int32_t d1 = kDefaultValue, int32_t d2 = kDefaultValue,
-      int32_t d3 = kDefaultValue, int32_t d4 = kDefaultValue,
-      int32_t d5 = kDefaultValue, int32_t d6 = kDefaultValue,
-      int32_t d7 = kDefaultValue, SdioPort port = SdioPort::kSlot1)
+      int32_t d1 = kPinNotConnected, int32_t d2 = kPinNotConnected,
+      int32_t d3 = kPinNotConnected, int32_t d4 = kPinNotConnected,
+      int32_t d5 = kPinNotConnected, int32_t d6 = kPinNotConnected,
+      int32_t d7 = kPinNotConnected, SdioPort port = SdioPort::kSlot1)
       : clk_(clk),
         cmd_(cmd),
         d0_(d0),
@@ -35,7 +49,7 @@ class HardwareSdio final : public BusSdioGuide {
         d7_(d7),
         port_(port) {}
 
-  bool Init(int32_t freq_hz = kDefaultValue) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyKhz) override;
   bool Deinit() override;
 
   bool WaitInterrupt(uint32_t timeout_ms) override;
@@ -105,15 +119,17 @@ class HardwareSdio final : public BusSdioGuide {
       size_t byte) override;
 
  private:
-  static constexpr int32_t kDefaultFrequencyHz = SDMMC_FREQ_DEFAULT;
+  // 默认 SDIO 时钟，单位 kHz，与 SDMMC 主机接口保持一致。
+  static constexpr int32_t kDefaultFrequencyKhz = 20000;
+
   static constexpr uint8_t kSdioBusInitTimeoutCount = 30;
 
   uint8_t width_ = 1;
   int32_t clk_, cmd_, d0_, d1_, d2_, d3_, d4_, d5_, d6_, d7_;
   SdioPort port_;
-  int32_t freq_hz_ = kDefaultValue;
   std::unique_ptr<sdmmc_card_t> sdio_handle_;
   bool host_init_flag_ = false;
 };
+#endif
 #endif
 }  // namespace cpp_bus_driver

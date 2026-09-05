@@ -7,10 +7,14 @@
  */
 #pragma once
 
-#include "../chip_guide.h"
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
-class Bq27220 final : public ChipI2cGuide {
+class Bq27220 final : public I2cChipBase {
  public:
   enum class TemperatureMode {
     kInternal,
@@ -167,16 +171,17 @@ class Bq27220 final : public ChipI2cGuide {
     uint16_t dod100 = 3490;               // DOD 100% 对应电压，mV
   };
 
-  explicit Bq27220(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
-      : ChipI2cGuide(bus, address), rst_(rst) {}
+  explicit Bq27220(std::shared_ptr<I2cBusBase> bus,
+      int16_t address = kDeviceI2cAddressDefault,
+      int32_t rst = kPinNotConnected)
+      : I2cChipBase(bus, address), rst_(rst) {}
 
   /**
    * @brief 初始化 BQ27220 并校验 Chip ID
    * @param freq_hz I2C 工作频率，默认使用总线默认配置
    * @return 初始化成功返回 true，失败返回 false
    */
-  bool Init(int32_t freq_hz = kDefaultValue) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
 
   /**
    * @brief 反初始化 BQ27220 驱动
@@ -606,6 +611,9 @@ class Bq27220 final : public ChipI2cGuide {
       const CedvProfile& profile, const GaugingConfig& config);
 
  private:
+  // 默认 I2C 总线时钟，单位 Hz。
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
+
   enum class StandardCommand : uint8_t {
     kControl = 0x00,
     kAtRate = 0x02,

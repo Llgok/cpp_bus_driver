@@ -7,10 +7,13 @@
  */
 #pragma once
 
-#include "../chip_guide.h"
+#include <cstdint>
+#include <memory>
+
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
-class Icn6211 final : public ChipI2cGuide {
+class Icn6211 final : public I2cChipBase {
  public:
   enum class RgbPhase {
     kPhase0 = 0x00,
@@ -67,11 +70,12 @@ class Icn6211 final : public ChipI2cGuide {
     double external_reference_clock_mhz = 0;
   };
 
-  explicit Icn6211(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
-      : ChipI2cGuide(bus, address), rst_(rst) {}
+  explicit Icn6211(std::shared_ptr<I2cBusBase> bus,
+      int16_t address = kDeviceI2cAddressDefault,
+      int32_t rst = kPinNotConnected)
+      : I2cChipBase(bus, address), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = kDefaultValue) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -135,6 +139,9 @@ class Icn6211 final : public ChipI2cGuide {
   bool SetChipEnable(bool enable);
 
  private:
+  // 默认 I2C 总线时钟，单位 Hz。
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
+
   enum class Register {
     kRoChipIdStart = 0x01,
 
@@ -177,6 +184,5 @@ class Icn6211 final : public ChipI2cGuide {
   static constexpr uint16_t kChipId = 0x6211;
 
   int32_t rst_;
-  double fps_;
 };
 }  // namespace cpp_bus_driver

@@ -5,11 +5,11 @@
  * @LastEditTime: 2026-08-12 09:37:20
  * @License: GPL 3.0
  */
-#include "rm69a10.h"
+#include "chip/mipi/rm69a10.h"
 
 namespace cpp_bus_driver {
 bool Rm69a10::Init(float freq_mhz, float lane_bit_rate_mbps) {
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
     result &= GpioWrite(rst_, 0);
@@ -22,7 +22,7 @@ bool Rm69a10::Init(float freq_mhz, float lane_bit_rate_mbps) {
     }
   }
 
-  if (!ChipMipiGuide::Init(freq_mhz, lane_bit_rate_mbps)) {
+  if (!MipiChipBase::Init(freq_mhz, lane_bit_rate_mbps)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -53,12 +53,12 @@ bool Rm69a10::Init(float freq_mhz, float lane_bit_rate_mbps) {
 bool Rm69a10::Deinit() {
   bool result = true;
 
-  if (!ChipMipiGuide::Deinit()) {
+  if (!MipiChipBase::Deinit()) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
 

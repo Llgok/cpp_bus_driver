@@ -5,7 +5,7 @@ menu "cpp_bus_driver configuration"
         default CPP_BUS_DRIVER_LOG_LEVEL_INFO
         help
             Selects the minimum log level used when the library starts.
-            The application can change it later through Tool::SetMinimumLogLevel().
+            The application can adjust the log level at runtime.
         config CPP_BUS_DRIVER_LOG_LEVEL_DEBUG
             bool "Debug"
         config CPP_BUS_DRIVER_LOG_LEVEL_INFO

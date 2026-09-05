@@ -7,10 +7,13 @@
  */
 #pragma once
 
-#include "../chip_guide.h"
+#include <cstdint>
+#include <memory>
+
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
-class Hi8561 final : public ChipMipiGuide {
+class Hi8561 final : public MipiChipBase {
  public:
   enum class CabcMode {
     kOff = 0x00,    // CABC关闭
@@ -32,11 +35,11 @@ class Hi8561 final : public ChipMipiGuide {
   };
 
   explicit Hi8561(
-      std::shared_ptr<BusMipiGuide> bus, int32_t rst = kDefaultValue)
-      : ChipMipiGuide(bus, InitSequenceFormat::kWriteC8D8), rst_(rst) {}
+      std::shared_ptr<MipiBusBase> bus, int32_t rst = kPinNotConnected)
+      : MipiChipBase(bus, InitSequenceFormat::kWriteC8D8), rst_(rst) {}
 
-  bool Init(float freq_mhz = kDefaultValue,
-      float lane_bit_rate_mbps = kDefaultValue) override;
+  bool Init(float freq_mhz = kDefaultFrequencyMhz,
+      float lane_bit_rate_mbps = kDefaultLaneBitRateMbps) override;
   bool Deinit() override;
 
   /**
@@ -107,6 +110,11 @@ class Hi8561 final : public ChipMipiGuide {
       int x_start, int y_start, int x_end, int y_end, const void* data);
 
  private:
+  // 默认像素时钟，单位 MHz。
+  static constexpr float kDefaultFrequencyMhz = 60.0F;
+  // 默认 DSI 数据通道速率，单位 Mbps。
+  static constexpr float kDefaultLaneBitRateMbps = 1000.0F;
+
   enum class DcsCommand {
     kRoChipIdStart = 0xDA,
 

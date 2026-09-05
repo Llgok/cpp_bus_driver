@@ -2,10 +2,15 @@
  * @Description: L76K GNSS 定位模块驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-08-03 16:12:02
+ * @LastEditTime: 2026-09-04 15:08:17
  * @License: GPL 3.0
  */
-#include "l76k.h"
+#include "chip/uart/l76k.h"
+
+#include <cstdio>
+#include <new>
+
+#include "utility/byte_search.h"
 
 namespace cpp_bus_driver {
 namespace {
@@ -84,7 +89,7 @@ bool BaudRateToPcas01Value(L76k::BaudRate baud_rate, uint8_t& value) {
 }  // namespace
 
 bool L76k::Init(int32_t baud_rate) {
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
@@ -98,7 +103,7 @@ bool L76k::Init(int32_t baud_rate) {
     }
   }
 
-  if (wake_up_ != kDefaultValue) {
+  if (wake_up_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(wake_up_, GpioMode::kOutput, GpioStatus::kPullup);
     if (!result) {
@@ -112,7 +117,7 @@ bool L76k::Init(int32_t baud_rate) {
     return false;
   }
 
-  if (!ChipUartGuide::Init(baud_rate)) {
+  if (!UartChipBase::Init(baud_rate)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -131,16 +136,16 @@ bool L76k::Init(int32_t baud_rate) {
 }
 
 bool L76k::Deinit() {
-  if (!ChipUartGuide::Deinit()) {
+  if (!UartChipBase::Deinit()) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     return false;
   }
 
   bool result = true;
-  if (wake_up_ != kDefaultValue) {
+  if (wake_up_ != kPinNotConnected) {
     result &= ResetGpio(wake_up_);
   }
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
 
@@ -156,17 +161,21 @@ bool L76k::GetChipId(size_t* search_index) {
     return false;
   }
 
-  const char* buffer_cmd = "$G";
-  if (!Search(buffer.get(), buffer_length, buffer_cmd, std::strlen(buffer_cmd),
-          search_index)) {
+  const size_t result =
+      byte_search::FindText(buffer.get(), buffer_length, "$G");
+  if (result == byte_search::kNotFound) {
     return false;
+  }
+
+  if (search_index != nullptr) {
+    *search_index = result;
   }
 
   return true;
 }
 
 bool L76k::Sleep(bool enable) {
-  if (wake_up_ != kDefaultValue) {
+  if (wake_up_ != kPinNotConnected) {
     if (!GpioWrite(wake_up_, !enable)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
       return false;
@@ -241,10 +250,10 @@ bool L76k::GetInfoData(std::unique_ptr<uint8_t[]>& data, uint32_t* length,
     }
 
     if (buffer_length > 0) {
-      data = std::make_unique<uint8_t[]>(buffer_length);
+      data.reset(new (std::nothrow) uint8_t[buffer_length]());
       if (data == nullptr) {
-        LogMessage(
-            LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__,
+            "Allocate GNSS receive buffer failed\n");
         data = nullptr;
         *length = 0;
         return false;

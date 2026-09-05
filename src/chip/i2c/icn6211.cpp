@@ -5,13 +5,13 @@
  * @LastEditTime: 2026-09-02 16:15:33
  * @License: GPL 3.0
  */
-#include "icn6211.h"
+#include "chip/i2c/icn6211.h"
 
 #include <cmath>
 
 namespace cpp_bus_driver {
 bool Icn6211::Init(int32_t freq_hz) {
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
     result &= GpioWrite(rst_, 0);
@@ -24,7 +24,7 @@ bool Icn6211::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipI2cGuide::Init(freq_hz)) {
+  if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -45,12 +45,12 @@ bool Icn6211::Init(int32_t freq_hz) {
 bool Icn6211::Deinit(bool delete_bus) {
   bool result = true;
 
-  if (!ChipI2cGuide::Deinit(delete_bus)) {
+  if (!I2cChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
 
@@ -329,14 +329,14 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
   }
 
   // 计算帧率
-  fps_ =
+  const double fps =
       params.rgb_clock_mhz * 1000000.0 /
       ((params.rgb_width + params.rgb_hfp + params.rgb_hsync + params.rgb_hbp) *
           (params.rgb_height + params.rgb_vfp + params.rgb_vsync +
               params.rgb_vbp));
 
   LogMessage(LogLevel::kDebug, __FILE__, __LINE__,
-      "ConfigInterfaceParams fps: %.03f\n", fps_);
+      "ConfigInterfaceParams fps: %.03f\n", fps);
 
   return true;
 }

@@ -2,17 +2,22 @@
  * @Description: ESP-IDF LEDC PWM 驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-08-10 18:07:50
- * @LastEditTime: 2026-08-11 09:09:46
+ * @LastEditTime: 2026-09-04 11:03:14
  * @License: GPL 3.0
  */
-#include "pwm.h"
+#include "platform/esp_idf/pwm.h"
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
 
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <mutex>
+#include <new>
 
+#include "driver/gpio.h"
+#include "driver/ledc.h"
 #include "soc/soc_caps.h"
 
 namespace cpp_bus_driver {
@@ -43,8 +48,11 @@ struct LedcResources {
  * @return LEDC 资源管理器引用
  */
 LedcResources& GetLedcResources() {
-  // 资源管理器与 LEDC 全局驱动同生命周期，避免静态析构顺序影响 Pwm 析构。
-  static LedcResources* const resources = new LedcResources();
+  // 对齐的静态存储不申请堆内存；原位构造的管理器不自动析构，
+  // 避免静态析构顺序影响 Pwm 析构。局部静态指针保证只构造一次。
+  alignas(LedcResources) static unsigned char storage[sizeof(LedcResources)];
+  static LedcResources* const resources =
+      ::new (static_cast<void*>(storage)) LedcResources();
   return *resources;
 }
 

@@ -1,17 +1,22 @@
 /*
- * @Description: 软件模拟 I2C 总线驱动实现
+ * @Description: ESP-IDF 后端软件模拟 I2C 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-09-03 17:45:24
+ * @LastEditTime: 2026-09-04 11:03:14
  * @License: GPL 3.0
  */
-#include "software_i2c.h"
+#include "bus/i2c/software_i2c.h"
+
+#include <limits>
 
 namespace cpp_bus_driver {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
 bool SoftwareI2c::Init(uint32_t freq_hz, uint16_t address) {
-  if (freq_hz == kDefaultValue) {
-    freq_hz = kDefaultFrequencyHz;
+  if (freq_hz == 0 ||
+      freq_hz > static_cast<uint32_t>(std::numeric_limits<int32_t>::max())) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Invalid I2C frequency\n");
+    return false;
   }
 
   uint32_t buffer_transmit_delay_us = static_cast<uint32_t>(
@@ -39,7 +44,6 @@ bool SoftwareI2c::Init(uint32_t freq_hz, uint16_t address) {
     return false;
   }
 
-  freq_hz_ = freq_hz;
   transmit_delay_us_ = buffer_transmit_delay_us;
   address_ = address;
 
@@ -49,10 +53,10 @@ bool SoftwareI2c::Init(uint32_t freq_hz, uint16_t address) {
 bool SoftwareI2c::Deinit(bool delete_bus) {
   bool result = true;
 
-  if (sda_ != kDefaultValue) {
+  if (sda_ != kPinNotConnected) {
     result &= ResetGpio(sda_);
   }
-  if (scl_ != kDefaultValue) {
+  if (scl_ != kPinNotConnected) {
     result &= ResetGpio(scl_);
   }
 

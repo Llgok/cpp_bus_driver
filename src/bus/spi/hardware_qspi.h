@@ -2,21 +2,30 @@
  * @Description: ESP-IDF 硬件 QSPI 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-09-03 17:45:24
+ * @LastEditTime: 2026-09-05 14:56:42
  * @License: GPL 3.0
  */
 #pragma once
 
-#include "../bus_guide.h"
+#include <cstddef>
+#include <cstdint>
+
+#include "bus/bus_base.h"
+
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+#include "driver/spi_master.h"
+#endif
 
 namespace cpp_bus_driver {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-class HardwareQspi final : public BusQspiGuide {
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+class HardwareQspi final : public QspiBusBase {
  public:
   explicit HardwareQspi(int32_t data0, int32_t data1, int32_t data2,
       int32_t data3, int32_t sclk, spi_host_device_t port = SPI2_HOST,
       int8_t mode = 0, spi_clock_source_t clock_source = SPI_CLK_SRC_DEFAULT,
-      uint32_t flags = kDefaultValue)
+      uint32_t flags = kDefaultDeviceFlags)
       : data0_(data0),
         data1_(data1),
         data2_(data2),
@@ -27,22 +36,25 @@ class HardwareQspi final : public BusQspiGuide {
         clock_source_(clock_source),
         flags_(flags) {}
 
-  bool Init(
-      int32_t freq_hz = kDefaultValue, int32_t cs = kDefaultValue) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyHz,
+      int32_t cs = kPinNotConnected) override;
   bool Deinit(bool delete_bus = true) override;
   bool Write(const void* data, size_t byte, uint32_t flags = 0,
       bool cs_keep_active = false) override;
   bool SetCs(bool value);
 
  private:
+  // 默认总线时钟，单位 Hz。
   static constexpr int32_t kDefaultFrequencyHz = 10000000;
+
+  // QSPI 默认使用半双工传输。
+  static constexpr uint32_t kDefaultDeviceFlags = SPI_DEVICE_HALFDUPLEX;
 
   // ESP32-S3 的 DMA 单次最大传输长度为 32 KiB。
   static constexpr int32_t kQspiMaxTransferSize = 32 * 1024;
 
   int32_t data0_, data1_, data2_, data3_, sclk_;
-  int32_t cs_ = kDefaultValue;
-  int32_t freq_hz_ = kDefaultValue;
+  int32_t cs_ = kPinNotConnected;
   spi_host_device_t port_;
   uint8_t mode_;
   spi_clock_source_t clock_source_;

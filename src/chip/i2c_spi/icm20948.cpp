@@ -5,7 +5,7 @@
  * @LastEditTime: 2026-09-02 16:15:53
  * @License: GPL 3.0
  */
-#include "icm20948.h"
+#include "chip/i2c_spi/icm20948.h"
 
 namespace cpp_bus_driver {
 
@@ -20,8 +20,8 @@ bool Icm20948::Init(const Config& config, int32_t freq_hz) {
   }
 
   if ((UsesI2c() && (i2c_address_ < 0 || i2c_address_ > 0x7F)) ||
-      (!UsesI2c() && spi_cs_ == kDefaultValue) ||
-      (freq_hz != kDefaultValue && freq_hz <= 0)) {
+      (!UsesI2c() && spi_cs_ == kPinNotConnected) ||
+      (freq_hz != kAutoFrequencyHz && freq_hz <= 0)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid bus config\n");
     return false;
   }
@@ -587,7 +587,7 @@ bool Icm20948::InitBus(int32_t freq_hz) {
     return true;
   }
 
-  if (freq_hz == kDefaultValue) {
+  if (freq_hz == kAutoFrequencyHz) {
     freq_hz = UsesI2c() ? kDefaultIcmI2cFreqHz : kDefaultIcmSpiFreqHz;
   }
 

@@ -2,19 +2,20 @@
  * @Description: XL95x5 GPIO 扩展芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-09-02 16:15:45
+ * @LastEditTime: 2026-09-05 14:56:58
  * @License: GPL 3.0
  */
-#include "xl95x5.h"
+#include "chip/i2c/xl95x5.h"
 
 namespace cpp_bus_driver {
 bool Xl95x5::Init(int32_t freq_hz) {
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
-    result &= Tool::SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
-    result &= Tool::GpioWrite(rst_, 0);
+    result &=
+        PlatformHal::SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
+    result &= PlatformHal::GpioWrite(rst_, 0);
     DelayMs(10);
-    result &= Tool::GpioWrite(rst_, 1);
+    result &= PlatformHal::GpioWrite(rst_, 1);
     DelayMs(10);
     if (!result) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
@@ -22,13 +23,13 @@ bool Xl95x5::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipI2cGuide::Init(freq_hz)) {
+  if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
   auto buffer = GetChipId();
-  if (buffer == static_cast<uint8_t>(kDefaultValue)) {
+  if (buffer == kInvalidChipId) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "Get xl95x5 chip id failed (error id: %#X)\n", buffer);
     return false;
@@ -43,13 +44,13 @@ bool Xl95x5::Init(int32_t freq_hz) {
 bool Xl95x5::Deinit(bool delete_bus) {
   bool result = true;
 
-  if (!ChipI2cGuide::Deinit(delete_bus)) {
+  if (!I2cChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
-  if (rst_ != kDefaultValue) {
-    result &= Tool::ResetGpio(rst_);
+  if (rst_ != kPinNotConnected) {
+    result &= PlatformHal::ResetGpio(rst_);
   }
 
   return result;
@@ -60,7 +61,7 @@ uint8_t Xl95x5::GetChipId() {
 
   if (!bus_->Read(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
-    return -1;
+    return kInvalidChipId;
   }
 
   return buffer;

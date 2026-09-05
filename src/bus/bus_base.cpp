@@ -1,66 +1,59 @@
 /*
- * @Description: 各类总线抽象接口的公共辅助实现
+ * @Description: 各类总线公共基类的辅助实现
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2026-07-01 11:48:25
+ * @LastEditTime: 2026-09-04 11:43:29
  * @License: GPL 3.0
  */
-#include "bus_guide.h"
+#include "bus/bus_base.h"
+
+#include <array>
+#include <cstring>
+#include <limits>
+#include <memory>
+#include <new>
 
 namespace cpp_bus_driver {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-i2c_cmd_handle_t BusI2cGuide::CmdLinkCreate() {
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "CmdLinkCreate failed\n");
-  return nullptr;
-}
+namespace {
+// 每次事务独立持有缓冲区，不引入共享可变状态；小事务不申请堆内存。
+class TransferBuffer {
+ public:
+  /**
+   * @brief 校验头部与正文长度，并准备清零后的事务缓冲区
+   * @param prefix_size 命令头长度
+   * @param payload_size 正文长度
+   * @return 长度加法溢出或堆分配失败时返回 false
+   */
+  bool Init(size_t prefix_size, size_t payload_size) {
+    if (payload_size > std::numeric_limits<size_t>::max() - prefix_size) {
+      return false;
+    }
+    size_ = prefix_size + payload_size;
+    if (size_ > local_.size()) {
+      heap_.reset(new (std::nothrow) uint8_t[size_]());
+      return heap_ != nullptr;
+    }
+    return true;
+  }
 
-bool BusI2cGuide::StartTransmit(
-    i2c_cmd_handle_t cmd_handle, i2c_rw_t rw, bool ack_en) {
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "StartTransmit failed\n");
-  return false;
-}
+  uint8_t* data() { return heap_ != nullptr ? heap_.get() : local_.data(); }
+  size_t size() const { return size_; }
+  uint8_t& operator[](size_t index) { return data()[index]; }
 
-bool BusI2cGuide::Write(
-    i2c_cmd_handle_t cmd_handle, uint8_t data, bool ack_en) {
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
-  return false;
-}
+ private:
+  // 大数据仍放堆上，避免将最大传输容量放入任务栈。
+  std::array<uint8_t, 128> local_{};
+  std::unique_ptr<uint8_t[]> heap_;
+  size_t size_ = 0;
+};
+}  // namespace
 
-bool BusI2cGuide::Write(i2c_cmd_handle_t cmd_handle, const uint8_t* data,
-    size_t data_len, bool ack_en) {
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
-  return false;
-}
-
-bool BusI2cGuide::Read(i2c_cmd_handle_t cmd_handle, uint8_t* data,
-    size_t data_len, i2c_ack_type_t ack) {
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
-  return false;
-}
-
-bool BusI2cGuide::StopTransmit(i2c_cmd_handle_t cmd_handle) {
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "StopTransmit failed\n");
-  return false;
-}
-
-bool BusI2cGuide::StartTransmit() {
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "StartTransmit failed\n");
-  return false;
-}
-
-bool BusI2cGuide::StopTransmit() {
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "StopTransmit failed\n");
-  return false;
-}
-
-#endif
-
-bool BusI2cGuide::Deinit(bool delete_bus) {
+bool I2cBusBase::Deinit(bool delete_bus) {
   LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
   return false;
 }
 
-bool BusI2cGuide::Read(
+bool I2cBusBase::Read(
     const uint8_t write_c8, uint8_t* read_data, size_t read_data_length) {
   if (!WriteRead(&write_c8, 1, read_data, read_data_length)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
@@ -70,7 +63,7 @@ bool BusI2cGuide::Read(
   return true;
 }
 
-bool BusI2cGuide::Read(
+bool I2cBusBase::Read(
     const uint16_t write_c16, uint8_t* read_data, size_t read_data_length) {
   const uint8_t buffer[] = {
       static_cast<uint8_t>(write_c16 >> 8),
@@ -84,7 +77,7 @@ bool BusI2cGuide::Read(
   return true;
 }
 
-bool BusI2cGuide::Read(
+bool I2cBusBase::Read(
     const uint32_t write_c32, uint8_t* read_data, size_t read_data_length) {
   const uint8_t buffer[] = {
       static_cast<uint8_t>(write_c32 >> 24),
@@ -101,7 +94,7 @@ bool BusI2cGuide::Read(
   return true;
 }
 
-bool BusI2cGuide::Write(const uint8_t write_c8, const uint8_t write_d8) {
+bool I2cBusBase::Write(const uint8_t write_c8, const uint8_t write_d8) {
   const uint8_t buffer[] = {write_c8, write_d8};
   if (!Write(buffer, 2)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
@@ -111,16 +104,16 @@ bool BusI2cGuide::Write(const uint8_t write_c8, const uint8_t write_d8) {
   return true;
 }
 
-bool BusI2cGuide::Write(
-    const uint8_t write_c8, const uint16_t write_d16, Endian endian) {
+bool I2cBusBase::Write(
+    const uint8_t write_c8, const uint16_t write_d16, ByteOrder byte_order) {
   uint8_t buffer[3] = {write_c8};
 
-  switch (endian) {
-    case Endian::kBig:
+  switch (byte_order) {
+    case ByteOrder::kBig:
       buffer[1] = write_d16 >> 8;
       buffer[2] = write_d16;
       break;
-    case Endian::kLittle:
+    case ByteOrder::kLittle:
       buffer[1] = write_d16;
       buffer[2] = write_d16 >> 8;
       break;
@@ -137,7 +130,7 @@ bool BusI2cGuide::Write(
   return true;
 }
 
-bool BusI2cGuide::Write(const uint16_t write_c16, const uint8_t write_d8) {
+bool I2cBusBase::Write(const uint16_t write_c16, const uint8_t write_d8) {
   const uint8_t buffer[] = {static_cast<uint8_t>(write_c16 >> 8),
       static_cast<uint8_t>(write_c16), write_d8};
   if (!Write(buffer, 3)) {
@@ -148,14 +141,19 @@ bool BusI2cGuide::Write(const uint16_t write_c16, const uint8_t write_d8) {
   return true;
 }
 
-bool BusI2cGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
+bool I2cBusBase::Write(const uint8_t write_c8, const uint8_t* write_data,
     size_t write_data_length) {
   if (write_data == nullptr && write_data_length != 0) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
-  std::vector<uint8_t> buffer(1 + write_data_length);
+  TransferBuffer buffer;
+  if (!buffer.Init(1, write_data_length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Transfer buffer length overflow or allocation failed\n");
+    return false;
+  }
   buffer[0] = write_c8;
   if (write_data_length != 0) {
     std::memcpy(&buffer[1], write_data, write_data_length);
@@ -169,14 +167,19 @@ bool BusI2cGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
   return true;
 }
 
-bool BusI2cGuide::Write(const uint32_t write_c32, const uint8_t* write_data,
+bool I2cBusBase::Write(const uint32_t write_c32, const uint8_t* write_data,
     size_t write_data_length) {
   if (write_data == nullptr && write_data_length != 0) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
-  std::vector<uint8_t> buffer(4 + write_data_length);
+  TransferBuffer buffer;
+  if (!buffer.Init(4, write_data_length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Transfer buffer length overflow or allocation failed\n");
+    return false;
+  }
   buffer[0] = static_cast<uint8_t>(write_c32 >> 24);
   buffer[1] = static_cast<uint8_t>(write_c32 >> 16);
   buffer[2] = static_cast<uint8_t>(write_c32 >> 8);
@@ -193,7 +196,7 @@ bool BusI2cGuide::Write(const uint32_t write_c32, const uint8_t* write_data,
   return true;
 }
 
-bool BusI2cGuide::Scan7bitAddress(std::vector<uint8_t>* address) {
+bool I2cBusBase::Scan7BitAddress(std::vector<uint8_t>* address) {
   if (address == nullptr) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
@@ -217,7 +220,7 @@ bool BusI2cGuide::Scan7bitAddress(std::vector<uint8_t>* address) {
   return true;
 }
 
-bool BusSpiGuide::Read(const uint8_t write_c8, uint8_t* read_d8) {
+bool SpiBusBase::Read(const uint8_t write_c8, uint8_t* read_d8) {
   if (read_d8 == nullptr) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
@@ -236,15 +239,25 @@ bool BusSpiGuide::Read(const uint8_t write_c8, uint8_t* read_d8) {
   return true;
 }
 
-bool BusSpiGuide::Read(
+bool SpiBusBase::Read(
     const uint8_t write_c8, uint8_t* read_data, size_t read_data_length) {
   if (read_data == nullptr && read_data_length != 0) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
-  std::vector<uint8_t> buffer_write(1 + read_data_length, 0);
-  std::vector<uint8_t> buffer_read(1 + read_data_length, 0);
+  TransferBuffer buffer_write;
+  if (!buffer_write.Init(1, read_data_length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Transfer buffer length overflow or allocation failed\n");
+    return false;
+  }
+  TransferBuffer buffer_read;
+  if (!buffer_read.Init(1, read_data_length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Transfer buffer length overflow or allocation failed\n");
+    return false;
+  }
   buffer_write[0] = write_c8;
 
   if (!WriteRead(
@@ -260,7 +273,7 @@ bool BusSpiGuide::Read(
   return true;
 }
 
-bool BusSpiGuide::Write(const uint8_t write_c8) {
+bool SpiBusBase::Write(const uint8_t write_c8) {
   if (!Write(&write_c8, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -269,7 +282,7 @@ bool BusSpiGuide::Write(const uint8_t write_c8) {
   return true;
 }
 
-bool BusSpiGuide::Write(const uint8_t write_c8, const uint8_t write_d8) {
+bool SpiBusBase::Write(const uint8_t write_c8, const uint8_t write_d8) {
   const uint8_t buffer[] = {write_c8, write_d8};
 
   if (!Write(buffer, 2)) {
@@ -280,14 +293,19 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint8_t write_d8) {
   return true;
 }
 
-bool BusSpiGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
+bool SpiBusBase::Write(const uint8_t write_c8, const uint8_t* write_data,
     size_t write_data_length) {
   if (write_data == nullptr && write_data_length != 0) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
-  std::vector<uint8_t> buffer(1 + write_data_length);
+  TransferBuffer buffer;
+  if (!buffer.Init(1, write_data_length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Transfer buffer length overflow or allocation failed\n");
+    return false;
+  }
   buffer[0] = write_c8;
   if (write_data_length != 0) {
     std::memcpy(&buffer[1], write_data, write_data_length);
@@ -301,15 +319,25 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint8_t* write_data,
   return true;
 }
 
-bool BusSpiGuide::Read(const uint8_t write_c8, const uint16_t write_c16,
+bool SpiBusBase::Read(const uint8_t write_c8, const uint16_t write_c16,
     uint8_t* read_data, size_t read_data_length) {
   if (read_data == nullptr && read_data_length != 0) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
-  std::vector<uint8_t> buffer_write(3 + read_data_length, 0);
-  std::vector<uint8_t> buffer_read(3 + read_data_length, 0);
+  TransferBuffer buffer_write;
+  if (!buffer_write.Init(3, read_data_length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Transfer buffer length overflow or allocation failed\n");
+    return false;
+  }
+  TransferBuffer buffer_read;
+  if (!buffer_read.Init(3, read_data_length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Transfer buffer length overflow or allocation failed\n");
+    return false;
+  }
   buffer_write[0] = write_c8;
   buffer_write[1] = static_cast<uint8_t>(write_c16 >> 8);
   buffer_write[2] = static_cast<uint8_t>(write_c16);
@@ -327,15 +355,25 @@ bool BusSpiGuide::Read(const uint8_t write_c8, const uint16_t write_c16,
   return true;
 }
 
-bool BusSpiGuide::Read(const uint8_t write_c8_1, const uint8_t write_c8_2,
+bool SpiBusBase::Read(const uint8_t write_c8_1, const uint8_t write_c8_2,
     uint8_t* read_data, size_t read_data_length) {
   if (read_data == nullptr && read_data_length != 0) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
-  std::vector<uint8_t> buffer_write(2 + read_data_length, 0);
-  std::vector<uint8_t> buffer_read(2 + read_data_length, 0);
+  TransferBuffer buffer_write;
+  if (!buffer_write.Init(2, read_data_length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Transfer buffer length overflow or allocation failed\n");
+    return false;
+  }
+  TransferBuffer buffer_read;
+  if (!buffer_read.Init(2, read_data_length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Transfer buffer length overflow or allocation failed\n");
+    return false;
+  }
   buffer_write[0] = write_c8_1;
   buffer_write[1] = write_c8_2;
 
@@ -352,7 +390,7 @@ bool BusSpiGuide::Read(const uint8_t write_c8_1, const uint8_t write_c8_2,
   return true;
 }
 
-bool BusSpiGuide::Read(
+bool SpiBusBase::Read(
     const uint8_t write_c8, const uint16_t write_c16, uint8_t* read_data) {
   if (read_data == nullptr) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
@@ -377,14 +415,19 @@ bool BusSpiGuide::Read(
   return true;
 }
 
-bool BusSpiGuide::Write(const uint8_t write_c8, const uint16_t write_c16,
+bool SpiBusBase::Write(const uint8_t write_c8, const uint16_t write_c16,
     const uint8_t* write_data, size_t write_data_length) {
   if (write_data == nullptr && write_data_length != 0) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
-  std::vector<uint8_t> buffer(3 + write_data_length);
+  TransferBuffer buffer;
+  if (!buffer.Init(3, write_data_length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Transfer buffer length overflow or allocation failed\n");
+    return false;
+  }
   buffer[0] = write_c8;
   buffer[1] = static_cast<uint8_t>(write_c16 >> 8);
   buffer[2] = static_cast<uint8_t>(write_c16);
@@ -400,14 +443,19 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint16_t write_c16,
   return true;
 }
 
-bool BusSpiGuide::Write(const uint8_t write_c8_1, const uint8_t write_c8_2,
+bool SpiBusBase::Write(const uint8_t write_c8_1, const uint8_t write_c8_2,
     const uint8_t* write_data, size_t write_data_length) {
   if (write_data == nullptr && write_data_length != 0) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
-  std::vector<uint8_t> buffer(2 + write_data_length);
+  TransferBuffer buffer;
+  if (!buffer.Init(2, write_data_length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Transfer buffer length overflow or allocation failed\n");
+    return false;
+  }
   buffer[0] = write_c8_1;
   buffer[1] = write_c8_2;
   if (write_data_length != 0) {
@@ -422,7 +470,7 @@ bool BusSpiGuide::Write(const uint8_t write_c8_1, const uint8_t write_c8_2,
   return true;
 }
 
-bool BusSpiGuide::Write(const uint8_t write_c8, const uint16_t write_c16,
+bool SpiBusBase::Write(const uint8_t write_c8, const uint16_t write_c16,
     const uint8_t write_data) {
   uint8_t buffer[4] = {
       write_c8,
@@ -440,7 +488,7 @@ bool BusSpiGuide::Write(const uint8_t write_c8, const uint16_t write_c16,
   return true;
 }
 
-bool BusMipiGuide::Write(const uint8_t write_c8) {
+bool MipiBusBase::Write(const uint8_t write_c8) {
   if (!Write(static_cast<uint8_t>(write_c8), nullptr, 0)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
@@ -449,7 +497,7 @@ bool BusMipiGuide::Write(const uint8_t write_c8) {
   return true;
 }
 
-bool BusMipiGuide::Write(const uint8_t write_c8, const uint8_t write_d8) {
+bool MipiBusBase::Write(const uint8_t write_c8, const uint8_t write_d8) {
   uint8_t buffer = write_d8;
 
   if (!Write(static_cast<uint8_t>(write_c8), &buffer, 1)) {

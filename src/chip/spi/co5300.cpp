@@ -5,11 +5,11 @@
  * @LastEditTime: 2026-08-03 16:11:50
  * @License: GPL 3.0
  */
-#include "co5300.h"
+#include "chip/spi/co5300.h"
 
 namespace cpp_bus_driver {
 bool Co5300::Init(int32_t freq_hz) {
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
     result &= GpioWrite(rst_, 0);
@@ -22,7 +22,7 @@ bool Co5300::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipQspiGuide::Init(freq_hz)) {
+  if (!QspiChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -46,12 +46,12 @@ bool Co5300::Init(int32_t freq_hz) {
 bool Co5300::Deinit() {
   bool result = true;
 
-  if (!ChipQspiGuide::Deinit()) {
+  if (!QspiChipBase::Deinit()) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
 
@@ -149,7 +149,7 @@ bool Co5300::SendColorStream(
     return false;
   }
 
-  if (!SetWriteStreamMode(WriteStreamMode::kContinuousWrite4lanes)) {
+  if (!SetWriteStreamMode(WriteStreamMode::kContinuousWrite4Lanes)) {
     LogMessage(
         LogLevel::kError, __FILE__, __LINE__, "SetWriteStreamMode failed\n");
     return false;
@@ -176,7 +176,7 @@ bool Co5300::SetWriteStreamMode(WriteStreamMode mode) {
   uint8_t buffer[4] = {0};
 
   switch (mode) {
-    case WriteStreamMode::kWrite1lanes:
+    case WriteStreamMode::kWrite1Lane:
       buffer[0] = static_cast<uint8_t>(ColorStreamOpcode::kOneLane);
       buffer[1] = static_cast<uint8_t>(
           static_cast<uint32_t>(Reg::kWoMemoryStartWrite) >> 16);
@@ -184,7 +184,7 @@ bool Co5300::SetWriteStreamMode(WriteStreamMode mode) {
           static_cast<uint32_t>(Reg::kWoMemoryStartWrite) >> 8);
       buffer[3] = static_cast<uint8_t>(Reg::kWoMemoryStartWrite);
       break;
-    case WriteStreamMode::kWrite4lanes:
+    case WriteStreamMode::kWrite4Lanes:
       buffer[0] = static_cast<uint8_t>(ColorStreamOpcode::kFourLaneCommand1);
       buffer[1] = static_cast<uint8_t>(
           static_cast<uint32_t>(Reg::kWoMemoryStartWrite) >> 16);
@@ -192,7 +192,7 @@ bool Co5300::SetWriteStreamMode(WriteStreamMode mode) {
           static_cast<uint32_t>(Reg::kWoMemoryStartWrite) >> 8);
       buffer[3] = static_cast<uint8_t>(Reg::kWoMemoryStartWrite);
       break;
-    case WriteStreamMode::kContinuousWrite1lanes:
+    case WriteStreamMode::kContinuousWrite1Lane:
       buffer[0] = static_cast<uint8_t>(ColorStreamOpcode::kOneLane);
       buffer[1] = static_cast<uint8_t>(
           static_cast<uint32_t>(Reg::kWoMemoryContinuousWrite) >> 16);
@@ -200,7 +200,7 @@ bool Co5300::SetWriteStreamMode(WriteStreamMode mode) {
           static_cast<uint32_t>(Reg::kWoMemoryContinuousWrite) >> 8);
       buffer[3] = static_cast<uint8_t>(Reg::kWoMemoryContinuousWrite);
       break;
-    case WriteStreamMode::kContinuousWrite4lanes:
+    case WriteStreamMode::kContinuousWrite4Lanes:
       buffer[0] = static_cast<uint8_t>(ColorStreamOpcode::kFourLaneCommand1);
       buffer[1] = static_cast<uint8_t>(
           static_cast<uint32_t>(Reg::kWoMemoryContinuousWrite) >> 16);

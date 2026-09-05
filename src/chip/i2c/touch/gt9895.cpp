@@ -5,7 +5,7 @@
  * @LastEditTime: 2026-09-02 16:18:20
  * @License: GPL 3.0
  */
-#include "gt9895.h"
+#include "chip/i2c/touch/gt9895.h"
 
 #include <algorithm>
 #include <array>
@@ -61,9 +61,9 @@ bool Gt9895::Init(int32_t freq_hz) {
   if (!ResetController()) {
     return false;
   }
-  if (!ChipI2cGuide::Init(freq_hz)) {
+  if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "GT9895 init failed\n");
-    ChipI2cGuide::Deinit(false);
+    I2cChipBase::Deinit(false);
     return false;
   }
 
@@ -71,7 +71,7 @@ bool Gt9895::Init(int32_t freq_hz) {
   if (!ReadChipInfo(&chip_info)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "GT9895 init failed (firmware information is invalid)\n");
-    ChipI2cGuide::Deinit(false);
+    I2cChipBase::Deinit(false);
     return false;
   }
   chip_info_ = chip_info;
@@ -80,7 +80,7 @@ bool Gt9895::Init(int32_t freq_hz) {
   if (!ReadRuntimeInfo(&runtime_info)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "GT9895 init failed (runtime information is invalid)\n");
-    ChipI2cGuide::Deinit(false);
+    I2cChipBase::Deinit(false);
     chip_info_ = ChipInfo();
     return false;
   }
@@ -98,15 +98,15 @@ bool Gt9895::Init(int32_t freq_hz) {
 }
 
 bool Gt9895::Deinit(bool delete_bus) {
-  bool result = ChipI2cGuide::Deinit(delete_bus);
+  bool result = I2cChipBase::Deinit(delete_bus);
   if (!result) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "GT9895 deinit failed\n");
   }
 
-  if (irq_ != kDefaultValue) {
+  if (irq_ != kPinNotConnected) {
     result &= ResetGpio(irq_);
   }
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
   chip_info_ = ChipInfo();
@@ -517,7 +517,7 @@ bool Gt9895::EnterSleep() {
     return false;
   }
 
-  if (irq_ != kDefaultValue) {
+  if (irq_ != kPinNotConnected) {
     if (!SetGpioMode(irq_, GpioMode::kOutput, GpioStatus::kPulldown) ||
         !GpioWrite(irq_, 0)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
@@ -544,13 +544,13 @@ bool Gt9895::EnterSleep() {
 }
 
 bool Gt9895::WakeUp() {
-  if (rst_ == kDefaultValue) {
+  if (rst_ == kPinNotConnected) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "GT9895 wake failed (reset pin is not configured)\n");
     return false;
   }
 
-  if (irq_ != kDefaultValue) {
+  if (irq_ != kPinNotConnected) {
     if (!SetGpioMode(irq_, GpioMode::kOutput, GpioStatus::kPullup) ||
         !GpioWrite(irq_, 1)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
@@ -566,7 +566,7 @@ bool Gt9895::WakeUp() {
 }
 
 bool Gt9895::ResetController() {
-  if (rst_ == kDefaultValue) {
+  if (rst_ == kPinNotConnected) {
     return true;
   }
 
@@ -576,7 +576,7 @@ bool Gt9895::ResetController() {
   DelayMs(30);
   result &= GpioWrite(rst_, 1);
   DelayMs(100);
-  if (irq_ != kDefaultValue) {
+  if (irq_ != kPinNotConnected) {
     result &= SetGpioMode(irq_, GpioMode::kInput);
   }
   if (!result) {

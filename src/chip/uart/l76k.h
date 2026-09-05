@@ -2,15 +2,22 @@
  * @Description: L76K GNSS 定位模块驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-09-02 16:18:17
+ * @LastEditTime: 2026-09-04 17:20:00
  * @License: GPL 3.0
  */
 #pragma once
 
-#include "../chip_guide.h"
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
-class L76k final : public ChipUartGuide, public GnssParser {
+class L76k final : public UartChipBase {
  public:
   // 更新频率（定位频率）
   enum class UpdateFreq {
@@ -88,14 +95,14 @@ class L76k final : public ChipUartGuide, public GnssParser {
     uint32_t baud_rate = 9600;
   };
 
-  explicit L76k(std::shared_ptr<BusUartGuide> bus, const int32_t wake_up,
-      const int32_t rst = kDefaultValue)
-      : ChipUartGuide(bus), wake_up_(wake_up), rst_(rst) {}
+  explicit L76k(std::shared_ptr<UartBusBase> bus, const int32_t wake_up,
+      const int32_t rst = kPinNotConnected)
+      : UartChipBase(bus), wake_up_(wake_up), rst_(rst) {}
 
-  explicit L76k(std::shared_ptr<BusUartGuide> bus,
+  explicit L76k(std::shared_ptr<UartBusBase> bus,
       const std::function<bool(bool)>& wake_up_callback,
-      const int32_t rst = kDefaultValue)
-      : ChipUartGuide(bus), wake_up_callback_(wake_up_callback), rst_(rst) {}
+      const int32_t rst = kPinNotConnected)
+      : UartChipBase(bus), wake_up_callback_(wake_up_callback), rst_(rst) {}
 
   bool Init(int32_t baud_rate = 9600) override;
   bool Deinit() override;
@@ -283,7 +290,7 @@ class L76k final : public ChipUartGuide, public GnssParser {
    */
   uint32_t BaudRateToValue(BaudRate baud_rate);
 
-  int32_t wake_up_ = kDefaultValue;
+  int32_t wake_up_ = kPinNotConnected;
   std::function<bool(bool)> wake_up_callback_ = nullptr;
   int32_t rst_;
   uint16_t update_interval_ms_ = 1000;  // 默认更新间隔为 1000ms（1Hz）

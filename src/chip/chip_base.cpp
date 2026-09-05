@@ -2,10 +2,10 @@
  * @Description: 芯片公共驱动基类的初始化序列实现
  * @Author: LILYGO_L
  * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-08-03 16:10:31
+ * @LastEditTime: 2026-09-05 14:56:28
  * @License: GPL 3.0
  */
-#include "chip_guide.h"
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
 namespace {
@@ -22,19 +22,24 @@ bool HasSequenceBytes(size_t index, size_t length, size_t required) {
 }
 
 template <typename Bus>
-bool HasBus(const std::shared_ptr<Bus>& bus, Tool* tool, const char* file,
-    size_t line) {
+bool HasBus(const std::shared_ptr<Bus>& bus, DriverBase* driver_base,
+    const char* file, size_t line) {
   if (bus != nullptr) {
     return true;
   }
 
-  tool->LogMessage(Tool::LogLevel::kWarning, file, line, "Invalid argument\n");
+  driver_base->LogMessage(
+      Logger::LogLevel::kWarning, file, line, "Invalid argument\n");
   return false;
 }
 
 }  // namespace
 
-bool ChipI2cGuide::Init(int32_t freq_hz) {
+bool I2cChipBase::Init(int32_t freq_hz) {
+  if (freq_hz <= 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Invalid bus frequency\n");
+    return false;
+  }
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -53,7 +58,7 @@ bool ChipI2cGuide::Init(int32_t freq_hz) {
   return true;
 }
 
-bool ChipI2cGuide::Deinit(bool delete_bus) {
+bool I2cChipBase::Deinit(bool delete_bus) {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -66,7 +71,7 @@ bool ChipI2cGuide::Deinit(bool delete_bus) {
   return true;
 }
 
-bool ChipI2cGuide::InitSequence(const uint8_t* sequence, size_t length) {
+bool I2cChipBase::InitSequence(const uint8_t* sequence, size_t length) {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -82,7 +87,7 @@ bool ChipI2cGuide::InitSequence(const uint8_t* sequence, size_t length) {
       case static_cast<uint8_t>(InitSequenceFormat::kDelayMs):
         if (!HasSequenceBytes(index, length, 2)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipI2cGuide InitSequence short data (error index: %zu)\n",
+              "I2cChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
@@ -92,13 +97,13 @@ bool ChipI2cGuide::InitSequence(const uint8_t* sequence, size_t length) {
       case static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8):
         if (!HasSequenceBytes(index, length, 3)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipI2cGuide InitSequence short data (error index: %zu)\n",
+              "I2cChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
         if (!bus_->Write(&sequence[index + 1], 2)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipI2cGuide write failed (error index: %zu)\n", index);
+              "I2cChipBase write failed (error index: %zu)\n", index);
           return false;
         }
         index += 3;
@@ -106,7 +111,7 @@ bool ChipI2cGuide::InitSequence(const uint8_t* sequence, size_t length) {
 
       default:
         LogMessage(LogLevel::kError, __FILE__, __LINE__,
-            "ChipI2cGuide InitSequence failed (error index: %zu)\n", index);
+            "I2cChipBase InitSequence failed (error index: %zu)\n", index);
         return false;
     }
   }
@@ -114,7 +119,7 @@ bool ChipI2cGuide::InitSequence(const uint8_t* sequence, size_t length) {
   return true;
 }
 
-bool ChipI2cGuide::InitSequence(const uint16_t* sequence, size_t length) {
+bool I2cChipBase::InitSequence(const uint16_t* sequence, size_t length) {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -130,7 +135,7 @@ bool ChipI2cGuide::InitSequence(const uint16_t* sequence, size_t length) {
       case static_cast<uint8_t>(InitSequenceFormat::kDelayMs):
         if (!HasSequenceBytes(index, length, 2)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipI2cGuide InitSequence short data (error index: %zu)\n",
+              "I2cChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
@@ -140,7 +145,7 @@ bool ChipI2cGuide::InitSequence(const uint16_t* sequence, size_t length) {
       case static_cast<uint8_t>(InitSequenceFormat::kWriteC16D8): {
         if (!HasSequenceBytes(index, length, 3)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipI2cGuide InitSequence short data (error index: %zu)\n",
+              "I2cChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
@@ -152,7 +157,7 @@ bool ChipI2cGuide::InitSequence(const uint16_t* sequence, size_t length) {
 
         if (!bus_->Write(buffer, 3)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipI2cGuide write failed (error index: %zu)\n", index);
+              "I2cChipBase write failed (error index: %zu)\n", index);
           return false;
         }
         index += 3;
@@ -160,7 +165,7 @@ bool ChipI2cGuide::InitSequence(const uint16_t* sequence, size_t length) {
       }
       default:
         LogMessage(LogLevel::kError, __FILE__, __LINE__,
-            "ChipI2cGuide InitSequence failed (error index: %zu)\n", index);
+            "I2cChipBase InitSequence failed (error index: %zu)\n", index);
         return false;
     }
   }
@@ -168,7 +173,11 @@ bool ChipI2cGuide::InitSequence(const uint16_t* sequence, size_t length) {
   return true;
 }
 
-bool ChipSpiGuide::Init(int32_t freq_hz) {
+bool SpiChipBase::Init(int32_t freq_hz) {
+  if (freq_hz <= 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Invalid bus frequency\n");
+    return false;
+  }
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -181,7 +190,7 @@ bool ChipSpiGuide::Init(int32_t freq_hz) {
   return true;
 }
 
-bool ChipSpiGuide::Deinit(bool delete_bus) {
+bool SpiChipBase::Deinit(bool delete_bus) {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -194,7 +203,7 @@ bool ChipSpiGuide::Deinit(bool delete_bus) {
   return true;
 }
 
-bool ChipSpiGuide::InitSequence(const uint8_t* sequence, size_t length) {
+bool SpiChipBase::InitSequence(const uint8_t* sequence, size_t length) {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -210,7 +219,7 @@ bool ChipSpiGuide::InitSequence(const uint8_t* sequence, size_t length) {
       case static_cast<uint8_t>(InitSequenceFormat::kDelayMs):
         if (!HasSequenceBytes(index, length, 2)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipSpiGuide InitSequence short data (error index: %zu)\n",
+              "SpiChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
@@ -220,13 +229,13 @@ bool ChipSpiGuide::InitSequence(const uint8_t* sequence, size_t length) {
       case static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8):
         if (!HasSequenceBytes(index, length, 3)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipSpiGuide InitSequence short data (error index: %zu)\n",
+              "SpiChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
         if (!bus_->Write(&sequence[index + 1], 2)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipSpiGuide write failed (error index: %zu)\n", index);
+              "SpiChipBase write failed (error index: %zu)\n", index);
           return false;
         }
         index += 3;
@@ -234,7 +243,7 @@ bool ChipSpiGuide::InitSequence(const uint8_t* sequence, size_t length) {
 
       default:
         LogMessage(LogLevel::kError, __FILE__, __LINE__,
-            "ChipSpiGuide InitSequence failed (error index: %zu)\n", index);
+            "SpiChipBase InitSequence failed (error index: %zu)\n", index);
         return false;
     }
   }
@@ -242,7 +251,11 @@ bool ChipSpiGuide::InitSequence(const uint8_t* sequence, size_t length) {
   return true;
 }
 
-bool ChipQspiGuide::Init(int32_t freq_hz) {
+bool QspiChipBase::Init(int32_t freq_hz) {
+  if (freq_hz <= 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Invalid bus frequency\n");
+    return false;
+  }
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -255,7 +268,7 @@ bool ChipQspiGuide::Init(int32_t freq_hz) {
   return true;
 }
 
-bool ChipQspiGuide::Deinit() {
+bool QspiChipBase::Deinit() {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -268,7 +281,7 @@ bool ChipQspiGuide::Deinit() {
   return true;
 }
 
-bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
+bool QspiChipBase::InitSequence(const uint32_t* sequence, size_t length) {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -284,7 +297,7 @@ bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
       case static_cast<uint8_t>(InitSequenceFormat::kDelayMs):
         if (!HasSequenceBytes(index, length, 2)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipQspiGuide InitSequence short data (error index: %zu)\n",
+              "QspiChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
@@ -294,7 +307,7 @@ bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
       case static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24): {
         if (!HasSequenceBytes(index, length, 3)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipQspiGuide InitSequence short data (error index: %zu)\n",
+              "QspiChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
@@ -306,7 +319,7 @@ bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
         };
         if (!bus_->Write(buffer, 4, 0, false)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipQspiGuide write failed (error index: %zu)\n", index);
+              "QspiChipBase write failed (error index: %zu)\n", index);
           return false;
         }
         index += 3;
@@ -317,7 +330,7 @@ bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
       case static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8): {
         if (!HasSequenceBytes(index, length, 4)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipQspiGuide InitSequence short data (error index: %zu)\n",
+              "QspiChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
@@ -331,7 +344,7 @@ bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
 
         if (!bus_->Write(buffer, 5, 0, false)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipQspiGuide write failed (error index: %zu)\n", index);
+              "QspiChipBase write failed (error index: %zu)\n", index);
           return false;
         }
         index += 4;
@@ -341,7 +354,7 @@ bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
 
       default:
         LogMessage(LogLevel::kError, __FILE__, __LINE__,
-            "ChipQspiGuide InitSequence failed (error index: %zu)\n", index);
+            "QspiChipBase InitSequence failed (error index: %zu)\n", index);
         return false;
     }
   }
@@ -349,7 +362,7 @@ bool ChipQspiGuide::InitSequence(const uint32_t* sequence, size_t length) {
   return true;
 }
 
-bool ChipUartGuide::Init(int32_t baud_rate) {
+bool UartChipBase::Init(int32_t baud_rate) {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -362,7 +375,7 @@ bool ChipUartGuide::Init(int32_t baud_rate) {
   return true;
 }
 
-bool ChipUartGuide::Deinit() {
+bool UartChipBase::Deinit() {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -375,13 +388,14 @@ bool ChipUartGuide::Deinit() {
   return true;
 }
 
-bool ChipI2sGuide::Init(
+bool I2sChipBase::Init(
     uint16_t mclk_multiple, uint32_t sample_rate_hz, uint8_t data_bit_width) {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
   i2s_mclk_multiple_t resolved_mclk_multiple =
       i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_128;
   if (mclk_multiple <= 128) {
@@ -429,7 +443,7 @@ bool ChipI2sGuide::Init(
   }
 
   return true;
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+#elif CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_NRF52
   nrf_i2s_ratio_t resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_32X;
   if (mclk_multiple <= 32) {
     resolved_ratio = nrf_i2s_ratio_t::NRF_I2S_RATIO_32X;
@@ -478,7 +492,7 @@ bool ChipI2sGuide::Init(
 #endif
 }
 
-bool ChipI2sGuide::Deinit() {
+bool I2sChipBase::Deinit() {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -491,9 +505,10 @@ bool ChipI2sGuide::Deinit() {
   return true;
 }
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-bool ChipI2sGuide::SetClockReconfig(uint16_t mclk_multiple,
-    uint32_t sample_rate_hz, BusI2sGuide::DataMode data_mode) {
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+bool I2sChipBase::ReconfigureClock(uint16_t mclk_multiple,
+    uint32_t sample_rate_hz, I2sBusBase::DataMode data_mode) {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -523,7 +538,7 @@ bool ChipI2sGuide::SetClockReconfig(uint16_t mclk_multiple,
     resolved_mclk_multiple = i2s_mclk_multiple_t::I2S_MCLK_MULTIPLE_256;
   }
 
-  if (!bus_->SetClockReconfig(
+  if (!bus_->ReconfigureClock(
           resolved_mclk_multiple, sample_rate_hz, data_mode)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
@@ -533,7 +548,11 @@ bool ChipI2sGuide::SetClockReconfig(uint16_t mclk_multiple,
 }
 #endif
 
-bool ChipSdioGuide::Init(int32_t freq_hz) {
+bool SdioChipBase::Init(int32_t freq_hz) {
+  if (freq_hz <= 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Invalid bus frequency\n");
+    return false;
+  }
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -546,7 +565,7 @@ bool ChipSdioGuide::Init(int32_t freq_hz) {
   return true;
 }
 
-bool ChipSdioGuide::Deinit() {
+bool SdioChipBase::Deinit() {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -559,7 +578,7 @@ bool ChipSdioGuide::Deinit() {
   return true;
 }
 
-bool ChipMipiGuide::Init(float freq_mhz, float lane_bit_rate_mbps) {
+bool MipiChipBase::Init(float freq_mhz, float lane_bit_rate_mbps) {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -572,7 +591,7 @@ bool ChipMipiGuide::Init(float freq_mhz, float lane_bit_rate_mbps) {
   return true;
 }
 
-bool ChipMipiGuide::Deinit() {
+bool MipiChipBase::Deinit() {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -585,7 +604,7 @@ bool ChipMipiGuide::Deinit() {
   return true;
 }
 
-bool ChipMipiGuide::InitSequence(const uint8_t* sequence, size_t length) {
+bool MipiChipBase::InitSequence(const uint8_t* sequence, size_t length) {
   if (!HasBus(bus_, this, __FILE__, __LINE__)) {
     return false;
   }
@@ -601,7 +620,7 @@ bool ChipMipiGuide::InitSequence(const uint8_t* sequence, size_t length) {
       case static_cast<uint8_t>(InitSequenceFormat::kDelayMs):
         if (!HasSequenceBytes(index, length, 2)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipMipiGuide InitSequence short data (error index: %zu)\n",
+              "MipiChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
@@ -611,14 +630,14 @@ bool ChipMipiGuide::InitSequence(const uint8_t* sequence, size_t length) {
       case static_cast<uint8_t>(InitSequenceFormat::kWriteC8):
         if (!HasSequenceBytes(index, length, 2)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipMipiGuide InitSequence short data (error index: %zu)\n",
+              "MipiChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
         if (!bus_->Write(
                 static_cast<int32_t>(sequence[index + 1]), nullptr, 0)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipMipiGuide write failed (error index: %zu)\n", index);
+              "MipiChipBase write failed (error index: %zu)\n", index);
           return false;
         }
         index += 2;
@@ -626,21 +645,21 @@ bool ChipMipiGuide::InitSequence(const uint8_t* sequence, size_t length) {
       case static_cast<uint8_t>(InitSequenceFormat::kWriteC8ByteData): {
         if (!HasSequenceBytes(index, length, 3)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipMipiGuide InitSequence short data (error index: %zu)\n",
+              "MipiChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
         const size_t data_length = sequence[index + 2];
         if (!HasSequenceBytes(index, length, 3 + data_length)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipMipiGuide InitSequence short data (error index: %zu)\n",
+              "MipiChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
         if (!bus_->Write(static_cast<int32_t>(sequence[index + 1]),
                 &sequence[index + 3], data_length)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipMipiGuide write failed (error index: %zu)\n", index);
+              "MipiChipBase write failed (error index: %zu)\n", index);
           return false;
         }
         index += 3 + data_length;
@@ -649,14 +668,14 @@ bool ChipMipiGuide::InitSequence(const uint8_t* sequence, size_t length) {
       case static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8):
         if (!HasSequenceBytes(index, length, 3)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipMipiGuide InitSequence short data (error index: %zu)\n",
+              "MipiChipBase InitSequence short data (error index: %zu)\n",
               index);
           return false;
         }
         if (!bus_->Write(static_cast<int32_t>(sequence[index + 1]),
                 &sequence[index + 2], 1)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "ChipMipiGuide write failed (error index: %zu)\n", index);
+              "MipiChipBase write failed (error index: %zu)\n", index);
           return false;
         }
         index += 3;
@@ -664,7 +683,7 @@ bool ChipMipiGuide::InitSequence(const uint8_t* sequence, size_t length) {
 
       default:
         LogMessage(LogLevel::kError, __FILE__, __LINE__,
-            "ChipMipiGuide InitSequence failed (error index: %zu)\n", index);
+            "MipiChipBase InitSequence failed (error index: %zu)\n", index);
         return false;
     }
   }

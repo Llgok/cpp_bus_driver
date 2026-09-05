@@ -1,18 +1,35 @@
 /*
- * @Description: I2C、SPI、I2S、UART、SDIO 与 MIPI 总线抽象接口
+ * @Description: I2C、SPI、I2S、UART、SDIO 与 MIPI 总线公共基类
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2026-08-03 16:10:29
+ * @LastEditTime: 2026-09-04 11:52:13
  * @License: GPL 3.0
  */
 #pragma once
 
-#include "../config.h"
+#include <cstddef>
+#include <cstdint>
+#include <vector>
+
+#include "core/driver_base.h"
+
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+#include "driver/i2c.h"
+#include "driver/i2s_std.h"
+#elif CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_NRF52
+#include "nrfx_i2s.h"
+#endif
+
+#include "compatibility_2_x.h"
 
 namespace cpp_bus_driver {
-class BusI2cGuide : public virtual Tool {
+class I2cBusBase : public virtual DriverBase {
  public:
-  BusI2cGuide() = default;
+  // 仅初始化主机总线、不绑定从设备时使用的地址标记。
+  static constexpr uint16_t kNoDeviceAddress = 0xFFFF;
+
+  I2cBusBase() = default;
   virtual bool Init(uint32_t freq_hz, uint16_t address) = 0;
   virtual bool Read(uint8_t* data, size_t length) = 0;
   virtual bool Write(const uint8_t* data, size_t length) = 0;
@@ -21,8 +38,9 @@ class BusI2cGuide : public virtual Tool {
   virtual bool Probe(const uint16_t address) = 0;
   virtual bool Deinit(bool delete_bus);
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  virtual i2c_cmd_handle_t CmdLinkCreate();
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+  virtual i2c_cmd_handle_t CreateCommandLink();
   virtual bool StartTransmit(
       i2c_cmd_handle_t cmd_handle, i2c_rw_t rw, bool ack_en);
   virtual bool Write(i2c_cmd_handle_t cmd_handle, uint8_t data, bool ack_en);
@@ -42,18 +60,19 @@ class BusI2cGuide : public virtual Tool {
       size_t read_data_length = 1);
   bool Write(const uint8_t write_c8, const uint8_t write_d8);
   bool Write(const uint8_t write_c8, const uint16_t write_d16,
-      Endian endian = Endian::kBig);
+      ByteOrder byte_order = ByteOrder::kBig);
   bool Write(const uint16_t write_c16, const uint8_t write_d8);
   bool Write(const uint8_t write_c8, const uint8_t* write_data,
       size_t write_data_length);
   bool Write(const uint32_t write_c32, const uint8_t* write_data,
       size_t write_data_length);
-  bool Scan7bitAddress(std::vector<uint8_t>* address);
+  bool Scan7BitAddress(std::vector<uint8_t>* address);
 };
 
-class BusI2sGuide : public virtual Tool {
+class I2sBusBase : public virtual DriverBase {
  public:
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
   enum class DataMode {
     kInput,   // 输入模式
     kOutput,  // 输出模式
@@ -62,17 +81,18 @@ class BusI2sGuide : public virtual Tool {
   };
 #endif
 
-  BusI2sGuide() = default;
+  I2sBusBase() = default;
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
   virtual bool Init(i2s_mclk_multiple_t mclk_multiple, uint32_t sample_rate_hz,
       i2s_data_bit_width_t data_bit_width) = 0;
   virtual size_t Read(void* data, size_t byte) = 0;
   virtual size_t Write(const void* data, size_t byte) = 0;
-  virtual bool SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
+  virtual bool ReconfigureClock(i2s_mclk_multiple_t mclk_multiple,
       uint32_t sample_rate_hz, DataMode data_mode) = 0;
   virtual bool SetChannelEnable(bool enable, DataMode data_mode) = 0;
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+#elif CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_NRF52
   virtual bool Init(nrf_i2s_ratio_t mclk_multiple, uint32_t sample_rate_hz,
       nrf_i2s_swidth_t data_bit_width) = 0;
 
@@ -120,9 +140,9 @@ class BusI2sGuide : public virtual Tool {
   virtual bool Deinit() = 0;
 };
 
-class BusSpiGuide : public virtual Tool {
+class SpiBusBase : public virtual DriverBase {
  public:
-  BusSpiGuide() = default;
+  SpiBusBase() = default;
   virtual bool Init(int32_t freq_hz, int32_t cs) = 0;
   virtual bool Write(const void* data, size_t byte) = 0;
   virtual bool Read(void* data, size_t byte) = 0;
@@ -171,18 +191,18 @@ class BusSpiGuide : public virtual Tool {
       const uint8_t write_data);
 };
 
-class BusQspiGuide : public virtual Tool {
+class QspiBusBase : public virtual DriverBase {
  public:
-  BusQspiGuide() = default;
+  QspiBusBase() = default;
   virtual bool Init(int32_t freq_hz, int32_t cs) = 0;
   virtual bool Deinit(bool delete_bus) = 0;
   virtual bool Write(
       const void* data, size_t byte, uint32_t flags, bool cs_keep_active) = 0;
 };
 
-class BusUartGuide : public virtual Tool {
+class UartBusBase : public virtual DriverBase {
  public:
-  BusUartGuide() = default;
+  UartBusBase() = default;
   virtual bool Init(int32_t baud_rate) = 0;
   virtual int32_t Read(void* data, uint32_t length) = 0;
   virtual int32_t Write(const void* data, size_t length) = 0;
@@ -193,9 +213,9 @@ class BusUartGuide : public virtual Tool {
   virtual bool Deinit() = 0;
 };
 
-class BusSdioGuide : public virtual Tool {
+class SdioBusBase : public virtual DriverBase {
  public:
-  BusSdioGuide() = default;
+  SdioBusBase() = default;
   virtual bool Init(int32_t freq_hz) = 0;
   virtual bool Deinit() = 0;
   virtual bool WaitInterrupt(uint32_t timeout_ms) = 0;
@@ -212,9 +232,9 @@ class BusSdioGuide : public virtual Tool {
       uint32_t function, uint32_t write_c32, const void* data, size_t byte) = 0;
 };
 
-class BusMipiGuide : public virtual Tool {
+class MipiBusBase : public virtual DriverBase {
  public:
-  BusMipiGuide() = default;
+  MipiBusBase() = default;
   virtual bool Init(float freq_mhz, float lane_bit_rate_mbps,
       InitSequenceFormat init_sequence_format) = 0;
   virtual bool StartTransmit() = 0;
@@ -226,4 +246,5 @@ class BusMipiGuide : public virtual Tool {
   bool Write(const uint8_t write_c8);
   bool Write(const uint8_t write_c8, const uint8_t write_d8);
 };
+
 }  // namespace cpp_bus_driver

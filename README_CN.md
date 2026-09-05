@@ -25,7 +25,7 @@
 
 支持常见微控制器外设总线，并在总线层和芯片层提供相近的 C++ 使用方式。你可以先创建 bus 对象，再把 bus 传入 chip 对象，让初始化、读写、配置和释放流程保持清晰统一。
 
-当前支持的总线驱动和芯片驱动会随版本持续更新，具体可查看统一入口文件 [`cpp_bus_driver_library.h`](./src/cpp_bus_driver_library.h)。
+当前支持的总线驱动和芯片驱动会随版本持续更新，具体可查看统一入口文件 [`cpp_bus_driver.h`](./src/cpp_bus_driver.h)。
 
 ### 面向工程项目的接口设计
 
@@ -39,10 +39,10 @@
 | --- | --- | --- |
 | ESP-IDF | 推荐 | 从v2.0.0起，最小支持的ESP-IDF版本为v5.5.3 |
 | Arduino NRF | 支持 | 适用于部分 NRF52840 Arduino 场景 |
-| Arduino ESP32 | 部分支持 | 基于ESP-IDF v5.5.3的核心支持`HardwareI2c1`及I2C芯片驱动 |
+| Arduino ESP32 | 共用后端 | 与 ESP-IDF 共用底层实现，核心需满足当前库的 ESP-IDF 最低版本要求，即 v5.5.3 |
 
 > [!NOTE]
-> 不同框架下可用的总线和芯片能力可能不同。ESP-IDF 是当前功能最完整的适配目标。
+> 可用功能取决于目标芯片和 SDK 配置。Arduino-ESP32 构建要求底层 ESP-IDF 为 5.5.3 或更高版本，低于此版本会在编译时明确报错。这里指 ESP-IDF 版本，不是 Arduino-ESP32 包的版本号。满足最低版本要求不代表所有更高版本都已验证兼容。
 
 ## 快速开始
 
@@ -69,7 +69,7 @@ git clone https://github.com/Llgok/cpp_bus_driver.git
 然后在代码中包含统一入口：
 
 ```cpp
-#include "cpp_bus_driver_library.h"
+#include "cpp_bus_driver.h"
 ```
 
 #### 在 Arduino IDE 中使用（nRF52840）
@@ -92,13 +92,19 @@ compiler.libraries.ldflags=-lstdc++
 需要重新创建。然后包含统一入口头文件：
 
 ```cpp
-#include <cpp_bus_driver_library.h>
+#include <cpp_bus_driver.h>
 ```
 
 > [!IMPORTANT]
-> Arduino实现支持定义了`NRF52840_XXAA`的nRF52840构建。Arduino ESP32
-> 当前仅支持ESP-IDF I2C主机后端及其I2C芯片驱动，并要求底层为ESP-IDF
-> v5.5.3或更高版本的Arduino核心。
+> Arduino nRF52 构建需要定义 `NRF52840_XXAA`（nRF52840）。
+
+#### 在 Arduino ESP32 中使用
+
+安装满足当前库 ESP-IDF 版本要求的 Arduino-ESP32 核心，底层需为
+**ESP-IDF 5.5.3 或更高版本**。包含 `<cpp_bus_driver.h>` 后即可使用共用的 ESP-IDF 后端。
+具体功能仍取决于目标芯片的硬件能力以及核心提供的组件。
+
+不要让 Arduino 的 `Wire`、`SPI`、`HardwareSerial` 等对象与本库同时管理同一个外设。
 
 #### 作为 Git submodule 使用
 
@@ -164,12 +170,12 @@ idf.py menuconfig
 进入 `cpp_bus_driver configuration`，选择启动时使用的默认日志等级。应用也可以在线程安全的运行时接口中动态调整等级：
 
 ```cpp
-cpp_bus_driver::Tool::SetMinimumLogLevel(
-    cpp_bus_driver::Tool::LogLevel::kWarning);
-const auto level = cpp_bus_driver::Tool::GetMinimumLogLevel();
+cpp_bus_driver::Logger::SetMinimumLogLevel(
+    cpp_bus_driver::Logger::LogLevel::kWarning);
+const auto level = cpp_bus_driver::Logger::GetMinimumLogLevel();
 ```
 
-设置为 `kNone` 会禁止全部日志。需要在构造开销较高的日志参数前主动判断时，可以调用 `Tool::ShouldLog()`。
+设置为 `kNone` 会禁止全部日志。需要在构造开销较高的日志参数前主动判断时，可以调用 `Logger::ShouldLog()`。
 
 ## v2 迁移说明
 
@@ -189,10 +195,12 @@ const auto level = cpp_bus_driver::Tool::GetMinimumLogLevel();
 常见改动示例：
 
 ```cpp
-tool.SetGpioMode(pin, cpp_bus_driver::Tool::GpioMode::kOutput);
-tool.GpioWrite(pin, true);
-tool.InitGpioInterrupt(pin, cpp_bus_driver::Tool::InterruptMode::kFalling,
-    InterruptCallback, nullptr, cpp_bus_driver::Tool::GpioStatus::kPullup);
+cpp_bus_driver::PlatformHal platform_hal;
+platform_hal.SetGpioMode(pin, cpp_bus_driver::PlatformHal::GpioMode::kOutput);
+platform_hal.GpioWrite(pin, true);
+platform_hal.InitGpioInterrupt(pin,
+    cpp_bus_driver::PlatformHal::InterruptMode::kFalling, InterruptCallback,
+    nullptr, cpp_bus_driver::PlatformHal::GpioStatus::kPullup);
 ```
 
 ## 开发计划

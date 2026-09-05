@@ -2,10 +2,16 @@
  * @Description: Semtech SX1261/SX1262 无线收发芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-09-02 16:18:11
+ * @LastEditTime: 2026-09-05 14:57:16
  * @License: GPL 3.0
  */
-#include "sx126x.h"
+#include "chip/spi/sx126x.h"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <cstring>
+#include <utility>
 
 namespace cpp_bus_driver {
 namespace {
@@ -26,7 +32,7 @@ bool Sx126x::Init(int32_t freq_hz) {
     return false;
   }
 
-  if (busy_ != kDefaultValue) {
+  if (busy_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(busy_, GpioMode::kInput, GpioStatus::kDisable);
     if (!result) {
@@ -35,7 +41,7 @@ bool Sx126x::Init(int32_t freq_hz) {
     }
   }
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
 
@@ -49,7 +55,7 @@ bool Sx126x::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipSpiGuide::Init(freq_hz)) {
+  if (!SpiChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -77,16 +83,16 @@ bool Sx126x::Init(int32_t freq_hz) {
 }
 
 bool Sx126x::Deinit(bool delete_bus) {
-  if (!ChipSpiGuide::Deinit(delete_bus)) {
+  if (!SpiChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     return false;
   }
 
   bool result = true;
-  if (busy_ != kDefaultValue) {
+  if (busy_ != kPinNotConnected) {
     result &= ResetGpio(busy_);
   }
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
 
@@ -128,7 +134,7 @@ bool Sx126x::GetConfig(GfskConfig& config) const {
 }
 
 bool Sx126x::CheckBusy() {
-  if (busy_ != kDefaultValue) {
+  if (busy_ != kPinNotConnected) {
     uint16_t timeout_count = 0;
     while (1) {
       DelayUs(1);
@@ -1802,16 +1808,16 @@ bool Sx126x::SetGfskPacketParams(uint16_t preamble_length,
   switch (preamble_detector_length) {
     case PreambleDetector::kLengthOff:
       break;
-    case PreambleDetector::kLength8bit:
+    case PreambleDetector::kLength8Bit:
       detector_bits = 8;
       break;
-    case PreambleDetector::kLength16bit:
+    case PreambleDetector::kLength16Bit:
       detector_bits = 16;
       break;
-    case PreambleDetector::kLength24bit:
+    case PreambleDetector::kLength24Bit:
       detector_bits = 24;
       break;
-    case PreambleDetector::kLength32bit:
+    case PreambleDetector::kLength32Bit:
       detector_bits = 32;
       break;
     default:
@@ -2278,12 +2284,10 @@ bool Sx126x::SetIrqGpioMode(uint16_t dio1_mask, uint16_t dio2_mask,
 }
 
 bool Sx126x::ClearBuffer() {
-  std::unique_ptr<uint8_t[]> buffer =
-      std::make_unique<uint8_t[]>(kMaxPayloadSize);
+  // 保持原有清零长度，使用零初始化的小缓冲区，避免每次申请堆内存。
+  std::array<uint8_t, kMaxPayloadSize> buffer{};
 
-  std::memset(buffer.get(), 0, kMaxPayloadSize);
-
-  if (!WriteBuffer(buffer.get(), kMaxPayloadSize, 0)) {
+  if (!WriteBuffer(buffer.data(), buffer.size(), 0)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteBuffer failed\n");
     return false;
   }
@@ -2621,26 +2625,26 @@ Sx126x::Ldro Sx126x::GetLoraLowDataRateOptimize(Sf sf, LoraBw bw) const {
 
 Sx126x::PreambleDetector Sx126x::GetGfskMaxPreambleDetector(
     uint16_t preamble_length, uint8_t sync_word_length) const {
-  PreambleDetector sync_word_limit = PreambleDetector::kLength32bit;
+  PreambleDetector sync_word_limit = PreambleDetector::kLength32Bit;
   if (sync_word_length <= 1) {
     sync_word_limit = PreambleDetector::kLengthOff;
   } else if (sync_word_length == 2) {
-    sync_word_limit = PreambleDetector::kLength8bit;
+    sync_word_limit = PreambleDetector::kLength8Bit;
   } else if (sync_word_length == 3) {
-    sync_word_limit = PreambleDetector::kLength16bit;
+    sync_word_limit = PreambleDetector::kLength16Bit;
   } else if (sync_word_length == 4) {
-    sync_word_limit = PreambleDetector::kLength24bit;
+    sync_word_limit = PreambleDetector::kLength24Bit;
   }
 
   PreambleDetector preamble_limit = PreambleDetector::kLengthOff;
   if (preamble_length >= 32) {
-    preamble_limit = PreambleDetector::kLength32bit;
+    preamble_limit = PreambleDetector::kLength32Bit;
   } else if (preamble_length >= 24) {
-    preamble_limit = PreambleDetector::kLength24bit;
+    preamble_limit = PreambleDetector::kLength24Bit;
   } else if (preamble_length >= 16) {
-    preamble_limit = PreambleDetector::kLength16bit;
+    preamble_limit = PreambleDetector::kLength16Bit;
   } else if (preamble_length >= 8) {
-    preamble_limit = PreambleDetector::kLength8bit;
+    preamble_limit = PreambleDetector::kLength8Bit;
   }
 
   return (static_cast<uint8_t>(preamble_limit) <
@@ -2655,9 +2659,10 @@ bool Sx126x::ValidateHardwareConfig() const {
       static_cast<uint8_t>(hardware_config_.regulator_mode);
   const uint8_t dio2 = static_cast<uint8_t>(hardware_config_.dio2_mode);
   const bool has_busy_source = (busy_ >= 0) || (busy_wait_callback_ != nullptr);
-  const bool valid_optional_pins = ((busy_ == kDefaultValue) || (busy_ >= 0)) &&
-                                   ((rst_ == kDefaultValue) || (rst_ >= 0)) &&
-                                   ((cs_ == kDefaultValue) || (cs_ >= 0));
+  const bool valid_optional_pins =
+      ((busy_ == kPinNotConnected) || (busy_ >= 0)) &&
+      ((rst_ == kPinNotConnected) || (rst_ >= 0)) &&
+      ((cs_ == kPinNotConnected) || (cs_ >= 0));
   const bool valid_chip =
       (chip_type_ == ChipType::kSx1261) || (chip_type_ == ChipType::kSx1262);
 
@@ -2732,16 +2737,16 @@ bool Sx126x::ValidateConfig(const GfskConfig& config) {
   switch (config.preamble_detector) {
     case PreambleDetector::kLengthOff:
       break;
-    case PreambleDetector::kLength8bit:
+    case PreambleDetector::kLength8Bit:
       detector_bits = 8;
       break;
-    case PreambleDetector::kLength16bit:
+    case PreambleDetector::kLength16Bit:
       detector_bits = 16;
       break;
-    case PreambleDetector::kLength24bit:
+    case PreambleDetector::kLength24Bit:
       detector_bits = 24;
       break;
-    case PreambleDetector::kLength32bit:
+    case PreambleDetector::kLength32Bit:
       detector_bits = 32;
       break;
     default:

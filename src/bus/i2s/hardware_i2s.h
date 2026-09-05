@@ -7,12 +7,26 @@
  */
 #pragma once
 
-#include "../bus_guide.h"
+#include <cstddef>
+#include <cstdint>
+
+#include "bus/bus_base.h"
+
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+#if SOC_I2S_SUPPORTED
+#include "driver/i2s_std.h"
+#endif
+#elif CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_NRF52
+#include "nrfx_i2s.h"
+#endif
 
 namespace cpp_bus_driver {
-class HardwareI2s final : public BusI2sGuide {
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+#if SOC_I2S_SUPPORTED
+class HardwareI2s final : public I2sBusBase {
  public:
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
   enum class I2sMode {
     kStd,  // 标准模式
     kPdm,  // pdm模式
@@ -48,7 +62,7 @@ class HardwareI2s final : public BusI2sGuide {
   size_t Read(void* data, size_t byte) override;
   size_t Write(const void* data, size_t byte) override;
 
-  bool SetClockReconfig(i2s_mclk_multiple_t mclk_multiple,
+  bool ReconfigureClock(i2s_mclk_multiple_t mclk_multiple,
       uint32_t sample_rate_hz,
       DataMode data_mode = DataMode::kInputOutput) override;
   bool SetChannelEnable(
@@ -57,7 +71,30 @@ class HardwareI2s final : public BusI2sGuide {
   i2s_chan_handle_t rx_handle() const { return rx_handle_; }
   i2s_chan_handle_t tx_handle() const { return tx_handle_; }
 
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+  bool Deinit() override;
+
+ private:
+  static constexpr int kDefaultWaitTimeoutMs = 1000;
+
+  int32_t data_in_, data_out_;
+  int32_t ws_lrck_, bclk_, mclk_;
+
+  i2s_port_t port_;
+  i2s_chan_handle_t tx_handle_ = nullptr;
+  i2s_chan_handle_t rx_handle_ = nullptr;
+
+  DataMode data_mode_;
+  I2sMode i2s_mode_;
+  i2s_clock_src_t clock_source_;
+  i2s_slot_mode_t slot_mode_in_;
+  i2s_slot_mode_t slot_mode_out_;
+  i2s_std_slot_mask_t slot_mask_in_;
+  i2s_std_slot_mask_t slot_mask_out_;
+};
+#endif
+#elif CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_NRF52
+class HardwareI2s final : public I2sBusBase {
+ public:
   HardwareI2s(int32_t data_in, int32_t data_out, int32_t ws_lrck, int32_t bclk,
       int32_t mclk,
       nrf_i2s_channels_t channel = nrf_i2s_channels_t::NRF_I2S_CHANNELS_STEREO)
@@ -78,38 +115,14 @@ class HardwareI2s final : public BusI2sGuide {
   bool SetNextWrite(uint32_t* data) override;
   bool GetReadEventFlag() override;
   bool GetWriteEventFlag() override;
-#endif
 
   bool Deinit() override;
 
  private:
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  static constexpr int kDefaultWaitTimeoutMs = 1000;
-#endif
-
   int32_t data_in_, data_out_;
   int32_t ws_lrck_, bclk_, mclk_;
 
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  i2s_port_t port_;
-  i2s_chan_handle_t tx_handle_ = nullptr;
-  i2s_chan_handle_t rx_handle_ = nullptr;
-#endif
-
-  uint16_t mclk_multiple_ = kDefaultValue;
-  uint32_t sample_rate_hz_ = kDefaultValue;
-  uint8_t data_bit_width_ = kDefaultValue;
-
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
-  DataMode data_mode_;
-  I2sMode i2s_mode_;
-  i2s_clock_src_t clock_source_;
-  i2s_slot_mode_t slot_mode_in_;
-  i2s_slot_mode_t slot_mode_out_;
-  i2s_std_slot_mask_t slot_mask_in_;
-  i2s_std_slot_mask_t slot_mask_out_;
-#elif defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
   nrf_i2s_channels_t channel_;
-#endif
 };
+#endif
 }  // namespace cpp_bus_driver

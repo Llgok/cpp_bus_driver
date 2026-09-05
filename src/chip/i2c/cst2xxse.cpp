@@ -5,11 +5,13 @@
  * @LastEditTime: 2026-05-16 23:45:48
  * @License: GPL 3.0
  */
-#include "cst2xxse.h"
+#include "chip/i2c/cst2xxse.h"
+
+#include <array>
 
 namespace cpp_bus_driver {
 bool Cst2xxse::Init(int32_t freq_hz) {
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
     result &= GpioWrite(rst_, 0);
@@ -22,7 +24,7 @@ bool Cst2xxse::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipI2cGuide::Init(freq_hz)) {
+  if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -43,12 +45,12 @@ bool Cst2xxse::Init(int32_t freq_hz) {
 bool Cst2xxse::Deinit(bool delete_bus) {
   bool result = true;
 
-  if (!ChipI2cGuide::Deinit(delete_bus)) {
+  if (!I2cChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
 
@@ -78,6 +80,10 @@ uint8_t Cst2xxse::GetFingerCount() {
 }
 
 bool Cst2xxse::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
+  // 输出仅表示本次采样，保留 vector 容量但清除上次结果。
+  tp.finger_count = 0;
+  tp.home_touch_flag = false;
+  tp.info.clear();
   if ((finger_num == 0) || (finger_num > kMaxTouchFingerCount)) {
     return false;
   }
@@ -125,9 +131,12 @@ bool Cst2xxse::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
 }
 
 bool Cst2xxse::GetMultipleTouchPoint(TouchPoint& tp) {
-  const uint8_t buffer_touch_point_size =
+  tp.finger_count = 0;
+  tp.home_touch_flag = false;
+  tp.info.clear();
+  constexpr size_t buffer_touch_point_size =
       kMaxTouchFingerCount * kSingleTouchPointDataSize + 2;
-  std::vector<uint8_t> buffer(buffer_touch_point_size, 0);
+  std::array<uint8_t, buffer_touch_point_size> buffer{};
 
   if (!bus_->Read(static_cast<uint8_t>(Register::kRoTouchPointInfoStart),
           buffer.data(), buffer_touch_point_size)) {

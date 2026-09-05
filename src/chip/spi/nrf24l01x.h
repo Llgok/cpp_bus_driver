@@ -2,7 +2,7 @@
  * @Description: Nordic nRF24L01 系列 2.4 GHz 射频收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-07-31 10:00:00
- * @LastEditTime: 2026-09-02 16:18:04
+ * @LastEditTime: 2026-09-05 14:57:12
  * @License: GPL 3.0
  */
 #pragma once
@@ -12,11 +12,11 @@
 #include <cstdint>
 #include <memory>
 
-#include "../chip_guide.h"
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
 
-class Nrf24l01x final : public ChipSpiGuide {
+class Nrf24l01x final : public SpiChipBase {
  public:
   // STATUS/CONFIG 中三个可屏蔽中断源的位号。
   enum class IrqSource : uint8_t {
@@ -136,9 +136,9 @@ class Nrf24l01x final : public ChipSpiGuide {
    * @param ce 射频状态机使能引脚。
    * @param irq 可选的低有效中断引脚。
    */
-  explicit Nrf24l01x(std::shared_ptr<BusSpiGuide> bus, int32_t csn, int32_t ce,
-      int32_t irq = kDefaultValue)
-      : ChipSpiGuide(bus, csn), ce_(ce), irq_(irq) {}
+  explicit Nrf24l01x(std::shared_ptr<SpiBusBase> bus, int32_t csn, int32_t ce,
+      int32_t irq = kPinNotConnected)
+      : SpiChipBase(bus, csn), ce_(ce), irq_(irq) {}
 
   /**
    * @brief 析构 C++ 所有权对象。
@@ -701,8 +701,6 @@ class Nrf24l01x final : public ChipSpiGuide {
     kNoOperation = 0xFF,          // 只读取 STATUS
   };
 
-  static constexpr int32_t kDefaultValue =
-      cpp_bus_driver::kDefaultValue;  // 与底层总线保持一致的未配置标记
   static constexpr uint8_t kRegisterMask = 0x1F;  // SPI 指令中的地址范围
   static constexpr uint8_t kWriteRegisterCommand = 0x20;   // W_REGISTER 前缀
   static constexpr uint8_t kFeatureActivationData = 0x73;  // ACTIVATE 固定数据
@@ -861,14 +859,14 @@ class Nrf24l01x final : public ChipSpiGuide {
    */
   static void DecodeStatus(uint8_t raw, Status* status);
 
-  int32_t ce_ = kDefaultValue;                // 控制 RX/TX 状态机的 Chip Enable
-  int32_t irq_ = kDefaultValue;               // 可选的低有效中断输入
-  int32_t spi_frequency_hz_ = kDefaultValue;  // 当前 SPI 设备时钟
-  Config config_{};                           // 最近成功写入芯片的高层配置镜像
-  bool bus_initialized_ = false;              // SPI 子设备已注册
-  bool initialized_ = false;                  // 探测和默认配置均已完成
-  bool powered_up_ = false;                   // CONFIG.PWR_UP 软件镜像
-  bool receiving_ = false;                    // CE 正由驱动保持高电平
+  int32_t ce_ = kPinNotConnected;   // 控制 RX/TX 状态机的 Chip Enable
+  int32_t irq_ = kPinNotConnected;  // 可选的低有效中断输入
+  int32_t spi_frequency_hz_ = 0;    // 当前 SPI 设备时钟，0 表示未配置
+  Config config_{};                 // 最近成功写入芯片的高层配置镜像
+  bool bus_initialized_ = false;    // SPI 子设备已注册
+  bool initialized_ = false;        // 探测和默认配置均已完成
+  bool powered_up_ = false;         // CONFIG.PWR_UP 软件镜像
+  bool receiving_ = false;          // CE 正由驱动保持高电平
 };
 
 }  // namespace cpp_bus_driver

@@ -2,13 +2,13 @@
  * @Description: SGM41562 系列电池充电管理芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-09-03 18:00:00
+ * @LastEditTime: 2026-09-05 14:56:53
  * @License: GPL 3.0
  */
-#include "sgm41562xx.h"
+#include "chip/i2c/sgm41562xx.h"
 
 namespace cpp_bus_driver {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_NRF52
 constexpr const uint8_t Sgm41562xx::kInitSequenceAb[];
 constexpr const uint8_t Sgm41562xx::kInitSequenceS[];
 #endif
@@ -76,15 +76,14 @@ constexpr uint8_t kSafetyTimerHours[] = {3, 5, 8, 12};
  */
 bool IsRegisterValueValid(
     uint16_t value, uint16_t minimum, uint16_t maximum, uint16_t step) {
-  return value >= minimum && value <= maximum &&
-         (value - minimum) % step == 0;
+  return value >= minimum && value <= maximum && (value - minimum) % step == 0;
 }
 }  // namespace
 
 bool Sgm41562xx::Init(int32_t freq_hz) {
   chip_type_ = ChipType::kUnknown;
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
     result &= GpioWrite(rst_, 0);
@@ -97,7 +96,7 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipI2cGuide::Init(freq_hz)) {
+  if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -147,12 +146,12 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
 bool Sgm41562xx::Deinit(bool delete_bus) {
   bool result = true;
 
-  if (!ChipI2cGuide::Deinit(delete_bus)) {
+  if (!I2cChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
 
@@ -305,8 +304,7 @@ bool Sgm41562xx::GetFaultStatus(FaultStatus& status) {
   return true;
 }
 
-void Sgm41562xx::ParseFaultStatus(
-    uint8_t fault_status, FaultStatus& status) {
+void Sgm41562xx::ParseFaultStatus(uint8_t fault_status, FaultStatus& status) {
   status.input_power_fault = (fault_status & 0x20) != 0;
   status.thermal_shutdown = (fault_status & 0x10) != 0;
   status.battery_overvoltage_fault = (fault_status & 0x08) != 0;
@@ -333,8 +331,7 @@ bool Sgm41562xx::SetHighImpedanceModeEnable(bool enable) {
 }
 
 bool Sgm41562xx::SetMinimumInputVoltageLimit(uint16_t voltage_mv) {
-  if (!IsInitialized() ||
-      !IsRegisterValueValid(voltage_mv, 3880, 5080, 80)) {
+  if (!IsInitialized() || !IsRegisterValueValid(voltage_mv, 3880, 5080, 80)) {
     return false;
   }
   const uint8_t value = static_cast<uint8_t>(((voltage_mv - 3880) / 80) << 4);
@@ -343,13 +340,11 @@ bool Sgm41562xx::SetMinimumInputVoltageLimit(uint16_t voltage_mv) {
 }
 
 bool Sgm41562xx::SetBatteryUndervoltageThreshold(uint16_t voltage_mv) {
-  if (!IsInitialized() ||
-      !IsRegisterValueValid(voltage_mv, 2400, 3030, 90)) {
+  if (!IsInitialized() || !IsRegisterValueValid(voltage_mv, 2400, 3030, 90)) {
     return false;
   }
   return UpdateRegisterBits(Register::kPowerOnConfiguration,
-      kBatteryUndervoltageMask,
-      static_cast<uint8_t>((voltage_mv - 2400) / 90));
+      kBatteryUndervoltageMask, static_cast<uint8_t>((voltage_mv - 2400) / 90));
 }
 
 bool Sgm41562xx::SetChargeVoltageLimit(uint16_t voltage_mv) {
@@ -381,15 +376,13 @@ bool Sgm41562xx::SetSystemRegulationVoltage(uint16_t voltage_mv) {
       return false;
     }
     return UpdateRegisterBits(Register::kSystemVoltageRegulation,
-        kSystemVoltageSMask,
-        static_cast<uint8_t>((voltage_mv - 3600) / 50));
+        kSystemVoltageSMask, static_cast<uint8_t>((voltage_mv - 3600) / 50));
   }
   if (!IsRegisterValueValid(voltage_mv, 4200, 4950, 50)) {
     return false;
   }
   return UpdateRegisterBits(Register::kSystemVoltageRegulation,
-      kSystemVoltageAbMask,
-      static_cast<uint8_t>((voltage_mv - 4200) / 50));
+      kSystemVoltageAbMask, static_cast<uint8_t>((voltage_mv - 4200) / 50));
 }
 
 bool Sgm41562xx::SetInputCurrentLimit(uint16_t current_ma) {
@@ -408,8 +401,7 @@ bool Sgm41562xx::SetInputCurrentLimit(uint16_t current_ma) {
     return false;
   }
   const bool limit_set = UpdateRegisterBits(Register::kInputSourceControl,
-      kInputCurrentLimitMask,
-      static_cast<uint8_t>((current_ma - 50) / 30));
+      kInputCurrentLimitMask, static_cast<uint8_t>((current_ma - 50) / 30));
   return limit_set &&
          UpdateRegisterBits(Register::kSystemStatus,
              kInputCurrentLimitReleaseMask | kInputCurrentLimitAdd200Mask,
@@ -431,8 +423,8 @@ bool Sgm41562xx::SetFastChargeCurrentLimit(uint16_t current_ma) {
   const bool fine_scale =
       (miscellaneous_configuration & kFineChargeCurrentScaleMask) != 0;
   const uint16_t minimum = fine_scale ? 2 : 8;
-  const uint16_t maximum = fine_scale ? (extended ? 256 : 114)
-                                      : (extended ? 1024 : 456);
+  const uint16_t maximum =
+      fine_scale ? (extended ? 256 : 114) : (extended ? 1024 : 456);
   const uint16_t step = fine_scale ? 2 : 8;
   if (!IsRegisterValueValid(current_ma, minimum, maximum, step)) {
     return false;
@@ -444,13 +436,12 @@ bool Sgm41562xx::SetFastChargeCurrentLimit(uint16_t current_ma) {
 }
 
 bool Sgm41562xx::SetTerminationCurrentLimit(uint16_t current_ma) {
-  if (!IsInitialized() ||
-      !IsRegisterValueValid(current_ma, 1, 31, 2)) {
+  if (!IsInitialized() || !IsRegisterValueValid(current_ma, 1, 31, 2)) {
     return false;
   }
-  const bool current_set = UpdateRegisterBits(
-      Register::kDischargeTerminationCurrent, kTerminationCurrentMask,
-      static_cast<uint8_t>((current_ma - 1) / 2));
+  const bool current_set =
+      UpdateRegisterBits(Register::kDischargeTerminationCurrent,
+          kTerminationCurrentMask, static_cast<uint8_t>((current_ma - 1) / 2));
   if (!current_set || !HasExtendedRegisterMap()) {
     return current_set;
   }
@@ -466,14 +457,12 @@ bool Sgm41562xx::SetPrechargeCurrentLimit(uint16_t current_ma) {
   const bool current_set = UpdateRegisterBits(Register::kExtendedCurrentControl,
       kExtendedPrechargeCurrentMask,
       static_cast<uint8_t>(((current_ma - 1) / 2) << 4));
-  return current_set &&
-         UpdateRegisterBits(Register::kExtendedCurrentControl,
-             kExtendedPrechargeMultiplierMask, 0x00);
+  return current_set && UpdateRegisterBits(Register::kExtendedCurrentControl,
+                            kExtendedPrechargeMultiplierMask, 0x00);
 }
 
 bool Sgm41562xx::SetDischargeCurrentLimit(uint16_t current_ma) {
-  if (!IsInitialized() ||
-      !IsRegisterValueValid(current_ma, 400, 3200, 200)) {
+  if (!IsInitialized() || !IsRegisterValueValid(current_ma, 400, 3200, 200)) {
     return false;
   }
   return UpdateRegisterBits(Register::kDischargeTerminationCurrent,
@@ -482,8 +471,7 @@ bool Sgm41562xx::SetDischargeCurrentLimit(uint16_t current_ma) {
 }
 
 bool Sgm41562xx::SetThermalRegulationThreshold(uint8_t temperature_c) {
-  if (!IsInitialized() ||
-      !IsRegisterValueValid(temperature_c, 60, 120, 20)) {
+  if (!IsInitialized() || !IsRegisterValueValid(temperature_c, 60, 120, 20)) {
     return false;
   }
   const bool extended = HasExtendedRegisterMap();
@@ -541,8 +529,8 @@ bool Sgm41562xx::ResetWatchdogTimer() {
   const Register register_id = HasExtendedRegisterMap()
                                    ? Register::kExtendedInputCurrentControl
                                    : Register::kChargeCurrentControl;
-  const uint8_t mask = HasExtendedRegisterMap() ? kWatchdogResetSMask
-                                                : kWatchdogResetAbMask;
+  const uint8_t mask =
+      HasExtendedRegisterMap() ? kWatchdogResetSMask : kWatchdogResetAbMask;
   return UpdateRegisterBits(register_id, mask, mask);
 }
 
@@ -593,8 +581,7 @@ bool Sgm41562xx::SetChargeAfterTerminationEnable(bool enable) {
     return false;
   }
   return UpdateRegisterBits(Register::kChargeTerminationTimerControl,
-      kTerminationTimerEnableMask,
-      enable ? kTerminationTimerEnableMask : 0x00);
+      kTerminationTimerEnableMask, enable ? kTerminationTimerEnableMask : 0x00);
 }
 
 bool Sgm41562xx::SetNtcEnable(bool enable) {
@@ -610,12 +597,10 @@ bool Sgm41562xx::SetPpmSafetyTimerExtensionEnable(bool enable) {
     return false;
   }
   return UpdateRegisterBits(Register::kMiscellaneousOperationControl,
-      kSafetyTimerExtendedMask,
-      enable ? kSafetyTimerExtendedMask : 0x00);
+      kSafetyTimerExtendedMask, enable ? kSafetyTimerExtendedMask : 0x00);
 }
 
-bool Sgm41562xx::SetInterruptEnable(
-    InterruptType interrupt_type, bool enable) {
+bool Sgm41562xx::SetInterruptEnable(InterruptType interrupt_type, bool enable) {
   if (!IsInitialized()) {
     return false;
   }
@@ -627,8 +612,8 @@ bool Sgm41562xx::SetInterruptEnable(
       mask != static_cast<uint8_t>(InterruptType::kBatteryOvervoltage)) {
     return false;
   }
-  return UpdateRegisterBits(Register::kMiscellaneousOperationControl, mask,
-      enable ? 0x00 : mask);
+  return UpdateRegisterBits(
+      Register::kMiscellaneousOperationControl, mask, enable ? 0x00 : mask);
 }
 
 bool Sgm41562xx::SetInputVoltageLoopEnable(bool enable) {
@@ -638,8 +623,8 @@ bool Sgm41562xx::SetInputVoltageLoopEnable(bool enable) {
   const uint8_t mask = HasExtendedRegisterMap()
                            ? kInputVoltageLoopDisableSMask
                            : kInputVoltageLoopDisableAbMask;
-  return UpdateRegisterBits(Register::kSystemVoltageRegulation, mask,
-      enable ? 0x00 : mask);
+  return UpdateRegisterBits(
+      Register::kSystemVoltageRegulation, mask, enable ? 0x00 : mask);
 }
 
 bool Sgm41562xx::SetPcbOvertemperatureProtectionEnable(bool enable) {
@@ -649,9 +634,8 @@ bool Sgm41562xx::SetPcbOvertemperatureProtectionEnable(bool enable) {
   const Register register_id = HasExtendedRegisterMap()
                                    ? Register::kSystemStatus
                                    : Register::kSystemVoltageRegulation;
-  const uint8_t mask = HasExtendedRegisterMap()
-                           ? kPcbProtectionDisableSMask
-                           : kPcbProtectionDisableAbMask;
+  const uint8_t mask = HasExtendedRegisterMap() ? kPcbProtectionDisableSMask
+                                                : kPcbProtectionDisableAbMask;
   return UpdateRegisterBits(register_id, mask, enable ? 0x00 : mask);
 }
 
@@ -688,8 +672,7 @@ bool Sgm41562xx::SetForcePowerPathSwitchEnable(bool enable) {
     return false;
   }
   return UpdateRegisterBits(Register::kI2cAddressMiscellaneousConfiguration,
-      kPowerPathSwitchForceMask,
-      enable ? kPowerPathSwitchForceMask : 0x00);
+      kPowerPathSwitchForceMask, enable ? kPowerPathSwitchForceMask : 0x00);
 }
 
 bool Sgm41562xx::SetBatteryPowerEnable(bool enable) {
@@ -697,8 +680,7 @@ bool Sgm41562xx::SetBatteryPowerEnable(bool enable) {
     return false;
   }
   return UpdateRegisterBits(Register::kI2cAddressMiscellaneousConfiguration,
-      kBatteryPowerDisableMask,
-      enable ? 0x00 : kBatteryPowerDisableMask);
+      kBatteryPowerDisableMask, enable ? 0x00 : kBatteryPowerDisableMask);
 }
 
 bool Sgm41562xx::SetInputOvervoltageProtectionEnable(bool enable) {
@@ -715,8 +697,7 @@ bool Sgm41562xx::SetQuarterChargeCurrentScaleEnable(bool enable) {
     return false;
   }
   return UpdateRegisterBits(Register::kI2cAddressMiscellaneousConfiguration,
-      kFineChargeCurrentScaleMask,
-      enable ? kFineChargeCurrentScaleMask : 0x00);
+      kFineChargeCurrentScaleMask, enable ? kFineChargeCurrentScaleMask : 0x00);
 }
 
 bool Sgm41562xx::GetChipStatus(ChipStatus& status) {
@@ -776,8 +757,7 @@ bool Sgm41562xx::ReadInputConfig(ChargerConfig& config) {
       (power_on_configuration & kHighImpedanceEnableMask) != 0;
   config.reset_pull_down_time_s =
       8 + 4 * ((power_on_configuration >> 6) & 0x03);
-  config.battery_fet_off_time_s =
-      (power_on_configuration & 0x20) != 0 ? 4 : 2;
+  config.battery_fet_off_time_s = (power_on_configuration & 0x20) != 0 ? 4 : 2;
   config.battery_undervoltage_threshold_mv =
       2400 + 90 * (power_on_configuration & kBatteryUndervoltageMask);
   config.minimum_input_voltage_limit_mv =
@@ -883,8 +863,7 @@ bool Sgm41562xx::ReadChargeConfig(ChargerConfig& config) {
     config.charge_voltage_limit_mv =
         3600 + 15 * ((charge_voltage_control >> 2) & 0x3F);
     config.precharge_to_fast_charge_threshold_mv =
-        (charge_voltage_control & kPrechargeThresholdAbMask) != 0 ? 3000
-                                                                  : 2800;
+        (charge_voltage_control & kPrechargeThresholdAbMask) != 0 ? 3000 : 2800;
   }
   config.recharge_threshold_mv =
       (charge_voltage_control & kRechargeThresholdMask) != 0 ? 200 : 100;
@@ -955,8 +934,7 @@ bool Sgm41562xx::ReadProtectionConfig(ChargerConfig& config) {
       (miscellaneous_control & 0x10) == 0;
   config.charge_complete_interrupt_enabled =
       (miscellaneous_control & 0x08) == 0;
-  config.charge_status_interrupt_enabled =
-      (miscellaneous_control & 0x04) == 0;
+  config.charge_status_interrupt_enabled = (miscellaneous_control & 0x04) == 0;
   config.ntc_interrupt_enabled = (miscellaneous_control & 0x02) == 0;
   config.battery_overvoltage_interrupt_enabled =
       (miscellaneous_control & 0x01) == 0;
@@ -968,8 +946,8 @@ bool Sgm41562xx::ReadProtectionConfig(ChargerConfig& config) {
   config.battery_power_enabled =
       (miscellaneous_configuration & kBatteryPowerDisableMask) == 0;
   config.input_overvoltage_protection_enabled =
-      (miscellaneous_configuration &
-          kInputOvervoltageProtectionDisableMask) == 0;
+      (miscellaneous_configuration & kInputOvervoltageProtectionDisableMask) ==
+      0;
   return true;
 }
 

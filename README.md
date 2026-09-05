@@ -25,7 +25,7 @@ Starting from **v2**, the project enters a new major version. API naming, direct
 
 The library supports common microcontroller peripheral buses and provides a similar C++ usage model at both the bus layer and the chip layer. You can create a bus object first, then pass that bus into a chip object, keeping initialization, read/write, configuration, and release flows clear and consistent.
 
-The supported bus drivers and chip drivers will continue to evolve with future versions. For the latest list, see the unified entry file [`cpp_bus_driver_library.h`](./src/cpp_bus_driver_library.h).
+The supported bus drivers and chip drivers will continue to evolve with future versions. For the latest list, see the unified entry file [`cpp_bus_driver.h`](./src/cpp_bus_driver.h).
 
 ### Engineering-Oriented API Design
 
@@ -39,10 +39,10 @@ The supported bus drivers and chip drivers will continue to evolve with future v
 | --- | --- | --- |
 | ESP-IDF | Recommended | Starting from v2.0.0, the minimum supported ESP-IDF version is v5.5.3 |
 | Arduino NRF | Supported | Suitable for some NRF52840 Arduino scenarios |
-| Arduino ESP32 | Partial | ESP-IDF v5.5.3-based cores support `HardwareI2c1` and I2C chip drivers |
+| Arduino ESP32 | Shared backend | Uses the same backend as ESP-IDF; the core must meet this library's minimum ESP-IDF version requirement of v5.5.3 |
 
 > [!NOTE]
-> Available bus and chip features may vary between frameworks. ESP-IDF is currently the most complete adaptation target.
+> Available features depend on the target chip and SDK configuration. Arduino-ESP32 builds require ESP-IDF 5.5.3 or newer; older versions are rejected at compile time. This is the ESP-IDF version, not the Arduino-ESP32 package version. Meeting the minimum requirement does not mean every newer version has been validated.
 
 ## Quick Start
 
@@ -69,7 +69,7 @@ git clone https://github.com/Llgok/cpp_bus_driver.git
 Then include the unified entry header in your code:
 
 ```cpp
-#include "cpp_bus_driver_library.h"
+#include "cpp_bus_driver.h"
 ```
 
 #### Use with Arduino IDE (nRF52840)
@@ -94,14 +94,21 @@ nRF52 board package upgrade or reinstall removes it. Then include the unified
 entry header:
 
 ```cpp
-#include <cpp_bus_driver_library.h>
+#include <cpp_bus_driver.h>
 ```
 
 > [!IMPORTANT]
-> The Arduino implementation supports builds that define `NRF52840_XXAA`
-> (nRF52840). Arduino ESP32 support is currently limited to the ESP-IDF I2C
-> master backend and its I2C chip drivers, and requires an Arduino core based
-> on ESP-IDF v5.5.3 or later.
+> Arduino nRF52 builds must define `NRF52840_XXAA` (nRF52840).
+
+#### Use with Arduino ESP32
+
+Install an Arduino-ESP32 core that meets this library's ESP-IDF version
+requirement: **ESP-IDF 5.5.3 or newer**. Include `<cpp_bus_driver.h>` to use the
+shared ESP-IDF backend. Features remain subject to the target chip's
+capabilities and the components provided by the core.
+
+Do not let Arduino objects such as `Wire`, `SPI`, or `HardwareSerial` and
+this library manage the same peripheral simultaneously.
 
 #### Use as a Git Submodule
 
@@ -167,12 +174,12 @@ idf.py menuconfig
 Then enter `cpp_bus_driver configuration` and select the default log level used at startup. The application can also change the level at runtime through the thread-safe API:
 
 ```cpp
-cpp_bus_driver::Tool::SetMinimumLogLevel(
-    cpp_bus_driver::Tool::LogLevel::kWarning);
-const auto level = cpp_bus_driver::Tool::GetMinimumLogLevel();
+cpp_bus_driver::Logger::SetMinimumLogLevel(
+    cpp_bus_driver::Logger::LogLevel::kWarning);
+const auto level = cpp_bus_driver::Logger::GetMinimumLogLevel();
 ```
 
-Setting the level to `kNone` disables all logs. Call `Tool::ShouldLog()` before constructing expensive log arguments when needed.
+Setting the level to `kNone` disables all logs. Call `Logger::ShouldLog()` before constructing expensive log arguments when needed.
 
 ## v2 Migration Guide
 
@@ -192,10 +199,12 @@ When migrating from v1 to v2, pay special attention to the following changes:
 Common migration example:
 
 ```cpp
-tool.SetGpioMode(pin, cpp_bus_driver::Tool::GpioMode::kOutput);
-tool.GpioWrite(pin, true);
-tool.InitGpioInterrupt(pin, cpp_bus_driver::Tool::InterruptMode::kFalling,
-    InterruptCallback, nullptr, cpp_bus_driver::Tool::GpioStatus::kPullup);
+cpp_bus_driver::PlatformHal platform_hal;
+platform_hal.SetGpioMode(pin, cpp_bus_driver::PlatformHal::GpioMode::kOutput);
+platform_hal.GpioWrite(pin, true);
+platform_hal.InitGpioInterrupt(pin,
+    cpp_bus_driver::PlatformHal::InterruptMode::kFalling, InterruptCallback,
+    nullptr, cpp_bus_driver::PlatformHal::GpioStatus::kPullup);
 ```
 
 ## Development Plan

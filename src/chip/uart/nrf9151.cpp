@@ -2,12 +2,15 @@
  * @Description: nRF9151 蜂窝通信与 GNSS 模块驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-11 11:58:39
- * @LastEditTime: 2026-09-02 16:18:18
+ * @LastEditTime: 2026-09-05 14:57:05
  * @License: GPL 3.0
  */
-#include "nrf9151.h"
+#include "chip/uart/nrf9151.h"
 
 #include <algorithm>
+#include <array>
+#include <cstring>
+#include <string_view>
 
 namespace cpp_bus_driver {
 namespace {
@@ -58,42 +61,52 @@ bool ExtractLineContaining(
 }
 
 /**
- * @brief 去除字符串首尾空白字符和成对的双引号
- * @param value 需要处理的字符串
- * @return 去除首尾空白字符和成对双引号后的字符串
+ * @brief 去除非拥有文本视图两端的空白，不复制正文
+ * @param value 输入文本视图
+ * @return 去除首尾空白后的视图，其有效期与输入一致
  */
-std::string RemoveQuotes(const std::string& value) {
-  const std::string trimmed = Trim(value);
-  if ((trimmed.size() >= 2) && (trimmed.front() == '"') &&
-      (trimmed.back() == '"')) {
-    return trimmed.substr(1, trimmed.size() - 2);
+std::string_view TrimView(std::string_view value) {
+  const size_t first = value.find_first_not_of(" \t\r\n");
+  if (first == std::string_view::npos) {
+    return {};
   }
-  return trimmed;
+  const size_t last = value.find_last_not_of(" \t\r\n");
+  return value.substr(first, last - first + 1);
 }
 
 /**
- * @brief 解析支持双引号字段的逗号分隔字符串
- * @param value 需要解析的逗号分隔字符串
- * @return 解析并去除字段双引号后的字符串数组
+ * @brief 解析版本响应，最多保存前三个字段的视图
+ * @param value CSV 正文
+ * @param fields 应用、NCS 和可选用户版本的输出视图
+ * @param count 实际保存的字段数
+ * @return 引号配对且至少包含两个字段时返回 true
  */
-std::vector<std::string> ParseCsv(const std::string& value) {
-  std::vector<std::string> fields;
-  std::string field;
-  bool in_quotes = false;
-
-  for (const char character : value) {
-    if (character == '"') {
-      in_quotes = !in_quotes;
-      field.push_back(character);
-    } else if ((character == ',') && !in_quotes) {
-      fields.push_back(RemoveQuotes(field));
-      field.clear();
-    } else {
-      field.push_back(character);
-    }
+bool ParseVersionFields(std::string_view value,
+    std::array<std::string_view, 3>* fields, size_t* count) {
+  if (fields == nullptr || count == nullptr) {
+    return false;
   }
-  fields.push_back(RemoveQuotes(field));
-  return fields;
+  *count = 0;
+  size_t start = 0;
+  bool in_quotes = false;
+  for (size_t index = 0; index <= value.size(); ++index) {
+    if (index < value.size() && value[index] == '"') {
+      in_quotes = !in_quotes;
+    }
+    if (index != value.size() && (value[index] != ',' || in_quotes)) {
+      continue;
+    }
+    if (*count < fields->size()) {
+      std::string_view field = TrimView(value.substr(start, index - start));
+      if (field.size() >= 2 && field.front() == '"' && field.back() == '"') {
+        field.remove_prefix(1);
+        field.remove_suffix(1);
+      }
+      (*fields)[(*count)++] = field;
+    }
+    start = index + 1;
+  }
+  return !in_quotes && *count >= 2;
 }
 
 }  // namespace
@@ -109,7 +122,7 @@ bool Nrf9151::Init(int32_t baud_rate, uint32_t initialization_timeout_ms) {
   }
 
   chip_id_.clear();
-  if (!ChipUartGuide::Init(baud_rate)) {
+  if (!UartChipBase::Init(baud_rate)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init uart failed\n");
     return false;
   }
@@ -151,7 +164,7 @@ bool Nrf9151::Init(int32_t baud_rate, uint32_t initialization_timeout_ms) {
 
 bool Nrf9151::Deinit() {
   chip_id_.clear();
-  return ChipUartGuide::Deinit();
+  return UartChipBase::Deinit();
 }
 
 const char* Nrf9151::CommandResultToString(CommandResult result) {
@@ -205,16 +218,24 @@ bool Nrf9151::GetSerialModemVersion(
     return false;
   }
 
-  const std::vector<std::string> fields = ParseCsv(value);
-  if (fields.size() < 2) {
+  std::array<std::string_view, 3> fields{};
+  size_t field_count = 0;
+  if (!ParseVersionFields(value, &fields, &field_count)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "AT#XSMVER response does not contain required versions\n");
     return false;
   }
 
-  version->application = fields[0];
-  version->ncs = fields[1];
-  version->customer = fields.size() > 2 ? fields[2] : "";
+  version->application.assign(
+      fields[0].empty() ? "" : fields[0].data(), fields[0].size());
+  version->ncs.assign(
+      fields[1].empty() ? "" : fields[1].data(), fields[1].size());
+  if (field_count > 2) {
+    version->customer.assign(
+        fields[2].empty() ? "" : fields[2].data(), fields[2].size());
+  } else {
+    version->customer.clear();
+  }
   return true;
 }
 
@@ -245,8 +266,19 @@ Nrf9151::CommandResult Nrf9151::SendCommand(
     return CommandResult::kIoError;
   }
 
+  // 在构造字符串前限制命令长度，避免异常参数触发大分配。
+  size_t command_length = 0;
+  while (
+      command_length < kMaxResponseLength && command[command_length] != '\0') {
+    ++command_length;
+  }
+  if (command_length == kMaxResponseLength) {
+    LogMessage(
+        LogLevel::kWarning, __FILE__, __LINE__, "AT command is too long\n");
+    return CommandResult::kError;
+  }
+  std::string request(command, command_length);
   response->clear();
-  std::string request(command);
   if (request.empty() ||
       ((request.back() != '\r') && (request.back() != '\n'))) {
     request.push_back('\r');
@@ -262,6 +294,8 @@ Nrf9151::CommandResult Nrf9151::SendCommand(
 
   const uint32_t start_time_ms = static_cast<uint32_t>(GetSystemTimeMs());
   size_t parsed_length = 0;
+  // UART 积压较多时分块读取，不按 available 一次性申请接收缓存。
+  std::array<uint8_t, 256> buffer{};
 
   while (
       static_cast<uint32_t>(GetSystemTimeMs()) - start_time_ms < timeout_ms) {
@@ -271,21 +305,24 @@ Nrf9151::CommandResult Nrf9151::SendCommand(
       continue;
     }
 
-    std::vector<uint8_t> buffer(available);
-    const int32_t read_length =
-        bus_->Read(buffer.data(), static_cast<uint32_t>(buffer.size()));
-    if (read_length <= 0) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
-      return CommandResult::kIoError;
-    }
-
-    response->append(reinterpret_cast<const char*>(buffer.data()),
-        static_cast<size_t>(read_length));
-    if (response->size() > kMaxResponseLength) {
+    if (response->size() >= kMaxResponseLength) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
           "AT command response is too long\n");
       return CommandResult::kError;
     }
+    const size_t remaining = kMaxResponseLength - response->size();
+    const size_t requested =
+        std::min(std::min(available, buffer.size()), remaining);
+    const int32_t read_length =
+        bus_->Read(buffer.data(), static_cast<uint32_t>(requested));
+    if (read_length <= 0 || static_cast<size_t>(read_length) > requested) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+      return CommandResult::kIoError;
+    }
+
+    // requested 已被剩余容量限制，追加前即可保证不超过响应上限。
+    response->append(reinterpret_cast<const char*>(buffer.data()),
+        static_cast<size_t>(read_length));
 
     while (true) {
       const size_t line_end = response->find('\n', parsed_length);
@@ -293,8 +330,8 @@ Nrf9151::CommandResult Nrf9151::SendCommand(
         break;
       }
 
-      const std::string line =
-          Trim(response->substr(parsed_length, line_end - parsed_length));
+      const std::string_view line = TrimView(std::string_view(
+          response->data() + parsed_length, line_end - parsed_length));
       parsed_length = line_end + 1;
 
       if (line == "OK") {
@@ -303,14 +340,15 @@ Nrf9151::CommandResult Nrf9151::SendCommand(
       if ((line == "ERROR") || (line.rfind("+CME ERROR", 0) == 0) ||
           (line.rfind("+CMS ERROR", 0) == 0)) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__,
-            "AT command failed: %s\n", line.c_str());
+            "AT command failed: %.*s\n", static_cast<int>(line.size()),
+            line.data());
         return CommandResult::kError;
       }
     }
   }
 
   LogMessage(LogLevel::kError, __FILE__, __LINE__,
-      "AT command timeout (command: %s, timeout: %d ms)\n", command,
+      "AT command timeout (command: %s, timeout: %d ms)\n", request.c_str(),
       static_cast<int>(timeout_ms));
   return CommandResult::kTimeout;
 }

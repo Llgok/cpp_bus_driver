@@ -2,31 +2,33 @@
  * @Description: ESP-IDF 硬件 QSPI 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-09-03 17:45:24
+ * @LastEditTime: 2026-09-05 14:57:34
  * @License: GPL 3.0
  */
-#include "hardware_qspi.h"
+#include "bus/spi/hardware_qspi.h"
+
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+#include "driver/spi_master.h"
+#endif
 
 namespace cpp_bus_driver {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
 bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
+  if (freq_hz <= 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Invalid bus frequency\n");
+    return false;
+  }
   if (spi_device_ != nullptr) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "HardwareQspi has been initialized\n");
     return true;
   }
 
-  if (freq_hz == kDefaultValue) {
-    freq_hz = kDefaultFrequencyHz;
-  }
-
-  if (flags_ == kDefaultValue) {
-    flags_ = SPI_DEVICE_HALFDUPLEX;
-  }
-
   cs_ = cs;
   bool result = true;
-  if (cs_ != kDefaultValue) {
+  if (cs_ != kPinNotConnected) {
     result &= SetGpioMode(cs_, GpioMode::kOutput, GpioStatus::kPullup);
     result &= SetCs(1);
   }
@@ -127,8 +129,6 @@ bool HardwareQspi::Init(int32_t freq_hz, int32_t cs) {
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareQspi config max_transfer_size_: %zu\n", max_transfer_size_);
 
-  freq_hz_ = freq_hz;
-
   return true;
 }
 
@@ -154,29 +154,29 @@ bool HardwareQspi::Deinit(bool delete_bus) {
       result = false;
     } else {
       bus_init_flag_ = false;
-      if (data0_ != kDefaultValue) {
+      if (data0_ != kPinNotConnected) {
         result &= ResetGpio(data0_);
       }
-      if (data1_ != kDefaultValue) {
+      if (data1_ != kPinNotConnected) {
         result &= ResetGpio(data1_);
       }
-      if (data2_ != kDefaultValue) {
+      if (data2_ != kPinNotConnected) {
         result &= ResetGpio(data2_);
       }
-      if (data3_ != kDefaultValue) {
+      if (data3_ != kPinNotConnected) {
         result &= ResetGpio(data3_);
       }
-      if (sclk_ != kDefaultValue) {
+      if (sclk_ != kPinNotConnected) {
         result &= ResetGpio(sclk_);
       }
     }
   }
 
-  if (cs_ != kDefaultValue) {
+  if (cs_ != kPinNotConnected) {
     if (!ResetGpio(cs_)) {
       result = false;
     }
-    cs_ = kDefaultValue;
+    cs_ = kPinNotConnected;
   }
 
   return result;
@@ -258,7 +258,7 @@ bool HardwareQspi::Write(
 }
 
 bool HardwareQspi::SetCs(bool value) {
-  if (cs_ != kDefaultValue) {
+  if (cs_ != kPinNotConnected) {
     if (!GpioWrite(cs_, value)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
       return false;

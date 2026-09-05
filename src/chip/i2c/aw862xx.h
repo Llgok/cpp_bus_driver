@@ -7,11 +7,15 @@
  */
 #pragma once
 
-#include "../chip_guide.h"
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
 
-class Aw862xx final : public ChipI2cGuide {
+class Aw862xx final : public I2cChipBase {
  public:
   enum class PlayMode {
     kRam = 0,
@@ -101,10 +105,10 @@ class Aw862xx final : public ChipI2cGuide {
     bool playback_flag = false;          // 回放标志
   };
 
-#include "aw862xx_haptic_waveform_table.h"
+#include "chip/i2c/aw862xx_haptic_waveform_table.inc"
 
   struct RamWaveformInfo {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ARDUINO_NRF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_NRF52
     RamWaveformInfo() = default;
 
     RamWaveformInfo(const char* name, const uint8_t* data, size_t length,
@@ -125,11 +129,12 @@ class Aw862xx final : public ChipI2cGuide {
     uint8_t waveform_count = 0;
   };
 
-  explicit Aw862xx(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
-      : ChipI2cGuide(bus, address), rst_(rst) {}
+  explicit Aw862xx(std::shared_ptr<I2cBusBase> bus,
+      int16_t address = kDeviceI2cAddressDefault,
+      int32_t rst = kPinNotConnected)
+      : I2cChipBase(bus, address), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = kDefaultValue) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -448,6 +453,9 @@ class Aw862xx final : public ChipI2cGuide {
   bool StopRamPlaybackWaveform();
 
  private:
+  // 默认 I2C 总线时钟，单位 Hz。
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
+
   enum class Register {
     kRoChipId = 0x00,
     kWoSrst = kRoChipId,

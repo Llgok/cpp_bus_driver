@@ -2,17 +2,20 @@
  * @Description: Semtech SX1261/SX1262 无线收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-09-02 16:18:12
+ * @LastEditTime: 2026-09-05 14:57:18
  * @License: GPL 3.0
  */
 #pragma once
 
 #include <array>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
 
-#include "../chip_guide.h"
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
-class Sx126x final : public ChipSpiGuide {
+class Sx126x final : public SpiChipBase {
  public:
   enum class ChipType {
     kSx1262 = 0,
@@ -307,10 +310,11 @@ class Sx126x final : public ChipSpiGuide {
   // 检测接收到的信号中的前导码
   enum class PreambleDetector {
     kLengthOff = 0,
-    kLength8bit = 0x04,
-    kLength16bit,
-    kLength24bit,
-    kLength32bit,
+    kLength8Bit = 0x04,
+    kLength16Bit,
+    kLength24Bit,
+    kLength32Bit,
+
   };
 
   // 比较接收到的数据包地址与设备预设的地址（节点地址和广播地址）的机制
@@ -516,7 +520,7 @@ class Sx126x final : public ChipSpiGuide {
     uint8_t node_address = 0x05;
     uint8_t broadcast_address = 0xAB;
     uint16_t whitening_seed = 0x01FF;
-    PreambleDetector preamble_detector = PreambleDetector::kLength16bit;
+    PreambleDetector preamble_detector = PreambleDetector::kLength16Bit;
     uint8_t payload_length = 255;
     RampTime ramp_time = RampTime::kRamp40Us;
     bool rx_boosted = false;
@@ -526,34 +530,35 @@ class Sx126x final : public ChipSpiGuide {
   // SetRx() 的连续接收特殊值；接口不将该值解释为普通微秒数。
   static constexpr uint32_t kTimeoutContinuous = 0xFFFFFF;
 
-  explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
-      int32_t busy, int32_t cs = kDefaultValue, int32_t rst = kDefaultValue)
+  explicit Sx126x(std::shared_ptr<SpiBusBase> bus, ChipType chip_type,
+      int32_t busy, int32_t cs = kPinNotConnected,
+      int32_t rst = kPinNotConnected)
       : Sx126x(bus, chip_type, busy, cs, rst, HardwareConfig{}) {}
 
-  explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
+  explicit Sx126x(std::shared_ptr<SpiBusBase> bus, ChipType chip_type,
       int32_t busy, int32_t cs, int32_t rst,
       const HardwareConfig& hardware_config)
-      : ChipSpiGuide(bus, cs),
+      : SpiChipBase(bus, cs),
         chip_type_(chip_type),
         hardware_config_(hardware_config),
         rst_(rst),
         busy_(busy) {}
 
-  explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
-      bool (*busy_wait_callback)(), int32_t cs = kDefaultValue,
-      int32_t rst = kDefaultValue)
+  explicit Sx126x(std::shared_ptr<SpiBusBase> bus, ChipType chip_type,
+      bool (*busy_wait_callback)(), int32_t cs = kPinNotConnected,
+      int32_t rst = kPinNotConnected)
       : Sx126x(bus, chip_type, busy_wait_callback, cs, rst, HardwareConfig{}) {}
 
-  explicit Sx126x(std::shared_ptr<BusSpiGuide> bus, ChipType chip_type,
+  explicit Sx126x(std::shared_ptr<SpiBusBase> bus, ChipType chip_type,
       bool (*busy_wait_callback)(), int32_t cs, int32_t rst,
       const HardwareConfig& hardware_config)
-      : ChipSpiGuide(bus, cs),
+      : SpiChipBase(bus, cs),
         chip_type_(chip_type),
         hardware_config_(hardware_config),
         rst_(rst),
         busy_wait_callback_(busy_wait_callback) {}
 
-  bool Init(int32_t freq_hz = kDefaultValue) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -1300,6 +1305,9 @@ class Sx126x final : public ChipSpiGuide {
   bool Wakeup();
 
  private:
+  // 默认 SPI 总线时钟，单位 Hz。
+  static constexpr int32_t kDefaultFrequencyHz = 10000000;
+
   enum class Command {
     kWoResetStats = 0x00,
     kWoClearIrqStatus = 0x02,
@@ -1394,7 +1402,7 @@ class Sx126x final : public ChipSpiGuide {
         uint8_t length = 5;
       } sync_word;
 
-      PreambleDetector preamble_detector = PreambleDetector::kLength16bit;
+      PreambleDetector preamble_detector = PreambleDetector::kLength16Bit;
       AddrComp address_comparison = AddrComp::kFilteringDisable;
       GfskHeaderType header_type = GfskHeaderType::kVariablePacket;
       uint8_t payload_length = kMaxPayloadSize;
@@ -1570,7 +1578,7 @@ class Sx126x final : public ChipSpiGuide {
   LoraConfig lora_config_;
   GfskConfig gfsk_config_;
   int32_t rst_;
-  int32_t busy_ = kDefaultValue;
+  int32_t busy_ = kPinNotConnected;
   bool (*busy_wait_callback_)() = nullptr;
   SleepMode sleep_mode_ = SleepMode::kWarmStart;
   bool initialized_ = false;

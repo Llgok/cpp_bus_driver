@@ -5,11 +5,13 @@
  * @LastEditTime: 2026-05-16 23:47:09
  * @License: GPL 3.0
  */
-#include "ft3x68.h"
+#include "chip/i2c/ft3x68.h"
+
+#include <array>
 
 namespace cpp_bus_driver {
 bool Ft3x68::Init(int32_t freq_hz) {
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
     result &= GpioWrite(rst_, 0);
@@ -22,7 +24,7 @@ bool Ft3x68::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipI2cGuide::Init(freq_hz)) {
+  if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
@@ -43,12 +45,12 @@ bool Ft3x68::Init(int32_t freq_hz) {
 bool Ft3x68::Deinit(bool delete_bus) {
   bool result = true;
 
-  if (!ChipI2cGuide::Deinit(delete_bus)) {
+  if (!I2cChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
 
@@ -78,6 +80,9 @@ uint8_t Ft3x68::GetFingerCount() {
 }
 
 bool Ft3x68::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
+  // 输出仅表示本次采样，保留 vector 容量但清除上次结果。
+  tp.finger_count = 0;
+  tp.info.clear();
   if ((finger_num == 0) || (finger_num > kMaxTouchFingerCount)) {
     return false;
   }
@@ -115,10 +120,12 @@ bool Ft3x68::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
 }
 
 bool Ft3x68::GetMultipleTouchPoint(TouchPoint& tp) {
+  tp.finger_count = 0;
+  tp.info.clear();
   // +1 把手指数的地址也读出来
-  const uint8_t buffer_touch_point_size =
+  constexpr size_t buffer_touch_point_size =
       kMaxTouchFingerCount * kSingleTouchPointDataSize + 1;
-  std::vector<uint8_t> buffer(buffer_touch_point_size, 0);
+  std::array<uint8_t, buffer_touch_point_size> buffer{};
 
   // 地址自动偏移
   if (!bus_->Read(static_cast<uint8_t>(Register::kRoTdStatus), buffer.data(),

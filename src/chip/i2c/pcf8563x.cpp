@@ -5,11 +5,11 @@
  * @LastEditTime: 2026-08-03 16:11:18
  * @License: GPL 3.0
  */
-#include "pcf8563x.h"
+#include "chip/i2c/pcf8563x.h"
 
 namespace cpp_bus_driver {
 bool Pcf8563x::Init(int32_t freq_hz) {
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
     result &= GpioWrite(rst_, 0);
@@ -22,13 +22,13 @@ bool Pcf8563x::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipI2cGuide::Init(freq_hz)) {
+  if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
   auto buffer = GetChipId();
-  if (buffer == static_cast<uint8_t>(kDefaultValue)) {
+  if (buffer == kInvalidChipId) {
     LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
         "Get pcf8563x chip id failed (error id: %#X)\n", buffer);
     return false;
@@ -50,12 +50,12 @@ bool Pcf8563x::Init(int32_t freq_hz) {
 bool Pcf8563x::Deinit(bool delete_bus) {
   bool result = true;
 
-  if (!ChipI2cGuide::Deinit(delete_bus)) {
+  if (!I2cChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
 
@@ -67,7 +67,7 @@ uint8_t Pcf8563x::GetChipId() {
 
   if (!bus_->Read(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
-    return -1;
+    return kInvalidChipId;
   }
 
   return buffer;

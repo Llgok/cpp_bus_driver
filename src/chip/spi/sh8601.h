@@ -2,15 +2,18 @@
  * @Description: SH8601 QSPI 显示控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-09-02 16:18:09
+ * @LastEditTime: 2026-09-05 14:57:14
  * @License: GPL 3.0
  */
 #pragma once
 
-#include "../chip_guide.h"
+#include <cstdint>
+#include <memory>
+
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
-class Sh8601 final : public ChipQspiGuide {
+class Sh8601 final : public QspiChipBase {
  public:
   enum class ColorFormat {
     kRgb565 = 16,
@@ -28,20 +31,21 @@ class Sh8601 final : public ChipQspiGuide {
 
   enum class WriteStreamMode {
     // 单线模式
-    kWrite1lanes,
+    kWrite1Lane,
     // 4线模式
-    kWrite4lanes,
+    kWrite4Lanes,
     // 连续发射单线模式
-    kContinuousWrite1lanes,
+    kContinuousWrite1Lane,
     // 连续发射4线模式
-    kContinuousWrite4lanes,
+    kContinuousWrite4Lanes,
+
   };
 
-  explicit Sh8601(std::shared_ptr<BusQspiGuide> bus, uint16_t width,
-      uint16_t height, int32_t cs = kDefaultValue, int32_t rst = kDefaultValue,
-      int16_t x_offset = 0, int16_t y_offset = 0,
-      ColorFormat color_format = ColorFormat::kRgb565)
-      : ChipQspiGuide(bus, cs),
+  explicit Sh8601(std::shared_ptr<QspiBusBase> bus, uint16_t width,
+      uint16_t height, int32_t cs = kPinNotConnected,
+      int32_t rst = kPinNotConnected, int16_t x_offset = 0,
+      int16_t y_offset = 0, ColorFormat color_format = ColorFormat::kRgb565)
+      : QspiChipBase(bus, cs),
         rst_(rst),
         width_(width),
         height_(height),
@@ -49,7 +53,7 @@ class Sh8601 final : public ChipQspiGuide {
         y_offset_(y_offset),
         color_format_(color_format) {}
 
-  bool Init(int32_t freq_hz = kDefaultValue) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
   bool Deinit() override;
 
   /**
@@ -117,6 +121,9 @@ class Sh8601 final : public ChipQspiGuide {
   bool SetColorFormat(ColorFormat format);
 
  private:
+  // 默认 QSPI 总线时钟，单位 Hz。
+  static constexpr int32_t kDefaultFrequencyHz = 10000000;
+
   // QSPI 寄存器事务操作码。
   enum class RegisterOpcode {
     kWrite = 0x02,

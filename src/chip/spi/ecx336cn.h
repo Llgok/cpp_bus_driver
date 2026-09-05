@@ -7,16 +7,19 @@
  */
 #pragma once
 
-#include "../chip_guide.h"
+#include <cstdint>
+#include <memory>
+
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
-class Ecx336cn final : public ChipSpiGuide {
+class Ecx336cn final : public SpiChipBase {
  public:
-  explicit Ecx336cn(std::shared_ptr<BusSpiGuide> bus,
-      int32_t cs = kDefaultValue, int32_t rst = kDefaultValue)
-      : ChipSpiGuide(bus, cs), rst_(rst) {}
+  explicit Ecx336cn(std::shared_ptr<SpiBusBase> bus,
+      int32_t cs = kPinNotConnected, int32_t rst = kPinNotConnected)
+      : SpiChipBase(bus, cs), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = kDefaultValue) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -27,6 +30,9 @@ class Ecx336cn final : public ChipSpiGuide {
   bool SetPowerSaveMode(bool enable);
 
  private:
+  // 默认 SPI 总线时钟，单位 Hz。
+  static constexpr int32_t kDefaultFrequencyHz = 10000000;
+
   enum class Register {
     kWoPowerSaveMode = 0x00,
   };

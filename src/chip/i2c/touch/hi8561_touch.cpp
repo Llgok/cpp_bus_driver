@@ -5,7 +5,7 @@
  * @LastEditTime: 2026-09-02 16:18:24
  * @License: GPL 3.0
  */
-#include "hi8561_touch.h"
+#include "chip/i2c/touch/hi8561_touch.h"
 
 #include <algorithm>
 #include <array>
@@ -20,7 +20,7 @@ bool Hi8561Touch::Init(int32_t freq_hz) {
   runtime_layout_ = RuntimeLayout();
   last_debug_report_ms_ = 0;
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     bool result = true;
     result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
     result &= GpioWrite(rst_, 0);
@@ -34,16 +34,16 @@ bool Hi8561Touch::Init(int32_t freq_hz) {
     }
   }
 
-  if (!ChipI2cGuide::Init(freq_hz)) {
+  if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "HI8561 init failed\n");
-    ChipI2cGuide::Deinit(false);
+    I2cChipBase::Deinit(false);
     return false;
   }
 
   if (!DiscoverRuntimeLayout()) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 dynamic section discovery failed\n");
-    ChipI2cGuide::Deinit(false);
+    I2cChipBase::Deinit(false);
     return false;
   }
 
@@ -58,12 +58,12 @@ bool Hi8561Touch::Init(int32_t freq_hz) {
 bool Hi8561Touch::Deinit(bool delete_bus) {
   std::lock_guard<std::mutex> lock(mutex_);
 
-  bool result = ChipI2cGuide::Deinit(delete_bus);
+  bool result = I2cChipBase::Deinit(delete_bus);
   if (!result) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "HI8561 deinit failed\n");
   }
 
-  if (rst_ != kDefaultValue) {
+  if (rst_ != kPinNotConnected) {
     result &= ResetGpio(rst_);
   }
 

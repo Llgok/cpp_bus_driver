@@ -2,22 +2,30 @@
  * @Description: ESP-IDF 硬件 UART 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:26:23
- * @LastEditTime: 2026-09-03 17:45:24
+ * @LastEditTime: 2026-09-05 14:57:39
  * @License: GPL 3.0
  */
-#include "hardware_uart.h"
+#include "bus/uart/hardware_uart.h"
+
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+#include "driver/uart.h"
+#include "freertos/FreeRTOS.h"
+#endif
 
 namespace cpp_bus_driver {
-#if defined(CPP_BUS_DRIVER_DEVELOPMENT_FRAMEWORK_ESPIDF)
+#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
+    CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
 bool HardwareUart::Init(int32_t baud_rate) {
+  if (baud_rate <= 0) {
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "Invalid UART baud rate\n");
+    return false;
+  }
   if (init_flag_) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "HardwareUart has been initialized\n");
     return true;
-  }
-
-  if (baud_rate == kDefaultValue) {
-    baud_rate = kDefaultBaudRate;
   }
 
   LogMessage(
@@ -39,11 +47,11 @@ bool HardwareUart::Init(int32_t baud_rate) {
       .parity = UART_PARITY_DISABLE,
       .stop_bits = UART_STOP_BITS_1,
       .flow_ctrl = [](int32_t rts, int32_t cts) -> uart_hw_flowcontrol_t {
-        if ((rts != kDefaultValue) && (cts != kDefaultValue)) {
+        if ((rts != kPinNotConnected) && (cts != kPinNotConnected)) {
           return uart_hw_flowcontrol_t::UART_HW_FLOWCTRL_CTS_RTS;
-        } else if ((rts != kDefaultValue) && (cts == kDefaultValue)) {
+        } else if ((rts != kPinNotConnected) && (cts == kPinNotConnected)) {
           return uart_hw_flowcontrol_t::UART_HW_FLOWCTRL_RTS;
-        } else if ((rts == kDefaultValue) && (cts != kDefaultValue)) {
+        } else if ((rts == kPinNotConnected) && (cts != kPinNotConnected)) {
           return uart_hw_flowcontrol_t::UART_HW_FLOWCTRL_CTS;
         }
 
@@ -75,8 +83,6 @@ bool HardwareUart::Init(int32_t baud_rate) {
     Deinit();
     return false;
   }
-
-  baud_rate_ = baud_rate;
 
   result = uart_set_pin(static_cast<uart_port_t>(port_), tx_, rx_, rts_, cts_);
   if (result != ESP_OK) {
@@ -179,16 +185,16 @@ bool HardwareUart::Deinit() {
   init_flag_ = false;
 
   bool gpio_result = true;
-  if (tx_ != kDefaultValue) {
+  if (tx_ != kPinNotConnected) {
     gpio_result &= ResetGpio(tx_);
   }
-  if (rx_ != kDefaultValue) {
+  if (rx_ != kPinNotConnected) {
     gpio_result &= ResetGpio(rx_);
   }
-  if (rts_ != kDefaultValue) {
+  if (rts_ != kPinNotConnected) {
     gpio_result &= ResetGpio(rts_);
   }
-  if (cts_ != kDefaultValue) {
+  if (cts_ != kPinNotConnected) {
     gpio_result &= ResetGpio(cts_);
   }
 

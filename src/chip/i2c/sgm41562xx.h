@@ -7,10 +7,13 @@
  */
 #pragma once
 
-#include "../chip_guide.h"
+#include <cstdint>
+#include <memory>
+
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
-class Sgm41562xx final : public ChipI2cGuide {
+class Sgm41562xx final : public I2cChipBase {
  public:
   enum class ChipType {
     kUnknown = 0,
@@ -115,18 +118,19 @@ class Sgm41562xx final : public ChipI2cGuide {
    * @brief 创建SGM41562系列芯片对象
    * @param bus I2C总线对象
    * @param address I2C设备地址
-   * @param rst 复位引脚，使用kDefaultValue时不控制复位引脚
+   * @param rst 复位引脚，使用 kPinNotConnected 时不控制复位引脚
    */
-  explicit Sgm41562xx(std::shared_ptr<BusI2cGuide> bus,
-      int16_t address = kDeviceI2cAddressDefault, int32_t rst = kDefaultValue)
-      : ChipI2cGuide(bus, address), rst_(rst) {}
+  explicit Sgm41562xx(std::shared_ptr<I2cBusBase> bus,
+      int16_t address = kDeviceI2cAddressDefault,
+      int32_t rst = kPinNotConnected)
+      : I2cChipBase(bus, address), rst_(rst) {}
 
   /**
    * @brief 初始化芯片并根据型号执行对应寄存器初始化序列
-   * @param freq_hz I2C总线频率，使用kDefaultValue时采用总线默认频率
+   * @param freq_hz I2C总线频率，默认使用 kDefaultFrequencyHz
    * @return 初始化成功返回true，失败返回false
    */
-  bool Init(int32_t freq_hz = kDefaultValue) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
 
   /**
    * @brief 反初始化芯片
@@ -422,6 +426,9 @@ class Sgm41562xx final : public ChipI2cGuide {
   bool SetShippingModeDelay(ShippingModeDelay delay);
 
  private:
+  // 默认 I2C 总线时钟，单位 Hz。
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
+
   enum class Register {
     kInputSourceControl = 0x00,
     kPowerOnConfiguration = 0x01,

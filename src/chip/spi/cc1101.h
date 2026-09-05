@@ -7,11 +7,15 @@
  */
 #pragma once
 
-#include "../chip_guide.h"
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+
+#include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
 
-class Cc1101 final : public ChipSpiGuide {
+class Cc1101 final : public SpiChipBase {
  public:
   // CC1101 SPI 命令选通指令
   enum class StrobeCmd : uint8_t {
@@ -154,18 +158,16 @@ class Cc1101 final : public ChipSpiGuide {
     bool crc_valid = false;  // 硬件 CRC 校验结果
   };
 
-  // 采用保守的默认时钟，保证连续 FIFO burst 传输稳定。
-  static constexpr int32_t kDefaultSpiFrequencyHz = 2000000;
   // 当前 SPI 总线连续传输字节间没有 100 ns 间隔，按 TI DN503 限制为 6.5 MHz。
   static constexpr int32_t kMaximumSpiFrequencyHz = 6500000;
 
-  explicit Cc1101(std::shared_ptr<BusSpiGuide> bus, int32_t cs, int32_t miso,
-      int32_t gdo0 = kDefaultValue, int32_t gdo2 = kDefaultValue)
+  explicit Cc1101(std::shared_ptr<SpiBusBase> bus, int32_t cs, int32_t miso,
+      int32_t gdo0 = kPinNotConnected, int32_t gdo2 = kPinNotConnected)
       : Cc1101(bus, cs, miso, gdo0, gdo2, Config{}) {}
 
-  explicit Cc1101(std::shared_ptr<BusSpiGuide> bus, int32_t cs, int32_t miso,
+  explicit Cc1101(std::shared_ptr<SpiBusBase> bus, int32_t cs, int32_t miso,
       int32_t gdo0, int32_t gdo2, const Config& config)
-      : ChipSpiGuide(bus, cs),
+      : SpiChipBase(bus, cs),
         config_(config),
         miso_(miso),
         gdo0_(gdo0),
@@ -538,6 +540,8 @@ class Cc1101 final : public ChipSpiGuide {
   const Config& config() const { return config_; }
 
  private:
+  // 采用保守的默认时钟，保证连续 FIFO burst 传输稳定。
+  static constexpr int32_t kDefaultSpiFrequencyHz = 2000000;
   // CC1101 配置、状态、PATABLE 和 FIFO 寄存器地址
   enum class Register : uint8_t {
     kIocfg2 = 0x00,
@@ -852,9 +856,9 @@ class Cc1101 final : public ChipSpiGuide {
   ChipStatus ParseChipStatus(uint8_t raw) const;
 
   Config config_;
-  int32_t miso_ = kDefaultValue;
-  int32_t gdo0_ = kDefaultValue;
-  int32_t gdo2_ = kDefaultValue;
+  int32_t miso_ = kPinNotConnected;
+  int32_t gdo0_ = kPinNotConnected;
+  int32_t gdo2_ = kPinNotConnected;
   PacketMetrics last_metrics_;
   uint8_t pa_table_cache_[8] = {0xC6};
   size_t pa_table_length_ = 1;
