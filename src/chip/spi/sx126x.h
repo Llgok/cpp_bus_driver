@@ -17,7 +17,7 @@
 namespace cpp_bus_driver {
 class Sx126x final : public SpiChipBase {
  public:
-  enum class ChipType {
+  enum class ChipModel {
     kSx1262 = 0,
     kSx1261,
   };
@@ -530,30 +530,30 @@ class Sx126x final : public SpiChipBase {
   // SetRx() 的连续接收特殊值；接口不将该值解释为普通微秒数。
   static constexpr uint32_t kTimeoutContinuous = 0xFFFFFF;
 
-  explicit Sx126x(std::shared_ptr<SpiBusBase> bus, ChipType chip_type,
+  explicit Sx126x(std::shared_ptr<SpiBusBase> bus, ChipModel chip_model,
       int32_t busy, int32_t cs = kPinNotConnected,
       int32_t rst = kPinNotConnected)
-      : Sx126x(bus, chip_type, busy, cs, rst, HardwareConfig{}) {}
+      : Sx126x(bus, chip_model, busy, cs, rst, HardwareConfig{}) {}
 
-  explicit Sx126x(std::shared_ptr<SpiBusBase> bus, ChipType chip_type,
+  explicit Sx126x(std::shared_ptr<SpiBusBase> bus, ChipModel chip_model,
       int32_t busy, int32_t cs, int32_t rst,
       const HardwareConfig& hardware_config)
       : SpiChipBase(bus, cs),
-        chip_type_(chip_type),
+        chip_model_(chip_model),
         hardware_config_(hardware_config),
         rst_(rst),
         busy_(busy) {}
 
-  explicit Sx126x(std::shared_ptr<SpiBusBase> bus, ChipType chip_type,
+  explicit Sx126x(std::shared_ptr<SpiBusBase> bus, ChipModel chip_model,
       bool (*busy_wait_callback)(), int32_t cs = kPinNotConnected,
       int32_t rst = kPinNotConnected)
-      : Sx126x(bus, chip_type, busy_wait_callback, cs, rst, HardwareConfig{}) {}
+      : Sx126x(bus, chip_model, busy_wait_callback, cs, rst, HardwareConfig{}) {}
 
-  explicit Sx126x(std::shared_ptr<SpiBusBase> bus, ChipType chip_type,
+  explicit Sx126x(std::shared_ptr<SpiBusBase> bus, ChipModel chip_model,
       bool (*busy_wait_callback)(), int32_t cs, int32_t rst,
       const HardwareConfig& hardware_config)
       : SpiChipBase(bus, cs),
-        chip_type_(chip_type),
+        chip_model_(chip_model),
         hardware_config_(hardware_config),
         rst_(rst),
         busy_wait_callback_(busy_wait_callback) {}
@@ -1313,50 +1313,44 @@ class Sx126x final : public SpiChipBase {
     kWoClearIrqStatus = 0x02,
     kWoClearDeviceErrors = 0x07,
     kWoSetDioIrqParams = 0x08,
-
     // 用于读写寄存器命令
     kWoWriteRegister = 0x0D,
     kWoWriteBuffer = 0x0E,
     kRoGetStats = 0x10,
     kRoGetPacketType = 0x11,
-    kRoGetIrqStatus,
-    kRoGetRxBufferStatus,
-    kRoGetPacketStatus,
-    kRoGetRssiInst,
+    kRoGetIrqStatus = 0x12,
+    kRoGetRxBufferStatus = 0x13,
+    kRoGetPacketStatus = 0x14,
+    kRoGetRssiInst = 0x15,
     kRoGetDeviceErrors = 0x17,
     kWoReadRegister = 0x1D,
     kRoReadBuffer = 0x1E,
-
     kWoSetStandby = 0x80,
     kWoSetRx = 0x82,
-    kWoSetTx,
-    kWoSetSleep,
+    kWoSetTx = 0x83,
+    kWoSetSleep = 0x84,
     kWoSetRfFrequency = 0x86,
     kWoSetCadParams = 0x88,
-    kWoCalibrate,
-    kWoSetPacketType,
-    kWoSetModulationParams,
-    kWoSetPacketParams,
-
+    kWoCalibrate = 0x89,
+    kWoSetPacketType = 0x8A,
+    kWoSetModulationParams = 0x8B,
+    kWoSetPacketParams = 0x8C,
     kWoSetTxParams = 0x8E,
-    kWoSetBufferBaseAddress,
-
+    kWoSetBufferBaseAddress = 0x8F,
     kWoSetRxTxFallbackMode = 0x93,
-    kWoSetRxDutyCycle,
+    kWoSetRxDutyCycle = 0x94,
     kWoSetPaConfig = 0x95,
-    kWoSetRegulatorMode,
-    kWoSetDio3AsTcxoCtrl,
-    kWoCalibrateImage,
-
+    kWoSetRegulatorMode = 0x96,
+    kWoSetDio3AsTcxoCtrl = 0x97,
+    kWoCalibrateImage = 0x98,
     kWoSetDio2AsRfSwitchCtrl = 0x9D,
     kWoStopTimerOnPreamble = 0x9F,
     kWoSetLoraSymbolNumTimeout = 0xA0,
     kRoGetStatus = 0xC0,
-    kWoSetFs,
+    kWoSetFs = 0xC1,
     kWoSetCad = 0xC5,
     kWoSetTxContinuousWave = 0xD1,
     kWoSetTxInfinitePreamble = 0xD2,
-
   };
 
   // 访问寄存器需要通过前置读写命令来访问
@@ -1572,7 +1566,7 @@ class Sx126x final : public SpiChipBase {
    */
   bool StopRxTimeoutTimer();
 
-  ChipType chip_type_;
+  ChipModel chip_model_;
   HardwareConfig hardware_config_;
   Param param_;
   LoraConfig lora_config_;

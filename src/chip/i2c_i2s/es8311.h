@@ -403,36 +403,30 @@ class Es8311 final : public I2cChipBase, public I2sChipBase {
 
   enum class Register {
     kRoChipIdStart = 0xFD,  // 连续读取两次返回芯片ID 0x8311
-
     kRwResetSerialPortModeControl = 0x00,
-    kRwClockManager1,
-    kRwClockManager2,
-    kRwClockManager3,
-    kRwClockManager4,
-    kRwClockManager5,
-    kRwClockManager6,
-    kRwClockManager7,
-    kRwClockManager8,
-    kRwSdpInFormat,
-    kRwSdpOutFormat,
-
+    kRwClockManager1 = 0x01,
+    kRwClockManager2 = 0x02,
+    kRwClockManager3 = 0x03,
+    kRwClockManager4 = 0x04,
+    kRwClockManager5 = 0x05,
+    kRwClockManager6 = 0x06,
+    kRwClockManager7 = 0x07,
+    kRwClockManager8 = 0x08,
+    kRwSdpInFormat = 0x09,
+    kRwSdpOutFormat = 0x0A,
     kRwPowerUpPowerDownContorl = 0x0D,
-    kRwPgaAdcModulatorPowerControl,
-    kRwLowPowerControl,
-
+    kRwPgaAdcModulatorPowerControl = 0x0E,
+    kRwLowPowerControl = 0x0F,
     kRwDacPowerControl = 0x12,
-    kRwOutputToHpDriveControl,
-
+    kRwOutputToHpDriveControl = 0x13,
     kRwAdcDmicPgaGain = 0x14,
     kRwAdcGainScaleUp = 0x16,
-    kRwAdcVolume,
-    kRwAdcAlc,
-
+    kRwAdcVolume = 0x17,
+    kRwAdcAlc = 0x18,
     kRwAdcEqualizerBypass = 0x1C,
     kRwDacVolume = 0x32,
     kRwDacRamprateEqbypass = 0x37,
     kRwAdcDacControlAdcdatSel = 0x44,
-
   };
 
   // 时钟系数结构体

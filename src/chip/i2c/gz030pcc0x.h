@@ -86,10 +86,8 @@ class Gz030pcc0x final : public I2cChipBase {
 
   enum class Register {
     kRwInternalTestModeInputDataFormat = 0x0001,
-    kRwHorizontalVerticalMirror,
-
+    kRwHorizontalVerticalMirror = 0x02,
     kRwDisplayBrightness = 0x5800,
-
     kRoTemperatureReading = 0x3001,
   };
 

@@ -144,40 +144,29 @@ class Icn6211 final : public I2cChipBase {
 
   enum class Register {
     kRoChipIdStart = 0x01,
-
     kConfigFinishSoftReset = 0x09,
-
     kSysCtrl0 = 0x10,
-    kSysCtrl1,
-
+    kSysCtrl1 = 0x11,
     kBistModeEn = 0x14,
-
     kHactiveL = 0x20,
-    kVactiveL,
-    kHvActiveH,
-    kHfpL,
-    kHsyncL,
-    kHbpL,
-    kHPorchH,
-    kVfp,
-    kVsync,
-    kVbp,
-    kSyncPolarityTestMode,
-
+    kVactiveL = 0x21,
+    kHvActiveH = 0x22,
+    kHfpL = 0x23,
+    kHsyncL = 0x24,
+    kHbpL = 0x25,
+    kHPorchH = 0x26,
+    kVfp = 0x27,
+    kVsync = 0x28,
+    kVbp = 0x29,
+    kSyncPolarityTestMode = 0x2A,
     kPllCtrl1 = 0x51,
-
     kPllRefSel = 0x56,
-
     kPllWtLock = 0x5C,
-
     kPllInt = 0x69,
-
     kPllRefDiv = 0x6B,
-
     kMipiMode = 0x7A,
-
     kDsiCtrl = 0x86,
-    kMipiPnSwap,
+    kMipiPnSwap = 0x87,
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x2C;

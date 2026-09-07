@@ -62,19 +62,16 @@ class Sgm38121 final : public I2cChipBase {
 
   enum class Register {
     kRoChipId = 0x00,
-
     kRwDischargeResistorSelection = 0X02,
-    kRwDvdd1OutputVoltageLevel,
-    kRwDvdd2OutputVoltageLevel,
-    kRwAvdd1OutputVoltageLevel,
-    kRwAvdd2OutputVoltageLevel,
-    kRwFunction,
-
+    kRwDvdd1OutputVoltageLevel = 0x03,
+    kRwDvdd2OutputVoltageLevel = 0x04,
+    kRwAvdd1OutputVoltageLevel = 0x05,
+    kRwAvdd2OutputVoltageLevel = 0x06,
+    kRwFunction = 0x07,
     kRwPowerSequenceSetting1 = 0X0A,
-    kRwPowerSequenceSetting2,
-
+    kRwPowerSequenceSetting2 = 0x0B,
     kRwEnableControl = 0X0E,
-    kRwSequenceControl,
+    kRwSequenceControl = 0x0F,
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x28;

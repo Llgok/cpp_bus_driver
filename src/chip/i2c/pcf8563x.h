@@ -188,23 +188,22 @@ class Pcf8563x final : public I2cChipBase {
 
   enum class Register {
     kRoChipId = 0x00,
-
     kRwControlStatus1 = 0x00,
-    kRwControlStatus2,
-    kRwVlSeconds,
-    kRwMinutes,
-    kRwHours,
-    kRwDays,
-    kRwWeekdays,
-    kRwCenturyMonths,
-    kRwYears,
-    kRwMinuteAlarm,
-    kRwHourAlarm,
-    kRwDayAlarm,
-    kRwWeekdayAlarm,
-    kRwClkoutControl,
-    kRwTimerControl,
-    kRwTimer,
+    kRwControlStatus2 = 0x01,
+    kRwVlSeconds = 0x02,
+    kRwMinutes = 0x03,
+    kRwHours = 0x04,
+    kRwDays = 0x05,
+    kRwWeekdays = 0x06,
+    kRwCenturyMonths = 0x07,
+    kRwYears = 0x08,
+    kRwMinuteAlarm = 0x09,
+    kRwHourAlarm = 0x0A,
+    kRwDayAlarm = 0x0B,
+    kRwWeekdayAlarm = 0x0C,
+    kRwClkoutControl = 0x0D,
+    kRwTimerControl = 0x0E,
+    kRwTimer = 0x0F,
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x51;

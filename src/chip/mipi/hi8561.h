@@ -117,21 +117,15 @@ class Hi8561 final : public MipiChipBase {
 
   enum class DcsCommand {
     kRoChipIdStart = 0xDA,
-
     kWoSlpin = 0x10,
-    kWoSlpout,
-
+    kWoSlpout = 0x11,
     kWoInvoff = 0x20,
-    kWoInvon,
-
+    kWoInvon = 0x21,
     kWoMadctl = 0x36,
-
     kWoWrdisbv = 0x51,
-
     kWoWrcabc = 0x55,
-
     kWoDispoff = 0x28,
-    kWoDispon,
+    kWoDispon = 0x29,
   };
 
   static constexpr uint16_t kChipId = 0x8561;

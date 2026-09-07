@@ -17,7 +17,7 @@
 namespace cpp_bus_driver {
 class Sgm41562xx final : public I2cChipBase {
  public:
-  enum class ChipType {
+  enum class ChipModel {
     kUnknown = 0,
     kSgm41562,
     kSgm41562A,
@@ -156,9 +156,9 @@ class Sgm41562xx final : public I2cChipBase {
 
   /**
    * @brief 获取Init函数确认的芯片型号
-   * @return 返回芯片型号，尚未成功初始化时返回ChipType::kUnknown
+   * @return 返回芯片型号，尚未成功初始化时返回ChipModel::kUnknown
    */
-  ChipType GetChipType() const;
+  ChipModel GetChipModel() const;
 
   /**
    * @brief 查询当前型号是否支持指定的可选配置功能，不访问硬件
@@ -169,10 +169,10 @@ class Sgm41562xx final : public I2cChipBase {
 
   /**
    * @brief 将芯片型号转换为字符串
-   * @param chip_type 芯片型号
+   * @param chip_model 芯片型号
    * @return 返回芯片型号字符串
    */
-  static const char* ChipTypeToString(ChipType chip_type);
+  static const char* ChipModelToString(ChipModel chip_model);
 
   /**
    * @brief 读取并解析REG09中的故障状态
@@ -673,10 +673,10 @@ class Sgm41562xx final : public I2cChipBase {
 
   /**
    * @brief 根据已识别的芯片型号选择内部实现，不访问硬件
-   * @param chip_type 已识别的具体芯片型号
+   * @param chip_model 已识别的具体芯片型号
    * @return 返回静态只读实现指针，未知或无效型号返回nullptr
    */
-  static const ModelDriver* GetModelDriver(ChipType chip_type);
+  static const ModelDriver* GetModelDriver(ChipModel chip_model);
 
   // SGM41562、A和B的基础布局实现，定义位于sgm41562.cpp。
   class Sgm41562Driver final : public ModelDriver {
@@ -994,15 +994,15 @@ class Sgm41562xx final : public I2cChipBase {
   /**
    * @brief 根据芯片ID识别芯片型号
    * @param chip_id REG0B中的原始芯片ID
-   * @return 返回识别出的芯片型号，无法识别时返回ChipType::kUnknown
+   * @return 返回识别出的芯片型号，无法识别时返回ChipModel::kUnknown
    */
-  ChipType DetectChipType(uint8_t chip_id);
+  ChipModel DetectChipModel(uint8_t chip_id);
 
   /**
    * @brief 区分芯片ID同为0x00的SGM41562B和SGM41562SA
-   * @return 返回识别出的芯片型号，无法可靠区分时返回ChipType::kUnknown
+   * @return 返回识别出的芯片型号，无法可靠区分时返回ChipModel::kUnknown
    */
-  ChipType DetectIdZeroChipType();
+  ChipModel DetectIdZeroChipModel();
 
   /**
    * @brief 使用REG02中的REG_RST位复位寄存器
@@ -1086,7 +1086,7 @@ class Sgm41562xx final : public I2cChipBase {
    */
   static void ParseChipStatus(uint8_t chip_status, ChipStatus& status);
 
-  ChipType chip_type_ = ChipType::kUnknown;
+  ChipModel chip_model_ = ChipModel::kUnknown;
   // Init完成型号识别后绑定静态实现，未初始化时为空。
   const ModelDriver* model_driver_ = nullptr;
 };

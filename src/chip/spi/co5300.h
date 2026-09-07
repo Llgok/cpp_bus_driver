@@ -127,7 +127,7 @@ class Co5300 final : public QspiChipBase {
   // QSPI 寄存器事务操作码。
   enum class RegisterOpcode {
     kWrite = 0x02,
-    kRead,
+    kRead = 0x03,
   };
 
   // QSPI 颜色流事务操作码。
@@ -144,21 +144,16 @@ class Co5300 final : public QspiChipBase {
     kWoMemoryStartWrite = 0x002C00,
     // 从上一次写入结束的位置继续写入数据，无需重新指定地址
     kWoMemoryContinuousWrite = 0x003C00,
-
     kWoColumnAddressSet = 0x002A00,
     kWoPageAddressSet = 0x002B00,
     kWoMemoryWriteStart = 0x002C00,
     kWoWriteDisplayBrightness = 0x005100,
-
     kWoSleepOut = 0x001100,
     kWoSleepIn = 0x001000,
     kWoDisplayOn = 0x002900,
     kWoDisplayOff = 0x002800,
-
     kWoInterfacePixelFormat = 0x003A00,
-
     kWoSetColorEnhance = 0x005800,
-
   };
 
   static constexpr uint32_t kInitSequence[] = {

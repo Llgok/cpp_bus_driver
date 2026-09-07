@@ -154,31 +154,31 @@ Aw862xx::RamWaveformInfo Aw862xx::GetRamWaveformInfo(
   return info;
 }
 
-const char* Aw862xx::ChipTypeToString(ChipType chip_type) {
-  switch (chip_type) {
-    case ChipType::kAw8623:
+const char* Aw862xx::ChipModelToString(ChipModel chip_model) {
+  switch (chip_model) {
+    case ChipModel::kAw8623:
       return "AW8623";
-    case ChipType::kAw8624:
+    case ChipModel::kAw8624:
       return "AW8624";
-    case ChipType::kAw86214:
+    case ChipModel::kAw86214:
       return "AW86214";
-    case ChipType::kAw86223:
+    case ChipModel::kAw86223:
       return "AW86223";
-    case ChipType::kAw86224:
+    case ChipModel::kAw86224:
       return "AW86224";
-    case ChipType::kAw86225:
+    case ChipModel::kAw86225:
       return "AW86225";
-    case ChipType::kAw86233:
+    case ChipModel::kAw86233:
       return "AW86233";
-    case ChipType::kAw86234:
+    case ChipModel::kAw86234:
       return "AW86234";
-    case ChipType::kAw86235:
+    case ChipModel::kAw86235:
       return "AW86235";
-    case ChipType::kAw86243:
+    case ChipModel::kAw86243:
       return "AW86243";
-    case ChipType::kAw86245:
+    case ChipModel::kAw86245:
       return "AW86245";
-    case ChipType::kUnknown:
+    case ChipModel::kUnknown:
     default:
       return "Unknown";
   }
@@ -244,16 +244,16 @@ bool Aw862xx::Deinit(bool delete_bus) {
   return result;
 }
 
-Aw862xx::ChipType Aw862xx::GetChipId() {
+Aw862xx::ChipModel Aw862xx::GetChipId() {
   uint8_t buffer = 0;
 
   if (!bus_->Read(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
-    chip_type_ = ChipType::kUnknown;
-    return chip_type_;
+    chip_model_ = ChipModel::kUnknown;
+    return chip_model_;
   }
 
-  chip_type_ = ChipType::kUnknown;
+  chip_model_ = ChipModel::kUnknown;
 
   uint8_t chip_id_high = 0;
   if (bus_->Read(
@@ -264,14 +264,14 @@ Aw862xx::ChipType Aw862xx::GetChipId() {
               &chip_id_low)) {
         switch ((static_cast<uint16_t>(chip_id_high) << 8) | chip_id_low) {
           case 0x2330:
-            chip_type_ = ChipType::kAw86233;
-            return chip_type_;
+            chip_model_ = ChipModel::kAw86233;
+            return chip_model_;
           case 0x2340:
-            chip_type_ = ChipType::kAw86234;
-            return chip_type_;
+            chip_model_ = ChipModel::kAw86234;
+            return chip_model_;
           case 0x2350:
-            chip_type_ = ChipType::kAw86235;
-            return chip_type_;
+            chip_model_ = ChipModel::kAw86235;
+            return chip_model_;
 
           default:
             break;
@@ -285,65 +285,65 @@ Aw862xx::ChipType Aw862xx::GetChipId() {
               &chip_id_low)) {
         switch ((static_cast<uint16_t>(chip_id_high) << 8) | chip_id_low) {
           case 0x2430:
-            chip_type_ = ChipType::kAw86243;
-            return chip_type_;
+            chip_model_ = ChipModel::kAw86243;
+            return chip_model_;
           case 0x2450:
-            chip_type_ = ChipType::kAw86245;
-            return chip_type_;
+            chip_model_ = ChipModel::kAw86245;
+            return chip_model_;
 
           default:
-            chip_type_ = ChipType::kAw8624;
-            return chip_type_;
+            chip_model_ = ChipModel::kAw8624;
+            return chip_model_;
         }
       }
     }
   }
 
   if (buffer == 0x24) {
-    chip_type_ = ChipType::kAw8624;
-    return chip_type_;
+    chip_model_ = ChipModel::kAw8624;
+    return chip_model_;
   }
 
   if (buffer == 0x23) {
-    chip_type_ = ChipType::kAw8623;
-    return chip_type_;
+    chip_model_ = ChipModel::kAw8623;
+    return chip_model_;
   }
 
   if (buffer == 0x00) {
     uint8_t ef_id = 0;
     if (!bus_->Read(static_cast<uint8_t>(Register::kRoEfId), &ef_id)) {
       LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read ef id failed\n");
-      chip_type_ = ChipType::kUnknown;
-      return chip_type_;
+      chip_model_ = ChipModel::kUnknown;
+      return chip_model_;
     }
 
     switch (ef_id & 0x41) {
       case 0x00:
-        chip_type_ = ChipType::kAw86224;
+        chip_model_ = ChipModel::kAw86224;
         break;
       case 0x01:
-        chip_type_ = ChipType::kAw86223;
+        chip_model_ = ChipModel::kAw86223;
         break;
       case 0x41:
-        chip_type_ = ChipType::kAw86214;
+        chip_model_ = ChipModel::kAw86214;
         break;
 
       default:
-        chip_type_ = ChipType::kUnknown;
+        chip_model_ = ChipModel::kUnknown;
         break;
     }
-    return chip_type_;
+    return chip_model_;
   }
 
   if (buffer == 0x01) {
     uint8_t ef_id = 0;
     if (bus_->Read(static_cast<uint8_t>(Register::kRoEfId), &ef_id) &&
         ((ef_id & 0x41) == 0x41)) {
-      chip_type_ = ChipType::kAw86214;
+      chip_model_ = ChipModel::kAw86214;
     }
   }
 
-  return chip_type_;
+  return chip_model_;
 }
 
 bool Aw862xx::SoftwareReset() {

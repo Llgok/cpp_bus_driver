@@ -167,7 +167,7 @@ bool Sgm41562xx::Sgm41562Driver::ReadInputConfig(Sgm41562xx& chip,
     config.input_current_limit_ma += 200;
   }
   config.input_overvoltage_threshold_mv =
-      chip.chip_type_ == ChipType::kSgm41562A ? 19000 : 6000;
+      chip.chip_model_ == ChipModel::kSgm41562A ? 19000 : 6000;
   return true;
 }
 

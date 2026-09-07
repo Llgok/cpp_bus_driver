@@ -98,15 +98,14 @@ class Xl95x5 final : public I2cChipBase {
 
   enum class Register {
     kRoChipId = 0x04,
-
     kRoInputPort0 = 0x00,
-    kRoInputPort1,
-    kRwOutputPort0,
-    kRwOutputPort1,
-    kRwPolarityInversionPort0,
-    kRwPolarityInversionPort1,
-    kRwConfigurationPort0,
-    kRwConfigurationPort1,
+    kRoInputPort1 = 0x01,
+    kRwOutputPort0 = 0x02,
+    kRwOutputPort1 = 0x03,
+    kRwPolarityInversionPort0 = 0x04,
+    kRwPolarityInversionPort1 = 0x05,
+    kRwConfigurationPort0 = 0x06,
+    kRwConfigurationPort1 = 0x07,
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x20;

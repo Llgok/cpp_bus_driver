@@ -113,16 +113,13 @@ class EspAt final : public SdioChipBase {
 
   enum class RegisterAddress {
     kSdIoCccrFnEnable = 0x00000002,
-    kSdIoCccrFnReady,
-    kSdIoCccrIntEnable,
-
+    kSdIoCccrFnReady = 0x03,
+    kSdIoCccrIntEnable = 0x04,
     kSdIoCccrBusWidth = 0x00000007,
     kSdIoCccrBlksizel = 0x00000010,
-    kSdIoCccrBlksizeh,
-
+    kSdIoCccrBlksizeh = 0x11,
     kSlchostBase = 0x3FF55000,
     kSlaveCmd53EndAddr = 0x1F800,
-
     kPacketLength = (kSlchostBase + 0x60) & 0x3FF,
     kInterruptClear = (kSlchostBase + 0xD4) & 0x3FF,
     kInterruptRaw = (kSlchostBase + 0x50) & 0x3FF,  // 原始中断位

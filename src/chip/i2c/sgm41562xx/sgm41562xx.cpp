@@ -50,18 +50,18 @@ bool IsRegisterValueValid(
 }
 }  // namespace
 
-const Sgm41562xx::ModelDriver* Sgm41562xx::GetModelDriver(ChipType chip_type) {
+const Sgm41562xx::ModelDriver* Sgm41562xx::GetModelDriver(ChipModel chip_model) {
   static const Sgm41562Driver kSgm41562;
   static const Sgm41562sDriver kSgm41562s;
-  switch (chip_type) {
-    case ChipType::kSgm41562:
-    case ChipType::kSgm41562A:
-    case ChipType::kSgm41562B:
+  switch (chip_model) {
+    case ChipModel::kSgm41562:
+    case ChipModel::kSgm41562A:
+    case ChipModel::kSgm41562B:
       return &kSgm41562;
-    case ChipType::kSgm41562S:
-    case ChipType::kSgm41562Sa:
+    case ChipModel::kSgm41562S:
+    case ChipModel::kSgm41562Sa:
       return &kSgm41562s;
-    case ChipType::kUnknown:
+    case ChipModel::kUnknown:
     default:
       return nullptr;
   }
@@ -79,7 +79,7 @@ Sgm41562xx::ModelDriver::ModelDriver(std::initializer_list<Feature> features)
     : feature_mask_(MakeFeatureMask(features)) {}
 
 bool Sgm41562xx::Init(int32_t freq_hz) {
-  chip_type_ = ChipType::kUnknown;
+  chip_model_ = ChipModel::kUnknown;
   model_driver_ = nullptr;
 
   if (!I2cChipBase::Init(freq_hz)) {
@@ -103,24 +103,24 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
     return false;
   }
 
-  const ChipType detected_chip_type = DetectChipType(chip_id);
-  if (detected_chip_type == ChipType::kUnknown) {
+  const ChipModel detected_chip_model = DetectChipModel(chip_id);
+  if (detected_chip_model == ChipModel::kUnknown) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Identify SGM41562xx failed (chip id: %#X)\n", chip_id);
     return false;
   }
 
-  chip_type_ = detected_chip_type;
-  model_driver_ = GetModelDriver(chip_type_);
+  chip_model_ = detected_chip_model;
+  model_driver_ = GetModelDriver(chip_model_);
   if (model_driver_ == nullptr || !model_driver_->Init(*this)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
-    chip_type_ = ChipType::kUnknown;
+    chip_model_ = ChipModel::kUnknown;
     model_driver_ = nullptr;
     return false;
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "Get %s chip id success (id: %#X)\n", ChipTypeToString(chip_type_),
+      "Get %s chip id success (id: %#X)\n", ChipModelToString(chip_model_),
       chip_id);
   return true;
 }
@@ -133,7 +133,7 @@ bool Sgm41562xx::Deinit(bool delete_bus) {
     result = false;
   }
 
-  chip_type_ = ChipType::kUnknown;
+  chip_model_ = ChipModel::kUnknown;
   model_driver_ = nullptr;
   return result;
 }
@@ -149,51 +149,51 @@ bool Sgm41562xx::GetChipId(uint8_t& chip_id) {
   return true;
 }
 
-Sgm41562xx::ChipType Sgm41562xx::GetChipType() const { return chip_type_; }
+Sgm41562xx::ChipModel Sgm41562xx::GetChipModel() const { return chip_model_; }
 
 bool Sgm41562xx::HasFeature(Feature feature) const {
   const auto bit = static_cast<uint8_t>(feature);
-  if (chip_type_ == ChipType::kUnknown || model_driver_ == nullptr ||
+  if (chip_model_ == ChipModel::kUnknown || model_driver_ == nullptr ||
       bit >= 32) {
     return false;
   }
   return (model_driver_->feature_mask_ & (uint32_t{1} << bit)) != 0;
 }
 
-const char* Sgm41562xx::ChipTypeToString(ChipType chip_type) {
-  switch (chip_type) {
-    case ChipType::kSgm41562:
+const char* Sgm41562xx::ChipModelToString(ChipModel chip_model) {
+  switch (chip_model) {
+    case ChipModel::kSgm41562:
       return "SGM41562";
-    case ChipType::kSgm41562A:
+    case ChipModel::kSgm41562A:
       return "SGM41562A";
-    case ChipType::kSgm41562B:
+    case ChipModel::kSgm41562B:
       return "SGM41562B";
-    case ChipType::kSgm41562S:
+    case ChipModel::kSgm41562S:
       return "SGM41562S";
-    case ChipType::kSgm41562Sa:
+    case ChipModel::kSgm41562Sa:
       return "SGM41562SA";
-    case ChipType::kUnknown:
+    case ChipModel::kUnknown:
     default:
       return "Unknown";
   }
 }
 
-Sgm41562xx::ChipType Sgm41562xx::DetectChipType(uint8_t chip_id) {
+Sgm41562xx::ChipModel Sgm41562xx::DetectChipModel(uint8_t chip_id) {
   switch (chip_id) {
     case kChipIdSgm41562A:
-      return ChipType::kSgm41562A;
+      return ChipModel::kSgm41562A;
     case kChipIdSgm41562:
-      return ChipType::kSgm41562;
+      return ChipModel::kSgm41562;
     case kChipIdSgm41562S:
-      return ChipType::kSgm41562S;
+      return ChipModel::kSgm41562S;
     case kChipIdSgm41562BAndSa:
-      return DetectIdZeroChipType();
+      return DetectIdZeroChipModel();
     default:
-      return ChipType::kUnknown;
+      return ChipModel::kUnknown;
   }
 }
 
-Sgm41562xx::ChipType Sgm41562xx::DetectIdZeroChipType() {
+Sgm41562xx::ChipModel Sgm41562xx::DetectIdZeroChipModel() {
   uint8_t charge_voltage_control = 0;
   uint8_t system_voltage_regulation = 0;
   if (!bus_->Read(static_cast<uint8_t>(Register::kChargeVoltageControl),
@@ -202,23 +202,23 @@ Sgm41562xx::ChipType Sgm41562xx::DetectIdZeroChipType() {
           &system_voltage_regulation)) {
     LogMessage(
         LogLevel::kError, __FILE__, __LINE__, "Read reset values failed\n");
-    return ChipType::kUnknown;
+    return ChipModel::kUnknown;
   }
 
   // B和SA的芯片ID相同，软件复位后通过寄存器默认值区分型号
   if (charge_voltage_control == kSgm41562BChargeVoltageReset &&
       system_voltage_regulation == kSgm41562BSystemVoltageReset) {
-    return ChipType::kSgm41562B;
+    return ChipModel::kSgm41562B;
   }
   if (charge_voltage_control == kSgm41562SaChargeVoltageReset &&
       system_voltage_regulation == kSgm41562SaSystemVoltageReset) {
-    return ChipType::kSgm41562Sa;
+    return ChipModel::kSgm41562Sa;
   }
 
   LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
       "Unknown id 0x00 reset values (REG04: %#X, REG07: %#X)\n",
       charge_voltage_control, system_voltage_regulation);
-  return ChipType::kUnknown;
+  return ChipModel::kUnknown;
 }
 
 bool Sgm41562xx::ResetRegisters() {
@@ -309,7 +309,7 @@ bool Sgm41562xx::ReadRegister(
 }
 
 bool Sgm41562xx::IsInitialized() {
-  if (chip_type_ != ChipType::kUnknown && model_driver_ != nullptr) {
+  if (chip_model_ != ChipModel::kUnknown && model_driver_ != nullptr) {
     return true;
   }
 

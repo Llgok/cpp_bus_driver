@@ -77,17 +77,13 @@ class Rm69a10 final : public MipiChipBase {
 
   enum class DcsCommand {
     kRoChipId = 0xA1,
-
     kWoSlpin = 0x10,
-    kWoSlpout,
-
+    kWoSlpout = 0x11,
     kWoInvoff = 0x20,
-    kWoInvon,
-
+    kWoInvon = 0x21,
     kWoWrdisbv = 0x51,
-
     kWoDispoff = 0x28,
-    kWoDispon,
+    kWoDispon = 0x29,
   };
 
   static constexpr uint8_t kChipId = 0x01;

@@ -359,7 +359,6 @@ class Icm20948 final : public DriverBase {
     kRoGyroXoutH = 0x0033,
     kRoTemperatureOutH = 0x0039,
     kRoExternalSensorData00 = 0x003B,
-
     // USER BANK 2 寄存器。
     kRwGyroSampleRateDivider = 0x0200,
     kRwGyroConfig1 = 0x0201,
@@ -368,7 +367,6 @@ class Icm20948 final : public DriverBase {
     kRwAccelSampleRateDividerLow = 0x0211,
     kRwAccelConfig = 0x0214,
     kRwTemperatureConfig = 0x0253,
-
     // USER BANK 3 寄存器。
     kRwI2cMasterOdrConfig = 0x0300,
     kRwI2cMasterCtrl = 0x0301,

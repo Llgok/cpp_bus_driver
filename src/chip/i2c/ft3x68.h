@@ -72,9 +72,8 @@ class Ft3x68 final : public I2cChipBase {
     // 芯片标识映射：0x00 为 kFt6456，0x04 为 kFt3268，
     // 0x01 为 kFt3067，0x05 为 kFt3368，0x02 为 kFt3068，0x03 为 kFt3168。
     kRoChipId = 0xA0,
-
     kRoTdStatus = 0x02,  // 触摸手指数
-    kRoP1Xh,             // 第1点的X坐标高4位
+    kRoP1Xh = 0x03,             // 第1点的X坐标高4位
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x38;

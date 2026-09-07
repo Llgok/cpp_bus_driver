@@ -258,11 +258,6 @@ class L76k final : public UartChipBase {
   bool QueryCasicUpdateInterval();
 
  private:
-  enum class Register {
-    kRoChipId = 0x00,
-
-  };
-
   static constexpr uint8_t kGetInformationTimeoutCount = 3;  // 获取信息超时计数
   static constexpr uint16_t kMaxReceiveSize = 1024 * 2;      // 最大接收尺寸
 

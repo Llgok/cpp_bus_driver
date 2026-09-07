@@ -540,10 +540,10 @@ bool Sx126x::SetDio2AsRfSwitchCtrl(Dio2Mode mode) {
 
 bool Sx126x::SetPaConfig(uint8_t pa_duty_cycle, uint8_t hp_max) {
   const uint8_t max_duty_cycle =
-      ((chip_type_ == ChipType::kSx1261) && (param_.freq_mhz >= 400.0)) ? 0x07
+      ((chip_model_ == ChipModel::kSx1261) && (param_.freq_mhz >= 400.0)) ? 0x07
                                                                         : 0x04;
   if ((pa_duty_cycle > max_duty_cycle) || (hp_max > 0x07) ||
-      ((chip_type_ == ChipType::kSx1261) && (hp_max != 0))) {
+      ((chip_model_ == ChipModel::kSx1261) && (hp_max != 0))) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
     return false;
   }
@@ -551,7 +551,7 @@ bool Sx126x::SetPaConfig(uint8_t pa_duty_cycle, uint8_t hp_max) {
   uint8_t buffer[] = {
       pa_duty_cycle,
       hp_max,
-      static_cast<uint8_t>(chip_type_),
+      static_cast<uint8_t>(chip_model_),
       0x01,  // 这一位固定为0x01
   };
 
@@ -564,8 +564,8 @@ bool Sx126x::SetPaConfig(uint8_t pa_duty_cycle, uint8_t hp_max) {
 }
 
 bool Sx126x::SetTxParams(int8_t power, RampTime ramp_time) {
-  const int8_t min_power = (chip_type_ == ChipType::kSx1261) ? -17 : -9;
-  const int8_t max_power = (chip_type_ == ChipType::kSx1261) ? 14 : 22;
+  const int8_t min_power = (chip_model_ == ChipModel::kSx1261) ? -17 : -9;
+  const int8_t max_power = (chip_model_ == ChipModel::kSx1261) ? 14 : 22;
   if ((power < min_power) || (power > max_power) ||
       (static_cast<uint8_t>(ramp_time) > 7)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
@@ -716,8 +716,8 @@ bool Sx126x::SetLoraPacketParams(uint16_t preamble_length,
 }
 
 bool Sx126x::SetOutputPower(int8_t power, RampTime ramp_time) {
-  const int8_t min_power = (chip_type_ == ChipType::kSx1261) ? -17 : -9;
-  const int8_t max_power = (chip_type_ == ChipType::kSx1261) ? 14 : 22;
+  const int8_t min_power = (chip_model_ == ChipModel::kSx1261) ? -17 : -9;
+  const int8_t max_power = (chip_model_ == ChipModel::kSx1261) ? 14 : 22;
 
   if (power < min_power) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
@@ -737,7 +737,7 @@ bool Sx126x::SetOutputPower(int8_t power, RampTime ramp_time) {
   }
 
   const uint8_t pa_duty_cycle = 0x04;
-  const uint8_t hp_max = (chip_type_ == ChipType::kSx1261) ? 0x00 : 0x07;
+  const uint8_t hp_max = (chip_model_ == ChipModel::kSx1261) ? 0x00 : 0x07;
   if (!SetPaConfig(pa_duty_cycle, hp_max)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetPaConfig failed\n");
     return false;
@@ -2664,7 +2664,7 @@ bool Sx126x::ValidateHardwareConfig() const {
       ((rst_ == kPinNotConnected) || (rst_ >= 0)) &&
       ((cs_ == kPinNotConnected) || (cs_ >= 0));
   const bool valid_chip =
-      (chip_type_ == ChipType::kSx1261) || (chip_type_ == ChipType::kSx1262);
+      (chip_model_ == ChipModel::kSx1261) || (chip_model_ == ChipModel::kSx1262);
 
   return valid_chip && has_busy_source && valid_optional_pins && (tcxo <= 7) &&
          (regulator <= 1) && (dio2 <= 1) &&
@@ -2674,8 +2674,8 @@ bool Sx126x::ValidateHardwareConfig() const {
 }
 
 bool Sx126x::ValidateConfig(const LoraConfig& config) {
-  const int8_t min_power = (chip_type_ == ChipType::kSx1261) ? -17 : -9;
-  const int8_t max_power = (chip_type_ == ChipType::kSx1261) ? 14 : 22;
+  const int8_t min_power = (chip_model_ == ChipModel::kSx1261) ? -17 : -9;
+  const int8_t max_power = (chip_model_ == ChipModel::kSx1261) ? 14 : 22;
   const uint8_t sf = static_cast<uint8_t>(config.spreading_factor);
   const uint8_t cr = static_cast<uint8_t>(config.coding_rate);
   const uint8_t header = static_cast<uint8_t>(config.header_type);
@@ -2687,7 +2687,7 @@ bool Sx126x::ValidateConfig(const LoraConfig& config) {
   const bool valid_cad_exit =
       (cad_exit == 0) || (cad_exit == 1) || (cad_exit == 0x10);
   const char* power_range =
-      (chip_type_ == ChipType::kSx1261) ? "[-17, 14]" : "[-9, 22]";
+      (chip_model_ == ChipModel::kSx1261) ? "[-17, 14]" : "[-9, 22]";
 
   bool valid = true;
   const auto check = [this, &valid](bool condition, const char* name,
@@ -2729,8 +2729,8 @@ bool Sx126x::ValidateConfig(const LoraConfig& config) {
 }
 
 bool Sx126x::ValidateConfig(const GfskConfig& config) {
-  const int8_t min_power = (chip_type_ == ChipType::kSx1261) ? -17 : -9;
-  const int8_t max_power = (chip_type_ == ChipType::kSx1261) ? 14 : 22;
+  const int8_t min_power = (chip_model_ == ChipModel::kSx1261) ? -17 : -9;
+  const int8_t max_power = (chip_model_ == ChipModel::kSx1261) ? 14 : 22;
   const float bandwidth_khz = GetGfskBandwidthKhz(config.bandwidth);
   uint8_t detector_bits = 0;
   bool valid_detector = true;
@@ -2764,7 +2764,7 @@ bool Sx126x::ValidateConfig(const GfskConfig& config) {
   const uint8_t whitening = static_cast<uint8_t>(config.whitening);
   const uint8_t ramp = static_cast<uint8_t>(config.ramp_time);
   const char* power_range =
-      (chip_type_ == ChipType::kSx1261) ? "[-17, 14]" : "[-9, 22]";
+      (chip_model_ == ChipModel::kSx1261) ? "[-17, 14]" : "[-9, 22]";
   const double required_bandwidth = config.bit_rate_kbps +
                                     (2.0 * config.frequency_deviation_khz) +
                                     config.frequency_error_khz;
@@ -2868,7 +2868,7 @@ bool Sx126x::ApplyHardwareConfig(bool calibrate_tcxo) {
         LogLevel::kError, __FILE__, __LINE__, "InitRetentionList failed\n");
     return false;
   }
-  if ((chip_type_ == ChipType::kSx1262) &&
+  if ((chip_model_ == ChipModel::kSx1262) &&
       hardware_config_.enable_tx_clamp_workaround && !FixTxClamp(true)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "FixTxClamp failed\n");
     return false;
@@ -3052,7 +3052,7 @@ bool Sx126x::InitRetentionList() {
 }
 
 bool Sx126x::ApplyWorkaroundsAfterWakeup() {
-  if ((chip_type_ == ChipType::kSx1262) &&
+  if ((chip_model_ == ChipModel::kSx1262) &&
       hardware_config_.enable_tx_clamp_workaround && !FixTxClamp(true)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "FixTxClamp failed\n");
     return false;

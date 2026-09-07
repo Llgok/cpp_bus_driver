@@ -559,26 +559,26 @@ class Sy6970 final : public I2cChipBase {
 
   enum class Register : uint8_t {
     kRwInputSourceControl = 0x00,      // 输入源控制寄存器
-    kRwTemperatureMonitorControl,      // 温度监控控制寄存器
-    kRwSystemControl,                  // 系统控制寄存器
-    kRwPowerOnConfiguration,           // 上电配置寄存器
-    kRwChargeCurrentControl,           // 充电电流控制寄存器
-    kRwPrechrgTermCurrentControl,      // 预充电/终止电流控制寄存器
-    kRwChargeVoltageControl,           // 充电电压控制寄存器
-    kRwChargeTerminationTimerControl,  // 充电终止/定时器控制寄存器
-    kRwIrCompensationControl,          // IR补偿控制寄存器
-    kRwMiscellaneousOperationControl,  // 杂项操作控制寄存器
-    kRwBoostModeControl,               // 升压模式控制寄存器
-    kRdSystemStatus,                   // 系统状态寄存器
-    kRdFaultStatus,                    // 故障状态寄存器
-    kRwVindpmControl,                  // 输入电压限制控制寄存器
-    kRdBatteryVoltage,                 // 电池电压寄存器
-    kRdSystemVoltage,                  // 系统电压寄存器
-    kRdNtcVoltage,                     // NTC电压寄存器
-    kRdBusVoltageStatus,               // 总线电压状态寄存器
-    kRdChargeCurrent,                  // 充电电流寄存器
-    kRdInputCurrentLimitStatus,        // 输入电流限制状态寄存器
-    kRwDeviceControl,                  // 设备控制寄存器
+    kRwTemperatureMonitorControl = 0x01,      // 温度监控控制寄存器
+    kRwSystemControl = 0x02,                  // 系统控制寄存器
+    kRwPowerOnConfiguration = 0x03,           // 上电配置寄存器
+    kRwChargeCurrentControl = 0x04,           // 充电电流控制寄存器
+    kRwPrechrgTermCurrentControl = 0x05,      // 预充电/终止电流控制寄存器
+    kRwChargeVoltageControl = 0x06,           // 充电电压控制寄存器
+    kRwChargeTerminationTimerControl = 0x07,  // 充电终止/定时器控制寄存器
+    kRwIrCompensationControl = 0x08,          // IR补偿控制寄存器
+    kRwMiscellaneousOperationControl = 0x09,  // 杂项操作控制寄存器
+    kRwBoostModeControl = 0x0A,               // 升压模式控制寄存器
+    kRdSystemStatus = 0x0B,                   // 系统状态寄存器
+    kRdFaultStatus = 0x0C,                    // 故障状态寄存器
+    kRwVindpmControl = 0x0D,                  // 输入电压限制控制寄存器
+    kRdBatteryVoltage = 0x0E,                 // 电池电压寄存器
+    kRdSystemVoltage = 0x0F,                  // 系统电压寄存器
+    kRdNtcVoltage = 0x10,                     // NTC电压寄存器
+    kRdBusVoltageStatus = 0x11,               // 总线电压状态寄存器
+    kRdChargeCurrent = 0x12,                  // 充电电流寄存器
+    kRdInputCurrentLimitStatus = 0x13,        // 输入电流限制状态寄存器
+    kRwDeviceControl = 0x14,                  // 设备控制寄存器
   };
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x6A;

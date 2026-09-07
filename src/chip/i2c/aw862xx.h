@@ -52,7 +52,7 @@ class Aw862xx final : public I2cChipBase {
     kGain40,
   };
 
-  enum class ChipType {
+  enum class ChipModel {
     kUnknown = 0,  // 未知芯片
     kAw8623,
     kAw8624,
@@ -139,9 +139,9 @@ class Aw862xx final : public I2cChipBase {
 
   /**
    * @brief 读取并识别AW862xx芯片类型
-   * @return 返回芯片类型，无法识别返回ChipType::kUnknown
+   * @return 返回芯片类型，无法识别返回ChipModel::kUnknown
    */
-  ChipType GetChipId();
+  ChipModel GetChipId();
 
   /**
    * @brief 软件复位
@@ -459,80 +459,71 @@ class Aw862xx final : public I2cChipBase {
   enum class Register {
     kRoChipId = 0x00,
     kWoSrst = kRoChipId,
-    kRoSysst,
-    kRcSysint,
-    kRwSysintm,
-    kRoSyssst2,
-
+    kRoSysst = 0x01,
+    kRcSysint = 0x02,
+    kRwSysintm = 0x03,
+    kRoSyssst2 = 0x04,
     kRwPlaycfg2 = 0x07,
-    kRwPlaycfg3,
-    kRwPlaycfg4,
-    kRwWavcfg1,
-    kRwWavcfg2,
-    kRwWavcfg3,
-    kRwWavcfg4,
-    kRwWavcfg5,
-    kRwWavcfg6,
-    kRwWavcfg7,
-    kRwWavcfg8,
-    kRwWavcfg9,
-    kRwWavcfg10,
-    kRwWavcfg11,
-    kRwWavcfg12,
-    kRwWavcfg13,
-
+    kRwPlaycfg3 = 0x08,
+    kRwPlaycfg4 = 0x09,
+    kRwWavcfg1 = 0x0A,
+    kRwWavcfg2 = 0x0B,
+    kRwWavcfg3 = 0x0C,
+    kRwWavcfg4 = 0x0D,
+    kRwWavcfg5 = 0x0E,
+    kRwWavcfg6 = 0x0F,
+    kRwWavcfg7 = 0x10,
+    kRwWavcfg8 = 0x11,
+    kRwWavcfg9 = 0x12,
+    kRwWavcfg10 = 0x13,
+    kRwWavcfg11 = 0x14,
+    kRwWavcfg12 = 0x15,
+    kRwWavcfg13 = 0x16,
     kRwContcfg1 = 0x18,
-    kRwContcfg2,
-    kRwContcfg3,
-    kRwContcfg4,
-    kRwContcfg5,
-    kRwContcfg6,
-    kRwContcfg7,
-    kRwContcfg8,
-    kRwContcfg9,
-    kRwContcfg10,
-    kRwContcfg11,
-
+    kRwContcfg2 = 0x19,
+    kRwContcfg3 = 0x1A,
+    kRwContcfg4 = 0x1B,
+    kRwContcfg5 = 0x1C,
+    kRwContcfg6 = 0x1D,
+    kRwContcfg7 = 0x1E,
+    kRwContcfg8 = 0x1F,
+    kRwContcfg9 = 0x20,
+    kRwContcfg10 = 0x21,
+    kRwContcfg11 = 0x22,
     kRoContrd14 = 0x25,
-    kRoContrd15,
-    kRoContrd16,
-    kRoContrd17,
-
+    kRoContrd15 = 0x26,
+    kRoContrd16 = 0x27,
+    kRoContrd17 = 0x28,
     kRwRtpcfg1 = 0x2D,
-    kRwRtpcfg2,
-    kRwRtpcfg3,
-    kRwRtpcfg4,
-    kRwRtpcfg5,
-    kRwRtpdata,
-    kRwTrgcfg1,
-
+    kRwRtpcfg2 = 0x2E,
+    kRwRtpcfg3 = 0x2F,
+    kRwRtpcfg4 = 0x30,
+    kRwRtpcfg5 = 0x31,
+    kRwRtpdata = 0x32,
+    kRwTrgcfg1 = 0x33,
     kRwTrgcfg4 = 0x36,
     kRwTrgcfg7 = 0x39,
-    kRwTrgcfg8,
-
+    kRwTrgcfg8 = 0x3A,
     kRwGlbcfg2 = 0x3C,
     kRwGlbcfg4 = 0x3E,
-    kRoGlbrd5,
-    kRwRamaddrh,
-    kRwRamaddrl,
-    kRwRamadata,
-    kRwSysctrl1,
-    kRwSysctrl2,
-    kRwSysctrl3,
-    kRwSysctrl4,
-    kRwSysctrl5,
-    kRwSysctrl6,
-
+    kRoGlbrd5 = 0x3F,
+    kRwRamaddrh = 0x40,
+    kRwRamaddrl = 0x41,
+    kRwRamadata = 0x42,
+    kRwSysctrl1 = 0x43,
+    kRwSysctrl2 = 0x44,
+    kRwSysctrl3 = 0x45,
+    kRwSysctrl4 = 0x46,
+    kRwSysctrl5 = 0x47,
+    kRwSysctrl6 = 0x48,
     kRwSysctrl7 = 0x49,
     kRwPwmcfg1 = 0x4C,
-    kRwPwmcfg2,
-    kRwPwmcfg3,
-    kRwPwmcfg4,
-
+    kRwPwmcfg2 = 0x4D,
+    kRwPwmcfg3 = 0x4E,
+    kRwPwmcfg4 = 0x4F,
     kRwDetcfg1 = 0x51,
-    kRwDetcfg2,
-    kRwDetRl,
-
+    kRwDetcfg2 = 0x52,
+    kRwDetRl = 0x53,
     kRwDetVbat = 0x55,
     kRoChipIdHigh = 0x57,
     kRwDetLo = 0x57,
@@ -558,10 +549,10 @@ class Aw862xx final : public I2cChipBase {
 
   /**
    * @brief 获取芯片类型名称
-   * @param chip_type 芯片类型
+   * @param chip_model 芯片类型
    * @return 芯片类型名称字符串
    */
-  static const char* ChipTypeToString(ChipType chip_type);
+  static const char* ChipModelToString(ChipModel chip_model);
 
   /**
    * @brief 获取RAM波形采样率名称。
@@ -610,6 +601,6 @@ class Aw862xx final : public I2cChipBase {
   int32_t rst_;
   uint32_t f0_value_ = 1700;
   RamWaveformInfo ram_waveform_info_;
-  ChipType chip_type_ = ChipType::kUnknown;
+  ChipModel chip_model_ = ChipModel::kUnknown;
 };
 }  // namespace cpp_bus_driver

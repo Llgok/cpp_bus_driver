@@ -466,92 +466,74 @@ class Axp517 final : public I2cChipBase {
 
   enum class Register {
     kRwMessageHeaderInfo = 0xCE,
-
     // 状态寄存器
     kRoBmuStatus0 = 0x00,  // BMU状态0
-    kRoBmuStatus1,         // BMU状态1
-
+    kRoBmuStatus1 = 0x01,         // BMU状态1
     kRoBcDetect = 0x05,  // BC检测结果
-    kRoBmuFault0,        // BMU故障0
-
+    kRoBmuFault0 = 0x06,        // BMU故障0
     kRoBmuFault1 = 0x08,  // BMU故障1
-
     // 模块使能控制
     kRwModuleEnableControl0 = 0x0B,  // 模块使能控制0
-
     // 通用配置
     kRwCommonConfigure = 0x10,  // 通用配置
-    kRwGpioConfigure,           // GPIO配置
-    kRwBatfetControl,           // BATFET控制
-    kRwRbfetControl,            // RBFET控制
-
+    kRwGpioConfigure = 0x11,           // GPIO配置
+    kRwBatfetControl = 0x12,           // BATFET控制
+    kRwRbfetControl = 0x13,            // RBFET控制
     // 充电相关
     kRwMinimumSystemVoltageControl = 0x15,  // 最小系统电压控制
-    kRwInputVoltageLimitControl,            // 输入电压限制控制
-    kRwInputCurrentLimitControl,            // 输入电流限制控制
-
+    kRwInputVoltageLimitControl = 0x16,            // 输入电压限制控制
+    kRwInputCurrentLimitControl = 0x17,            // 输入电流限制控制
     kRwModuleEnableControl1 = 0x19,  // 模块使能控制1
-    kRwWatchdogControl,              // 看门狗控制
-
+    kRwWatchdogControl = 0x1A,              // 看门狗控制
     kRwBoostConfigure = 0x1E,  // Boost配置
-
     // 温度传感器
     kRwTsPinConfigure = 0x50,  // TS引脚配置
-
     kRwVltfChgSetting = 0x54,  // 充电低温阈值设置
-    kRwVhtfChgSetting,         // 充电高温阈值设置
-    kRwVltfWorkSetting,        // 工作低温阈值设置
-    kRwVhtfWorkSetting,        // 工作高温阈值设置
-
+    kRwVhtfChgSetting = 0x55,         // 充电高温阈值设置
+    kRwVltfWorkSetting = 0x56,        // 工作低温阈值设置
+    kRwVhtfWorkSetting = 0x57,        // 工作高温阈值设置
     // JEITA标准
     kRwJeitaStandardEnableControl = 0x58,  // JEITA标准使能控制
-    kRwJeitaCurrentVoltageConfiguration,   // JEITA电流/电压配置
-
+    kRwJeitaCurrentVoltageConfiguration = 0x59,   // JEITA电流/电压配置
     // 充电控制
     kRwIprechgItrichgSetting = 0x61,       // 预充电/涓流充电设置
-    kRwIccSetting,                         // 恒流充电设置
-    kRwItermSettingAndControl,             // 终止电流设置和控制
-    kRwCvChargerVoltageSetting,            // 恒压充电电压设置
-    kRwThermalRegulationThresholdSetting,  // 热调节阈值设置
-
+    kRwIccSetting = 0x62,                         // 恒流充电设置
+    kRwItermSettingAndControl = 0x63,             // 终止电流设置和控制
+    kRwCvChargerVoltageSetting = 0x64,            // 恒压充电电压设置
+    kRwThermalRegulationThresholdSetting = 0x65,  // 热调节阈值设置
     kRwChargerTimerConfigure = 0x67,  // 充电定时器配置
-
     // 电量计
     kRwFuelGaugeControl = 0x71,  // 电量计控制
-    kRoBatteryTemperature,       // 电池温度
-    kRoBatterySoh,               // 电池健康度
-    kRoBatteryPercentage,        // 电池百分比
-
+    kRoBatteryTemperature = 0x72,       // 电池温度
+    kRoBatterySoh = 0x73,               // 电池健康度
+    kRoBatteryPercentage = 0x74,        // 电池百分比
     // ADC相关
     kRwAdcChannelEnableControl = 0x90,  // ADC通道使能控制
-    kRoVbatH,                           // 电池电压高字节
-    kRoVbatL,                           // 电池电压低字节
-    kRoIbatH,                           // 电池电流高字节
-    kRoIbatL,                           // 电池电流低字节
-    kRoTsH,                             // TS电压高字节
-    kRoTsL,                             // TS电压低字节
-    kRoVbusCurrentH,                    // VBUS电流高字节
-    kRoVbusCurrentL,                    // VBUS电流低字节
-    kRoVbusVoltageH,                    // VBUS电压高字节
-    kRoVbusVoltageL,                    // VBUS电压低字节
-    kRwAdcDataSelect,                   // ADC数据选择
-    kRoAdcDataH,                        // ADC数据高字节
-    kRoAdcDataL,                        // ADC数据低字节
-
+    kRoVbatH = 0x91,                           // 电池电压高字节
+    kRoVbatL = 0x92,                           // 电池电压低字节
+    kRoIbatH = 0x93,                           // 电池电流高字节
+    kRoIbatL = 0x94,                           // 电池电流低字节
+    kRoTsH = 0x95,                             // TS电压高字节
+    kRoTsL = 0x96,                             // TS电压低字节
+    kRoVbusCurrentH = 0x97,                    // VBUS电流高字节
+    kRoVbusCurrentL = 0x98,                    // VBUS电流低字节
+    kRoVbusVoltageH = 0x99,                    // VBUS电压高字节
+    kRoVbusVoltageL = 0x9A,                    // VBUS电压低字节
+    kRwAdcDataSelect = 0x9B,                   // ADC数据选择
+    kRoAdcDataH = 0x9C,                        // ADC数据高字节
+    kRoAdcDataL = 0x9D,                        // ADC数据低字节
     // 中断
     kRwIrqEnable0 = 0x40,  // 中断使能0
-    kRwIrqEnable1,         // 中断使能1
-    kRwIrqEnable2,         // 中断使能2
-    kRwIrqEnable3,         // 中断使能3
-
+    kRwIrqEnable1 = 0x41,         // 中断使能1
+    kRwIrqEnable2 = 0x42,         // 中断使能2
+    kRwIrqEnable3 = 0x43,         // 中断使能3
     kRwIrqStatus0 = 0x48,  // 中断状态0
-    kRwIrqStatus1,         // 中断状态1
-    kRwIrqStatus2,         // 中断状态2
-    kRwIrqStatus3,         // 中断状态3
-
+    kRwIrqStatus1 = 0x49,         // 中断状态1
+    kRwIrqStatus2 = 0x4A,         // 中断状态2
+    kRwIrqStatus3 = 0x4B,         // 中断状态3
     // PD相关
     kRwTcpcControl = 0xB9,  // TCPC控制
-    kRwRoleControl,         // 角色控制
+    kRwRoleControl = 0xBA,         // 角色控制
     kRoCcStatus = 0xBD,     // CC连接状态
     kRwCommand = 0xC3,      // 命令寄存器
   };
