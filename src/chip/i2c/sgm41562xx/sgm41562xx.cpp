@@ -5,55 +5,25 @@
  * @LastEditTime: 2026-09-05 14:56:53
  * @License: GPL 3.0
  */
-#include "chip/i2c/sgm41562xx.h"
+#include "chip/i2c/sgm41562xx/sgm41562xx.h"
 
 namespace cpp_bus_driver {
-#if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_NRF52
-constexpr const uint8_t Sgm41562xx::kInitSequenceAb[];
-constexpr const uint8_t Sgm41562xx::kInitSequenceS[];
-#endif
-
 namespace {
 constexpr uint8_t kRegisterResetMask = 0x80;
 constexpr uint8_t kChargeDisableMask = 0x08;
 constexpr uint8_t kHighImpedanceEnableMask = 0x10;
 constexpr uint8_t kBatteryUndervoltageMask = 0x07;
 constexpr uint8_t kInputVoltageLimitMask = 0xF0;
-constexpr uint8_t kInputCurrentLimitMask = 0x0F;
-constexpr uint8_t kExtendedInputCurrentLimitMask = 0xF8;
-constexpr uint8_t kFastChargeCurrentAbMask = 0x3F;
-constexpr uint8_t kFastChargeCurrentSMask = 0x7F;
 constexpr uint8_t kTerminationCurrentMask = 0x0F;
 constexpr uint8_t kDischargeCurrentMask = 0xF0;
-constexpr uint8_t kChargeVoltageAbMask = 0xFC;
-constexpr uint8_t kChargeVoltageSMask = 0xFE;
-constexpr uint8_t kSystemVoltageAbMask = 0x0F;
-constexpr uint8_t kSystemVoltageSMask = 0x1F;
-constexpr uint8_t kThermalRegulationAbMask = 0x30;
-constexpr uint8_t kThermalRegulationSMask = 0x60;
-constexpr uint8_t kExtendedTerminationMultiplierMask = 0x04;
-constexpr uint8_t kExtendedPrechargeMultiplierMask = 0x08;
-constexpr uint8_t kExtendedPrechargeCurrentMask = 0xF0;
-constexpr uint8_t kPrechargeThresholdAbMask = 0x02;
-constexpr uint8_t kPrechargeThresholdSMask = 0x02;
 constexpr uint8_t kRechargeThresholdMask = 0x01;
-constexpr uint8_t kWatchdogResetAbMask = 0x40;
-constexpr uint8_t kWatchdogResetSMask = 0x01;
 constexpr uint8_t kWatchdogInDischargeEnableMask = 0x80;
-constexpr uint8_t kWatchdogMask = 0x60;
 constexpr uint8_t kChargeTerminationEnableMask = 0x10;
 constexpr uint8_t kSafetyTimerEnableMask = 0x08;
 constexpr uint8_t kSafetyTimerSettingMask = 0x06;
 constexpr uint8_t kTerminationTimerEnableMask = 0x01;
 constexpr uint8_t kNtcEnableMask = 0x80;
 constexpr uint8_t kSafetyTimerExtendedMask = 0x40;
-constexpr uint8_t kPcbProtectionDisableAbMask = 0x80;
-constexpr uint8_t kPcbProtectionDisableSMask = 0x40;
-constexpr uint8_t kInputVoltageLoopDisableAbMask = 0x40;
-constexpr uint8_t kInputVoltageLoopDisableSMask = 0x80;
-constexpr uint8_t kInputCurrentLimitReleaseMask = 0x40;
-constexpr uint8_t kInputCurrentLimitAdd200Mask = 0x20;
-constexpr uint8_t kInputOvervoltageSelectMask = 0x20;
 constexpr uint8_t kShippingModeEnableMask = 0x20;
 constexpr uint8_t kShippingModeDelayMask = 0xC0;
 constexpr uint8_t kPowerPathSwitchForceMask = 0x08;
@@ -80,21 +50,37 @@ bool IsRegisterValueValid(
 }
 }  // namespace
 
+const Sgm41562xx::ModelDriver* Sgm41562xx::GetModelDriver(ChipType chip_type) {
+  static const Sgm41562Driver kSgm41562;
+  static const Sgm41562sDriver kSgm41562s;
+  switch (chip_type) {
+    case ChipType::kSgm41562:
+    case ChipType::kSgm41562A:
+    case ChipType::kSgm41562B:
+      return &kSgm41562;
+    case ChipType::kSgm41562S:
+    case ChipType::kSgm41562Sa:
+      return &kSgm41562s;
+    case ChipType::kUnknown:
+    default:
+      return nullptr;
+  }
+}
+
+uint32_t Sgm41562xx::MakeFeatureMask(std::initializer_list<Feature> features) {
+  uint32_t mask = 0;
+  for (Feature feature : features) {
+    mask |= uint32_t{1} << static_cast<uint8_t>(feature);
+  }
+  return mask;
+}
+
+Sgm41562xx::ModelDriver::ModelDriver(std::initializer_list<Feature> features)
+    : feature_mask_(MakeFeatureMask(features)) {}
+
 bool Sgm41562xx::Init(int32_t freq_hz) {
   chip_type_ = ChipType::kUnknown;
-
-  if (rst_ != kPinNotConnected) {
-    bool result = true;
-    result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
-    result &= GpioWrite(rst_, 0);
-    DelayMs(10);
-    result &= GpioWrite(rst_, 1);
-    DelayMs(10);
-    if (!result) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
-      return false;
-    }
-  }
+  model_driver_ = nullptr;
 
   if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
@@ -125,15 +111,11 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
   }
 
   chip_type_ = detected_chip_type;
-  const bool extended_register_map =
-      chip_type_ == ChipType::kSgm41562S || chip_type_ == ChipType::kSgm41562Sa;
-  const uint8_t* init_sequence =
-      extended_register_map ? kInitSequenceS : kInitSequenceAb;
-  const size_t init_sequence_size =
-      extended_register_map ? sizeof(kInitSequenceS) : sizeof(kInitSequenceAb);
-  if (!InitSequence(init_sequence, init_sequence_size)) {
+  model_driver_ = GetModelDriver(chip_type_);
+  if (model_driver_ == nullptr || !model_driver_->Init(*this)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
     chip_type_ = ChipType::kUnknown;
+    model_driver_ = nullptr;
     return false;
   }
 
@@ -151,11 +133,8 @@ bool Sgm41562xx::Deinit(bool delete_bus) {
     result = false;
   }
 
-  if (rst_ != kPinNotConnected) {
-    result &= ResetGpio(rst_);
-  }
-
   chip_type_ = ChipType::kUnknown;
+  model_driver_ = nullptr;
   return result;
 }
 
@@ -171,6 +150,15 @@ bool Sgm41562xx::GetChipId(uint8_t& chip_id) {
 }
 
 Sgm41562xx::ChipType Sgm41562xx::GetChipType() const { return chip_type_; }
+
+bool Sgm41562xx::HasFeature(Feature feature) const {
+  const auto bit = static_cast<uint8_t>(feature);
+  if (chip_type_ == ChipType::kUnknown || model_driver_ == nullptr ||
+      bit >= 32) {
+    return false;
+  }
+  return (model_driver_->feature_mask_ & (uint32_t{1} << bit)) != 0;
+}
 
 const char* Sgm41562xx::ChipTypeToString(ChipType chip_type) {
   switch (chip_type) {
@@ -266,6 +254,47 @@ bool Sgm41562xx::UpdateRegisterBits(
   return true;
 }
 
+bool Sgm41562xx::SetRegisterField(const RegisterField& field, uint16_t value) {
+  if (!IsRegisterValueValid(value, field.minimum, field.maximum, field.step)) {
+    return false;
+  }
+  return UpdateRegisterBits(field.register_id, field.mask,
+      static_cast<uint8_t>(
+          ((value - field.minimum) / field.step) << field.shift));
+}
+
+uint16_t Sgm41562xx::DecodeRegisterField(
+    const RegisterField& field, uint8_t register_value) {
+  const uint16_t value =
+      field.minimum +
+      field.step * ((register_value & field.mask) >> field.shift);
+  return value > field.maximum ? field.maximum : value;
+}
+
+bool Sgm41562xx::ModelDriver::FinishTerminationCurrentLimit(Sgm41562xx&) const {
+  return true;
+}
+
+bool Sgm41562xx::ModelDriver::SetPrechargeCurrentLimit(
+    Sgm41562xx&, uint16_t) const {
+  return false;
+}
+
+bool Sgm41562xx::ModelDriver::SetInputCurrentLimitReleaseEnable(
+    Sgm41562xx&, bool) const {
+  return false;
+}
+
+bool Sgm41562xx::ModelDriver::SetInputCurrentLimitOffsetEnable(
+    Sgm41562xx&, bool) const {
+  return false;
+}
+
+bool Sgm41562xx::ModelDriver::SetInputOvervoltageThreshold(
+    Sgm41562xx&, uint16_t) const {
+  return false;
+}
+
 bool Sgm41562xx::ReadRegister(
     Register register_id, uint8_t& value, const char* name) {
   if (!bus_->Read(static_cast<uint8_t>(register_id), &value)) {
@@ -280,7 +309,7 @@ bool Sgm41562xx::ReadRegister(
 }
 
 bool Sgm41562xx::IsInitialized() {
-  if (chip_type_ != ChipType::kUnknown) {
+  if (chip_type_ != ChipType::kUnknown && model_driver_ != nullptr) {
     return true;
   }
 
@@ -351,88 +380,28 @@ bool Sgm41562xx::SetChargeVoltageLimit(uint16_t voltage_mv) {
   if (!IsInitialized()) {
     return false;
   }
-  if (HasExtendedRegisterMap()) {
-    if (!IsRegisterValueValid(voltage_mv, 3500, 4770, 10)) {
-      return false;
-    }
-    return UpdateRegisterBits(Register::kChargeVoltageControl,
-        kChargeVoltageSMask,
-        static_cast<uint8_t>(((voltage_mv - 3500) / 10) << 1));
-  }
-  if (!IsRegisterValueValid(voltage_mv, 3600, 4545, 15)) {
-    return false;
-  }
-  return UpdateRegisterBits(Register::kChargeVoltageControl,
-      kChargeVoltageAbMask,
-      static_cast<uint8_t>(((voltage_mv - 3600) / 15) << 2));
+  return model_driver_->SetChargeVoltageLimit(*this, voltage_mv);
 }
 
 bool Sgm41562xx::SetSystemRegulationVoltage(uint16_t voltage_mv) {
   if (!IsInitialized()) {
     return false;
   }
-  if (HasExtendedRegisterMap()) {
-    if (!IsRegisterValueValid(voltage_mv, 3600, 5150, 50)) {
-      return false;
-    }
-    return UpdateRegisterBits(Register::kSystemVoltageRegulation,
-        kSystemVoltageSMask, static_cast<uint8_t>((voltage_mv - 3600) / 50));
-  }
-  if (!IsRegisterValueValid(voltage_mv, 4200, 4950, 50)) {
-    return false;
-  }
-  return UpdateRegisterBits(Register::kSystemVoltageRegulation,
-      kSystemVoltageAbMask, static_cast<uint8_t>((voltage_mv - 4200) / 50));
+  return model_driver_->SetSystemRegulationVoltage(*this, voltage_mv);
 }
 
 bool Sgm41562xx::SetInputCurrentLimit(uint16_t current_ma) {
   if (!IsInitialized()) {
     return false;
   }
-  if (HasExtendedRegisterMap()) {
-    if (!IsRegisterValueValid(current_ma, 50, 980, 30)) {
-      return false;
-    }
-    return UpdateRegisterBits(Register::kExtendedInputCurrentControl,
-        kExtendedInputCurrentLimitMask,
-        static_cast<uint8_t>(((current_ma - 50) / 30) << 3));
-  }
-  if (!IsRegisterValueValid(current_ma, 50, 500, 30)) {
-    return false;
-  }
-  const bool limit_set = UpdateRegisterBits(Register::kInputSourceControl,
-      kInputCurrentLimitMask, static_cast<uint8_t>((current_ma - 50) / 30));
-  return limit_set &&
-         UpdateRegisterBits(Register::kSystemStatus,
-             kInputCurrentLimitReleaseMask | kInputCurrentLimitAdd200Mask,
-             0x00);
+  return model_driver_->SetInputCurrentLimit(*this, current_ma);
 }
 
 bool Sgm41562xx::SetFastChargeCurrentLimit(uint16_t current_ma) {
   if (!IsInitialized()) {
     return false;
   }
-
-  uint8_t miscellaneous_configuration = 0;
-  if (!ReadRegister(Register::kI2cAddressMiscellaneousConfiguration,
-          miscellaneous_configuration, "REG0A miscellaneous configuration")) {
-    return false;
-  }
-
-  const bool extended = HasExtendedRegisterMap();
-  const bool fine_scale =
-      (miscellaneous_configuration & kFineChargeCurrentScaleMask) != 0;
-  const uint16_t minimum = fine_scale ? 2 : 8;
-  const uint16_t maximum =
-      fine_scale ? (extended ? 256 : 114) : (extended ? 1024 : 456);
-  const uint16_t step = fine_scale ? 2 : 8;
-  if (!IsRegisterValueValid(current_ma, minimum, maximum, step)) {
-    return false;
-  }
-  const uint16_t unscaled_current_ma = fine_scale ? current_ma * 4 : current_ma;
-  return UpdateRegisterBits(Register::kChargeCurrentControl,
-      extended ? kFastChargeCurrentSMask : kFastChargeCurrentAbMask,
-      static_cast<uint8_t>((unscaled_current_ma - 8) / 8));
+  return model_driver_->SetFastChargeCurrentLimit(*this, current_ma);
 }
 
 bool Sgm41562xx::SetTerminationCurrentLimit(uint16_t current_ma) {
@@ -442,23 +411,14 @@ bool Sgm41562xx::SetTerminationCurrentLimit(uint16_t current_ma) {
   const bool current_set =
       UpdateRegisterBits(Register::kDischargeTerminationCurrent,
           kTerminationCurrentMask, static_cast<uint8_t>((current_ma - 1) / 2));
-  if (!current_set || !HasExtendedRegisterMap()) {
-    return current_set;
-  }
-  return UpdateRegisterBits(Register::kExtendedCurrentControl,
-      kExtendedTerminationMultiplierMask, 0x00);
+  return current_set && model_driver_->FinishTerminationCurrentLimit(*this);
 }
 
 bool Sgm41562xx::SetPrechargeCurrentLimit(uint16_t current_ma) {
-  if (!IsInitialized() || !HasExtendedRegisterMap() ||
-      !IsRegisterValueValid(current_ma, 1, 31, 2)) {
+  if (!IsInitialized() || !HasFeature(Feature::kPrechargeCurrent)) {
     return false;
   }
-  const bool current_set = UpdateRegisterBits(Register::kExtendedCurrentControl,
-      kExtendedPrechargeCurrentMask,
-      static_cast<uint8_t>(((current_ma - 1) / 2) << 4));
-  return current_set && UpdateRegisterBits(Register::kExtendedCurrentControl,
-                            kExtendedPrechargeMultiplierMask, 0x00);
+  return model_driver_->SetPrechargeCurrentLimit(*this, current_ma);
 }
 
 bool Sgm41562xx::SetDischargeCurrentLimit(uint16_t current_ma) {
@@ -471,46 +431,24 @@ bool Sgm41562xx::SetDischargeCurrentLimit(uint16_t current_ma) {
 }
 
 bool Sgm41562xx::SetThermalRegulationThreshold(uint8_t temperature_c) {
-  if (!IsInitialized() || !IsRegisterValueValid(temperature_c, 60, 120, 20)) {
+  if (!IsInitialized()) {
     return false;
   }
-  const bool extended = HasExtendedRegisterMap();
-  const uint8_t shift = extended ? 5 : 4;
-  return UpdateRegisterBits(Register::kSystemVoltageRegulation,
-      extended ? kThermalRegulationSMask : kThermalRegulationAbMask,
-      static_cast<uint8_t>(((temperature_c - 60) / 20) << shift));
+  return model_driver_->SetThermalRegulationThreshold(*this, temperature_c);
 }
 
 bool Sgm41562xx::SetWatchdogTimer(uint16_t timeout_s) {
   if (!IsInitialized()) {
     return false;
   }
-  const uint16_t base_timeout_s = HasExtendedRegisterMap() ? 64 : 40;
-  uint8_t setting = 0;
-  if (timeout_s == base_timeout_s) {
-    setting = 1;
-  } else if (timeout_s == base_timeout_s * 2) {
-    setting = 2;
-  } else if (timeout_s == base_timeout_s * 4) {
-    setting = 3;
-  } else if (timeout_s != 0) {
-    return false;
-  }
-  return UpdateRegisterBits(Register::kChargeTerminationTimerControl,
-      kWatchdogMask, static_cast<uint8_t>(setting << 5));
+  return model_driver_->SetWatchdogTimer(*this, timeout_s);
 }
 
 bool Sgm41562xx::SetPrechargeToFastChargeThreshold(uint16_t voltage_mv) {
   if (!IsInitialized() || (voltage_mv != 2800 && voltage_mv != 3000)) {
     return false;
   }
-  const Register register_id = HasExtendedRegisterMap()
-                                   ? Register::kExtendedInputCurrentControl
-                                   : Register::kChargeVoltageControl;
-  const uint8_t mask = HasExtendedRegisterMap() ? kPrechargeThresholdSMask
-                                                : kPrechargeThresholdAbMask;
-  return UpdateRegisterBits(
-      register_id, mask, voltage_mv == 3000 ? mask : 0x00);
+  return model_driver_->SetPrechargeToFastChargeThreshold(*this, voltage_mv);
 }
 
 bool Sgm41562xx::SetRechargeThreshold(uint16_t voltage_mv) {
@@ -526,12 +464,7 @@ bool Sgm41562xx::ResetWatchdogTimer() {
   if (!IsInitialized()) {
     return false;
   }
-  const Register register_id = HasExtendedRegisterMap()
-                                   ? Register::kExtendedInputCurrentControl
-                                   : Register::kChargeCurrentControl;
-  const uint8_t mask =
-      HasExtendedRegisterMap() ? kWatchdogResetSMask : kWatchdogResetAbMask;
-  return UpdateRegisterBits(register_id, mask, mask);
+  return model_driver_->ResetWatchdogTimer(*this);
 }
 
 bool Sgm41562xx::SetWatchdogInDischargeEnable(bool enable) {
@@ -620,51 +553,35 @@ bool Sgm41562xx::SetInputVoltageLoopEnable(bool enable) {
   if (!IsInitialized()) {
     return false;
   }
-  const uint8_t mask = HasExtendedRegisterMap()
-                           ? kInputVoltageLoopDisableSMask
-                           : kInputVoltageLoopDisableAbMask;
-  return UpdateRegisterBits(
-      Register::kSystemVoltageRegulation, mask, enable ? 0x00 : mask);
+  return model_driver_->SetInputVoltageLoopEnable(*this, enable);
 }
 
 bool Sgm41562xx::SetPcbOvertemperatureProtectionEnable(bool enable) {
   if (!IsInitialized()) {
     return false;
   }
-  const Register register_id = HasExtendedRegisterMap()
-                                   ? Register::kSystemStatus
-                                   : Register::kSystemVoltageRegulation;
-  const uint8_t mask = HasExtendedRegisterMap() ? kPcbProtectionDisableSMask
-                                                : kPcbProtectionDisableAbMask;
-  return UpdateRegisterBits(register_id, mask, enable ? 0x00 : mask);
+  return model_driver_->SetPcbOvertemperatureProtectionEnable(*this, enable);
 }
 
 bool Sgm41562xx::SetInputCurrentLimitReleaseEnable(bool enable) {
-  if (!IsInitialized() || HasExtendedRegisterMap()) {
+  if (!IsInitialized() || !HasFeature(Feature::kInputCurrentLimitRelease)) {
     return false;
   }
-  return UpdateRegisterBits(Register::kSystemStatus,
-      kInputCurrentLimitReleaseMask,
-      enable ? kInputCurrentLimitReleaseMask : 0x00);
+  return model_driver_->SetInputCurrentLimitReleaseEnable(*this, enable);
 }
 
 bool Sgm41562xx::SetInputCurrentLimitOffsetEnable(bool enable) {
-  if (!IsInitialized() || HasExtendedRegisterMap()) {
+  if (!IsInitialized() || !HasFeature(Feature::kInputCurrentLimitOffset)) {
     return false;
   }
-  return UpdateRegisterBits(Register::kSystemStatus,
-      kInputCurrentLimitAdd200Mask,
-      enable ? kInputCurrentLimitAdd200Mask : 0x00);
+  return model_driver_->SetInputCurrentLimitOffsetEnable(*this, enable);
 }
 
 bool Sgm41562xx::SetInputOvervoltageThreshold(uint16_t voltage_mv) {
-  if (!IsInitialized() || !HasExtendedRegisterMap() ||
-      (voltage_mv != 6000 && voltage_mv != 19000)) {
+  if (!IsInitialized() || !HasFeature(Feature::kInputOvervoltageThreshold)) {
     return false;
   }
-  return UpdateRegisterBits(Register::kSystemStatus,
-      kInputOvervoltageSelectMask,
-      voltage_mv == 19000 ? kInputOvervoltageSelectMask : 0x00);
+  return model_driver_->SetInputOvervoltageThreshold(*this, voltage_mv);
 }
 
 bool Sgm41562xx::SetForcePowerPathSwitchEnable(bool enable) {
@@ -763,42 +680,8 @@ bool Sgm41562xx::ReadInputConfig(ChargerConfig& config) {
   config.minimum_input_voltage_limit_mv =
       3880 + 80 * ((input_source_control >> 4) & 0x0F);
 
-  if (HasExtendedRegisterMap()) {
-    uint8_t extended_input_current_control = 0;
-    if (!ReadRegister(Register::kExtendedInputCurrentControl,
-            extended_input_current_control,
-            "REG0C extended input current control")) {
-      return false;
-    }
-    config.input_current_limit_ma =
-        50 + 30 * ((extended_input_current_control >> 3) & 0x1F);
-    config.exit_shipping_mode_interrupt_delay_ms =
-        (input_source_control & 0x04) != 0 ? 100 : 2000;
-    config.exit_shipping_mode_input_delay_ms =
-        (input_source_control & 0x02) != 0 ? 100 : 2000;
-    config.termination_deglitch_time_ms =
-        (input_source_control & 0x01) != 0 ? 40 : 200;
-    config.shipping_mode_interrupt_enabled =
-        (extended_input_current_control & 0x04) == 0;
-    config.precharge_to_fast_charge_threshold_mv =
-        (extended_input_current_control & 0x02) != 0 ? 3000 : 2800;
-    config.input_overvoltage_threshold_mv =
-        (system_status & kInputOvervoltageSelectMask) != 0 ? 19000 : 6000;
-    config.pcb_overtemperature_protection_enabled =
-        (system_status & kPcbProtectionDisableSMask) == 0;
-  } else {
-    config.input_current_limit_enabled =
-        (system_status & kInputCurrentLimitReleaseMask) == 0;
-    config.input_current_limit_200_ma_offset_enabled =
-        (system_status & kInputCurrentLimitAdd200Mask) != 0;
-    config.input_current_limit_ma = 50 + 30 * (input_source_control & 0x0F);
-    if ((system_status & kInputCurrentLimitAdd200Mask) != 0) {
-      config.input_current_limit_ma += 200;
-    }
-    config.input_overvoltage_threshold_mv =
-        chip_type_ == ChipType::kSgm41562A ? 19000 : 6000;
-  }
-  return true;
+  return model_driver_->ReadInputConfig(
+      *this, input_source_control, system_status, config);
 }
 
 bool Sgm41562xx::ReadChargeConfig(ChargerConfig& config) {
@@ -818,56 +701,16 @@ bool Sgm41562xx::ReadChargeConfig(ChargerConfig& config) {
     return false;
   }
 
-  const bool extended_register_map = HasExtendedRegisterMap();
-  uint8_t fast_charge_current_code = charge_current_control & 0x3F;
-  uint8_t extended_current_control = 0;
-  if (extended_register_map) {
-    fast_charge_current_code = charge_current_control & 0x7F;
-    if (!ReadRegister(Register::kExtendedCurrentControl,
-            extended_current_control, "REG0D extended current control")) {
-      return false;
-    }
-  } else if (fast_charge_current_code > 56) {
-    fast_charge_current_code = 56;
-  }
   config.quarter_charge_current_scale_enabled =
       (miscellaneous_configuration & kFineChargeCurrentScaleMask) != 0;
-  config.fast_charge_current_ma = 8 + 8 * fast_charge_current_code;
-  if (config.quarter_charge_current_scale_enabled) {
-    config.fast_charge_current_ma /= 4;
-  }
-
-  uint16_t termination_current_ma =
+  config.termination_current_ma =
       1 + 2 * (discharge_termination_current & 0x0F);
-  config.termination_current_multiplier_six_enabled =
-      extended_register_map &&
-      (extended_current_control & kExtendedTerminationMultiplierMask) != 0;
-  if (config.termination_current_multiplier_six_enabled) {
-    termination_current_ma *= 6;
-  }
-  config.termination_current_ma = termination_current_ma;
   config.discharge_current_limit_ma =
       200 + 200 * ((discharge_termination_current >> 4) & 0x0F);
-
-  if (extended_register_map) {
-    config.precharge_current_multiplier_six_enabled =
-        (extended_current_control & kExtendedPrechargeMultiplierMask) != 0;
-    config.precharge_current_ma =
-        1 + 2 * ((extended_current_control >> 4) & 0x0F);
-    if (config.precharge_current_multiplier_six_enabled) {
-      config.precharge_current_ma *= 6;
-    }
-    config.charge_voltage_limit_mv =
-        3500 + 10 * ((charge_voltage_control >> 1) & 0x7F);
-  } else {
-    config.charge_voltage_limit_mv =
-        3600 + 15 * ((charge_voltage_control >> 2) & 0x3F);
-    config.precharge_to_fast_charge_threshold_mv =
-        (charge_voltage_control & kPrechargeThresholdAbMask) != 0 ? 3000 : 2800;
-  }
   config.recharge_threshold_mv =
       (charge_voltage_control & kRechargeThresholdMask) != 0 ? 200 : 100;
-  return true;
+  return model_driver_->ReadChargeConfig(
+      *this, charge_current_control, charge_voltage_control, config);
 }
 
 bool Sgm41562xx::ReadProtectionConfig(ChargerConfig& config) {
@@ -889,33 +732,11 @@ bool Sgm41562xx::ReadProtectionConfig(ChargerConfig& config) {
     return false;
   }
 
-  const bool extended_register_map = HasExtendedRegisterMap();
-  if (extended_register_map) {
-    config.system_voltage_regulation_mv =
-        3600 + 50 * (system_voltage_regulation & 0x1F);
-    config.input_voltage_loop_enabled =
-        (system_voltage_regulation & kInputVoltageLoopDisableSMask) == 0;
-    config.thermal_regulation_threshold_c =
-        60 + 20 * ((system_voltage_regulation >> 5) & 0x03);
-  } else {
-    config.system_voltage_regulation_mv =
-        4200 + 50 * (system_voltage_regulation & 0x0F);
-    config.pcb_overtemperature_protection_enabled =
-        (system_voltage_regulation & kPcbProtectionDisableAbMask) == 0;
-    config.input_voltage_loop_enabled =
-        (system_voltage_regulation & kInputVoltageLoopDisableAbMask) == 0;
-    config.thermal_regulation_threshold_c =
-        60 + 20 * ((system_voltage_regulation >> 4) & 0x03);
-  }
+  model_driver_->ParseProtectionConfig(
+      charge_timer_control, system_voltage_regulation, config);
 
-  const uint8_t watchdog_setting = (charge_timer_control & kWatchdogMask) >> 5;
   config.watchdog_in_discharge_enabled =
       (charge_timer_control & kWatchdogInDischargeEnableMask) != 0;
-  config.watchdog_enabled = watchdog_setting != 0;
-  if (config.watchdog_enabled) {
-    const uint16_t watchdog_base_s = extended_register_map ? 64 : 40;
-    config.watchdog_timeout_s = watchdog_base_s << (watchdog_setting - 1);
-  }
   config.charge_termination_enabled =
       (charge_timer_control & kChargeTerminationEnableMask) != 0;
   config.safety_timer_enabled =
@@ -949,11 +770,6 @@ bool Sgm41562xx::ReadProtectionConfig(ChargerConfig& config) {
       (miscellaneous_configuration & kInputOvervoltageProtectionDisableMask) ==
       0;
   return true;
-}
-
-bool Sgm41562xx::HasExtendedRegisterMap() const {
-  return chip_type_ == ChipType::kSgm41562S ||
-         chip_type_ == ChipType::kSgm41562Sa;
 }
 
 bool Sgm41562xx::SetShippingModeEnable(bool enable) {

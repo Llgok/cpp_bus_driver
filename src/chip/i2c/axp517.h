@@ -159,9 +159,8 @@ class Axp517 final : public I2cChipBase {
   };
 
   explicit Axp517(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kPinNotConnected)
-      : I2cChipBase(bus, address), rst_(rst) {}
+      int16_t address = kDeviceI2cAddressDefault)
+      : I2cChipBase(bus, address) {}
 
   bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
@@ -561,9 +560,9 @@ class Axp517 final : public I2cChipBase {
   static constexpr uint8_t kDefaultMessageHeaderInfo = 0x02;
   static constexpr uint8_t kInitSequence[] = {
 
-      // 输入电流限制修改为最大
+      // 输入电流限制设为 2000 mA，适用于 5 V / 2 A 电源。
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Register::kRwInputCurrentLimitControl), 0B11111100,
+      static_cast<uint8_t>(Register::kRwInputCurrentLimitControl), 0B10011000,
 
       // 输入电压限制修改为4.7v
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
@@ -572,7 +571,5 @@ class Axp517 final : public I2cChipBase {
       // 设置充电电流为512mA
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Register::kRwIccSetting), 0B00001000};
-
-  int32_t rst_;
 };
 }  // namespace cpp_bus_driver

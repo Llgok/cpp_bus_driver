@@ -172,9 +172,8 @@ class Bq27220 final : public I2cChipBase {
   };
 
   explicit Bq27220(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kPinNotConnected)
-      : I2cChipBase(bus, address), rst_(rst) {}
+      int16_t address = kDeviceI2cAddressDefault)
+      : I2cChipBase(bus, address) {}
 
   /**
    * @brief 初始化 BQ27220 并校验 Chip ID
@@ -730,7 +729,5 @@ class Bq27220 final : public I2cChipBase {
    * @return checksum 值
    */
   uint8_t CalcChecksum(const uint8_t* data, size_t length);
-
-  int32_t rst_;
 };
 }  // namespace cpp_bus_driver

@@ -9,20 +9,6 @@
 
 namespace cpp_bus_driver {
 bool Axp517::Init(int32_t freq_hz) {
-  if (rst_ != kPinNotConnected) {
-    bool result = true;
-    result &= PlatformHal::SetGpioMode(
-        rst_, PlatformHal::GpioMode::kOutput, PlatformHal::GpioStatus::kPullup);
-    result &= PlatformHal::GpioWrite(rst_, 0);
-    DelayMs(10);
-    result &= PlatformHal::GpioWrite(rst_, 1);
-    DelayMs(10);
-    if (!result) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
-      return false;
-    }
-  }
-
   if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
@@ -42,7 +28,29 @@ bool Axp517::Init(int32_t freq_hz) {
         "Get axp517 message header info success (value: %#X)\n", buffer);
   }
 
-  if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
+  // REG0B/REG19 包含由 eFuse 决定的检测和 CHGLED 配置，不能用固定值覆盖。
+  uint8_t module_enable_control0 = 0;
+  uint8_t module_enable_control1 = 0;
+  if (!bus_->Read(static_cast<uint8_t>(Register::kRwModuleEnableControl0),
+          &module_enable_control0) ||
+      !bus_->Read(static_cast<uint8_t>(Register::kRwModuleEnableControl1),
+          &module_enable_control1)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+    return false;
+  }
+
+  const uint8_t kWatchdogInitSequence[] = {
+      // 关闭看门狗及其模块，保留其余配置。
+      static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
+      static_cast<uint8_t>(Register::kRwModuleEnableControl0),
+      static_cast<uint8_t>(module_enable_control0 & 0xFE),
+
+      static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
+      static_cast<uint8_t>(Register::kRwModuleEnableControl1),
+      static_cast<uint8_t>(module_enable_control1 & 0xFE),
+  };
+  if (!InitSequence(kWatchdogInitSequence, sizeof(kWatchdogInitSequence)) ||
+      !InitSequence(kInitSequence, sizeof(kInitSequence))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
     return false;
   }
@@ -56,10 +64,6 @@ bool Axp517::Deinit(bool delete_bus) {
   if (!I2cChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
-  }
-
-  if (rst_ != kPinNotConnected) {
-    result &= PlatformHal::ResetGpio(rst_);
   }
 
   return result;

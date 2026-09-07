@@ -15,6 +15,11 @@
 #include "driver/gpio.h"
 #include "driver/i2c_master.h"
 #include "freertos/FreeRTOS.h"
+#include "soc/soc_caps.h"
+
+#if SOC_LP_I2C_SUPPORTED
+#include "driver/rtc_io.h"
+#endif
 
 namespace cpp_bus_driver {
 bool HardwareI2c::InitBus(uint32_t freq_hz) {
@@ -47,6 +52,16 @@ bool HardwareI2c::InitBus(uint32_t freq_hz) {
     return true;
   }
 
+#if SOC_LP_I2C_SUPPORTED
+  if (port_ == LP_I2C_NUM_0 &&
+      (sda_ == scl_ || !rtc_gpio_is_valid_gpio(static_cast<gpio_num_t>(sda_)) ||
+          !rtc_gpio_is_valid_gpio(static_cast<gpio_num_t>(scl_)))) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Invalid LP I2C pins (SDA: %d, SCL: %d)\n", sda_, scl_);
+    return false;
+  }
+#endif
+
   BusInitState expected = BusInitState::kNotStarted;
   if (!bus_init_state_.compare_exchange_strong(
           expected, BusInitState::kInitializing)) {
@@ -63,7 +78,7 @@ bool HardwareI2c::InitBus(uint32_t freq_hz) {
     return bus_init_state_.load() == BusInitState::kReady;
   }
 
-  const i2c_master_bus_config_t bus_config = {
+  i2c_master_bus_config_t bus_config = {
       .i2c_port = port_,
       .sda_io_num = static_cast<gpio_num_t>(sda_),
       .scl_io_num = static_cast<gpio_num_t>(scl_),
@@ -77,6 +92,13 @@ bool HardwareI2c::InitBus(uint32_t freq_hz) {
               .allow_pd = 0,
           },
   };
+
+#if SOC_LP_I2C_SUPPORTED
+  if (port_ == LP_I2C_NUM_0) {
+    // LP 控制器使用独立时钟域，不能沿用普通 I2C 的默认时钟源。
+    bus_config.lp_source_clk = LP_I2C_SCLK_DEFAULT;
+  }
+#endif
 
   esp_err_t result = i2c_new_master_bus(&bus_config, &bus_handle_);
   if (result != ESP_OK) {
@@ -102,8 +124,14 @@ bool HardwareI2c::Init(uint32_t freq_hz, uint16_t address) {
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareI2c config address: %#X\n", address);
+  const char* port_type = "HP I2C";
+#if SOC_LP_I2C_SUPPORTED
+  if (port_ == LP_I2C_NUM_0) {
+    port_type = "LP I2C";
+  }
+#endif
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "HardwareI2c config port_: %d\n", port_);
+      "HardwareI2c config port_: %d (%s)\n", port_, port_type);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareI2c config sda_: %d\n", sda_);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,

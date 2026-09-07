@@ -18,6 +18,8 @@ set(
 
         "./src/chip"
         "./src/chip/i2c"
+        "./src/chip/i2c/bq2589x"
+        "./src/chip/i2c/sgm41562xx"
         "./src/chip/i2c/touch"
         "./src/chip/i2c_spi"
         "./src/chip/spi"

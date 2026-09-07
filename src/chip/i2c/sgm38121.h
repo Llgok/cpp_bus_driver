@@ -28,9 +28,8 @@ class Sgm38121 final : public I2cChipBase {
   };
 
   explicit Sgm38121(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kPinNotConnected)
-      : I2cChipBase(bus, address), rst_(rst) {}
+      int16_t address = kDeviceI2cAddressDefault)
+      : I2cChipBase(bus, address) {}
 
   bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
@@ -80,7 +79,5 @@ class Sgm38121 final : public I2cChipBase {
 
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x28;
   static constexpr uint8_t kChipId = 0x80;
-
-  int32_t rst_;
 };
 }  // namespace cpp_bus_driver

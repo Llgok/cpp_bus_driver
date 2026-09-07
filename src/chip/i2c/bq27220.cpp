@@ -11,19 +11,6 @@
 
 namespace cpp_bus_driver {
 bool Bq27220::Init(int32_t freq_hz) {
-  if (rst_ != kPinNotConnected) {
-    bool result = true;
-    result &= SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup);
-    result &= GpioWrite(rst_, 0);
-    DelayMs(10);
-    result &= GpioWrite(rst_, 1);
-    DelayMs(10);
-    if (!result) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Rst failed\n");
-      return false;
-    }
-  }
-
   if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
@@ -47,10 +34,6 @@ bool Bq27220::Deinit(bool delete_bus) {
   if (!I2cChipBase::Deinit(delete_bus)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
-  }
-
-  if (rst_ != kPinNotConnected) {
-    result &= ResetGpio(rst_);
   }
 
   return result;

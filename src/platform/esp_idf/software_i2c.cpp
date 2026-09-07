@@ -7,21 +7,36 @@
  */
 #include "bus/i2c/software_i2c.h"
 
-#include <limits>
-
-namespace cpp_bus_driver {
 #if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
     CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
+#include "driver/gpio.h"
+
+namespace cpp_bus_driver {
 bool SoftwareI2c::Init(uint32_t freq_hz, uint16_t address) {
-  if (freq_hz == 0 ||
-      freq_hz > static_cast<uint32_t>(std::numeric_limits<int32_t>::max())) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Invalid I2C frequency\n");
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (freq_hz == 0 || freq_hz > kMaximumFrequencyHz ||
+      (address != kNoDeviceAddress && address > 0x7F) || sda_ == scl_ ||
+      !GPIO_IS_VALID_OUTPUT_GPIO(sda_) || !GPIO_IS_VALID_OUTPUT_GPIO(scl_)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Invalid SoftwareI2c configuration\n");
     return false;
   }
 
-  uint32_t buffer_transmit_delay_us = static_cast<uint32_t>(
-      (1000000.0 / static_cast<double>(freq_hz)) / 2.0 + 0.5);
+  if (!initialized_) {
+    // 先预置高电平，再使能开漏输出，避免初始化时主动拉低总线。
+    gpio_cleanup_required_ = true;
+    if (!ReleaseLines() ||
+        !SetGpioMode(sda_, GpioMode::kInputOutputOd, GpioStatus::kPullup) ||
+        !SetGpioMode(scl_, GpioMode::kInputOutputOd, GpioStatus::kPullup)) {
+      ResetPins();
+      return false;
+    }
+    initialized_ = true;
+  }
 
+  // 用商和余数向上取整，避免大频率加法溢出，并保证半周期至少为 1 us。
+  half_period_us_ = 500000U / freq_hz + (500000U % freq_hz != 0);
+  address_ = address;
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "SoftwareI2c config address: %#X\n", address);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
@@ -29,363 +44,263 @@ bool SoftwareI2c::Init(uint32_t freq_hz, uint16_t address) {
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "SoftwareI2c config scl_: %d\n", scl_);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "SoftwareI2c config freq_hz: %d hz\n", freq_hz);
+      "SoftwareI2c config freq_hz: %lu hz\n",
+      static_cast<unsigned long>(freq_hz));
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "SoftwareI2c config transmit_delay_us_: %d us\n",
-      buffer_transmit_delay_us);
-
-  if (!SetGpioMode(sda_, GpioMode::kInputOutputOd, GpioStatus::kPullup)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioMode failed\n");
-    return false;
-  }
-
-  if (!SetGpioMode(scl_, GpioMode::kOutputOd, GpioStatus::kPullup)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioMode failed\n");
-    return false;
-  }
-
-  transmit_delay_us_ = buffer_transmit_delay_us;
-  address_ = address;
-
+      "SoftwareI2c config half_period_us_: %lu us\n",
+      static_cast<unsigned long>(half_period_us_));
   return true;
 }
 
 bool SoftwareI2c::Deinit(bool delete_bus) {
+  std::lock_guard<std::mutex> lock(mutex_);
   bool result = true;
-
-  if (sda_ != kPinNotConnected) {
-    result &= ResetGpio(sda_);
+  if (gpio_cleanup_required_) {
+    result = FinishTransaction(true);
+    if (delete_bus) {
+      result = ResetPins() && result;
+    }
   }
-  if (scl_ != kPinNotConnected) {
-    result &= ResetGpio(scl_);
-  }
-
+  initialized_ = false;
+  address_ = kNoDeviceAddress;
   return result;
 }
 
-bool SoftwareI2c::StartTransmit() {
-  if (!GpioWrite(scl_, 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-    return false;
-  }
-  if (!GpioWrite(sda_, 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-    return false;
-  }
-  DelayUs(transmit_delay_us_);
-  if (!GpioWrite(sda_, 0)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-    return false;
-  }
-  DelayUs(transmit_delay_us_);
-  if (!GpioWrite(scl_, 0)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-    return false;
-  }
-  DelayUs(transmit_delay_us_);
-
-  return true;
-}
-
 bool SoftwareI2c::Read(uint8_t* data, size_t length) {
-  if (data == nullptr && length != 0) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
-    return false;
-  }
-  if (length == 0) {
-    return true;
-  }
-
-  if (!StartTransmit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "StartTransmit failed\n");
-    return false;
-  }
-
-  // 读操作发送地址最后一位为1
-  if (!WriteByte((address_ << 1) | 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteByte failed\n");
-    return false;
-  }
-  if (!WaitAck()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WaitAck failed\n");
-    return false;
-  }
-
-  uint8_t* buffer_ptr = data;
-  for (size_t i = 0; i + 1 < length; i++) {
-    if (!ReadByte(buffer_ptr++)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadByte failed\n");
-      return false;
-    }
-
-    if (!WriteAck(AckBit::kAck)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "WaitAck failed\n");
-      return false;
-    }
-  }
-
-  // 读取最后一位数据
-  if (!ReadByte(buffer_ptr)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadByte failed\n");
-    return false;
-  }
-
-  if (!WriteAck(AckBit::kNack)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WaitAck failed\n");
-    return false;
-  }
-
-  if (!StopTransmit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "StopTransmit failed\n");
-    return false;
-  }
-
-  return true;
+  std::lock_guard<std::mutex> lock(mutex_);
+  return Transfer(nullptr, 0, data, length);
 }
 
 bool SoftwareI2c::Write(const uint8_t* data, size_t length) {
-  if (data == nullptr && length != 0) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
-    return false;
-  }
-
-  if (!StartTransmit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "StartTransmit failed\n");
-    return false;
-  }
-
-  // 写操作发送地址最后一位为0
-  if (!WriteByte(address_ << 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteByte failed\n");
-    return false;
-  }
-  if (!WaitAck()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WaitAck failed\n");
-    return false;
-  }
-
-  for (size_t i = 0; i < length; i++) {
-    if (!WriteByte(data[i])) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteByte failed\n");
-      return false;
-    }
-    if (!WaitAck()) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "WaitAck failed\n");
-      return false;
-    }
-  }
-
-  if (!StopTransmit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "StopTransmit failed\n");
-    return false;
-  }
-
-  return true;
+  std::lock_guard<std::mutex> lock(mutex_);
+  return Transfer(data, length, nullptr, 0);
 }
 
 bool SoftwareI2c::WriteRead(const uint8_t* write_data, size_t write_length,
     uint8_t* read_data, size_t read_length) {
-  if (write_data == nullptr && write_length != 0) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
+  std::lock_guard<std::mutex> lock(mutex_);
+  return Transfer(write_data, write_length, read_data, read_length);
+}
+
+bool SoftwareI2c::Transfer(const uint8_t* write_data, size_t write_length,
+    uint8_t* read_data, size_t read_length) {
+  if (!initialized_ || address_ == kNoDeviceAddress) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "SoftwareI2c not initialized or no device address bound\n");
     return false;
   }
-  if (read_data == nullptr && read_length != 0) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
+  if ((write_length != 0 && write_data == nullptr) ||
+      (read_length != 0 && read_data == nullptr)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Invalid I2C buffer\n");
     return false;
+  }
+  if (write_length == 0 && read_length == 0) {
+    return true;
   }
 
-  if (!StartTransmit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "StartTransmit failed\n");
-    return false;
-  }
-
-  // 写操作发送地址最后一位为0
-  if (!WriteByte(address_ << 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteByte failed\n");
-    return false;
-  }
-  if (!WaitAck()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WaitAck failed\n");
-    return false;
-  }
-
-  for (size_t i = 0; i < write_length; i++) {
-    if (!WriteByte(write_data[i])) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteByte failed\n");
-      return false;
+  bool result = StartCondition();
+  if (result && write_length != 0) {
+    result = WriteByte(static_cast<uint8_t>(address_ << 1));
+    for (size_t i = 0; result && i < write_length; ++i) {
+      result = WriteByte(write_data[i]);
     }
-    if (!WaitAck()) {
-      // 如果不为最后一位数据，则报错
-      if (i + 1 != write_length) {
-        LogMessage(LogLevel::kError, __FILE__, __LINE__, "WaitAck failed\n");
-        return false;
+  }
+  if (result && read_length != 0) {
+    if (write_length != 0) {
+      result = StartCondition();
+    }
+    if (result) {
+      result = WriteByte(static_cast<uint8_t>((address_ << 1) | 1));
+    }
+    for (size_t i = 0; result && i < read_length; ++i) {
+      uint8_t value = 0;
+      // ACK 为低电平，最后一个字节发送 NACK 结束读取。
+      result = ReadByte(value) && WriteBit(i == read_length - 1);
+      if (result) {
+        read_data[i] = value;
       }
     }
   }
 
-  if (read_length == 0) {
-    if (!StopTransmit()) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "StopTransmit failed\n");
+  if (!result) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "SoftwareI2c transfer failed (address: %#X)\n", address_);
+  }
+  return FinishTransaction(result);
+}
+
+bool SoftwareI2c::Probe(uint16_t address) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (!initialized_ || address > 0x7F) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "SoftwareI2c not initialized or invalid probe address\n");
+    return false;
+  }
+  const bool result =
+      StartCondition() && WriteByte(static_cast<uint8_t>(address << 1));
+  return FinishTransaction(result);
+}
+
+bool SoftwareI2c::RecoverBus() {
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (!initialized_) {
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SoftwareI2c not initialized\n");
+    return false;
+  }
+  if (!ReleaseLines() || !RaiseClock()) {
+    return FinishTransaction(false);
+  }
+
+  // 从设备可能仍在发送一个字节，提供剩余时钟让其释放 SDA。
+  for (uint8_t i = 0; i < 9 && !GpioRead(sda_); ++i) {
+    if (!GpioWrite(scl_, 0)) {
+      return FinishTransaction(false);
+    }
+    DelayUs(half_period_us_);
+    if (!RaiseClock()) {
+      return FinishTransaction(false);
+    }
+  }
+
+  // 即使没有活动事务，也要补发停止信号结束从设备的状态机。
+  transaction_active_ = true;
+  return FinishTransaction(true);
+}
+
+bool SoftwareI2c::StartCondition() {
+  // 重复起始时先在 SCL 低电平期间释放 SDA。
+  if (!GpioWrite(sda_, 1)) {
+    return false;
+  }
+  DelayUs(half_period_us_);
+  if (!RaiseClock()) {
+    return false;
+  }
+  if (!GpioRead(sda_)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "SoftwareI2c bus not idle (SDA GPIO %d is low)\n", sda_);
+    return false;
+  }
+  if (!GpioWrite(sda_, 0)) {
+    return false;
+  }
+  transaction_active_ = true;
+  DelayUs(half_period_us_);
+  return GpioWrite(scl_, 0);
+}
+
+bool SoftwareI2c::StopCondition() {
+  bool result = GpioWrite(scl_, 0);
+  result &= GpioWrite(sda_, 0);
+  if (result) {
+    DelayUs(half_period_us_);
+    result = RaiseClock();
+  }
+  if (result) {
+    result = GpioWrite(sda_, 1);
+    DelayUs(half_period_us_);
+    result = GpioRead(sda_) && GpioRead(scl_) && result;
+  }
+  transaction_active_ = false;
+  if (!result) {
+    ReleaseLines();
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "SoftwareI2c stop failed; bus may still be held low\n");
+  }
+  return result;
+}
+
+bool SoftwareI2c::FinishTransaction(bool success) {
+  const bool cleanup = transaction_active_ ? StopCondition() : ReleaseLines();
+  return success && cleanup;
+}
+
+bool SoftwareI2c::RaiseClock() {
+  if (!GpioWrite(scl_, 1)) {
+    return false;
+  }
+  const int64_t start_us = GetSystemTimeUs();
+  while (!GpioRead(scl_)) {
+    if (GetSystemTimeUs() - start_us >= kClockStretchTimeoutUs) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "SoftwareI2c SCL timeout (GPIO %d remains low)\n", scl_);
       return false;
     }
-    return true;
+    DelayUs(1);
   }
-
-  if (!Read(read_data, read_length)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
-    return false;
-  }
-
+  DelayUs(half_period_us_);
   return true;
 }
 
-bool SoftwareI2c::StopTransmit() {
-  if (!GpioWrite(sda_, 0)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
+bool SoftwareI2c::WriteBit(bool high) {
+  if (!GpioWrite(sda_, high)) {
     return false;
   }
-  if (!GpioWrite(scl_, 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
+  DelayUs(half_period_us_);
+  if (!RaiseClock()) {
     return false;
   }
-  DelayUs(transmit_delay_us_);
+  if (high && !GpioRead(sda_)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "SoftwareI2c SDA conflict (GPIO %d remains low)\n", sda_);
+    return false;
+  }
+  return GpioWrite(scl_, 0);
+}
+
+bool SoftwareI2c::ReadBit(bool& high) {
   if (!GpioWrite(sda_, 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
     return false;
   }
-
-  return true;
-}
-
-bool SoftwareI2c::Probe(const uint16_t address) {
-  if (!StartTransmit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "StartTransmit failed\n");
+  DelayUs(half_period_us_);
+  if (!RaiseClock()) {
     return false;
   }
-
-  // 写操作发送地址最后一位为0
-  if (!WriteByte(address << 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteByte failed\n");
+  const bool value = GpioRead(sda_);
+  if (!GpioWrite(scl_, 0)) {
     return false;
   }
-  if (!WaitAck()) {
-    return false;
-  }
-
-  if (!StopTransmit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "StopTransmit failed\n");
-    return false;
-  }
-
+  high = value;
   return true;
 }
 
 bool SoftwareI2c::WriteByte(uint8_t data) {
-  for (uint8_t i = 0; i < 8; i++) {
-    if (!GpioWrite(sda_, data & 0x80)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
+  for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
+    if (!WriteBit((data & mask) != 0)) {
       return false;
     }
-
-    DelayUs(transmit_delay_us_);
-    if (!GpioWrite(scl_, 1)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-      return false;
-    }
-    DelayUs(transmit_delay_us_);
-    if (!GpioWrite(scl_, 0)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-      return false;
-    }
-
-    data <<= 1;
   }
+  bool nack = true;
+  return ReadBit(nack) && !nack;
+}
 
-  // 释放sda
-  if (!GpioWrite(sda_, 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-    return false;
+bool SoftwareI2c::ReadByte(uint8_t& data) {
+  uint8_t value = 0;
+  for (uint8_t i = 0; i < 8; ++i) {
+    bool high = false;
+    if (!ReadBit(high)) {
+      return false;
+    }
+    value = static_cast<uint8_t>((value << 1) | high);
   }
-
+  data = value;
   return true;
 }
 
-bool SoftwareI2c::ReadByte(uint8_t* data) {
-  if (data == nullptr) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
-    return false;
-  }
-
-  if (!GpioWrite(sda_, 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-    return false;
-  }
-
-  uint8_t buffer_data = 0;
-  for (uint8_t i = 0; i < 8; i++) {
-    buffer_data <<= 1;
-
-    if (!GpioWrite(scl_, 1)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-      return false;
-    }
-    DelayUs(transmit_delay_us_);
-
-    if (GpioRead(sda_) == 1) {
-      buffer_data |= 0x01;
-    }
-
-    if (!GpioWrite(scl_, 0)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-      return false;
-    }
-    DelayUs(transmit_delay_us_);
-  }
-
-  *data = buffer_data;
-
-  return true;
+bool SoftwareI2c::ReleaseLines() {
+  bool result = GpioWrite(sda_, 1);
+  result &= GpioWrite(scl_, 1);
+  return result;
 }
 
-bool SoftwareI2c::WaitAck() {
-  DelayUs(transmit_delay_us_);
-  if (!GpioWrite(scl_, 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-    return false;
+bool SoftwareI2c::ResetPins() {
+  bool result = ResetGpio(sda_);
+  result &= ResetGpio(scl_);
+  if (result) {
+    gpio_cleanup_required_ = false;
   }
-  DelayUs(transmit_delay_us_);
-
-  // sda应该保持低电平作为应答(ack)
-  bool buffer_ack = !GpioRead(sda_);
-
-  if (!GpioWrite(scl_, 0)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-    return false;
-  }
-  DelayUs(transmit_delay_us_);
-
-  return buffer_ack;
+  return result;
 }
-
-bool SoftwareI2c::WriteAck(AckBit ack) {
-  if (!GpioWrite(sda_, static_cast<bool>(ack))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-    return false;
-  }
-
-  if (!GpioWrite(scl_, 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-    return false;
-  }
-  DelayUs(transmit_delay_us_);
-  if (!GpioWrite(scl_, 0)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GpioWrite failed\n");
-    return false;
-  }
-  DelayUs(transmit_delay_us_);
-
-  return true;
-}
-
-#endif
 }  // namespace cpp_bus_driver
+#endif

@@ -68,9 +68,8 @@ class Sy6970 final : public I2cChipBase {
   };
 
   explicit Sy6970(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kPinNotConnected)
-      : I2cChipBase(bus, address), rst_(rst) {}
+      int16_t address = kDeviceI2cAddressDefault)
+      : I2cChipBase(bus, address) {}
 
   bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
@@ -586,9 +585,9 @@ class Sy6970 final : public I2cChipBase {
   static constexpr uint8_t kChipId = 0x01;
   static constexpr uint8_t kInitSequence[] = {
 
-      // 关闭 ILIM引脚，输入电流限制修改为最大
+      // 输入电流限制设为 2000 mA，ILIM 引脚保持上电默认启用。
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Register::kRwInputSourceControl), 0x3F,
+      static_cast<uint8_t>(Register::kRwInputSourceControl), 0x66,
 
       // 禁用看门狗定时喂狗功能
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
@@ -597,7 +596,5 @@ class Sy6970 final : public I2cChipBase {
       // 快速充电电流限制设置为512ma
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Register::kRwChargeCurrentControl), 0x08};
-
-  int32_t rst_;
 };
 }  // namespace cpp_bus_driver
