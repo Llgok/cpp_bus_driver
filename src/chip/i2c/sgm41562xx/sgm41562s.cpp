@@ -70,7 +70,7 @@ bool Sgm41562xx::Sgm41562sDriver::SetFastChargeCurrentLimit(
     Sgm41562xx& chip, uint16_t current_ma) const {
   uint8_t miscellaneous_configuration = 0;
   if (!chip.ReadRegister(Register::kI2cAddressMiscellaneousConfiguration,
-          miscellaneous_configuration, "REG0A miscellaneous configuration")) {
+          miscellaneous_configuration)) {
     return false;
   }
   constexpr RegisterField kField = {
@@ -165,8 +165,7 @@ bool Sgm41562xx::Sgm41562sDriver::ReadInputConfig(Sgm41562xx& chip,
     ChargerConfig& config) const {
   uint8_t extended_input_current_control = 0;
   if (!chip.ReadRegister(Register::kExtendedInputCurrentControl,
-          extended_input_current_control,
-          "REG0C extended input current control")) {
+          extended_input_current_control)) {
     return false;
   }
   config.input_current_limit_ma =
@@ -205,8 +204,8 @@ bool Sgm41562xx::Sgm41562sDriver::ReadChargeConfig(Sgm41562xx& chip,
       DecodeRegisterField(kChargeVoltage, charge_voltage_control);
 
   uint8_t extended_current_control = 0;
-  if (!chip.ReadRegister(Register::kExtendedCurrentControl,
-          extended_current_control, "REG0D extended current control")) {
+  if (!chip.ReadRegister(
+          Register::kExtendedCurrentControl, extended_current_control)) {
     return false;
   }
   config.termination_current_multiplier_six_enabled =

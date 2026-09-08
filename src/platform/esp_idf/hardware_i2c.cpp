@@ -145,7 +145,8 @@ bool HardwareI2c::Init(uint32_t freq_hz, uint16_t address) {
   const bool created_bus = !had_bus && delete_bus_on_deinit_;
 
   if (address == kNoDeviceAddress) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "address is null\n");
+    LogMessage(LogLevel::kDebug, __FILE__, __LINE__,
+        "HardwareI2c initialized in bus-only mode\n");
     address_ = address;
     return true;
   }

@@ -52,20 +52,6 @@ class I2cBusBase : public virtual DriverBase {
   virtual bool StartTransmit();
   virtual bool StopTransmit();
 #endif
-  bool Read(
-      const uint8_t write_c8, uint8_t* read_data, size_t read_data_length = 1);
-  bool Read(const uint16_t write_c16, uint8_t* read_data,
-      size_t read_data_length = 1);
-  bool Read(const uint32_t write_c32, uint8_t* read_data,
-      size_t read_data_length = 1);
-  bool Write(const uint8_t write_c8, const uint8_t write_d8);
-  bool Write(const uint8_t write_c8, const uint16_t write_d16,
-      ByteOrder byte_order = ByteOrder::kBig);
-  bool Write(const uint16_t write_c16, const uint8_t write_d8);
-  bool Write(const uint8_t write_c8, const uint8_t* write_data,
-      size_t write_data_length);
-  bool Write(const uint32_t write_c32, const uint8_t* write_data,
-      size_t write_data_length);
   bool Scan7BitAddress(std::vector<uint8_t>* address);
 };
 
@@ -149,46 +135,6 @@ class SpiBusBase : public virtual DriverBase {
   virtual bool WriteRead(
       const void* write_data, void* read_data, size_t data_byte) = 0;
   virtual bool Deinit(bool delete_bus) = 0;
-  bool Read(const uint8_t write_c8, uint8_t* read_d8);
-  bool Read(
-      const uint8_t write_c8, uint8_t* read_data, size_t read_data_length);
-  bool Write(const uint8_t write_c8);
-  bool Write(const uint8_t write_c8, const uint8_t write_d8);
-  bool Write(const uint8_t write_c8, const uint8_t* write_data,
-      size_t write_data_length);
-
-  /**
-   * @brief 传输数据结构 [CMD(8 bit) | REG(16 bit) |
-   * 0xAA(等待码，有可能有有可能没有，一般为 0xAA) | ReadData(8
-   * bit)(要读出的数据) | ReadData(8 bit)(要读出的数据) | ......]
-   * @param write_c8 一般为命令位
-   * @param write_c16 一般为寄存器地址位
-   * @param read_data 接收数据指针
-   * @param read_data_length 要读出的数据长度
-   * @return 读取成功返回 true，失败返回 false
-   */
-  bool Read(const uint8_t write_c8, const uint16_t write_c16,
-      uint8_t* read_data, size_t read_data_length);
-  bool Read(const uint8_t write_c8_1, const uint8_t write_c8_2,
-      uint8_t* read_data, size_t read_data_length);
-  bool Read(
-      const uint8_t write_c8, const uint16_t write_c16, uint8_t* read_data);
-
-  /**
-   * @brief 传输数据结构 [CMD(8 bit) | REG(16 bit) | WriteData(8
-   * bit)(要写入的数据) | WriteData(8 bit)(要写入的数据) | ......]
-   * @param write_c8 一般为命令位
-   * @param write_c16 一般为寄存器地址位
-   * @param write_data 待写入数据指针
-   * @param write_data_length 要写入的数据长度
-   * @return 写入成功返回 true，失败返回 false
-   */
-  bool Write(const uint8_t write_c8, const uint16_t write_c16,
-      const uint8_t* write_data, size_t write_data_length);
-  bool Write(const uint8_t write_c8_1, const uint8_t write_c8_2,
-      const uint8_t* write_data, size_t write_data_length);
-  bool Write(const uint8_t write_c8, const uint16_t write_c16,
-      const uint8_t write_data);
 };
 
 class QspiBusBase : public virtual DriverBase {
@@ -243,8 +189,6 @@ class MipiBusBase : public virtual DriverBase {
   virtual bool Write(
       int x_start, int y_start, int x_end, int y_end, const void* data) = 0;
   virtual bool Deinit() = 0;
-  bool Write(const uint8_t write_c8);
-  bool Write(const uint8_t write_c8, const uint8_t write_d8);
 };
 
 }  // namespace cpp_bus_driver

@@ -35,14 +35,15 @@ bool Hi8561Touch::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "HI8561 init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     I2cChipBase::Deinit(false);
     return false;
   }
 
   if (!DiscoverRuntimeLayout()) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "HI8561 dynamic section discovery failed\n");
+        "DiscoverRuntimeLayout failed\n");
     I2cChipBase::Deinit(false);
     return false;
   }
@@ -91,8 +92,6 @@ TouchReadStatus Hi8561Touch::ReadPrimaryTouch(TouchFrame* frame) {
   std::array<uint8_t, kPrimaryReportSize> report{};
   if (!ReadEram(runtime_layout_.coordinate_report.address, report.data(),
           report.size())) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "HI8561 read primary touch failed (I2C transfer failed)\n");
     return TouchReadStatus::kBusError;
   }
 
@@ -144,8 +143,6 @@ TouchReadStatus Hi8561Touch::ReadPrimaryTouch(TouchFrame* frame) {
         static_cast<uint32_t>(last_contact_offset);
     if (!ReadEram(
             last_contact_address, last_contact.data(), last_contact.size())) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "HI8561 read primary touch failed (edge slot transfer failed)\n");
       return TouchReadStatus::kBusError;
     }
     frame->edge_touch = IsEdgeContact(last_contact.data());
@@ -180,8 +177,6 @@ TouchReadStatus Hi8561Touch::ReadTouchFrame(TouchFrame* frame) {
   std::array<uint8_t, kTouchReportReadSize> report{};
   if (!ReadEram(runtime_layout_.coordinate_report.address, report.data(),
           report.size())) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "HI8561 read touch frame failed (I2C transfer failed)\n");
     return TouchReadStatus::kBusError;
   }
 
@@ -467,8 +462,6 @@ bool Hi8561Touch::GetFrequencyBand(uint8_t* frequency_band) {
   uint8_t data[kRuntimeFieldSize] = {};
   if (!ReadRuntimeMemory(
           debug.address + kFrequencyBandOffset, data, sizeof(data))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "HI8561 get frequency band failed (I2C transfer failed)\n");
     return false;
   }
   *frequency_band = data[0];
@@ -655,13 +648,16 @@ bool Hi8561Touch::ReadFirmwareInfoFromSection(
 }
 
 bool Hi8561Touch::SetBackdoorModeEnabled(bool enabled) {
-  if (enabled) {
-    const uint8_t command[] = {0xF2, 0xAA, 0xF0, 0x0F, 0x55, 0x68};
-    return bus_->Write(command, sizeof(command));
+  const uint8_t enter_command[] = {0xF2, 0xAA, 0xF0, 0x0F, 0x55, 0x68};
+  const uint8_t exit_command[] = {0xF2, 0xAA, 0x88, 0x00, 0x00, 0x00};
+  const uint8_t* command = enabled ? enter_command : exit_command;
+  if (bus_ != nullptr && bus_->Write(command, sizeof(enter_command))) {
+    return true;
   }
-
-  const uint8_t command[] = {0xF2, 0xAA, 0x88, 0x00, 0x00, 0x00};
-  return bus_->Write(command, sizeof(command));
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "HI8561 backdoor command write failed (command: %#X, enabled: %u)\n",
+      static_cast<unsigned>(command[0]), static_cast<unsigned>(enabled));
+  return false;
 }
 
 bool Hi8561Touch::ReadBackdoorMemory(
@@ -682,7 +678,13 @@ bool Hi8561Touch::ReadBackdoorMemory(
       static_cast<uint8_t>(address),
       0x03,
   };
-  return bus_->WriteRead(command, sizeof(command), data, length);
+  if (!bus_->WriteRead(command, sizeof(command), data, length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "HI8561 backdoor memory read failed (address: %#X, size: %zu)\n",
+        static_cast<unsigned>(address), length);
+    return false;
+  }
+  return true;
 }
 
 bool Hi8561Touch::ReadEram(uint32_t address, uint8_t* data, size_t length) {
@@ -715,7 +717,13 @@ bool Hi8561Touch::ReadRuntimeMemory(
       static_cast<uint8_t>(length >> 8),
       static_cast<uint8_t>(length),
   };
-  return bus_->WriteRead(command, sizeof(command), data, length);
+  if (!bus_->WriteRead(command, sizeof(command), data, length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "HI8561 runtime memory read failed (address: %#X, size: %zu)\n",
+        static_cast<unsigned>(address), length);
+    return false;
+  }
+  return true;
 }
 
 bool Hi8561Touch::WriteRuntimeMemory(
@@ -735,7 +743,13 @@ bool Hi8561Touch::WriteRuntimeMemory(
   packet[4] = static_cast<uint8_t>(length >> 8);
   packet[5] = static_cast<uint8_t>(length);
   std::copy_n(data, length, packet.begin() + 6);
-  return bus_->Write(packet.data(), 6 + length);
+  if (!bus_->Write(packet.data(), 6 + length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "HI8561 runtime memory write failed (address: %#X, size: %zu)\n",
+        static_cast<unsigned>(address), length);
+    return false;
+  }
+  return true;
 }
 
 bool Hi8561Touch::ReadSectionInfo(uint32_t table_address, size_t section_count,

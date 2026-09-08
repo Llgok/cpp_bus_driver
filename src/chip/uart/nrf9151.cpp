@@ -123,7 +123,8 @@ bool Nrf9151::Init(int32_t baud_rate, uint32_t initialization_timeout_ms) {
 
   chip_id_.clear();
   if (!UartChipBase::Init(baud_rate)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init uart failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
@@ -284,11 +285,15 @@ Nrf9151::CommandResult Nrf9151::SendCommand(
     request.push_back('\r');
   }
 
+  const size_t command_name_length = std::min(
+      std::min(request.find_first_of("=? \r\n"), request.size()), size_t{64});
   const int32_t written = bus_->Write(request.data(), request.size());
   if (written != static_cast<int32_t>(request.size())) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Write AT command failed (expected: %d, actual: %d)\n",
-        static_cast<int>(request.size()), written);
+        "NRF9151 AT command write failed (command: %.*s, expected: %zu, "
+        "actual: %d)\n",
+        static_cast<int>(command_name_length), request.c_str(), request.size(),
+        static_cast<int>(written));
     return CommandResult::kIoError;
   }
 
@@ -316,7 +321,11 @@ Nrf9151::CommandResult Nrf9151::SendCommand(
     const int32_t read_length =
         bus_->Read(buffer.data(), static_cast<uint32_t>(requested));
     if (read_length <= 0 || static_cast<size_t>(read_length) > requested) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "NRF9151 AT response read failed (command: %.*s, requested: %zu, "
+          "actual: %d)\n",
+          static_cast<int>(command_name_length), request.c_str(), requested,
+          static_cast<int>(read_length));
       return CommandResult::kIoError;
     }
 

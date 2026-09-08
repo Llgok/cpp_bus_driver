@@ -553,5 +553,31 @@ class Axp517 final : public I2cChipBase {
       // 设置充电电流为512mA
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Register::kRwIccSetting), 0B00001000};
+
+  /**
+   * @brief 读取寄存器，并记录访问失败信息
+   * @param reg 寄存器地址
+   * @param data 接收缓冲区
+   * @param length 读取字节数
+   * @return 读取成功返回true，否则返回false
+   */
+  bool ReadRegister(uint8_t reg, uint8_t* data, size_t length = 1);
+
+  /**
+   * @brief 写入寄存器，并记录访问失败信息
+   * @param reg 寄存器地址
+   * @param value 待写入数据
+   * @return 写入成功返回true，否则返回false
+   */
+  bool WriteRegister(uint8_t reg, uint8_t value);
+
+  /**
+   * @brief 写入寄存器，并记录访问失败信息
+   * @param reg 寄存器地址
+   * @param data 待写入数据
+   * @param length 写入字节数
+   * @return 写入成功返回true，否则返回false
+   */
+  bool WriteRegister(uint8_t reg, const uint8_t* data, size_t length);
 };
 }  // namespace cpp_bus_driver

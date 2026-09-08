@@ -25,7 +25,8 @@ bool Icn6211::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
@@ -46,7 +47,8 @@ bool Icn6211::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Deinit failed\n");
     result = false;
   }
 
@@ -60,8 +62,8 @@ bool Icn6211::Deinit(bool delete_bus) {
 uint16_t Icn6211::GetChipId() {
   uint8_t buffer[2] = {0};
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRoChipIdStart), buffer, 2)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRoChipIdStart), buffer, 2)) {
     return -1;
   }
 
@@ -145,39 +147,33 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
   }
 
   // 设置 H/V Active 低位
-  if (!bus_->Write(static_cast<uint8_t>(Register::kHactiveL),
+  if (!WriteRegister(static_cast<uint8_t>(Register::kHactiveL),
           static_cast<uint8_t>(params.rgb_width))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
-  if (!bus_->Write(static_cast<uint8_t>(Register::kVactiveL),
+  if (!WriteRegister(static_cast<uint8_t>(Register::kVactiveL),
           static_cast<uint8_t>(params.rgb_height))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   // 设置 H/V Active 高位
   uint8_t hv_h =
       ((params.rgb_height & 0x0F00) >> 4) | ((params.rgb_width & 0x0F00) >> 8);
-  if (!bus_->Write(static_cast<uint8_t>(Register::kHvActiveH), hv_h)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(static_cast<uint8_t>(Register::kHvActiveH), hv_h)) {
     return false;
   }
 
   // 设置 kHfp/kHsync/kHbp 低位
-  if (!bus_->Write(static_cast<uint8_t>(Register::kHfpL),
+  if (!WriteRegister(static_cast<uint8_t>(Register::kHfpL),
           static_cast<uint8_t>(params.rgb_hfp))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
-  if (!bus_->Write(static_cast<uint8_t>(Register::kHsyncL),
+  if (!WriteRegister(static_cast<uint8_t>(Register::kHsyncL),
           static_cast<uint8_t>(params.rgb_hsync))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
-  if (!bus_->Write(static_cast<uint8_t>(Register::kHbpL),
+  if (!WriteRegister(static_cast<uint8_t>(Register::kHbpL),
           static_cast<uint8_t>(params.rgb_hbp))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -185,41 +181,35 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
   uint8_t h_porch_h = ((params.rgb_hfp & 0x0300) >> 4) |
                       ((params.rgb_hsync & 0x0300) >> 6) |
                       ((params.rgb_hbp & 0x0300) >> 8);
-  if (!bus_->Write(static_cast<uint8_t>(Register::kHPorchH), h_porch_h)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(static_cast<uint8_t>(Register::kHPorchH), h_porch_h)) {
     return false;
   }
 
   // 设置 Vertical Porches
-  if (!bus_->Write(static_cast<uint8_t>(Register::kVfp),
+  if (!WriteRegister(static_cast<uint8_t>(Register::kVfp),
           static_cast<uint8_t>(params.rgb_vfp))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
-  if (!bus_->Write(static_cast<uint8_t>(Register::kVsync),
+  if (!WriteRegister(static_cast<uint8_t>(Register::kVsync),
           static_cast<uint8_t>(params.rgb_vsync))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
-  if (!bus_->Write(static_cast<uint8_t>(Register::kVbp),
+  if (!WriteRegister(static_cast<uint8_t>(Register::kVbp),
           static_cast<uint8_t>(params.rgb_vbp))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   // 设置时钟相位
-  if (!bus_->Write(static_cast<uint8_t>(Register::kSysCtrl1),
+  if (!WriteRegister(static_cast<uint8_t>(Register::kSysCtrl1),
           static_cast<uint8_t>(params.rgb_clock_phase))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   // 根据参考时钟设置选择时钟源
   if (params.external_reference_clock_mhz > 0) {
     // 使用外部参考时钟
-    if (!bus_->Write(static_cast<uint8_t>(Register::kPllRefSel),
+    if (!WriteRegister(static_cast<uint8_t>(Register::kPllRefSel),
             static_cast<uint8_t>(0x90))) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
 
@@ -238,8 +228,8 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
       ratio *= 32.0;
     }
 
-    if (!bus_->Write(static_cast<uint8_t>(Register::kPllRefDiv), pll_ref_div)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+    if (!WriteRegister(
+            static_cast<uint8_t>(Register::kPllRefDiv), pll_ref_div)) {
       return false;
     }
 
@@ -249,8 +239,8 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
       pll_int_value++;
     }
 
-    if (!bus_->Write(static_cast<uint8_t>(Register::kPllInt), pll_int_value)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+    if (!WriteRegister(
+            static_cast<uint8_t>(Register::kPllInt), pll_int_value)) {
       return false;
     }
 
@@ -259,9 +249,8 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
         params.external_reference_clock_mhz, pll_int_value);
   } else {
     // 使用MIPI时钟作为参考
-    if (!bus_->Write(static_cast<uint8_t>(Register::kPllRefSel),
+    if (!WriteRegister(static_cast<uint8_t>(Register::kPllRefSel),
             static_cast<uint8_t>(0x92))) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
 
@@ -294,8 +283,8 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
       ratio *= 4.0;
     }
 
-    if (!bus_->Write(static_cast<uint8_t>(Register::kPllRefDiv), pll_ref_div)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+    if (!WriteRegister(
+            static_cast<uint8_t>(Register::kPllRefDiv), pll_ref_div)) {
       return false;
     }
 
@@ -305,8 +294,8 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
       pll_int_value++;
     }
 
-    if (!bus_->Write(static_cast<uint8_t>(Register::kPllInt), pll_int_value)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+    if (!WriteRegister(
+            static_cast<uint8_t>(Register::kPllInt), pll_int_value)) {
       return false;
     }
 
@@ -316,15 +305,13 @@ bool Icn6211::ConfigInterfaceParams(InterfaceParams params) {
   }
 
   // 设置PLL相关寄存器
-  if (!bus_->Write(static_cast<uint8_t>(Register::kPllWtLock),
+  if (!WriteRegister(static_cast<uint8_t>(Register::kPllWtLock),
           static_cast<uint8_t>(0xFF))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kPllCtrl1),
+  if (!WriteRegister(static_cast<uint8_t>(Register::kPllCtrl1),
           static_cast<uint8_t>(0x20))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -353,9 +340,8 @@ bool Icn6211::SetPolarityEnable(bool de, bool vsync, bool hsync) {
     buffer |= 0x04;
   }
 
-  if (!bus_->Write(
+  if (!WriteRegister(
           static_cast<uint8_t>(Register::kSyncPolarityTestMode), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
   return true;
@@ -364,8 +350,7 @@ bool Icn6211::SetPolarityEnable(bool de, bool vsync, bool hsync) {
 bool Icn6211::SetMipiLane(uint8_t lane) {
   uint8_t buffer = 0x28 | ((lane - 1) & 0x03);
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kDsiCtrl), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(static_cast<uint8_t>(Register::kDsiCtrl), buffer)) {
     return false;
   }
 
@@ -380,8 +365,7 @@ bool Icn6211::SetRgbOutputFormat(
     buffer |= 0x80;
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kSysCtrl0), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(static_cast<uint8_t>(Register::kSysCtrl0), buffer)) {
     return false;
   }
   return true;
@@ -390,30 +374,27 @@ bool Icn6211::SetRgbOutputFormat(
 bool Icn6211::SetTestMode(TestMode mode) {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(
+  if (!ReadRegister(
           static_cast<uint8_t>(Register::kSyncPolarityTestMode), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   if (mode == TestMode::kDisable) {
     // 关闭 kBist
-    if (!bus_->Write(static_cast<uint8_t>(Register::kBistModeEn),
+    if (!WriteRegister(static_cast<uint8_t>(Register::kBistModeEn),
             static_cast<uint8_t>(0x83))) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
 
-    if (!bus_->Write(static_cast<uint8_t>(Register::kSyncPolarityTestMode),
+    if (!WriteRegister(
+            static_cast<uint8_t>(Register::kSyncPolarityTestMode),
             static_cast<uint8_t>(0x00))) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   } else {
     // 开启 kBist
-    if (!bus_->Write(static_cast<uint8_t>(Register::kBistModeEn),
+    if (!WriteRegister(static_cast<uint8_t>(Register::kBistModeEn),
             static_cast<uint8_t>(0x43))) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   }
@@ -421,9 +402,8 @@ bool Icn6211::SetTestMode(TestMode mode) {
   buffer = (buffer & 0B00000111) | static_cast<uint8_t>(mode);
 
   // 写入 kBist 模式
-  if (!bus_->Write(
+  if (!WriteRegister(
           static_cast<uint8_t>(Register::kSyncPolarityTestMode), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -433,12 +413,37 @@ bool Icn6211::SetTestMode(TestMode mode) {
 bool Icn6211::SetChipEnable(bool enable) {
   uint8_t buffer = enable << 4;
 
-  if (!bus_->Write(
+  if (!WriteRegister(
           static_cast<uint8_t>(Register::kConfigFinishSoftReset), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   return true;
+}
+
+bool Icn6211::ReadRegister(uint8_t reg, uint8_t* data, size_t length) {
+  const uint8_t register_packet[] = {reg};
+
+  if (bus_ != nullptr &&
+      bus_->WriteRead(register_packet, sizeof(register_packet), data, length)) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "ICN6211 register read failed (register: %#X)\n",
+      static_cast<unsigned>(reg));
+  return false;
+}
+
+bool Icn6211::WriteRegister(uint8_t reg, uint8_t value) {
+  const uint8_t register_packet[] = {reg, value};
+
+  if (bus_ != nullptr &&
+      bus_->Write(register_packet, sizeof(register_packet))) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "ICN6211 register write failed (register: %#X)\n",
+      static_cast<unsigned>(reg));
+  return false;
 }
 }  // namespace cpp_bus_driver

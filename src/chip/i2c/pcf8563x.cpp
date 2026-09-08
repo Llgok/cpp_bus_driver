@@ -23,7 +23,8 @@ bool Pcf8563x::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
@@ -38,7 +39,8 @@ bool Pcf8563x::Init(int32_t freq_hz) {
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "InitSequence failed\n");
     return false;
   }
 
@@ -51,7 +53,8 @@ bool Pcf8563x::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Deinit failed\n");
     result = false;
   }
 
@@ -65,8 +68,7 @@ bool Pcf8563x::Deinit(bool delete_bus) {
 uint8_t Pcf8563x::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
     return kInvalidChipId;
   }
 
@@ -76,8 +78,8 @@ uint8_t Pcf8563x::GetChipId() {
 bool Pcf8563x::SetClockFrequencyOutput(OutFreq freq_hz) {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwClkoutControl), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwClkoutControl), &buffer)) {
     return false;
   }
   switch (freq_hz) {
@@ -100,8 +102,8 @@ bool Pcf8563x::SetClockFrequencyOutput(OutFreq freq_hz) {
     default:
       break;
   }
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwClkoutControl), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwClkoutControl), buffer)) {
     return false;
   }
 
@@ -111,8 +113,8 @@ bool Pcf8563x::SetClockFrequencyOutput(OutFreq freq_hz) {
 bool Pcf8563x::SetClock(bool enalbe) {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwControlStatus1), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus1), &buffer)) {
     return false;
   }
   if (enalbe) {
@@ -121,8 +123,8 @@ bool Pcf8563x::SetClock(bool enalbe) {
     buffer |= 0B00100000;  // 停止时钟
   }
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwControlStatus1), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus1), buffer)) {
     return false;
   }
   return true;
@@ -131,8 +133,8 @@ bool Pcf8563x::SetClock(bool enalbe) {
 bool Pcf8563x::CheckClockIntegrityFlag() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwVlSeconds), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwVlSeconds), &buffer)) {
     return false;
   }
 
@@ -142,15 +144,15 @@ bool Pcf8563x::CheckClockIntegrityFlag() {
 bool Pcf8563x::ClearClockIntegrityFlag() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwVlSeconds), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwVlSeconds), &buffer)) {
     return false;
   }
 
   buffer &= 0B01111111;
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwVlSeconds), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwVlSeconds), buffer)) {
     return false;
   }
 
@@ -160,8 +162,8 @@ bool Pcf8563x::ClearClockIntegrityFlag() {
 uint8_t Pcf8563x::GetSecond() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwVlSeconds), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwVlSeconds), &buffer)) {
     return -1;
   }
 
@@ -171,8 +173,7 @@ uint8_t Pcf8563x::GetSecond() {
 uint8_t Pcf8563x::GetMinute() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwMinutes), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(static_cast<uint8_t>(Register::kRwMinutes), &buffer)) {
     return -1;
   }
 
@@ -182,8 +183,7 @@ uint8_t Pcf8563x::GetMinute() {
 uint8_t Pcf8563x::GetHour() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwHours), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(static_cast<uint8_t>(Register::kRwHours), &buffer)) {
     return -1;
   }
 
@@ -193,8 +193,7 @@ uint8_t Pcf8563x::GetHour() {
 uint8_t Pcf8563x::GetDay() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwDays), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(static_cast<uint8_t>(Register::kRwDays), &buffer)) {
     return -1;
   }
 
@@ -204,8 +203,7 @@ uint8_t Pcf8563x::GetDay() {
 uint8_t Pcf8563x::GetWeek() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwWeekdays), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(static_cast<uint8_t>(Register::kRwWeekdays), &buffer)) {
     return -1;
   }
 
@@ -215,8 +213,8 @@ uint8_t Pcf8563x::GetWeek() {
 uint8_t Pcf8563x::GetMonth() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwCenturyMonths), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwCenturyMonths), &buffer)) {
     return -1;
   }
 
@@ -226,8 +224,7 @@ uint8_t Pcf8563x::GetMonth() {
 uint8_t Pcf8563x::GetYear() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwYears), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(static_cast<uint8_t>(Register::kRwYears), &buffer)) {
     return -1;
   }
 
@@ -238,10 +235,9 @@ bool Pcf8563x::GetTime(Time& time) {
   uint8_t buffer[7] = {0};
 
   for (uint8_t i = 0; i < 7; i++) {
-    if (!bus_->Read(static_cast<uint8_t>(
-                        static_cast<uint8_t>(Register::kRwVlSeconds) + i),
+    if (!ReadRegister(static_cast<uint8_t>(
+                              static_cast<uint8_t>(Register::kRwVlSeconds) + i),
             &buffer[i])) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
   }
@@ -268,15 +264,15 @@ bool Pcf8563x::SetSecond(uint8_t second) {
 
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwVlSeconds), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwVlSeconds), &buffer)) {
     return false;
   }
 
   buffer = (buffer & 0B10000000) | (((second / 10) << 4) | (second % 10));
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwVlSeconds), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwVlSeconds), buffer)) {
     return false;
   }
 
@@ -291,8 +287,7 @@ bool Pcf8563x::SetMinute(uint8_t minute) {
 
   uint8_t buffer = (((minute / 10) << 4) | (minute % 10));
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwMinutes), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(static_cast<uint8_t>(Register::kRwMinutes), buffer)) {
     return false;
   }
 
@@ -307,8 +302,7 @@ bool Pcf8563x::SetHour(uint8_t hour) {
 
   uint8_t buffer = (((hour / 10) << 4) | (hour % 10));
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwHours), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(static_cast<uint8_t>(Register::kRwHours), buffer)) {
     return false;
   }
 
@@ -326,8 +320,7 @@ bool Pcf8563x::SetDay(uint8_t day) {
 
   uint8_t buffer = (((day / 10) << 4) | (day % 10));
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwDays), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(static_cast<uint8_t>(Register::kRwDays), buffer)) {
     return false;
   }
 
@@ -335,9 +328,8 @@ bool Pcf8563x::SetDay(uint8_t day) {
 }
 
 bool Pcf8563x::SetWeek(Week week) {
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwWeekdays),
+  if (!WriteRegister(static_cast<uint8_t>(Register::kRwWeekdays),
           static_cast<uint8_t>(week))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -355,15 +347,15 @@ bool Pcf8563x::SetMonth(uint8_t month) {
 
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwCenturyMonths), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwCenturyMonths), &buffer)) {
     return false;
   }
 
   buffer = (buffer & 0B11100000) | (((month / 10) << 4) | (month % 10));
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwCenturyMonths), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwCenturyMonths), buffer)) {
     return false;
   }
 
@@ -378,8 +370,7 @@ bool Pcf8563x::SetYear(uint8_t year) {
 
   uint8_t buffer = (((year / 10) << 4) | (year % 10));
 
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwYears), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(static_cast<uint8_t>(Register::kRwYears), buffer)) {
     return false;
   }
 
@@ -420,14 +411,13 @@ bool Pcf8563x::SetTime(Time time) {
 
   uint8_t buffer[7] = {0};
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwVlSeconds), &buffer[0])) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwVlSeconds), &buffer[0])) {
     return false;
   }
 
-  if (!bus_->Read(
+  if (!ReadRegister(
           static_cast<uint8_t>(Register::kRwCenturyMonths), &buffer[5])) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -442,10 +432,10 @@ bool Pcf8563x::SetTime(Time time) {
   buffer[6] = (((time.year / 10) << 4) | (time.year % 10));
 
   for (uint8_t i = 0; i < 7; i++) {
-    if (!bus_->Write(static_cast<uint8_t>(
-                         static_cast<uint8_t>(Register::kRwVlSeconds) + i),
+    if (!WriteRegister(
+            static_cast<uint8_t>(
+                static_cast<uint8_t>(Register::kRwVlSeconds) + i),
             buffer[i])) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   }
@@ -457,46 +447,45 @@ bool Pcf8563x::StopTimer() {
   uint8_t buffer = 0;
 
   // 关闭定时器
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwTimerControl), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwTimerControl), buffer)) {
     return false;
   }
 
   // 清除定时器TF标志位并关闭定时器TIE外部中断
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
     return false;
   }
   buffer &= 0B11111010;
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwControlStatus2), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), buffer)) {
     return false;
   }
   return true;
 }
 
 bool Pcf8563x::RunTimer(uint8_t n_value, TimerFreq freq_hz) {
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwTimer), n_value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(static_cast<uint8_t>(Register::kRwTimer), n_value)) {
     return false;
   }
 
   uint8_t buffer = 0B10000000 | static_cast<uint8_t>(freq_hz);
 
   // 开启定时器并设置频率
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwTimerControl), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwTimerControl), buffer)) {
     return false;
   }
 
   // 清除定时器TF标志位并开启定时器TIE外部中断
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
     return false;
   }
   buffer = (buffer & 0B11111010) | 0B00000001;
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwControlStatus2), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), buffer)) {
     return false;
   }
 
@@ -505,8 +494,8 @@ bool Pcf8563x::RunTimer(uint8_t n_value, TimerFreq freq_hz) {
 
 bool Pcf8563x::CheckTimerFlag() {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
     return false;
   }
 
@@ -516,13 +505,13 @@ bool Pcf8563x::CheckTimerFlag() {
 bool Pcf8563x::ClearTimerFlag() {
   uint8_t buffer = 0;
   // 清除定时器TF标志位
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
     return false;
   }
   buffer &= 0B11111011;
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwControlStatus2), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), buffer)) {
     return false;
   }
 
@@ -534,22 +523,22 @@ bool Pcf8563x::StopScheduledAlarm() {
 
   // 关闭报警
   for (uint8_t i = 0; i < 4; i++) {
-    if (!bus_->Write(static_cast<uint8_t>(
-                         static_cast<uint8_t>(Register::kRwMinuteAlarm) + i),
+    if (!WriteRegister(
+            static_cast<uint8_t>(
+                static_cast<uint8_t>(Register::kRwMinuteAlarm) + i),
             buffer)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
       return false;
     }
   }
 
   // 清除报警AF标志位并关闭报警AIE外部中断
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
     return false;
   }
   buffer &= 0B11110101;
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwControlStatus2), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), buffer)) {
     return false;
   }
 
@@ -569,8 +558,8 @@ bool Pcf8563x::RunScheduledAlarm(TimeAlarm alarm) {
   } else {
     buffer = 0B10000000;
   }
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwMinuteAlarm), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwMinuteAlarm), buffer)) {
     return false;
   }
 
@@ -584,8 +573,8 @@ bool Pcf8563x::RunScheduledAlarm(TimeAlarm alarm) {
   } else {
     buffer = 0B10000000;
   }
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwHourAlarm), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwHourAlarm), buffer)) {
     return false;
   }
 
@@ -601,8 +590,7 @@ bool Pcf8563x::RunScheduledAlarm(TimeAlarm alarm) {
   } else {
     buffer = 0B10000000;
   }
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwDayAlarm), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(static_cast<uint8_t>(Register::kRwDayAlarm), buffer)) {
     return false;
   }
 
@@ -611,19 +599,19 @@ bool Pcf8563x::RunScheduledAlarm(TimeAlarm alarm) {
   } else {
     buffer = 0B10000000;
   }
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwWeekdayAlarm), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwWeekdayAlarm), buffer)) {
     return false;
   }
 
   // 清除预定时间报警AF标志位并开启预定时间报警AIE外部中断
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
     return false;
   }
   buffer = (buffer & 0B11110101) | 0B00000010;
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwControlStatus2), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), buffer)) {
     return false;
   }
 
@@ -632,8 +620,8 @@ bool Pcf8563x::RunScheduledAlarm(TimeAlarm alarm) {
 
 bool Pcf8563x::CheckScheduledAlarmFlag() {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
     return false;
   }
 
@@ -643,17 +631,42 @@ bool Pcf8563x::CheckScheduledAlarmFlag() {
 bool Pcf8563x::ClearScheduledAlarmFlag() {
   uint8_t buffer = 0;
   // 清除预定时间报警AF标志位
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), &buffer)) {
     return false;
   }
   buffer &= 0B11110111;
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwControlStatus2), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwControlStatus2), buffer)) {
     return false;
   }
 
   return true;
 }
 
+bool Pcf8563x::ReadRegister(uint8_t reg, uint8_t* data, size_t length) {
+  const uint8_t register_packet[] = {reg};
+
+  if (bus_ != nullptr &&
+      bus_->WriteRead(register_packet, sizeof(register_packet), data, length)) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "PCF8563x register read failed (register: %#X)\n",
+      static_cast<unsigned>(reg));
+  return false;
+}
+
+bool Pcf8563x::WriteRegister(uint8_t reg, uint8_t value) {
+  const uint8_t register_packet[] = {reg, value};
+
+  if (bus_ != nullptr &&
+      bus_->Write(register_packet, sizeof(register_packet))) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "PCF8563x register write failed (register: %#X)\n",
+      static_cast<unsigned>(reg));
+  return false;
+}
 }  // namespace cpp_bus_driver

@@ -7,6 +7,7 @@
  */
 #include "chip/uart/l76k.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <new>
 
@@ -113,12 +114,14 @@ bool L76k::Init(int32_t baud_rate) {
   }
 
   if (!Sleep(false)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Sleep failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "Sleep failed\n");
     return false;
   }
 
   if (!UartChipBase::Init(baud_rate)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
@@ -137,7 +140,8 @@ bool L76k::Init(int32_t baud_rate) {
 
 bool L76k::Deinit() {
   if (!UartChipBase::Deinit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Deinit failed\n");
     return false;
   }
 
@@ -157,7 +161,6 @@ bool L76k::GetChipId(size_t* search_index) {
   uint32_t buffer_length = 0;
 
   if (!GetInfoData(buffer, &buffer_length)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GetInfoData failed\n");
     return false;
   }
 
@@ -214,7 +217,8 @@ uint32_t L76k::ReadData(uint8_t* data, uint32_t length) {
 
   const int32_t result = bus_->Read(data, read_length);
   if (result <= 0) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "L76K UART stream read failed\n");
     return 0;
   }
 
@@ -261,7 +265,8 @@ bool L76k::GetInfoData(std::unique_ptr<uint8_t[]>& data, uint32_t* length,
 
       const int32_t read_length = bus_->Read(data.get(), buffer_length);
       if (read_length <= 0) {
-        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+        LogMessage(LogLevel::kError, __FILE__, __LINE__,
+            "L76K UART stream read failed\n");
         data = nullptr;
         *length = 0;
         return false;
@@ -594,7 +599,11 @@ bool L76k::WritePcasCommand(const std::string& body) {
 
   const std::string command = "$" + body + "*" + checksum_buffer + "\r\n";
   if (!bus_->Write(command.c_str(), command.length())) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+    const size_t command_length = std::min(body.find(','), body.size());
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "L76K PCAS command write failed (command: %.*s, size: %zu)\n",
+        static_cast<int>(std::min(command_length, size_t{32})), body.c_str(),
+        command.size());
     return false;
   }
 
@@ -629,7 +638,11 @@ bool L76k::WriteCasicCommand(
   AppendU32(frame, checksum);
 
   if (!bus_->Write(frame.data(), frame.size())) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "L76K CASIC command write failed (class: %#X, message: %#X, size: "
+        "%zu)\n",
+        static_cast<unsigned>(class_id), static_cast<unsigned>(message_id),
+        payload.size());
     return false;
   }
 

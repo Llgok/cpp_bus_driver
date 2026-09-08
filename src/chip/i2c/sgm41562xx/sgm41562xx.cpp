@@ -83,7 +83,8 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
   model_driver_ = nullptr;
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
@@ -129,7 +130,8 @@ bool Sgm41562xx::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Deinit failed\n");
     result = false;
   }
 
@@ -140,8 +142,7 @@ bool Sgm41562xx::Deinit(bool delete_bus) {
 
 bool Sgm41562xx::GetChipId(uint8_t& chip_id) {
   uint8_t value = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kChipId), &value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read chip id failed\n");
+  if (!ReadRegister(Register::kChipId, value)) {
     return false;
   }
 
@@ -196,12 +197,9 @@ Sgm41562xx::ChipModel Sgm41562xx::DetectChipModel(uint8_t chip_id) {
 Sgm41562xx::ChipModel Sgm41562xx::DetectIdZeroChipModel() {
   uint8_t charge_voltage_control = 0;
   uint8_t system_voltage_regulation = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kChargeVoltageControl),
-          &charge_voltage_control) ||
-      !bus_->Read(static_cast<uint8_t>(Register::kSystemVoltageRegulation),
-          &system_voltage_regulation)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "Read reset values failed\n");
+  if (!ReadRegister(Register::kChargeVoltageControl, charge_voltage_control) ||
+      !ReadRegister(
+          Register::kSystemVoltageRegulation, system_voltage_regulation)) {
     return ChipModel::kUnknown;
   }
 
@@ -223,12 +221,9 @@ Sgm41562xx::ChipModel Sgm41562xx::DetectIdZeroChipModel() {
 
 bool Sgm41562xx::ResetRegisters() {
   uint8_t charge_current_control = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kChargeCurrentControl),
-          &charge_current_control) ||
-      !bus_->Write(static_cast<uint8_t>(Register::kChargeCurrentControl),
+  if (!ReadRegister(Register::kChargeCurrentControl, charge_current_control) ||
+      !WriteRegister(static_cast<uint8_t>(Register::kChargeCurrentControl),
           static_cast<uint8_t>(charge_current_control | kRegisterResetMask))) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "Reset registers failed\n");
     return false;
   }
 
@@ -239,15 +234,13 @@ bool Sgm41562xx::ResetRegisters() {
 bool Sgm41562xx::UpdateRegisterBits(
     Register register_id, uint8_t mask, uint8_t value) {
   uint8_t current_value = 0;
-  if (!bus_->Read(static_cast<uint8_t>(register_id), &current_value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read register failed\n");
+  if (!ReadRegister(register_id, current_value)) {
     return false;
   }
 
   const uint8_t new_value =
       static_cast<uint8_t>((current_value & ~mask) | (value & mask));
-  if (!bus_->Write(static_cast<uint8_t>(register_id), new_value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write register failed\n");
+  if (!WriteRegister(static_cast<uint8_t>(register_id), new_value)) {
     return false;
   }
 
@@ -295,13 +288,13 @@ bool Sgm41562xx::ModelDriver::SetInputOvervoltageThreshold(
   return false;
 }
 
-bool Sgm41562xx::ReadRegister(
-    Register register_id, uint8_t& value, const char* name) {
-  if (!bus_->Read(static_cast<uint8_t>(register_id), &value)) {
+bool Sgm41562xx::ReadRegister(Register register_id, uint8_t& value) {
+  const uint8_t register_packet[] = {static_cast<uint8_t>(register_id)};
+
+  if (!bus_->WriteRead(register_packet, sizeof(register_packet), &value, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Read %s failed (command: %#X)\n",
-        name == nullptr ? "unknown register" : name,
-        static_cast<unsigned int>(static_cast<uint8_t>(register_id)));
+        "SGM41562xx register read failed (register: %#X)\n",
+        static_cast<unsigned>(register_id));
     return false;
   }
 
@@ -323,9 +316,7 @@ bool Sgm41562xx::GetFaultStatus(FaultStatus& status) {
   }
 
   uint8_t fault_status = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kFaultAndShippingControl),
-          &fault_status)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(Register::kFaultAndShippingControl, fault_status)) {
     return false;
   }
 
@@ -623,9 +614,7 @@ bool Sgm41562xx::GetChipStatus(ChipStatus& status) {
   }
 
   uint8_t chip_status = 0;
-  if (!bus_->Read(
-          static_cast<uint8_t>(Register::kSystemStatus), &chip_status)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(Register::kSystemStatus, chip_status)) {
     return false;
   }
 
@@ -660,12 +649,9 @@ bool Sgm41562xx::ReadInputConfig(ChargerConfig& config) {
   uint8_t input_source_control = 0;
   uint8_t power_on_configuration = 0;
   uint8_t system_status = 0;
-  if (!ReadRegister(Register::kInputSourceControl, input_source_control,
-          "REG00 input source control") ||
-      !ReadRegister(Register::kPowerOnConfiguration, power_on_configuration,
-          "REG01 power-on configuration") ||
-      !ReadRegister(
-          Register::kSystemStatus, system_status, "REG08 system status")) {
+  if (!ReadRegister(Register::kInputSourceControl, input_source_control) ||
+      !ReadRegister(Register::kPowerOnConfiguration, power_on_configuration) ||
+      !ReadRegister(Register::kSystemStatus, system_status)) {
     return false;
   }
 
@@ -689,15 +675,12 @@ bool Sgm41562xx::ReadChargeConfig(ChargerConfig& config) {
   uint8_t discharge_termination_current = 0;
   uint8_t charge_voltage_control = 0;
   uint8_t miscellaneous_configuration = 0;
-  if (!ReadRegister(Register::kChargeCurrentControl, charge_current_control,
-          "REG02 charge current control") ||
+  if (!ReadRegister(Register::kChargeCurrentControl, charge_current_control) ||
       !ReadRegister(Register::kDischargeTerminationCurrent,
-          discharge_termination_current,
-          "REG03 discharge and termination current") ||
-      !ReadRegister(Register::kChargeVoltageControl, charge_voltage_control,
-          "REG04 charge voltage control") ||
+          discharge_termination_current) ||
+      !ReadRegister(Register::kChargeVoltageControl, charge_voltage_control) ||
       !ReadRegister(Register::kI2cAddressMiscellaneousConfiguration,
-          miscellaneous_configuration, "REG0A miscellaneous configuration")) {
+          miscellaneous_configuration)) {
     return false;
   }
 
@@ -719,16 +702,16 @@ bool Sgm41562xx::ReadProtectionConfig(ChargerConfig& config) {
   uint8_t system_voltage_regulation = 0;
   uint8_t fault_and_shipping_control = 0;
   uint8_t miscellaneous_configuration = 0;
-  if (!ReadRegister(Register::kChargeTerminationTimerControl,
-          charge_timer_control, "REG05 charge termination and timer control") ||
-      !ReadRegister(Register::kMiscellaneousOperationControl,
-          miscellaneous_control, "REG06 miscellaneous operation control") ||
-      !ReadRegister(Register::kSystemVoltageRegulation,
-          system_voltage_regulation, "REG07 system voltage regulation") ||
-      !ReadRegister(Register::kFaultAndShippingControl,
-          fault_and_shipping_control, "REG09 fault and shipping control") ||
+  if (!ReadRegister(
+          Register::kChargeTerminationTimerControl, charge_timer_control) ||
+      !ReadRegister(
+          Register::kMiscellaneousOperationControl, miscellaneous_control) ||
+      !ReadRegister(
+          Register::kSystemVoltageRegulation, system_voltage_regulation) ||
+      !ReadRegister(
+          Register::kFaultAndShippingControl, fault_and_shipping_control) ||
       !ReadRegister(Register::kI2cAddressMiscellaneousConfiguration,
-          miscellaneous_configuration, "REG0A miscellaneous configuration")) {
+          miscellaneous_configuration)) {
     return false;
   }
 
@@ -797,4 +780,16 @@ bool Sgm41562xx::SetShippingModeDelay(ShippingModeDelay delay) {
       kShippingModeDelayMask, static_cast<uint8_t>(delay_value << 6));
 }
 
+bool Sgm41562xx::WriteRegister(uint8_t reg, uint8_t value) {
+  const uint8_t register_packet[] = {reg, value};
+
+  if (bus_ != nullptr &&
+      bus_->Write(register_packet, sizeof(register_packet))) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "SGM41562xx register write failed (register: %#X)\n",
+      static_cast<unsigned>(reg));
+  return false;
+}
 }  // namespace cpp_bus_driver

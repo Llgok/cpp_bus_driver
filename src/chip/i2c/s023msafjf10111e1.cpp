@@ -56,6 +56,8 @@ bool S023msafjf10111e1::Init(int32_t freq_hz) {
     return false;
   }
   if (!I2cChipBase::Init(freq_hz)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     I2cChipBase::Deinit(false);
     if (rst_ != kPinNotConnected) {
       ResetGpio(rst_);

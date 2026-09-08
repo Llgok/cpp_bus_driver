@@ -62,7 +62,8 @@ bool Gt9895::Init(int32_t freq_hz) {
     return false;
   }
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "GT9895 init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     I2cChipBase::Deinit(false);
     return false;
   }
@@ -536,8 +537,6 @@ bool Gt9895::EnterSleep() {
       0x00,
   };
   if (!WriteRegister(runtime_info_.command_address, command, sizeof(command))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "GT9895 sleep failed (command transfer failed)\n");
     return false;
   }
   return true;
@@ -645,8 +644,6 @@ bool Gt9895::ReadRuntimeInfo(RuntimeInfo* runtime_info) {
 
   uint8_t length_data[2] = {};
   if (!ReadRegister(kRuntimeInfoAddress, length_data, sizeof(length_data))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "GT9895 runtime information read failed (length transfer)\n");
     return false;
   }
   const size_t length = ReadLittleEndian16(length_data);
@@ -744,7 +741,13 @@ bool Gt9895::ReadRegister(uint32_t address, uint8_t* data, size_t length) {
       static_cast<uint8_t>(address >> 8),
       static_cast<uint8_t>(address),
   };
-  return bus_->WriteRead(command, sizeof(command), data, length);
+  if (!bus_->WriteRead(command, sizeof(command), data, length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "GT9895 register read failed (address: %#X, size: %zu)\n",
+        static_cast<unsigned>(address), length);
+    return false;
+  }
+  return true;
 }
 
 bool Gt9895::WriteRegister(
@@ -759,7 +762,13 @@ bool Gt9895::WriteRegister(
   packet[2] = static_cast<uint8_t>(address >> 8);
   packet[3] = static_cast<uint8_t>(address);
   std::copy_n(data, length, packet.begin() + 4);
-  return bus_->Write(packet.data(), 4 + length);
+  if (!bus_->Write(packet.data(), 4 + length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "GT9895 register write failed (address: %#X, size: %zu)\n",
+        static_cast<unsigned>(address), length);
+    return false;
+  }
+  return true;
 }
 
 bool Gt9895::SendCommand(

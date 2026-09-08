@@ -23,7 +23,8 @@ bool Rm69a10::Init(float freq_mhz, float lane_bit_rate_mbps) {
   }
 
   if (!MipiChipBase::Init(freq_mhz, lane_bit_rate_mbps)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
@@ -38,7 +39,8 @@ bool Rm69a10::Init(float freq_mhz, float lane_bit_rate_mbps) {
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "InitSequence failed\n");
     return false;
   }
 
@@ -54,7 +56,8 @@ bool Rm69a10::Deinit() {
   bool result = true;
 
   if (!MipiChipBase::Deinit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Deinit failed\n");
     result = false;
   }
 
@@ -68,8 +71,7 @@ bool Rm69a10::Deinit() {
 uint8_t Rm69a10::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(DcsCommand::kRoChipId), &buffer, 1)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadCommand(static_cast<uint8_t>(DcsCommand::kRoChipId), &buffer, 1)) {
     return -1;
   }
 
@@ -77,9 +79,9 @@ uint8_t Rm69a10::GetChipId() {
 }
 
 bool Rm69a10::SetSleep(bool enable) {
-  if (!bus_->Write(enable ? static_cast<uint8_t>(DcsCommand::kWoSlpin)
-                          : static_cast<uint8_t>(DcsCommand::kWoSlpout))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteCommand(enable ? static_cast<uint8_t>(DcsCommand::kWoSlpin)
+                           : static_cast<uint8_t>(DcsCommand::kWoSlpout),
+          nullptr, 0)) {
     return false;
   }
 
@@ -93,9 +95,9 @@ bool Rm69a10::SetSleep(bool enable) {
 }
 
 bool Rm69a10::SetScreenOff(bool enable) {
-  if (!bus_->Write(enable ? static_cast<uint8_t>(DcsCommand::kWoDispoff)
-                          : static_cast<uint8_t>(DcsCommand::kWoDispon))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteCommand(enable ? static_cast<uint8_t>(DcsCommand::kWoDispoff)
+                           : static_cast<uint8_t>(DcsCommand::kWoDispon),
+          nullptr, 0)) {
     return false;
   }
 
@@ -107,9 +109,9 @@ bool Rm69a10::SetScreenOff(bool enable) {
 }
 
 bool Rm69a10::SetInversion(bool enable) {
-  if (!bus_->Write(enable ? static_cast<uint8_t>(DcsCommand::kWoInvon)
-                          : static_cast<uint8_t>(DcsCommand::kWoInvoff))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteCommand(enable ? static_cast<uint8_t>(DcsCommand::kWoInvon)
+                           : static_cast<uint8_t>(DcsCommand::kWoInvoff),
+          nullptr, 0)) {
     return false;
   }
 
@@ -117,8 +119,10 @@ bool Rm69a10::SetInversion(bool enable) {
 }
 
 bool Rm69a10::SetBrightness(uint8_t brightness) {
-  if (!bus_->Write(static_cast<uint8_t>(DcsCommand::kWoWrdisbv), brightness)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  const uint8_t command_data = brightness;
+
+  if (!WriteCommand(
+          static_cast<uint8_t>(DcsCommand::kWoWrdisbv), &command_data, 1)) {
     return false;
   }
 
@@ -128,10 +132,34 @@ bool Rm69a10::SetBrightness(uint8_t brightness) {
 bool Rm69a10::SendColorStreamCoordinate(
     int x_start, int y_start, int x_end, int y_end, const void* data) {
   if (!bus_->Write(x_start, y_start, x_end, y_end, data)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "RM69A10 pixel stream write failed (x_start: %d, y_start: %d, x_end: "
+        "%d, y_end: %d)\n",
+        x_start, y_start, x_end, y_end);
     return false;
   }
 
   return true;
 }
+bool Rm69a10::ReadCommand(uint8_t command, uint8_t* data, size_t length) {
+  if (bus_ != nullptr && bus_->Read(command, data, length)) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "RM69A10 command read failed (command: %#X)\n",
+      static_cast<unsigned>(command));
+  return false;
+}
+
+bool Rm69a10::WriteCommand(
+    uint8_t command, const uint8_t* data, size_t length) {
+  if (bus_ != nullptr && bus_->Write(command, data, length)) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "RM69A10 command write failed (command: %#X)\n",
+      static_cast<unsigned>(command));
+  return false;
+}
+
 }  // namespace cpp_bus_driver

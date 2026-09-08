@@ -665,6 +665,14 @@ class Sgm41562xx final : public I2cChipBase {
   };
 
   /**
+   * @brief 写入寄存器，并记录访问失败信息
+   * @param reg 寄存器地址
+   * @param value 待写入数据
+   * @return 写入成功返回true，否则返回false
+   */
+  bool WriteRegister(uint8_t reg, uint8_t value);
+
+  /**
    * @brief 将功能列表转换为位掩码
    * @param features 当前型号组支持的有效功能列表
    * @return 返回对应的功能位掩码
@@ -1040,10 +1048,9 @@ class Sgm41562xx final : public I2cChipBase {
    * @brief 读取指定寄存器
    * @param register_id 需要读取的寄存器
    * @param value 返回读取到的寄存器值
-   * @param name 寄存器名称，用于输出错误日志
    * @return 读取成功返回true，失败返回false
    */
-  bool ReadRegister(Register register_id, uint8_t& value, const char* name);
+  bool ReadRegister(Register register_id, uint8_t& value);
 
   /**
    * @brief 读取并解析输入与电源路径关键配置

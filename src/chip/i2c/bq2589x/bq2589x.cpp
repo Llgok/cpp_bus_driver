@@ -95,8 +95,8 @@ Bq2589x::DpmStatus Bq2589x::ModelDriver::DecodeDpmStatus(uint8_t value) const {
 }
 
 bool Bq2589x::ModelDriver::ReadAdcRegisters(
-    I2cBusBase& bus, uint8_t (&data)[5]) const {
-  return bus.Read(static_cast<uint8_t>(Register::kReg0e), data, sizeof(data));
+    Bq2589x& chip, uint8_t (&data)[5]) const {
+  return chip.ReadRegister(Register::kReg0e, data, sizeof(data));
 }
 
 Bq2589x::NtcFault Bq2589x::ModelDriver::DecodeNtcFault(uint8_t code) const {
@@ -127,6 +127,8 @@ bool Bq2589x::Init(int32_t freq_hz) {
   model_driver_ = nullptr;
   bus_cleanup_required_ = true;
   if (!I2cChipBase::Init(freq_hz)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     I2cChipBase::Deinit(false);
     bus_initialized_ = false;
     return false;
@@ -156,7 +158,10 @@ bool Bq2589x::Init(int32_t freq_hz) {
       for (const Register reg : {Register::kReg00, Register::kReg03,
                Register::kReg07, Register::kReg14}) {
         uint8_t value = 0;
-        if (bus_->Read(static_cast<uint8_t>(reg), &value)) {
+        const uint8_t register_packet[] = {static_cast<uint8_t>(reg)};
+
+        if (bus_->WriteRead(
+                register_packet, sizeof(register_packet), &value, 1)) {
           LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
               "BQ2589x diagnostic sample %u: REG%02X = %#04X\n",
               static_cast<unsigned>(sample + 1), static_cast<unsigned>(reg),
@@ -280,21 +285,32 @@ bool Bq2589x::GetChipId(uint8_t& part_number) {
 }
 
 bool Bq2589x::ReadRegister(Register reg, uint8_t& value) {
-  if (!bus_initialized_ || bus_ == nullptr ||
-      (reg != Register::kReg14 && !IsSupported())) {
-    return false;
-  }
-  if (reg == Register::kReg10 && !HasFeature(Feature::kTsAdc)) {
-    return false;
-  }
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(reg), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "BQ2589x register read failed (register: %#X)\n",
-        static_cast<unsigned>(reg));
+  if (!ReadRegister(reg, &buffer, 1)) {
     return false;
   }
   value = buffer;
+  return true;
+}
+
+bool Bq2589x::ReadRegister(Register reg, uint8_t* data, size_t length) {
+  const uint8_t address = static_cast<uint8_t>(reg);
+  if (!bus_initialized_ || bus_ == nullptr || data == nullptr || length == 0 ||
+      address > 0x14 || length > size_t{0x15} - address ||
+      ((reg != Register::kReg14 || length != 1) && !IsSupported()) ||
+      (address <= 0x10 && length > size_t{0x10} - address &&
+          !HasFeature(Feature::kTsAdc))) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "BQ2589x register read rejected (register: %#X, size: %zu)\n",
+        static_cast<unsigned>(address), length);
+    return false;
+  }
+  if (!bus_->WriteRead(&address, 1, data, length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "BQ2589x register read failed (register: %#X, size: %zu)\n",
+        static_cast<unsigned>(address), length);
+    return false;
+  }
   return true;
 }
 
@@ -348,7 +364,9 @@ bool Bq2589x::UpdateRegisterBits(Register reg, uint8_t mask, uint8_t value) {
   }
   // 保留无关配置和保留位；自清零命令即使读到 1，也不能随普通配置写回再次触发。
   buffer = static_cast<uint8_t>((buffer & ~(mask | command_mask)) | value);
-  if (!bus_->Write(static_cast<uint8_t>(reg), buffer)) {
+  const uint8_t register_packet[] = {static_cast<uint8_t>(reg), buffer};
+
+  if (!bus_->Write(register_packet, sizeof(register_packet))) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "BQ2589x register write failed (register: %#X)\n",
         static_cast<unsigned>(reg));
@@ -1184,9 +1202,7 @@ bool Bq2589x::GetAdcMeasurements(AdcMeasurements& measurements) {
     return false;
   }
   uint8_t data[5] = {};
-  if (!model_driver_->ReadAdcRegisters(*bus_, data)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "BQ2589x ADC read failed\n");
+  if (!model_driver_->ReadAdcRegisters(*this, data)) {
     return false;
   }
   AdcMeasurements result;

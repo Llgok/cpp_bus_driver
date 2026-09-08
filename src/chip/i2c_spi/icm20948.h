@@ -382,7 +382,7 @@ class Icm20948 final : public DriverBase {
   };
 
   // AK09916 内部 I2C 寄存器。
-  enum class Ak09916Cmd : uint8_t {
+  enum class Ak09916Register : uint8_t {
     kRoChipId = 0x01,           // 芯片标识 WIA2。
     kRoStatus1 = 0x10,          // 数据就绪和覆盖状态 ST1。
     kRoMeasurementData = 0x11,  // 磁场数据起始地址 HXL。
@@ -498,20 +498,21 @@ class Icm20948 final : public DriverBase {
 
   /**
    * @brief 通过辅助 I2C SLV4 读取一个 AK09916 寄存器
-   * @param cmd AK09916 寄存器
+   * @param reg AK09916 寄存器
    * @param data 返回读取值
    * @param restore_stream 读取结束后是否恢复 SLV0 连续数据流
    * @return 读取成功返回 true，否则返回 false
    */
-  bool ReadAk09916Register(Ak09916Cmd cmd, uint8_t& data, bool restore_stream);
+  bool ReadAk09916Register(
+      Ak09916Register reg, uint8_t& data, bool restore_stream);
 
   /**
    * @brief 通过辅助 I2C SLV4 写入一个 AK09916 寄存器
-   * @param cmd AK09916 寄存器
+   * @param reg AK09916 寄存器
    * @param data 待写入值
    * @return 写入成功返回 true，否则返回 false
    */
-  bool WriteAk09916Register(Ak09916Cmd cmd, uint8_t data);
+  bool WriteAk09916Register(Ak09916Register reg, uint8_t data);
 
   /**
    * @brief 选择 ICM20948 用户寄存器 Bank
@@ -557,32 +558,32 @@ class Icm20948 final : public DriverBase {
       Register register_id, uint8_t clear_mask, uint8_t set_mask);
 
   /**
-   * @brief 通过自动选择的 I2C 或 SPI 总线读取寄存器
+   * @brief 通过 I2C 或 SPI 读取当前 Bank 的寄存器，不切换 Bank
    * @param reg 当前 Bank 内的寄存器地址
    * @param data 返回数据缓冲区
    * @param length 读取字节数
    * @return 读取成功返回 true，否则返回 false
    */
-  bool ReadTransport(uint8_t reg, uint8_t* data, size_t length);
+  bool ReadBankRegister(uint8_t reg, uint8_t* data, size_t length);
 
   /**
-   * @brief 通过自动选择的 I2C 或 SPI 总线写入寄存器
+   * @brief 通过 I2C 或 SPI 写入当前 Bank 的寄存器，不切换 Bank
    * @param reg 当前 Bank 内的寄存器地址
    * @param data 待写入数据缓冲区
    * @param length 写入字节数
    * @return 写入成功返回 true，否则返回 false
    */
-  bool WriteTransport(uint8_t reg, const uint8_t* data, size_t length);
+  bool WriteBankRegister(uint8_t reg, const uint8_t* data, size_t length);
 
   /**
-   * @brief 从寄存器命令中解析用户 Bank
+   * @brief 从寄存器标识中解析用户 Bank
    * @param register_id 寄存器
-   * @return 命令对应的用户 Bank
+   * @return 寄存器对应的用户 Bank
    */
   static Bank GetBank(Register register_id);
 
   /**
-   * @brief 从寄存器命令中解析 Bank 内地址
+   * @brief 从寄存器标识中解析 Bank 内地址
    * @param register_id 寄存器
    * @return Bank 内八位寄存器地址
    */

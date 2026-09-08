@@ -555,6 +555,23 @@ class Es8311 final : public I2cChipBase, public I2sChipBase {
   };
 
   /**
+   * @brief 读取寄存器，并记录访问失败信息
+   * @param reg 寄存器地址
+   * @param data 接收缓冲区
+   * @param length 读取字节数
+   * @return 读取成功返回true，否则返回false
+   */
+  bool ReadRegister(uint8_t reg, uint8_t* data, size_t length = 1);
+
+  /**
+   * @brief 写入寄存器，并记录访问失败信息
+   * @param reg 寄存器地址
+   * @param value 待写入数据
+   * @return 写入成功返回true，否则返回false
+   */
+  bool WriteRegister(uint8_t reg, uint8_t value);
+
+  /**
    * @brief 搜索时钟系数
    * @param mclk_multiple mclk倍速
    * @param sample_rate_hz 采样率

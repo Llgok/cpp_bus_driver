@@ -776,7 +776,7 @@ bool Nrf24l01x::GetCarrierDetect(bool* detected) {
 
 bool Nrf24l01x::ActivateFeatures() {
   const uint8_t activation = kFeatureActivationData;
-  return WriteCommand(SpiCmd::kActivateFeatures, &activation, 1);
+  return WriteCommand(Command::kActivateFeatures, &activation, 1);
 }
 
 bool Nrf24l01x::SetupDynamicPayload(uint8_t pipe_mask) {
@@ -813,18 +813,19 @@ bool Nrf24l01x::EnableDynamicAck(bool enabled) {
 }
 
 bool Nrf24l01x::ReadRxPayloadWidth(uint8_t* width) {
-  return width != nullptr && ReadCommand(SpiCmd::kReadRxPayloadWidth, width, 1);
+  return width != nullptr &&
+         ReadCommand(Command::kReadRxPayloadWidth, width, 1);
 }
 
 bool Nrf24l01x::WriteTxPayload(const uint8_t* payload, std::size_t length) {
   return payload != nullptr && length > 0 && length <= kMaximumPayloadLength &&
-         WriteCommand(SpiCmd::kWriteTxPayload, payload, length);
+         WriteCommand(Command::kWriteTxPayload, payload, length);
 }
 
 bool Nrf24l01x::WriteTxPayloadNoAck(
     const uint8_t* payload, std::size_t length) {
   return payload != nullptr && length > 0 && length <= kMaximumPayloadLength &&
-         WriteCommand(SpiCmd::kWriteTxPayloadNoAck, payload, length);
+         WriteCommand(Command::kWriteTxPayloadNoAck, payload, length);
 }
 
 bool Nrf24l01x::WriteAckPayload(
@@ -833,7 +834,8 @@ bool Nrf24l01x::WriteAckPayload(
       length > kMaximumPayloadLength) {
     return false;
   }
-  const uint8_t command = static_cast<uint8_t>(SpiCmd::kWriteAckPayload) | pipe;
+  const uint8_t command =
+      static_cast<uint8_t>(Command::kWriteAckPayload) | pipe;
   return Exchange(command, payload, nullptr, length, nullptr);
 }
 
@@ -872,7 +874,7 @@ bool Nrf24l01x::ReadRxPayload(uint8_t* payload, std::size_t capacity,
     return false;
   }
   if (capacity < payload_width ||
-      !ReadCommand(SpiCmd::kReadRxPayload, payload, payload_width)) {
+      !ReadCommand(Command::kReadRxPayload, payload, payload_width)) {
     return false;
   }
   *length = payload_width;
@@ -894,7 +896,7 @@ bool Nrf24l01x::GetRxDataSource(uint8_t* pipe) {
   return true;
 }
 
-bool Nrf24l01x::ReuseTx() { return ExecuteCommand(SpiCmd::kReuseTxPayload); }
+bool Nrf24l01x::ReuseTx() { return ExecuteCommand(Command::kReuseTxPayload); }
 
 bool Nrf24l01x::GetReuseTxStatus(bool* reused) {
   if (reused == nullptr) {
@@ -908,12 +910,12 @@ bool Nrf24l01x::GetReuseTxStatus(bool* reused) {
   return true;
 }
 
-bool Nrf24l01x::FlushRx() { return ExecuteCommand(SpiCmd::kFlushRx); }
+bool Nrf24l01x::FlushRx() { return ExecuteCommand(Command::kFlushRx); }
 
-bool Nrf24l01x::FlushTx() { return ExecuteCommand(SpiCmd::kFlushTx); }
+bool Nrf24l01x::FlushTx() { return ExecuteCommand(Command::kFlushTx); }
 
 bool Nrf24l01x::NoOperation(uint8_t* status) {
-  return status != nullptr && ExecuteCommand(SpiCmd::kNoOperation, status);
+  return status != nullptr && ExecuteCommand(Command::kNoOperation, status);
 }
 
 bool Nrf24l01x::SetPllMode(bool locked) {
@@ -1142,27 +1144,42 @@ bool Nrf24l01x::Receive(uint8_t* payload, std::size_t capacity,
 
 bool Nrf24l01x::Exchange(uint8_t command, const uint8_t* write_data,
     uint8_t* read_data, std::size_t length, uint8_t* status) {
+  const auto log_failure = [this, command, length](const char* reason) {
+    if ((command & 0xE0) == 0x00 || (command & 0xE0) == 0x20) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "NRF24L01x register %s failed (register: %#X, command: %#X, size: "
+          "%zu, reason: %s)\n",
+          (command & 0x20) == 0 ? "read" : "write",
+          static_cast<unsigned>(command & 0x1F), static_cast<unsigned>(command),
+          length, reason);
+    } else {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "NRF24L01x command exchange failed (command: %#X, size: %zu, reason: "
+          "%s)\n",
+          static_cast<unsigned>(command), length, reason);
+    }
+  };
   if (!bus_initialized_ || bus_ == nullptr || length > kMaximumPayloadLength) {
+    log_failure("not ready or invalid size");
     return false;
   }
-
   std::array<uint8_t, kMaximumPayloadLength + 1> tx{};
   std::array<uint8_t, kMaximumPayloadLength + 1> rx{};
-  tx.fill(static_cast<uint8_t>(SpiCmd::kNoOperation));
+  tx.fill(static_cast<uint8_t>(Command::kNoOperation));
   tx[0] = command;
   if (write_data != nullptr && length > 0) {
     std::copy_n(write_data, length, tx.begin() + 1);
   }
-
   if (!GpioWrite(cs_, false)) {
+    log_failure("assert CS");
     return false;
   }
   const bool transferred = bus_->WriteRead(tx.data(), rx.data(), length + 1);
   const bool released = GpioWrite(cs_, true);
   if (!transferred || !released) {
+    log_failure(!transferred ? "bus transfer" : "release CS");
     return false;
   }
-
   if (status != nullptr) {
     *status = rx[0];
   }
@@ -1172,18 +1189,18 @@ bool Nrf24l01x::Exchange(uint8_t command, const uint8_t* write_data,
   return true;
 }
 
-bool Nrf24l01x::ExecuteCommand(SpiCmd command, uint8_t* status) {
+bool Nrf24l01x::ExecuteCommand(Command command, uint8_t* status) {
   return Exchange(static_cast<uint8_t>(command), nullptr, nullptr, 0, status);
 }
 
 bool Nrf24l01x::WriteCommand(
-    SpiCmd command, const uint8_t* data, std::size_t length, uint8_t* status) {
+    Command command, const uint8_t* data, std::size_t length, uint8_t* status) {
   return data != nullptr && length > 0 &&
          Exchange(static_cast<uint8_t>(command), data, nullptr, length, status);
 }
 
 bool Nrf24l01x::ReadCommand(
-    SpiCmd command, uint8_t* data, std::size_t length, uint8_t* status) {
+    Command command, uint8_t* data, std::size_t length, uint8_t* status) {
   if (length == 0) {
     return ExecuteCommand(command, status);
   }

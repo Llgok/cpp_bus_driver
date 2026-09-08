@@ -645,12 +645,13 @@ class Aw21009 final : public I2cChipBase {
   static bool IsSingleGroup(LedGroup group);
 
   /**
-   * @brief 读取一个AW21009寄存器。
+   * @brief 读取AW21009连续寄存器。
    * @param reg 寄存器地址。
    * @param value 输出寄存器值。
+   * @param length 读取字节数。
    * @return 读取成功返回true。
    */
-  bool ReadRegister(uint8_t reg, uint8_t* value);
+  bool ReadRegister(uint8_t reg, uint8_t* value, size_t length = 1);
 
   /**
    * @brief 写入一个AW21009寄存器。

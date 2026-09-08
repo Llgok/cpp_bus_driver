@@ -50,7 +50,8 @@ bool EspAt::Init(int32_t freq_hz) {
   }
 
   if (!SdioChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
@@ -61,18 +62,16 @@ bool EspAt::Init(int32_t freq_hz) {
   }
 
   if (!WaitForReady()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WaitForReady failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "WaitForReady failed\n");
     return false;
   }
 
   if (!GetChipId()) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "Get espat chip id failed\n");
     return false;
-  } else {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "Get espat chip id success\n");
   }
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "ESP-AT command response received\n");
 
   return true;
 }
@@ -81,7 +80,8 @@ bool EspAt::Deinit() {
   bool result = true;
 
   if (!SdioChipBase::Deinit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Deinit failed\n");
     result = false;
   }
 
@@ -94,52 +94,42 @@ bool EspAt::Deinit() {
 
 bool EspAt::ConfigureSdioFunctions() {
   // 启用功能 1
-  if (!bus_->Write(0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrFnEnable),
-          6, nullptr)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrFnEnable), 6)) {
     return false;
   }
-  if (!bus_->Write(0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrFnReady),
-          6, nullptr)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrFnReady), 6)) {
     return false;
   }
 
   // 启用功能 1、功能 2 和主中断
-  if (!bus_->Write(0,
-          static_cast<uint32_t>(RegisterAddress::kSdIoCccrIntEnable), 7,
-          nullptr)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrIntEnable), 7)) {
     return false;
   }
 
-  if (!bus_->Write(0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrBlksizel),
-          0, nullptr)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrBlksizel), 0)) {
     return false;
   }
-  if (!bus_->Write(0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrBlksizeh),
-          2, nullptr)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          0, static_cast<uint32_t>(RegisterAddress::kSdIoCccrBlksizeh), 2)) {
     return false;
   }
 
-  if (!bus_->Write(0, static_cast<uint32_t>(0x110), 0, nullptr)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(0, static_cast<uint32_t>(0x110), 0)) {
     return false;
   }
   // 将块大小设置为 512 字节（0x200）
-  if (!bus_->Write(0, static_cast<uint32_t>(0x111), 2, nullptr)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(0, static_cast<uint32_t>(0x111), 2)) {
     return false;
   }
 
-  if (!bus_->Write(0, static_cast<uint32_t>(0x210), 0, nullptr)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(0, static_cast<uint32_t>(0x210), 0)) {
     return false;
   }
-  if (!bus_->Write(0, static_cast<uint32_t>(0x210), 2, nullptr)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(0, static_cast<uint32_t>(0x210), 2)) {
     return false;
   }
 
@@ -195,6 +185,9 @@ bool EspAt::WaitForResponse(const char* text) {
     retained = std::min(total, text_length - 1);
     std::memmove(buffer.data(), buffer.data() + total - retained, retained);
   }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "ESP-AT response wait failed (%s)\n",
+      connect_.status ? "timeout" : "disconnected");
   return false;
 }
 
@@ -220,9 +213,8 @@ uint32_t EspAt::GetInterruptFlags() {
 
   uint32_t interrupt_flags = 0;
 
-  if (!bus_->Read(1, static_cast<uint32_t>(RegisterAddress::kInterruptRaw),
+  if (!ReadRegister(1, static_cast<uint32_t>(RegisterAddress::kInterruptRaw),
           &interrupt_flags, sizeof(interrupt_flags))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     UpdateConnectionErrorCount(1);
     return kInvalidInterruptFlags;
   }
@@ -237,9 +229,8 @@ bool EspAt::ClearInterruptFlags(uint32_t interrupt_flags) {
     return false;
   }
 
-  if (!bus_->Write(1, static_cast<uint32_t>(RegisterAddress::kInterruptClear),
+  if (!WriteRegister(1, static_cast<uint32_t>(RegisterAddress::kInterruptClear),
           &interrupt_flags, sizeof(interrupt_flags))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     UpdateConnectionErrorCount(1);
     return false;
   }
@@ -265,9 +256,8 @@ uint32_t EspAt::GetReceiveDataLength() {
 
   uint32_t received_total_length = 0;
 
-  if (!bus_->Read(1, static_cast<uint32_t>(RegisterAddress::kPacketLength),
+  if (!ReadRegister(1, static_cast<uint32_t>(RegisterAddress::kPacketLength),
           &received_total_length, sizeof(received_total_length))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     UpdateConnectionErrorCount(1);
     return 0;
   }
@@ -328,7 +318,11 @@ bool EspAt::ReadPacketData(uint8_t* data, size_t length) {
             block_length)) {
       // 失败时无法确定从设备已经消费多少数据，禁止继续使用旧计数重试。
       connect_.status = false;
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadBlock failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "ESP-AT packet block read failed (function: 1, address: %#X, size: "
+          "%zu)\n",
+          static_cast<unsigned>(end_address - static_cast<uint32_t>(length)),
+          block_length);
       return false;
     }
     connect_.receive_total_length_index =
@@ -341,7 +335,12 @@ bool EspAt::ReadPacketData(uint8_t* data, size_t length) {
     if (!bus_->Read(1, end_address - static_cast<uint32_t>(tail_length),
             tail.data(), AlignTo4(tail_length))) {
       connect_.status = false;
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "ESP-AT packet tail read failed (function: 1, address: %#X, size: "
+          "%zu)\n",
+          static_cast<unsigned>(
+              end_address - static_cast<uint32_t>(tail_length)),
+          AlignTo4(tail_length));
       return false;
     }
     std::memcpy(data + block_length, tail.data(), tail_length);
@@ -360,9 +359,8 @@ uint32_t EspAt::GetTransmitBufferBlockCount() {
 
   uint32_t token_register = 0;
 
-  if (!bus_->Read(1, static_cast<uint32_t>(RegisterAddress::kTokenRdata),
+  if (!ReadRegister(1, static_cast<uint32_t>(RegisterAddress::kTokenRdata),
           &token_register, sizeof(token_register))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     UpdateConnectionErrorCount(1);
     return 0;
   }
@@ -406,7 +404,13 @@ bool EspAt::SendPacket(const char* data, size_t byte) {
     if (!bus_->WriteBlock(1,
             static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) - byte,
             data, buffer_block_length)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteBlock failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "ESP-AT packet block write failed (function: 1, address: %#X, size: "
+          "%zu)\n",
+          static_cast<unsigned>(
+              static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) -
+              byte),
+          buffer_block_length);
       UpdateConnectionErrorCount(1);
       return false;
     }
@@ -421,7 +425,13 @@ bool EspAt::SendPacket(const char* data, size_t byte) {
     if (!bus_->Write(1,
             static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) - byte,
             write_buffer.data(), aligned_length)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "ESP-AT packet tail write failed (function: 1, address: %#X, size: "
+          "%zu)\n",
+          static_cast<unsigned>(
+              static_cast<uint32_t>(RegisterAddress::kSlaveCmd53EndAddr) -
+              byte),
+          aligned_length);
       UpdateConnectionErrorCount(1);
       return false;
     }
@@ -438,4 +448,37 @@ bool EspAt::SendPacket(const std::string& data) {
 bool EspAt::WaitForInterrupt(uint32_t timeout_ms) {
   return bus_->WaitInterrupt(timeout_ms);
 }
+
+bool EspAt::ReadRegister(
+    uint32_t function, uint32_t reg, void* data, size_t length) {
+  if (bus_ != nullptr && bus_->Read(function, reg, data, length)) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "ESP-AT register read failed (function: %u, register: %#X)\n",
+      static_cast<unsigned>(function), static_cast<unsigned>(reg));
+  return false;
+}
+
+bool EspAt::WriteRegister(
+    uint32_t function, uint32_t reg, const void* data, size_t length) {
+  if (bus_ != nullptr && bus_->Write(function, reg, data, length)) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "ESP-AT register write failed (function: %u, register: %#X)\n",
+      static_cast<unsigned>(function), static_cast<unsigned>(reg));
+  return false;
+}
+
+bool EspAt::WriteRegister(uint32_t function, uint32_t reg, uint8_t value) {
+  if (bus_ != nullptr && bus_->Write(function, reg, value, nullptr)) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "ESP-AT register write failed (function: %u, register: %#X)\n",
+      static_cast<unsigned>(function), static_cast<unsigned>(reg));
+  return false;
+}
+
 }  // namespace cpp_bus_driver

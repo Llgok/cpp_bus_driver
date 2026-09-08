@@ -7,6 +7,12 @@
  */
 #include "chip/i2c_spi/icm20948.h"
 
+#include <array>
+#include <cstring>
+#include <limits>
+#include <memory>
+#include <new>
+
 namespace cpp_bus_driver {
 
 bool Icm20948::Init(int32_t freq_hz) { return Init(Config{}, freq_hz); }
@@ -168,7 +174,7 @@ bool Icm20948::GetMagnetometerChipId(uint8_t& chip_id) {
   if (!initialized_ || sleeping_ || !auxiliary_i2c_master_enabled_) {
     return false;
   }
-  return ReadAk09916Register(Ak09916Cmd::kRoChipId, chip_id, true);
+  return ReadAk09916Register(Ak09916Register::kRoChipId, chip_id, true);
 }
 
 bool Icm20948::SetSleep(bool sleep) {
@@ -751,7 +757,7 @@ bool Icm20948::ConfigureMagnetometer(MagnetometerMode mode) {
     return false;
   }
 
-  if (!WriteAk09916Register(Ak09916Cmd::kWoControl3, 0x01)) {
+  if (!WriteAk09916Register(Ak09916Register::kWoControl3, 0x01)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__, "Reset AK09916 failed\n");
     return false;
   }
@@ -760,7 +766,7 @@ bool Icm20948::ConfigureMagnetometer(MagnetometerMode mode) {
   magnetometer_stream_ready_ = false;
 
   uint8_t chip_id = 0;
-  if (!ReadAk09916Register(Ak09916Cmd::kRoChipId, chip_id, false) ||
+  if (!ReadAk09916Register(Ak09916Register::kRoChipId, chip_id, false) ||
       chip_id != kAk09916ChipId) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "AK09916 chip id mismatch (read: %#X, expected: %#X)\n", chip_id,
@@ -786,7 +792,7 @@ bool Icm20948::ConfigureMagnetometerStream(MagnetometerMode mode) {
                       WriteRegister(Register::kRwI2cSlave0Address,
                           static_cast<uint8_t>(kAk09916Address | 0x80)) &&
                       WriteRegister(Register::kRwI2cSlave0Register,
-                          static_cast<uint8_t>(Ak09916Cmd::kRoStatus1)) &&
+                          static_cast<uint8_t>(Ak09916Register::kRoStatus1)) &&
                       WriteRegister(Register::kRwI2cSlave0Ctrl, 0x89);
   magnetometer_stream_ready_ = result;
   return result;
@@ -807,7 +813,7 @@ bool Icm20948::SetActiveMagnetometerMode(MagnetometerMode mode) {
   // AK09916 在不同连续测量模式间切换前先进入 Power-down。
   if (active_magnetometer_mode_ != MagnetometerMode::kPowerDown &&
       (active_magnetometer_mode_ != mode || !magnetometer_stream_ready_)) {
-    if (!WriteAk09916Register(Ak09916Cmd::kRwControl2,
+    if (!WriteAk09916Register(Ak09916Register::kRwControl2,
             static_cast<uint8_t>(MagnetometerMode::kPowerDown))) {
       return false;
     }
@@ -818,7 +824,7 @@ bool Icm20948::SetActiveMagnetometerMode(MagnetometerMode mode) {
 
   if (mode != active_magnetometer_mode_) {
     if (!WriteAk09916Register(
-            Ak09916Cmd::kRwControl2, static_cast<uint8_t>(mode))) {
+            Ak09916Register::kRwControl2, static_cast<uint8_t>(mode))) {
       return false;
     }
     DelayMs(kMagnetometerModeDelayMs);
@@ -917,7 +923,7 @@ bool Icm20948::CheckMagnetometerStreamHealth() {
 }
 
 bool Icm20948::ReadAk09916Register(
-    Ak09916Cmd cmd, uint8_t& data, bool restore_stream) {
+    Ak09916Register reg, uint8_t& data, bool restore_stream) {
   bool result = WriteRegister(Register::kRwI2cSlave0Ctrl, 0x00);
   if (result) {
     magnetometer_stream_ready_ = false;
@@ -929,7 +935,7 @@ bool Icm20948::ReadAk09916Register(
              WriteRegister(Register::kRwI2cSlave4Address,
                  static_cast<uint8_t>(kAk09916Address | 0x80)) &&
              WriteRegister(
-                 Register::kRwI2cSlave4Register, static_cast<uint8_t>(cmd)) &&
+                 Register::kRwI2cSlave4Register, static_cast<uint8_t>(reg)) &&
              WriteRegister(Register::kRwI2cSlave4Ctrl, 0x80) &&
              WaitForAuxiliaryTransaction() &&
              ReadRegister(Register::kRoI2cSlave4DataIn, &data);
@@ -944,7 +950,7 @@ bool Icm20948::ReadAk09916Register(
   return result;
 }
 
-bool Icm20948::WriteAk09916Register(Ak09916Cmd cmd, uint8_t data) {
+bool Icm20948::WriteAk09916Register(Ak09916Register reg, uint8_t data) {
   bool result = WriteRegister(Register::kRwI2cSlave0Ctrl, 0x00);
   if (result) {
     magnetometer_stream_ready_ = false;
@@ -957,7 +963,7 @@ bool Icm20948::WriteAk09916Register(Ak09916Cmd cmd, uint8_t data) {
   return ReadRegister(Register::kRoI2cMasterStatus, &ignored_status) &&
          WriteRegister(Register::kRwI2cSlave4Address, kAk09916Address) &&
          WriteRegister(
-             Register::kRwI2cSlave4Register, static_cast<uint8_t>(cmd)) &&
+             Register::kRwI2cSlave4Register, static_cast<uint8_t>(reg)) &&
          WriteRegister(Register::kRwI2cSlave4DataOut, data) &&
          WriteRegister(Register::kRwI2cSlave4Ctrl, 0x80) &&
          WaitForAuxiliaryTransaction();
@@ -972,7 +978,7 @@ bool Icm20948::SelectBank(Bank bank) {
   }
 
   const uint8_t value = static_cast<uint8_t>(static_cast<uint8_t>(bank) << 4);
-  if (!WriteTransport(0x7F, &value, 1)) {
+  if (!WriteBankRegister(0x7F, &value, 1)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Select bank failed (bank: %u)\n", static_cast<unsigned int>(bank));
     selected_bank_ = Bank::kInvalid;
@@ -989,7 +995,7 @@ bool Icm20948::ReadRegister(
     return false;
   }
   return SelectBank(GetBank(register_id)) &&
-         ReadTransport(GetRegisterAddress(register_id), data, length);
+         ReadBankRegister(GetRegisterAddress(register_id), data, length);
 }
 
 bool Icm20948::WriteRegister(Register register_id, uint8_t data) {
@@ -1003,7 +1009,7 @@ bool Icm20948::WriteRegister(
     return false;
   }
   return SelectBank(GetBank(register_id)) &&
-         WriteTransport(GetRegisterAddress(register_id), data, length);
+         WriteBankRegister(GetRegisterAddress(register_id), data, length);
 }
 
 bool Icm20948::UpdateRegister(
@@ -1017,18 +1023,83 @@ bool Icm20948::UpdateRegister(
   return WriteRegister(register_id, value);
 }
 
-bool Icm20948::ReadTransport(uint8_t reg, uint8_t* data, size_t length) {
+bool Icm20948::ReadBankRegister(uint8_t reg, uint8_t* data, size_t length) {
+  bool result = false;
   if (UsesI2c()) {
-    return i2c_bus_->Read(reg, data, length);
+    result = i2c_bus_->WriteRead(&reg, 1, data, length);
+  } else {
+    if ((data == nullptr && length != 0) ||
+        length == std::numeric_limits<size_t>::max()) {
+      LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+          "Invalid register data length or buffer\n");
+      return false;
+    }
+    std::array<uint8_t, 128> local_transmit{};
+    std::array<uint8_t, 128> local_receive{};
+    std::unique_ptr<uint8_t[]> heap_transmit;
+    std::unique_ptr<uint8_t[]> heap_receive;
+    if (length + 1 > local_transmit.size()) {
+      heap_transmit.reset(new (std::nothrow) uint8_t[length + 1]());
+      heap_receive.reset(new (std::nothrow) uint8_t[length + 1]());
+      if (heap_transmit == nullptr || heap_receive == nullptr) {
+        LogMessage(LogLevel::kError, __FILE__, __LINE__,
+            "Register packet allocation failed\n");
+        return false;
+      }
+    }
+    uint8_t* transmit =
+        heap_transmit != nullptr ? heap_transmit.get() : local_transmit.data();
+    uint8_t* receive =
+        heap_receive != nullptr ? heap_receive.get() : local_receive.data();
+    transmit[0] = static_cast<uint8_t>(reg | 0x80);
+    result = spi_bus_->WriteRead(transmit, receive, length + 1);
+    if (result && length != 0) {
+      std::memcpy(data, receive + 1, length);
+    }
   }
-  return spi_bus_->Read(static_cast<uint8_t>(reg | 0x80), data, length);
+  if (!result) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "ICM20948 register read failed (bank: %u, register: %#X, size: %zu)\n",
+        static_cast<unsigned>(selected_bank_), static_cast<unsigned>(reg),
+        length);
+  }
+  return result;
 }
 
-bool Icm20948::WriteTransport(uint8_t reg, const uint8_t* data, size_t length) {
-  if (UsesI2c()) {
-    return i2c_bus_->Write(reg, data, length);
+bool Icm20948::WriteBankRegister(
+    uint8_t reg, const uint8_t* data, size_t length) {
+  if ((data == nullptr && length != 0) ||
+      length == std::numeric_limits<size_t>::max()) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Invalid register data length or buffer\n");
+    return false;
   }
-  return spi_bus_->Write(static_cast<uint8_t>(reg & 0x7F), data, length);
+  // 小事务使用栈缓冲区，大事务按需申请内存。
+  std::array<uint8_t, 128> local_packet{};
+  std::unique_ptr<uint8_t[]> heap_packet;
+  if (length + 1 > local_packet.size()) {
+    heap_packet.reset(new (std::nothrow) uint8_t[length + 1]);
+    if (heap_packet == nullptr) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Register packet allocation failed\n");
+      return false;
+    }
+  }
+  uint8_t* packet =
+      heap_packet != nullptr ? heap_packet.get() : local_packet.data();
+  packet[0] = UsesI2c() ? reg : static_cast<uint8_t>(reg & 0x7F);
+  if (length != 0) {
+    std::memcpy(packet + 1, data, length);
+  }
+  const bool result = UsesI2c() ? i2c_bus_->Write(packet, length + 1)
+                                : spi_bus_->Write(packet, length + 1);
+  if (!result) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "ICM20948 register write failed (bank: %u, register: %#X, size: %zu)\n",
+        static_cast<unsigned>(selected_bank_), static_cast<unsigned>(reg),
+        length);
+  }
+  return result;
 }
 
 Icm20948::Bank Icm20948::GetBank(Register register_id) {

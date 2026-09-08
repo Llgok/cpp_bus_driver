@@ -1516,12 +1516,12 @@ class Bq2589x final : public I2cChipBase {
 
     /**
      * @brief 读取当前型号的 ADC 寄存器，不启动转换。
-     * @param bus 已初始化并对应当前器件的 I2C 总线包装。
+     * @param chip 已初始化并完成型号检查的充电芯片对象。
      * @param data 按 REG0E-REG12 顺序保存原始字节；失败时可能部分更新。
      * @return 所需寄存器全部读取成功返回 true，否则返回 false。
      * @note 默认连续读取五字节；辅助充电器覆写此函数以跳过未定义寄存器。
      */
-    virtual bool ReadAdcRegisters(I2cBusBase& bus, uint8_t (&data)[5]) const;
+    virtual bool ReadAdcRegisters(Bq2589x& chip, uint8_t (&data)[5]) const;
 
     /**
      * @brief 按当前型号的 NTC_FAULT 编码解释温度故障。
@@ -2136,11 +2136,11 @@ class Bq2589x final : public I2cChipBase {
 
     /**
      * @brief 分段读取 BQ25898C ADC 结果，跳过未定义的 REG10。
-     * @param bus 已初始化并绑定此芯片地址的 I2C 设备总线。
+     * @param chip 已初始化并完成型号检查的充电芯片对象。
      * @param data REG0E-REG12 对应的五字节缓冲区，索引 2 保持原值。
      * @return 两段读取均成功返回 true；失败时缓冲区可能已部分更新。
      */
-    bool ReadAdcRegisters(I2cBusBase& bus, uint8_t (&data)[5]) const override;
+    bool ReadAdcRegisters(Bq2589x& chip, uint8_t (&data)[5]) const override;
 
     /**
      * @brief 保持 BQ25898C 未定义的 NTC 字段为未知状态。
@@ -2249,6 +2249,15 @@ class Bq2589x final : public I2cChipBase {
    * false。
    */
   bool ReadRegister(Register reg, uint8_t& value);
+
+  /**
+   * @brief 连续读取寄存器，并记录访问失败信息
+   * @param reg 起始寄存器地址
+   * @param data 接收缓冲区；失败时可能部分更新
+   * @param length 读取字节数，不得跨越未定义寄存器
+   * @return 读取成功返回true，否则返回false
+   */
+  bool ReadRegister(Register reg, uint8_t* data, size_t length);
 
   /**
    * @brief 读取寄存器并提取掩码覆盖的位字段。

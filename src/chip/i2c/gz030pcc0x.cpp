@@ -23,12 +23,14 @@ bool Gz030pcc0x::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence) / sizeof(uint16_t))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "InitSequence failed\n");
     return false;
   }
 
@@ -39,7 +41,8 @@ bool Gz030pcc0x::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Deinit failed\n");
     result = false;
   }
 
@@ -53,9 +56,8 @@ bool Gz030pcc0x::Deinit(bool delete_bus) {
 float Gz030pcc0x::GetTemperatureCelsius() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(
+  if (!ReadRegister(
           static_cast<uint16_t>(Register::kRoTemperatureReading), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return -1;
   }
 
@@ -65,19 +67,17 @@ float Gz030pcc0x::GetTemperatureCelsius() {
 bool Gz030pcc0x::SetDataFormat(DataFormat format) {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(
+  if (!ReadRegister(
           static_cast<uint16_t>(Register::kRwInternalTestModeInputDataFormat),
           &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = (buffer & 0B11111000) | static_cast<uint8_t>(format);
 
-  if (!bus_->Write(
+  if (!WriteRegister(
           static_cast<uint16_t>(Register::kRwInternalTestModeInputDataFormat),
           buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -87,19 +87,17 @@ bool Gz030pcc0x::SetDataFormat(DataFormat format) {
 bool Gz030pcc0x::SetInternalTestMode(InternalTestMode mode) {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(
+  if (!ReadRegister(
           static_cast<uint16_t>(Register::kRwInternalTestModeInputDataFormat),
           &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
   buffer = (buffer & 0B00011111) | static_cast<uint8_t>(mode);
 
-  if (!bus_->Write(
+  if (!WriteRegister(
           static_cast<uint16_t>(Register::kRwInternalTestModeInputDataFormat),
           buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -107,9 +105,9 @@ bool Gz030pcc0x::SetInternalTestMode(InternalTestMode mode) {
 }
 
 bool Gz030pcc0x::SetShowDirection(ShowDirection direction) {
-  if (!bus_->Write(static_cast<uint16_t>(Register::kRwHorizontalVerticalMirror),
+  if (!WriteRegister(
+          static_cast<uint16_t>(Register::kRwHorizontalVerticalMirror),
           static_cast<uint8_t>(direction))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
@@ -117,13 +115,39 @@ bool Gz030pcc0x::SetShowDirection(ShowDirection direction) {
 }
 
 bool Gz030pcc0x::SetBrightness(uint8_t value) {
-  if (!bus_->Write(
+  if (!WriteRegister(
           static_cast<uint16_t>(Register::kRwDisplayBrightness), value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
     return false;
   }
 
   return true;
 }
 
+bool Gz030pcc0x::ReadRegister(uint16_t reg, uint8_t* data, size_t length) {
+  const uint8_t register_packet[] = {
+      static_cast<uint8_t>(reg >> 8), static_cast<uint8_t>(reg)};
+
+  if (bus_ != nullptr &&
+      bus_->WriteRead(register_packet, sizeof(register_packet), data, length)) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "GZ030PCC0X register read failed (register: %#X)\n",
+      static_cast<unsigned>(reg));
+  return false;
+}
+
+bool Gz030pcc0x::WriteRegister(uint16_t reg, uint8_t value) {
+  const uint8_t register_packet[] = {
+      static_cast<uint8_t>(reg >> 8), static_cast<uint8_t>(reg), value};
+
+  if (bus_ != nullptr &&
+      bus_->Write(register_packet, sizeof(register_packet))) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "GZ030PCC0X register write failed (register: %#X)\n",
+      static_cast<unsigned>(reg));
+  return false;
+}
 }  // namespace cpp_bus_driver

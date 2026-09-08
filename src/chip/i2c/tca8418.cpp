@@ -25,7 +25,8 @@ bool Tca8418::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
@@ -33,8 +34,8 @@ bool Tca8418::Init(int32_t freq_hz) {
   config.auto_increment = true;
   config.overflow_mode = true;
   if (!SetConfiguration(config)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "SetConfiguration failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "SetConfiguration failed\n");
     return false;
   }
 
@@ -55,7 +56,8 @@ bool Tca8418::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Deinit failed\n");
     result = false;
   }
 
@@ -547,8 +549,12 @@ bool Tca8418::ReadRegister(Register reg, uint8_t* value) {
     return false;
   }
 
-  if (!bus_->Read(static_cast<uint8_t>(reg), value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  const uint8_t register_packet[] = {static_cast<uint8_t>(reg)};
+
+  if (!bus_->WriteRead(register_packet, sizeof(register_packet), value, 1)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "TCA8418 register read failed (register: %#X)\n",
+        static_cast<unsigned>(reg));
     return false;
   }
 
@@ -556,8 +562,12 @@ bool Tca8418::ReadRegister(Register reg, uint8_t* value) {
 }
 
 bool Tca8418::WriteRegister(Register reg, uint8_t value) {
-  if (!bus_->Write(static_cast<uint8_t>(reg), value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  const uint8_t register_packet[] = {static_cast<uint8_t>(reg), value};
+
+  if (!bus_->Write(register_packet, sizeof(register_packet))) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "TCA8418 register write failed (register: %#X)\n",
+        static_cast<unsigned>(reg));
     return false;
   }
 
@@ -583,8 +593,7 @@ bool Tca8418::ReadGpioRegisterBlock(Register start_reg, uint32_t* value) {
   uint8_t buffer[3] = {};
   const uint8_t start_address = static_cast<uint8_t>(start_reg);
   for (uint8_t i = 0; i < 3; i++) {
-    if (!bus_->Read(static_cast<uint8_t>(start_address + i), &buffer[i])) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+    if (!ReadRegister(static_cast<Register>(start_address + i), &buffer[i])) {
       return false;
     }
   }
@@ -607,12 +616,10 @@ bool Tca8418::WriteGpioRegisterBlock(Register start_reg, uint32_t value) {
   const uint8_t start_address = static_cast<uint8_t>(start_reg);
   bool result = true;
   for (uint8_t i = 0; i < 3; i++) {
-    result &= bus_->Write(static_cast<uint8_t>(start_address + i), buffer[i]);
+    result &=
+        WriteRegister(static_cast<Register>(start_address + i), buffer[i]);
   }
 
-  if (!result) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
-  }
   return result;
 }
 

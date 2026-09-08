@@ -160,6 +160,36 @@ class EspAt final : public SdioChipBase {
    */
   bool ReadPacketData(uint8_t* data, size_t length);
 
+  /**
+   * @brief 读取寄存器，并记录访问失败信息
+   * @param function SDIO功能号
+   * @param reg 寄存器地址
+   * @param data 接收缓冲区
+   * @param length 读取字节数
+   * @return 操作成功返回true，否则返回false
+   */
+  bool ReadRegister(uint32_t function, uint32_t reg, void* data, size_t length);
+
+  /**
+   * @brief 写入寄存器，并记录访问失败信息
+   * @param function SDIO功能号
+   * @param reg 寄存器地址
+   * @param data 待写入数据
+   * @param length 写入字节数
+   * @return 操作成功返回true，否则返回false
+   */
+  bool WriteRegister(
+      uint32_t function, uint32_t reg, const void* data, size_t length);
+
+  /**
+   * @brief 写入寄存器，并记录访问失败信息
+   * @param function SDIO功能号
+   * @param reg 寄存器地址
+   * @param value 待写入数据
+   * @return 操作成功返回true，否则返回false
+   */
+  bool WriteRegister(uint32_t function, uint32_t reg, uint8_t value);
+
   // 更新底层传输错误计数和连接状态。
   void UpdateConnectionErrorCount(int8_t delta);
 

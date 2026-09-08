@@ -25,7 +25,8 @@ bool Ft3x68::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
@@ -46,7 +47,8 @@ bool Ft3x68::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Deinit failed\n");
     result = false;
   }
 
@@ -60,8 +62,7 @@ bool Ft3x68::Deinit(bool delete_bus) {
 uint8_t Ft3x68::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
     return -1;
   }
 
@@ -71,8 +72,7 @@ uint8_t Ft3x68::GetChipId() {
 uint8_t Ft3x68::GetFingerCount() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRoTdStatus), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(static_cast<uint8_t>(Register::kRoTdStatus), &buffer)) {
     return -1;
   }
 
@@ -90,11 +90,10 @@ bool Ft3x68::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
   std::array<uint8_t, kSingleTouchPointDataSize> buffer = {};
 
   // 地址自动偏移
-  if (!bus_->Read(
+  if (!ReadRegister(
           static_cast<uint8_t>(static_cast<uint8_t>(Register::kRoP1Xh) +
                                ((finger_num - 1) * kSingleTouchPointDataSize)),
           buffer.data(), buffer.size())) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -128,9 +127,8 @@ bool Ft3x68::GetMultipleTouchPoint(TouchPoint& tp) {
   std::array<uint8_t, buffer_touch_point_size> buffer{};
 
   // 地址自动偏移
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRoTdStatus), buffer.data(),
-          buffer_touch_point_size)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(static_cast<uint8_t>(Register::kRoTdStatus),
+          buffer.data(), buffer_touch_point_size)) {
     return false;
   }
 
@@ -159,4 +157,16 @@ bool Ft3x68::GetMultipleTouchPoint(TouchPoint& tp) {
   return true;
 }
 
+bool Ft3x68::ReadRegister(uint8_t reg, uint8_t* data, size_t length) {
+  const uint8_t register_packet[] = {reg};
+
+  if (bus_ != nullptr &&
+      bus_->WriteRead(register_packet, sizeof(register_packet), data, length)) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "FT3X68 register read failed (register: %#X)\n",
+      static_cast<unsigned>(reg));
+  return false;
+}
 }  // namespace cpp_bus_driver

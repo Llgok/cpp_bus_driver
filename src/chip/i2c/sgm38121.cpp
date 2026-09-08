@@ -10,7 +10,8 @@
 namespace cpp_bus_driver {
 bool Sgm38121::Init(int32_t freq_hz) {
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
@@ -31,7 +32,8 @@ bool Sgm38121::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Deinit failed\n");
     result = false;
   }
 
@@ -41,8 +43,7 @@ bool Sgm38121::Deinit(bool delete_bus) {
 uint8_t Sgm38121::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
     return -1;
   }
 
@@ -64,10 +65,9 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
         voltage = 1504;
       }
       buffer = (voltage - 504) / 8;
-      if (!bus_->Write(
+      if (!WriteRegister(
               static_cast<uint8_t>(Register::kRwDvdd1OutputVoltageLevel),
               buffer)) {
-        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
       break;
@@ -82,10 +82,9 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
         voltage = 1504;
       }
       buffer = (voltage - 504) / 8;
-      if (!bus_->Write(
+      if (!WriteRegister(
               static_cast<uint8_t>(Register::kRwDvdd2OutputVoltageLevel),
               buffer)) {
-        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
       break;
@@ -100,10 +99,9 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
         voltage = 3424;
       }
       buffer = (voltage - 1384) / 8;
-      if (!bus_->Write(
+      if (!WriteRegister(
               static_cast<uint8_t>(Register::kRwAvdd1OutputVoltageLevel),
               buffer)) {
-        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
       break;
@@ -118,10 +116,9 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
         voltage = 3424;
       }
       buffer = (voltage - 1384) / 8;
-      if (!bus_->Write(
+      if (!WriteRegister(
               static_cast<uint8_t>(Register::kRwAvdd2OutputVoltageLevel),
               buffer)) {
-        LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
         return false;
       }
       break;
@@ -135,8 +132,8 @@ bool Sgm38121::SetOutputVoltage(Channel channel, uint16_t voltage) {
 
 bool Sgm38121::SetChannelStatus(Channel channel, Status status) {
   uint8_t buffer = 0;
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRwEnableControl), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRwEnableControl), &buffer)) {
     return false;
   }
   switch (channel) {
@@ -156,11 +153,37 @@ bool Sgm38121::SetChannelStatus(Channel channel, Status status) {
     default:
       break;
   }
-  if (!bus_->Write(static_cast<uint8_t>(Register::kRwEnableControl), buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!WriteRegister(
+          static_cast<uint8_t>(Register::kRwEnableControl), buffer)) {
     return false;
   }
 
   return true;
+}
+
+bool Sgm38121::ReadRegister(uint8_t reg, uint8_t* data, size_t length) {
+  const uint8_t register_packet[] = {reg};
+
+  if (bus_ != nullptr &&
+      bus_->WriteRead(register_packet, sizeof(register_packet), data, length)) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "SGM38121 register read failed (register: %#X)\n",
+      static_cast<unsigned>(reg));
+  return false;
+}
+
+bool Sgm38121::WriteRegister(uint8_t reg, uint8_t value) {
+  const uint8_t register_packet[] = {reg, value};
+
+  if (bus_ != nullptr &&
+      bus_->Write(register_packet, sizeof(register_packet))) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "SGM38121 register write failed (register: %#X)\n",
+      static_cast<unsigned>(reg));
+  return false;
 }
 }  // namespace cpp_bus_driver

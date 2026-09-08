@@ -124,8 +124,8 @@ class Sh8601 final : public QspiChipBase {
   // 默认 QSPI 总线时钟，单位 Hz。
   static constexpr int32_t kDefaultFrequencyHz = 10000000;
 
-  // QSPI 寄存器事务操作码。
-  enum class RegisterOpcode {
+  // QSPI 命令事务操作码。
+  enum class CommandOpcode {
     kWrite = 0x02,
     kRead = 0x03,
   };
@@ -137,7 +137,8 @@ class Sh8601 final : public QspiChipBase {
     kFourLaneCommand1 = 0x32,
   };
 
-  enum class Reg {
+  // 显示命令在 QSPI 24 位地址字段中的编码。
+  enum class DcsCommand {
     // 用于写颜色流命令
     // 从指定的像素位置开始写入图像数据，该位置由之前的 kCaset
     // (2Ah)（列地址设置）和 RASET (2Bh)（行地址设置）命令定义
@@ -158,7 +159,7 @@ class Sh8601 final : public QspiChipBase {
 
   static constexpr uint32_t kInitSequence[] = {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24),
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
+      static_cast<uint8_t>(CommandOpcode::kWrite),
       0x001100,
 
       static_cast<uint8_t>(InitSequenceFormat::kDelayMs),
@@ -166,12 +167,12 @@ class Sh8601 final : public QspiChipBase {
 
       // 开启正常显示模式
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24),
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
+      static_cast<uint8_t>(CommandOpcode::kWrite),
       0x001300,
 
       // RGB 色序
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
+      static_cast<uint8_t>(CommandOpcode::kWrite),
       0x003600,
       0x00,
 
@@ -179,7 +180,7 @@ class Sh8601 final : public QspiChipBase {
 
       // 接口像素格式：16 位/像素
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
+      static_cast<uint8_t>(CommandOpcode::kWrite),
       0x003A00,
       0x55,
 
@@ -189,25 +190,25 @@ class Sh8601 final : public QspiChipBase {
 
       // 开启亮度控制和显示调光
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
+      static_cast<uint8_t>(CommandOpcode::kWrite),
       0x005300,
       0x28,
 
       // 写入 HBM 模式下的显示亮度
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
+      static_cast<uint8_t>(CommandOpcode::kWrite),
       0x006300,
       0xFF,
 
       // 亮度调节
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
+      static_cast<uint8_t>(CommandOpcode::kWrite),
       0x005100,
       0x00,
 
       // 关闭阳光下可读性增强
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24D8),
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
+      static_cast<uint8_t>(CommandOpcode::kWrite),
       0x005800,
       0x00,
 
@@ -215,7 +216,7 @@ class Sh8601 final : public QspiChipBase {
 
       // 开启显示
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24),
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
+      static_cast<uint8_t>(CommandOpcode::kWrite),
       0x002900,
 
       static_cast<uint8_t>(InitSequenceFormat::kDelayMs),
@@ -224,6 +225,15 @@ class Sh8601 final : public QspiChipBase {
       // 全亮度可将寄存器 0x005100 设置为 0xFF。
 
   };
+
+  /**
+   * @brief 发送命令，并记录访问失败信息
+   * @param command 命令编码
+   * @param data 待写入数据；无参数命令时可为空
+   * @param length 数据字节数，范围0-4
+   * @return 操作成功返回true，否则返回false
+   */
+  bool WriteCommand(DcsCommand command, const uint8_t* data, size_t length);
 
   int32_t rst_;
   uint16_t width_, height_;

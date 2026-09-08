@@ -659,6 +659,24 @@ class Bq27220 final : public I2cChipBase {
   static constexpr uint16_t kFullAccessKey = 0xFFFF;
 
   /**
+   * @brief 读取寄存器，并记录访问失败信息
+   * @param reg 寄存器地址
+   * @param data 接收缓冲区
+   * @param length 读取字节数
+   * @return 读取成功返回true，否则返回false
+   */
+  bool ReadRegister(uint8_t reg, uint8_t* data, size_t length = 1);
+
+  /**
+   * @brief 写入寄存器，并记录访问失败信息
+   * @param reg 寄存器地址
+   * @param data 待写入数据
+   * @param length 写入字节数
+   * @return 写入成功返回true，否则返回false
+   */
+  bool WriteRegister(uint8_t reg, const uint8_t* data, size_t length);
+
+  /**
    * @brief 进入 Config Update 模式
    * @return 进入成功返回 true，失败返回 false
    */

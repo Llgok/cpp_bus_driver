@@ -7,6 +7,12 @@
  */
 #include "chip/i2c/aw21009.h"
 
+#include <array>
+#include <cstring>
+#include <limits>
+#include <memory>
+#include <new>
+
 namespace cpp_bus_driver {
 
 bool Aw21009::Init(int32_t freq_hz) {
@@ -24,7 +30,8 @@ bool Aw21009::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
@@ -38,14 +45,15 @@ bool Aw21009::Init(int32_t freq_hz) {
       "Get aw21009 chip id success (id: %#X)\n", chip_id);
 
   if (!SoftwareReset()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SoftwareReset failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "SoftwareReset failed\n");
     return false;
   }
 
   if (!SetGlobalControl(true, ClockFrequency::k16Mhz,
           PwmResolution::k12BitWithDither, true)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "SetGlobalControl failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "SetGlobalControl failed\n");
     return false;
   }
   DelayMs(1);
@@ -69,7 +77,8 @@ bool Aw21009::Deinit(bool delete_bus) {
   result &= SetChipEnable(false);
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Deinit failed\n");
     result = false;
   }
 
@@ -80,14 +89,19 @@ bool Aw21009::Deinit(bool delete_bus) {
   return result;
 }
 
-bool Aw21009::ReadRegister(uint8_t reg, uint8_t* value) {
+bool Aw21009::ReadRegister(uint8_t reg, uint8_t* value, size_t length) {
   if (value == nullptr) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
 
-  if (!bus_->Read(reg, value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  const uint8_t register_packet[] = {reg};
+
+  if (!bus_->WriteRead(
+          register_packet, sizeof(register_packet), value, length)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "AW21009 register read failed (register: %#X)\n",
+        static_cast<unsigned>(reg));
     return false;
   }
 
@@ -95,8 +109,12 @@ bool Aw21009::ReadRegister(uint8_t reg, uint8_t* value) {
 }
 
 bool Aw21009::WriteRegister(uint8_t reg, uint8_t value) {
-  if (!bus_->Write(reg, value)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  const uint8_t register_packet[] = {reg, value};
+
+  if (!bus_->Write(register_packet, sizeof(register_packet))) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "AW21009 register write failed (register: %#X)\n",
+        static_cast<unsigned>(reg));
     return false;
   }
 
@@ -105,13 +123,34 @@ bool Aw21009::WriteRegister(uint8_t reg, uint8_t value) {
 
 bool Aw21009::WriteRegisters(
     uint8_t start_reg, const uint8_t* data, size_t length) {
-  if (data == nullptr && length != 0) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
+  if ((data == nullptr && length != 0) ||
+      length == std::numeric_limits<size_t>::max()) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "Invalid register data length or buffer\n");
     return false;
   }
+  // 小事务使用栈缓冲区，大事务按需申请内存。
+  std::array<uint8_t, 128> local_packet{};
+  std::unique_ptr<uint8_t[]> heap_packet;
+  if (length + 1 > local_packet.size()) {
+    heap_packet.reset(new (std::nothrow) uint8_t[length + 1]);
+    if (heap_packet == nullptr) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Register packet allocation failed\n");
+      return false;
+    }
+  }
+  uint8_t* register_packet =
+      heap_packet != nullptr ? heap_packet.get() : local_packet.data();
+  register_packet[0] = start_reg;
+  if (length != 0) {
+    std::memcpy(register_packet + 1, data, length);
+  }
 
-  if (!bus_->Write(start_reg, data, length)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+  if (!bus_->Write(register_packet, length + 1)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "AW21009 register write failed (register: %#X)\n",
+        static_cast<unsigned>(start_reg));
     return false;
   }
 
@@ -121,13 +160,11 @@ bool Aw21009::WriteRegisters(
 bool Aw21009::WriteMaskedRegister(uint8_t reg, uint8_t mask, uint8_t value) {
   uint8_t buffer = 0;
   if (!ReadRegister(reg, &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
   buffer = (buffer & ~mask) | (value & mask);
   if (!WriteRegister(reg, buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
 
@@ -136,7 +173,6 @@ bool Aw21009::WriteMaskedRegister(uint8_t reg, uint8_t mask, uint8_t value) {
 
 bool Aw21009::SoftwareReset() {
   if (!WriteRegister(RegisterValue(Register::kReset), 0x00)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "WriteRegister failed\n");
     return false;
   }
 
@@ -148,7 +184,6 @@ uint8_t Aw21009::GetChipId() {
   uint8_t buffer = 0;
 
   if (!ReadRegister(RegisterValue(Register::kReset), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return static_cast<uint8_t>(-1);
   }
 
@@ -230,8 +265,7 @@ bool Aw21009::GetBrightness(LedChannel channel, uint16_t* value) {
   const uint8_t reg =
       RegisterValue(Register::kBrightnessStart) + (ChannelIndex(channel) * 2);
   uint8_t buffer[2] = {0};
-  if (!bus_->Read(reg, buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(reg, buffer, sizeof(buffer))) {
     return false;
   }
 
@@ -381,9 +415,8 @@ bool Aw21009::GetOpenShortStatus(uint16_t* status) {
   }
 
   uint8_t buffer[2] = {0};
-  if (!bus_->Read(
+  if (!ReadRegister(
           RegisterValue(Register::kOpenShortStatus0), buffer, sizeof(buffer))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -424,7 +457,6 @@ bool Aw21009::GetThermalStatus(ThermalStatus* status) {
   uint8_t buffer = 0;
   if (!ReadRegister(
           RegisterValue(Register::kOverTemperatureControl), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
@@ -484,7 +516,6 @@ bool Aw21009::GetUvStatus(UvStatus* status) {
 
   uint8_t buffer = 0;
   if (!ReadRegister(RegisterValue(Register::kUvControl), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 
@@ -635,7 +666,6 @@ bool Aw21009::GetPatternStatus(PatternStatus* status) {
 
   uint8_t buffer = 0;
   if (!ReadRegister(RegisterValue(Register::kPatternGo), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "ReadRegister failed\n");
     return false;
   }
 

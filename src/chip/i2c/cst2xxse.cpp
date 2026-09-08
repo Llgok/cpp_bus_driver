@@ -25,7 +25,8 @@ bool Cst2xxse::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
@@ -46,7 +47,8 @@ bool Cst2xxse::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Deinit failed\n");
     result = false;
   }
 
@@ -60,8 +62,7 @@ bool Cst2xxse::Deinit(bool delete_bus) {
 uint8_t Cst2xxse::GetChipId() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(static_cast<uint8_t>(Register::kRoChipId), &buffer)) {
     return -1;
   }
 
@@ -71,8 +72,8 @@ uint8_t Cst2xxse::GetChipId() {
 uint8_t Cst2xxse::GetFingerCount() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRoGetFingerCount), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRoGetFingerCount), &buffer)) {
     return -1;
   }
 
@@ -91,19 +92,19 @@ bool Cst2xxse::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
   std::array<uint8_t, kSingleTouchPointDataSize> buffer = {};
 
   if (finger_num == 1) {
-    if (!bus_->Read(static_cast<uint8_t>(
-                        static_cast<uint8_t>(Register::kRoTouchPointInfoStart) +
-                        ((finger_num - 1) * kSingleTouchPointDataSize)),
+    if (!ReadRegister(
+            static_cast<uint8_t>(
+                static_cast<uint8_t>(Register::kRoTouchPointInfoStart) +
+                ((finger_num - 1) * kSingleTouchPointDataSize)),
             buffer.data(), buffer.size())) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
   } else {
-    if (!bus_->Read(static_cast<uint8_t>(
-                        static_cast<uint8_t>(Register::kRoTouchPointInfoStart) +
-                        ((finger_num - 1) * kSingleTouchPointDataSize) + 2),
+    if (!ReadRegister(
+            static_cast<uint8_t>(
+                static_cast<uint8_t>(Register::kRoTouchPointInfoStart) +
+                ((finger_num - 1) * kSingleTouchPointDataSize) + 2),
             buffer.data(), buffer.size())) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
       return false;
     }
   }
@@ -138,9 +139,8 @@ bool Cst2xxse::GetMultipleTouchPoint(TouchPoint& tp) {
       kMaxTouchFingerCount * kSingleTouchPointDataSize + 2;
   std::array<uint8_t, buffer_touch_point_size> buffer{};
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRoTouchPointInfoStart),
+  if (!ReadRegister(static_cast<uint8_t>(Register::kRoTouchPointInfoStart),
           buffer.data(), buffer_touch_point_size)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return false;
   }
 
@@ -183,8 +183,8 @@ bool Cst2xxse::GetMultipleTouchPoint(TouchPoint& tp) {
 bool Cst2xxse::GetHomeTouch() {
   uint8_t buffer = 0;
 
-  if (!bus_->Read(static_cast<uint8_t>(Register::kRoGetFingerCount), &buffer)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
+  if (!ReadRegister(
+          static_cast<uint8_t>(Register::kRoGetFingerCount), &buffer)) {
     return false;
   }
 
@@ -195,4 +195,16 @@ bool Cst2xxse::GetHomeTouch() {
   return true;
 }
 
+bool Cst2xxse::ReadRegister(uint8_t reg, uint8_t* data, size_t length) {
+  const uint8_t register_packet[] = {reg};
+
+  if (bus_ != nullptr &&
+      bus_->WriteRead(register_packet, sizeof(register_packet), data, length)) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "CST2XXSE register read failed (register: %#X)\n",
+      static_cast<unsigned>(reg));
+  return false;
+}
 }  // namespace cpp_bus_driver

@@ -74,7 +74,7 @@ bool Logger::ShouldLog(LogLevel level) {
 
 void Logger::LogMessage(LogLevel level, const char* file_name,
     size_t line_number, const char* format, ...) {
-  if (!ShouldLog(level)) {
+  if (!ShouldLog(level) || format == nullptr) {
     return;
   }
 
@@ -86,10 +86,15 @@ void Logger::LogMessage(LogLevel level, const char* file_name,
     va_end(args);
     return;
   }
-  snprintf(buffer.get(), kMaxLogBufferSize,
-      "[cpp_bus_driver log][%s]->[%s][%u line]: %s", LogLevelName(level),
-      file_name, static_cast<unsigned int>(line_number), format);
-  vprintf(buffer.get(), args);
+  // 先格式化正文，避免文件名中的百分号或格式串截断影响可变参数解析。
+  const int length =
+      std::vsnprintf(buffer.get(), kMaxLogBufferSize, format, args);
   va_end(args);
+  if (length < 0) {
+    return;
+  }
+  std::printf("[cpp_bus_driver log][%s]->[%s][%zu line]: %s",
+      LogLevelName(level), file_name != nullptr ? file_name : "", line_number,
+      buffer.get());
 }
 }  // namespace cpp_bus_driver

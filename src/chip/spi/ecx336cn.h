@@ -941,6 +941,14 @@ class Ecx336cn final : public SpiChipBase {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8), 0x7E, 0x00,
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8), 0x7F, 0x00};
 
+  /**
+   * @brief 写入寄存器，并记录访问失败信息
+   * @param reg 寄存器或命令地址
+   * @param value 待写入数据
+   * @return 操作成功返回true，否则返回false
+   */
+  bool WriteRegister(uint8_t reg, uint8_t value);
+
   int32_t rst_;
 };
 }  // namespace cpp_bus_driver

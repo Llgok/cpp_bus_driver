@@ -87,9 +87,9 @@ Bq2589x::DpmStatus Bq2589x::Bq25898cDriver::DecodeDpmStatus(
 }
 
 bool Bq2589x::Bq25898cDriver::ReadAdcRegisters(
-    I2cBusBase& bus, uint8_t (&data)[5]) const {
-  return bus.Read(static_cast<uint8_t>(Register::kReg0e), data, 2) &&
-         bus.Read(static_cast<uint8_t>(Register::kReg11), data + 3, 2);
+    Bq2589x& chip, uint8_t (&data)[5]) const {
+  return chip.ReadRegister(Register::kReg0e, data, 2) &&
+         chip.ReadRegister(Register::kReg11, data + 3, 2);
 }
 
 Bq2589x::NtcFault Bq2589x::Bq25898cDriver::DecodeNtcFault(

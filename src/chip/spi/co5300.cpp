@@ -23,12 +23,14 @@ bool Co5300::Init(int32_t freq_hz) {
   }
 
   if (!QspiChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Init failed\n");
     return false;
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence) / sizeof(uint32_t))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "InitSequence failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "InitSequence failed\n");
     return false;
   }
 
@@ -47,7 +49,8 @@ bool Co5300::Deinit() {
   bool result = true;
 
   if (!QspiChipBase::Deinit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Deinit failed\n");
     result = false;
   }
 
@@ -64,53 +67,16 @@ bool Co5300::SetRenderWindow(int x_start, int y_start, int x_end, int y_end) {
   x_end += x_offset_;
   y_end += y_offset_;
 
-  uint8_t buffer[] = {
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
-      static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoColumnAddressSet) >> 16),
-      static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoColumnAddressSet) >> 8),
-      static_cast<uint8_t>(Reg::kWoColumnAddressSet),
-
-      static_cast<uint8_t>(x_start >> 8),
-      static_cast<uint8_t>(x_start),
-      static_cast<uint8_t>(x_end >> 8),
-      static_cast<uint8_t>(x_end),
-  };
-  uint8_t buffer_2[] = {
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
-      static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoPageAddressSet) >> 16),
-      static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoPageAddressSet) >> 8),
-      static_cast<uint8_t>(Reg::kWoPageAddressSet),
-
-      static_cast<uint8_t>(y_start >> 8),
-      static_cast<uint8_t>(y_start),
-      static_cast<uint8_t>(y_end >> 8),
-      static_cast<uint8_t>(y_end),
-  };
-  uint8_t buffer_3[] = {
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
-      static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoMemoryWriteStart) >> 16),
-      static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoMemoryWriteStart) >> 8),
-      static_cast<uint8_t>(Reg::kWoMemoryWriteStart),
-  };
-
-  if (!bus_->Write(buffer, 8, 0, false)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
-  if (!bus_->Write(buffer_2, 8, 0, false)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
-  if (!bus_->Write(buffer_3, 4, 0, false)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
-
-  return true;
+  const uint8_t column[] = {static_cast<uint8_t>(x_start >> 8),
+      static_cast<uint8_t>(x_start), static_cast<uint8_t>(x_end >> 8),
+      static_cast<uint8_t>(x_end)};
+  const uint8_t page[] = {static_cast<uint8_t>(y_start >> 8),
+      static_cast<uint8_t>(y_start), static_cast<uint8_t>(y_end >> 8),
+      static_cast<uint8_t>(y_end)};
+  return WriteCommand(
+             DcsCommand::kWoColumnAddressSet, column, sizeof(column)) &&
+         WriteCommand(DcsCommand::kWoPageAddressSet, page, sizeof(page)) &&
+         WriteCommand(DcsCommand::kWoMemoryWriteStart, nullptr, 0);
 }
 
 bool Co5300::SendColorStream(
@@ -144,27 +110,31 @@ bool Co5300::SendColorStream(
   // 13, 14，所以 x_end 应该是 14（即 x + w - 1） 如果不 -1，x_end 会是
   // 15，可能超出实际范围或导致多写一个像素
   if (!SetRenderWindow(x, y, x + w - 1, y + h - 1)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "SetRenderWindow failed\n");
     return false;
   }
 
   if (!SetWriteStreamMode(WriteStreamMode::kContinuousWrite4Lanes)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "SetWriteStreamMode failed\n");
     return false;
   }
 
   if (color_format_ == ColorFormat::kRgb666) {
     if (!bus_->Write(data, w * h * 3, static_cast<uint32_t>(SpiTrans::kModeQio),
             false)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "CO5300 pixel stream write failed (x: %u, y: %u, width: %u, height: "
+          "%u)\n",
+          static_cast<unsigned>(x), static_cast<unsigned>(y),
+          static_cast<unsigned>(w), static_cast<unsigned>(h));
       return false;
     }
   } else {
     if (!bus_->Write(data, w * h * (static_cast<uint8_t>(color_format_) / 8),
             static_cast<uint32_t>(SpiTrans::kModeQio), false)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "CO5300 pixel stream write failed (x: %u, y: %u, width: %u, height: "
+          "%u)\n",
+          static_cast<unsigned>(x), static_cast<unsigned>(y),
+          static_cast<unsigned>(w), static_cast<unsigned>(h));
       return false;
     }
   }
@@ -179,34 +149,34 @@ bool Co5300::SetWriteStreamMode(WriteStreamMode mode) {
     case WriteStreamMode::kWrite1Lane:
       buffer[0] = static_cast<uint8_t>(ColorStreamOpcode::kOneLane);
       buffer[1] = static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoMemoryStartWrite) >> 16);
+          static_cast<uint32_t>(DcsCommand::kWoMemoryStartWrite) >> 16);
       buffer[2] = static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoMemoryStartWrite) >> 8);
-      buffer[3] = static_cast<uint8_t>(Reg::kWoMemoryStartWrite);
+          static_cast<uint32_t>(DcsCommand::kWoMemoryStartWrite) >> 8);
+      buffer[3] = static_cast<uint8_t>(DcsCommand::kWoMemoryStartWrite);
       break;
     case WriteStreamMode::kWrite4Lanes:
       buffer[0] = static_cast<uint8_t>(ColorStreamOpcode::kFourLaneCommand1);
       buffer[1] = static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoMemoryStartWrite) >> 16);
+          static_cast<uint32_t>(DcsCommand::kWoMemoryStartWrite) >> 16);
       buffer[2] = static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoMemoryStartWrite) >> 8);
-      buffer[3] = static_cast<uint8_t>(Reg::kWoMemoryStartWrite);
+          static_cast<uint32_t>(DcsCommand::kWoMemoryStartWrite) >> 8);
+      buffer[3] = static_cast<uint8_t>(DcsCommand::kWoMemoryStartWrite);
       break;
     case WriteStreamMode::kContinuousWrite1Lane:
       buffer[0] = static_cast<uint8_t>(ColorStreamOpcode::kOneLane);
       buffer[1] = static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoMemoryContinuousWrite) >> 16);
+          static_cast<uint32_t>(DcsCommand::kWoMemoryContinuousWrite) >> 16);
       buffer[2] = static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoMemoryContinuousWrite) >> 8);
-      buffer[3] = static_cast<uint8_t>(Reg::kWoMemoryContinuousWrite);
+          static_cast<uint32_t>(DcsCommand::kWoMemoryContinuousWrite) >> 8);
+      buffer[3] = static_cast<uint8_t>(DcsCommand::kWoMemoryContinuousWrite);
       break;
     case WriteStreamMode::kContinuousWrite4Lanes:
       buffer[0] = static_cast<uint8_t>(ColorStreamOpcode::kFourLaneCommand1);
       buffer[1] = static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoMemoryContinuousWrite) >> 16);
+          static_cast<uint32_t>(DcsCommand::kWoMemoryContinuousWrite) >> 16);
       buffer[2] = static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoMemoryContinuousWrite) >> 8);
-      buffer[3] = static_cast<uint8_t>(Reg::kWoMemoryContinuousWrite);
+          static_cast<uint32_t>(DcsCommand::kWoMemoryContinuousWrite) >> 8);
+      buffer[3] = static_cast<uint8_t>(DcsCommand::kWoMemoryContinuousWrite);
       break;
 
     default:
@@ -214,7 +184,11 @@ bool Co5300::SetWriteStreamMode(WriteStreamMode mode) {
   }
 
   if (!bus_->Write(buffer, 4, 0, true)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "CO5300 stream command write failed (opcode: %#X, command: %#X)\n",
+        static_cast<unsigned>(buffer[0]),
+        (static_cast<unsigned>(buffer[1]) << 16) |
+            (static_cast<unsigned>(buffer[2]) << 8) | buffer[3]);
     return false;
   }
 
@@ -222,122 +196,66 @@ bool Co5300::SetWriteStreamMode(WriteStreamMode mode) {
 }
 
 bool Co5300::SetBrightness(uint8_t value) {
-  uint8_t buffer[] = {static_cast<uint8_t>(RegisterOpcode::kWrite),
-      static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoWriteDisplayBrightness) >> 16),
-      static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoWriteDisplayBrightness) >> 8),
-      static_cast<uint8_t>(Reg::kWoColumnAddressSet),
-
-      static_cast<uint8_t>(value)};
-
-  if (!bus_->Write(buffer, 5, 0, false)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
-
-  return true;
+  return WriteCommand(
+      DcsCommand::kWoWriteDisplayBrightness, &value, sizeof(value));
 }
 
 bool Co5300::SetSleep(bool enable) {
-  uint8_t buffer[] = {
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
-      static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoSleepIn) >> 16),
-      static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoSleepIn) >> 8),
-      static_cast<uint8_t>(Reg::kWoSleepIn),
-  };
-
-  if (enable) {
-    buffer[1] =
-        static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoSleepOut) >> 16);
-    buffer[2] =
-        static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoSleepOut) >> 8);
-    buffer[3] = static_cast<uint8_t>(Reg::kWoSleepOut);
-  }
-
-  if (!bus_->Write(buffer, 4, 0, false)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
-
-  return true;
+  return WriteCommand(
+      enable ? DcsCommand::kWoSleepOut : DcsCommand::kWoSleepIn, nullptr, 0);
 }
 
 bool Co5300::SetScreenOff(bool enable) {
-  uint8_t buffer[] = {
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
-      static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoDisplayOff) >> 16),
-      static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoDisplayOff) >> 8),
-      static_cast<uint8_t>(Reg::kWoDisplayOff),
-  };
-
-  if (enable) {
-    buffer[1] =
-        static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoDisplayOn) >> 16);
-    buffer[2] =
-        static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoDisplayOn) >> 8);
-    buffer[3] = static_cast<uint8_t>(Reg::kWoDisplayOn);
-  }
-
-  if (!bus_->Write(buffer, 4, 0, false)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
-
-  return true;
+  return WriteCommand(
+      enable ? DcsCommand::kWoDisplayOn : DcsCommand::kWoDisplayOff, nullptr,
+      0);
 }
 
 bool Co5300::SetColorEnhance(ColorEnhance mode) {
-  uint8_t buffer[] = {
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
-      static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoSetColorEnhance) >> 16),
-      static_cast<uint8_t>(static_cast<uint32_t>(Reg::kWoSetColorEnhance) >> 8),
-      static_cast<uint8_t>(Reg::kWoSetColorEnhance),
-
-      static_cast<uint8_t>(mode),
-  };
-
-  if (!bus_->Write(buffer, 5, 0, false)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
-    return false;
-  }
-
-  return true;
+  const uint8_t value = static_cast<uint8_t>(mode);
+  return WriteCommand(DcsCommand::kWoSetColorEnhance, &value, sizeof(value));
 }
 
 bool Co5300::SetColorFormat(ColorFormat format) {
-  uint8_t buffer[] = {
-      static_cast<uint8_t>(RegisterOpcode::kWrite),
-      static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoInterfacePixelFormat) >> 16),
-      static_cast<uint8_t>(
-          static_cast<uint32_t>(Reg::kWoInterfacePixelFormat) >> 8),
-      static_cast<uint8_t>(Reg::kWoInterfacePixelFormat),
-
-      static_cast<uint8_t>(0x55),
-  };
-
+  uint8_t value = 0x55;
   switch (format) {
     case ColorFormat::kRgb565:
       break;
     case ColorFormat::kRgb666:
-      buffer[4] = 0x66;
+      value = 0x66;
       break;
     case ColorFormat::kRgb888:
-      buffer[4] = 0x77;
+      value = 0x77;
       break;
-
     default:
       return false;
   }
+  return WriteCommand(
+      DcsCommand::kWoInterfacePixelFormat, &value, sizeof(value));
+}
 
-  if (!bus_->Write(buffer, 5, 0, false)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Write failed\n");
+bool Co5300::WriteCommand(
+    DcsCommand command, const uint8_t* data, size_t length) {
+  uint8_t packet[8] = {static_cast<uint8_t>(CommandOpcode::kWrite),
+      static_cast<uint8_t>(static_cast<uint32_t>(command) >> 16),
+      static_cast<uint8_t>(static_cast<uint32_t>(command) >> 8),
+      static_cast<uint8_t>(command)};
+  if (length > sizeof(packet) - 4 || (length != 0 && data == nullptr)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Invalid command write argument (command: %#X, length: %zu)\n",
+        static_cast<unsigned>(command), length);
     return false;
   }
-
-  return true;
+  for (size_t i = 0; i < length; ++i) {
+    packet[4 + i] = data[i];
+  }
+  if (bus_ != nullptr && bus_->Write(packet, 4 + length, 0, false)) {
+    return true;
+  }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "CO5300 command write failed (command: %#X)\n",
+      static_cast<unsigned>(command));
+  return false;
 }
 
 }  // namespace cpp_bus_driver

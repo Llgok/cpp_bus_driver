@@ -18,7 +18,7 @@ namespace cpp_bus_driver {
 class Cc1101 final : public SpiChipBase {
  public:
   // CC1101 SPI 命令选通指令
-  enum class StrobeCmd : uint8_t {
+  enum class StrobeCommand : uint8_t {
     kReset = 0x30,
     kFrequencySynthesizerOn = 0x31,
     kCrystalOff = 0x32,
@@ -229,7 +229,7 @@ class Cc1101 final : public SpiChipBase {
    * @param status 可选状态输出，允许为 nullptr。
    * @return 命令发送成功返回 true，失败返回 false。
    */
-  bool Strobe(StrobeCmd command, ChipStatus* status = nullptr);
+  bool Strobe(StrobeCommand command, ChipStatus* status = nullptr);
 
   /**
    * @brief 设置射频中心频率。

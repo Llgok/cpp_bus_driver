@@ -115,6 +115,24 @@ class Rm69a10 final : public MipiChipBase {
       static_cast<uint8_t>(InitSequenceFormat::kDelayMs), 120,
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8), 0x29};
 
+  /**
+   * @brief 读取命令响应，并记录访问失败信息
+   * @param command 命令编码
+   * @param data 接收缓冲区
+   * @param length 传输字节数
+   * @return 操作成功返回true，否则返回false
+   */
+  bool ReadCommand(uint8_t command, uint8_t* data, size_t length);
+
+  /**
+   * @brief 发送命令，并记录访问失败信息
+   * @param command 命令编码
+   * @param data 数据缓冲区；无参数写命令时可为空
+   * @param length 传输字节数
+   * @return 操作成功返回true，否则返回false
+   */
+  bool WriteCommand(uint8_t command, const uint8_t* data, size_t length);
+
   int32_t rst_;
   uint8_t madctl_data_ = 0;
 };

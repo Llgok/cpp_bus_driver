@@ -688,7 +688,7 @@ class Nrf24l01x final : public SpiChipBase {
   };
 
   // 数据手册第 8 章定义的 SPI 指令。
-  enum class SpiCmd : uint8_t {
+  enum class Command : uint8_t {
     kReadRxPayloadWidth = 0x60,   // 查询 FIFO 顶部动态长度
     kReadRxPayload = 0x61,        // 弹出并读取一个接收负载
     kWriteTxPayload = 0xA0,       // 压入需要正常 ACK 的发送负载
@@ -790,7 +790,7 @@ class Nrf24l01x final : public SpiChipBase {
    * @param status 可选状态输出。
    * @return 单字节 Exchange 成功时为 true。
    */
-  bool ExecuteCommand(SpiCmd command, uint8_t* status = nullptr);
+  bool ExecuteCommand(Command command, uint8_t* status = nullptr);
 
   /**
    * @brief 为负载类指令附加一段连续写数据。
@@ -800,7 +800,7 @@ class Nrf24l01x final : public SpiChipBase {
    * @param status 可选状态快照。
    * @return 参数有效且整段写完时为 true。
    */
-  bool WriteCommand(SpiCmd command, const uint8_t* data, std::size_t length,
+  bool WriteCommand(Command command, const uint8_t* data, std::size_t length,
       uint8_t* status = nullptr);
 
   /**
@@ -811,7 +811,7 @@ class Nrf24l01x final : public SpiChipBase {
    * @param status 可选 STATUS。
    * @return 读事务完成时为 true。
    */
-  bool ReadCommand(SpiCmd command, uint8_t* data, std::size_t length,
+  bool ReadCommand(Command command, uint8_t* data, std::size_t length,
       uint8_t* status = nullptr);
 
   /**

@@ -74,7 +74,7 @@ bool Sgm41562xx::Sgm41562Driver::SetFastChargeCurrentLimit(
     Sgm41562xx& chip, uint16_t current_ma) const {
   uint8_t miscellaneous_configuration = 0;
   if (!chip.ReadRegister(Register::kI2cAddressMiscellaneousConfiguration,
-          miscellaneous_configuration, "REG0A miscellaneous configuration")) {
+          miscellaneous_configuration)) {
     return false;
   }
   constexpr RegisterField kField = {

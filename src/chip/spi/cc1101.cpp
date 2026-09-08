@@ -177,9 +177,14 @@ bool Cc1101::Reset() {
     return false;
   }
 
-  const uint8_t command = static_cast<uint8_t>(StrobeCmd::kReset);
+  const uint8_t command = static_cast<uint8_t>(StrobeCommand::kReset);
   uint8_t status = 0;
   result = bus_->WriteRead(&command, &status, 1);
+  if (!result) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "CC1101 reset command failed (command: %#X)\n",
+        static_cast<unsigned>(command));
+  }
   if (result) {
     result = WaitForReady();
   }
@@ -362,7 +367,7 @@ bool Cc1101::ReadStatusRegister(Register register_id, uint8_t* value) {
   return true;
 }
 
-bool Cc1101::Strobe(StrobeCmd command, ChipStatus* status) {
+bool Cc1101::Strobe(StrobeCommand command, ChipStatus* status) {
   const uint8_t value = static_cast<uint8_t>(command);
   uint8_t response = 0;
   if (!Transfer(&value, &response, 1)) {
@@ -960,7 +965,7 @@ bool Cc1101::SetGdoMapping(GdoPin pin, uint8_t signal, bool inverted) {
 }
 
 bool Cc1101::Standby(uint32_t timeout_ms) {
-  if (!Strobe(StrobeCmd::kIdle)) {
+  if (!Strobe(StrobeCommand::kIdle)) {
     return false;
   }
   if (!WaitForState(State::kIdle, timeout_ms)) {
@@ -994,7 +999,7 @@ bool Cc1101::Sleep() {
     return false;
   }
   fscal2_value_ = value;
-  if (!Strobe(StrobeCmd::kPowerDown)) {
+  if (!Strobe(StrobeCommand::kPowerDown)) {
     return false;
   }
   sleeping_ = true;
@@ -1004,7 +1009,7 @@ bool Cc1101::Sleep() {
 bool Cc1101::Wakeup() { return Standby(); }
 
 bool Cc1101::Calibrate(uint32_t timeout_ms) {
-  if (!Standby() || !Strobe(StrobeCmd::kCalibrate)) {
+  if (!Standby() || !Strobe(StrobeCommand::kCalibrate)) {
     return false;
   }
   return WaitForState(State::kIdle, timeout_ms);
@@ -1028,7 +1033,7 @@ bool Cc1101::StartReceive() {
   result &= UpdateRegisterBits(
       Register::kFifothr, kFifoThresholdMask, kRxFifoThresholdMaximum);
   result &= WriteRegister(Register::kIocfg0, kGdoSyncWord);
-  result &= Strobe(StrobeCmd::kReceive);
+  result &= Strobe(StrobeCommand::kReceive);
   return result;
 }
 
@@ -1036,14 +1041,14 @@ bool Cc1101::FlushRx() {
   if (!Standby()) {
     return false;
   }
-  return Strobe(StrobeCmd::kFlushRx);
+  return Strobe(StrobeCommand::kFlushRx);
 }
 
 bool Cc1101::FlushTx() {
   if (!Standby()) {
     return false;
   }
-  return Strobe(StrobeCmd::kFlushTx);
+  return Strobe(StrobeCommand::kFlushTx);
 }
 
 bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
@@ -1098,7 +1103,8 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
   }
 
   if (config_.cca_mode != CcaMode::kAlways) {
-    if (!Strobe(StrobeCmd::kReceive) || !WaitForState(State::kReceive, 100)) {
+    if (!Strobe(StrobeCommand::kReceive) ||
+        !WaitForState(State::kReceive, 100)) {
       Standby();
       FlushTx();
       return false;
@@ -1109,7 +1115,7 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
       DelayUs(kCcaRssiSettlingUs);
     }
   }
-  if (!Strobe(StrobeCmd::kTransmit)) {
+  if (!Strobe(StrobeCommand::kTransmit)) {
     Standby();
     FlushTx();
     return false;
@@ -1221,7 +1227,7 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity, size_t* received,
   result &= FlushRx();
   result &= UpdateRegisterBits(Register::kFifothr, kFifoThresholdMask, 0x07);
   result &= WriteRegister(Register::kIocfg0, kGdoSyncWord);
-  result &= Strobe(StrobeCmd::kReceive);
+  result &= Strobe(StrobeCommand::kReceive);
   if (!result || !WaitForGdo0(true, timeout_ms)) {
     Standby();
     FlushRx();
@@ -1369,7 +1375,6 @@ bool Cc1101::GetState(State* state) {
 uint8_t Cc1101::GetChipId() {
   uint8_t chip_id = 0;
   if (!GetVersion(&chip_id)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Read failed\n");
     return static_cast<uint8_t>(-1);
   }
   return chip_id;
@@ -1411,7 +1416,7 @@ bool Cc1101::GetChipStatus(ChipStatus* status) {
   if (status == nullptr) {
     return false;
   }
-  const uint8_t command = static_cast<uint8_t>(StrobeCmd::kNoOperation);
+  const uint8_t command = static_cast<uint8_t>(StrobeCommand::kNoOperation);
   uint8_t previous = 0;
   if (!Transfer(&command, &previous, 1)) {
     return false;
@@ -1434,22 +1439,48 @@ bool Cc1101::Transfer(const uint8_t* write_data, uint8_t* read_data,
     size_t length, bool wait_ready) {
   if (bus_ == nullptr || write_data == nullptr || read_data == nullptr ||
       length == 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "CC1101 transfer rejected (size: %zu, reason: invalid bus or buffer)\n",
+        length);
     return false;
   }
+  const uint8_t command = write_data[0];
+  const auto log_failure = [this, command, length](const char* reason) {
+    if (length == 1) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "CC1101 command execute failed (command: %#X, reason: %s)\n",
+          static_cast<unsigned>(command), reason);
+    } else {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "CC1101 register %s failed (register: %#X, command: %#X, size: %zu, "
+          "reason: %s)\n",
+          (command & 0x80) != 0 ? "read" : "write",
+          static_cast<unsigned>(command & 0x3F), static_cast<unsigned>(command),
+          length - 1, reason);
+    }
+  };
 
-  // CC1101 要求 CSn 拉低后等待 CHIP_RDYn，再开始发送首字节。
+  // CSn 拉低后等待 CHIP_RDYn，再发送首字节；退出时始终释放片选。
   if (!GpioWrite(cs_, false)) {
+    log_failure("assert CS");
     return false;
   }
-  bool result = true;
-  if (wait_ready) {
-    result = WaitForReady();
-  }
+  bool result = !wait_ready || WaitForReady();
+  const char* reason = result ? nullptr : "wait ready";
   if (result) {
     result = bus_->WriteRead(write_data, read_data, length);
+    if (!result) {
+      reason = "bus transfer";
+    }
   }
-  result &= GpioWrite(cs_, true);
-  return result;
+  const bool released = GpioWrite(cs_, true);
+  if (reason == nullptr && !released) {
+    reason = "release CS";
+  }
+  if (reason != nullptr) {
+    log_failure(reason);
+  }
+  return result && released;
 }
 
 bool Cc1101::EnsureIdle() {

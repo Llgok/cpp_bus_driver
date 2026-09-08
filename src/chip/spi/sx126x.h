@@ -183,15 +183,15 @@ class Sx126x final : public SpiChipBase {
    * [0x6：kTx，发送]）
    * 7   | 保留
    */
-  enum class CmdStatus {
+  enum class CommandStatus {
     kFalse = -1,
 
     kRfu = 0x01,
     kDataIsAvailableToHost,
-    kCmdTimeout,
-    kCmdProcessingError,
-    kFailToExecuteCmd,
-    kCmdTxDone,
+    kCommandTimeout,
+    kCommandProcessingError,
+    kFailToExecuteCommand,
+    kCommandTxDone,
   };
 
   // 芯片模式状态
@@ -595,9 +595,9 @@ class Sx126x final : public SpiChipBase {
   /**
    * @brief 命令解析，详细请参考SX126x手册 13-76: Status Bytes Definition
    * @param parse_status 解析状态字节，由 GetStatus() 函数获取
-   * @return CmdStatus 命令状态
+   * @return CommandStatus 命令状态
    */
-  CmdStatus ParseCmdStatus(uint8_t parse_status);
+  CommandStatus ParseCommandStatus(uint8_t parse_status);
 
   /**
    * @brief 芯片模式解析，详细请参考SX126x手册 13-76: Status Bytes Definition
@@ -1355,7 +1355,7 @@ class Sx126x final : public SpiChipBase {
 
   // 访问寄存器需要通过前置读写命令来访问
   // 采用大端先发的规则发送（0x0001 先发0x00后发0x01）
-  enum class Reg {
+  enum class Register {
     kRwRetentionListBaseAddress = 0x029F,
     kRoChipId = 0x0320,
     kRwWhiteningSeedStart = 0x06B8,
@@ -1511,7 +1511,7 @@ class Sx126x final : public SpiChipBase {
   bool ValidateHardwareConfig() const;
   bool ApplyHardwareConfig(bool calibrate_tcxo);
   float GetGfskBandwidthKhz(GfskBw bandwidth) const;
-  bool ReadModifyWriteRegister(Reg reg, uint8_t mask, uint8_t value);
+  bool ReadModifyWriteRegister(Register reg, uint8_t mask, uint8_t value);
   bool ResetGfskLowRateWorkaround();
   bool ApplyGfskLowRateWorkaround(const GfskConfig& config);
 

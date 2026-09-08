@@ -51,7 +51,7 @@ bool I2cChipBase::Init(int32_t freq_hz) {
 
   if (!bus_->Probe(address_)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Probe failed (not found address: %#X)\n", address_);
+        "I2C probe failed (address: %#X)\n", static_cast<unsigned>(address_));
     return false;
   }
 
@@ -103,7 +103,10 @@ bool I2cChipBase::InitSequence(const uint8_t* sequence, size_t length) {
         }
         if (!bus_->Write(&sequence[index + 1], 2)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "I2cChipBase write failed (error index: %zu)\n", index);
+              "I2C sequence write failed (address: %#X, register: %#X, index: "
+              "%zu)\n",
+              static_cast<unsigned>(address_),
+              static_cast<unsigned>(sequence[index + 1]), index);
           return false;
         }
         index += 3;
@@ -157,7 +160,10 @@ bool I2cChipBase::InitSequence(const uint16_t* sequence, size_t length) {
 
         if (!bus_->Write(buffer, 3)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "I2cChipBase write failed (error index: %zu)\n", index);
+              "I2C sequence write failed (address: %#X, register: %#X, index: "
+              "%zu)\n",
+              static_cast<unsigned>(address_),
+              static_cast<unsigned>(sequence[index + 1]), index);
           return false;
         }
         index += 3;
@@ -235,7 +241,8 @@ bool SpiChipBase::InitSequence(const uint8_t* sequence, size_t length) {
         }
         if (!bus_->Write(&sequence[index + 1], 2)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "SpiChipBase write failed (error index: %zu)\n", index);
+              "SPI sequence write failed (register: %#X, index: %zu)\n",
+              static_cast<unsigned>(sequence[index + 1]), index);
           return false;
         }
         index += 3;
@@ -319,7 +326,10 @@ bool QspiChipBase::InitSequence(const uint32_t* sequence, size_t length) {
         };
         if (!bus_->Write(buffer, 4, 0, false)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "QspiChipBase write failed (error index: %zu)\n", index);
+              "QSPI sequence write failed (opcode: %#X, command: %#X, index: "
+              "%zu)\n",
+              static_cast<unsigned>(sequence[index + 1]),
+              static_cast<unsigned>(sequence[index + 2]), index);
           return false;
         }
         index += 3;
@@ -344,7 +354,10 @@ bool QspiChipBase::InitSequence(const uint32_t* sequence, size_t length) {
 
         if (!bus_->Write(buffer, 5, 0, false)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "QspiChipBase write failed (error index: %zu)\n", index);
+              "QSPI sequence write failed (opcode: %#X, command: %#X, index: "
+              "%zu)\n",
+              static_cast<unsigned>(sequence[index + 1]),
+              static_cast<unsigned>(sequence[index + 2]), index);
           return false;
         }
         index += 4;
@@ -637,7 +650,8 @@ bool MipiChipBase::InitSequence(const uint8_t* sequence, size_t length) {
         if (!bus_->Write(
                 static_cast<int32_t>(sequence[index + 1]), nullptr, 0)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "MipiChipBase write failed (error index: %zu)\n", index);
+              "MIPI sequence write failed (command: %#X, index: %zu)\n",
+              static_cast<unsigned>(sequence[index + 1]), index);
           return false;
         }
         index += 2;
@@ -659,7 +673,8 @@ bool MipiChipBase::InitSequence(const uint8_t* sequence, size_t length) {
         if (!bus_->Write(static_cast<int32_t>(sequence[index + 1]),
                 &sequence[index + 3], data_length)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "MipiChipBase write failed (error index: %zu)\n", index);
+              "MIPI sequence write failed (command: %#X, index: %zu)\n",
+              static_cast<unsigned>(sequence[index + 1]), index);
           return false;
         }
         index += 3 + data_length;
@@ -675,7 +690,8 @@ bool MipiChipBase::InitSequence(const uint8_t* sequence, size_t length) {
         if (!bus_->Write(static_cast<int32_t>(sequence[index + 1]),
                 &sequence[index + 2], 1)) {
           LogMessage(LogLevel::kError, __FILE__, __LINE__,
-              "MipiChipBase write failed (error index: %zu)\n", index);
+              "MIPI sequence write failed (command: %#X, index: %zu)\n",
+              static_cast<unsigned>(sequence[index + 1]), index);
           return false;
         }
         index += 3;
