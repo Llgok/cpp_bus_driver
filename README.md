@@ -119,19 +119,15 @@ git submodule update --init --recursive
 
 ### Bus Drivers
 
-Bus drivers are responsible for interacting with the MCU peripheral driver layer. Common objects include:
+Bus drivers interact with MCU peripherals. See the
+[entry header](src/cpp_bus_driver.h) for drivers available on each platform.
 
-```cpp
-cpp_bus_driver::HardwareI2c1
-cpp_bus_driver::HardwareI2c2
-cpp_bus_driver::SoftwareI2c
-cpp_bus_driver::HardwareSpi
-cpp_bus_driver::HardwareQspi
-cpp_bus_driver::HardwareUart
-cpp_bus_driver::HardwareI2s
-cpp_bus_driver::HardwareSdio
-cpp_bus_driver::HardwareMipi
-```
+Use `HardwareI2c` for hardware I2C. `LegacyHardwareI2c` is available only on
+ESP-IDF and Arduino ESP32 and uses the legacy ESP-IDF I2C driver; Arduino
+nRF52 uses `HardwareI2c`. Bus availability depends on the target platform.
+
+See the [bus interfaces](src/bus/bus_base.h) and
+[chip interfaces](src/chip/chip_base.h) for base class declarations.
 
 Typical lifecycle:
 
@@ -150,7 +146,7 @@ bus->Deinit();
 Chip drivers are built on top of bus drivers. Usually, you create a bus first and then pass that bus into the chip.
 
 ```cpp
-auto i2c_bus = std::make_shared<cpp_bus_driver::HardwareI2c1>(
+auto i2c_bus = std::make_shared<cpp_bus_driver::HardwareI2c>(
     sda, scl, I2C_NUM_0);
 
 auto chip = std::make_unique<cpp_bus_driver::Xl95x5>(i2c_bus);
@@ -185,6 +181,9 @@ Setting the level to `kNone` disables all logs. Call `Logger::ShouldLog()` befor
 
 > [!IMPORTANT]
 > v2 is a brand-new major version with many API and directory naming changes. The v1 branch will remain available for existing projects, but no new features will be added to it.
+
+Use current API names in new code. Legacy aliases and their removal policy
+are maintained in [compatibility_2_x.h](src/compatibility_2_x.h).
 
 When migrating from v1 to v2, pay special attention to the following changes:
 

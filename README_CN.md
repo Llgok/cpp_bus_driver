@@ -115,19 +115,15 @@ git submodule update --init --recursive
 
 ### 总线驱动
 
-总线驱动负责和 MCU 外设驱动层交互，常用对象包括：
+总线驱动负责和 MCU 外设交互，各平台可用的驱动见
+[统一入口头文件](src/cpp_bus_driver.h)。
 
-```cpp
-cpp_bus_driver::HardwareI2c1
-cpp_bus_driver::HardwareI2c2
-cpp_bus_driver::SoftwareI2c
-cpp_bus_driver::HardwareSpi
-cpp_bus_driver::HardwareQspi
-cpp_bus_driver::HardwareUart
-cpp_bus_driver::HardwareI2s
-cpp_bus_driver::HardwareSdio
-cpp_bus_driver::HardwareMipi
-```
+硬件 I2C 使用 `HardwareI2c`。`LegacyHardwareI2c` 仅在 ESP-IDF 和
+Arduino ESP32 平台提供，使用旧版 ESP-IDF I2C 驱动；Arduino nRF52 使用
+`HardwareI2c`。各总线的可用性取决于目标平台。
+
+基类声明见[总线接口](src/bus/bus_base.h)和
+[芯片接口](src/chip/chip_base.h)。
 
 典型生命周期：
 
@@ -146,7 +142,7 @@ bus->Deinit();
 芯片驱动建立在总线驱动之上。通常先创建 bus，再把 bus 传入 chip。
 
 ```cpp
-auto i2c_bus = std::make_shared<cpp_bus_driver::HardwareI2c1>(
+auto i2c_bus = std::make_shared<cpp_bus_driver::HardwareI2c>(
     sda, scl, I2C_NUM_0);
 
 auto chip = std::make_unique<cpp_bus_driver::Xl95x5>(i2c_bus);
@@ -181,6 +177,9 @@ const auto level = cpp_bus_driver::Logger::GetMinimumLogLevel();
 
 > [!IMPORTANT]
 > v2 是一个全新的主版本，包含大量 API 和目录命名调整。v1 分支会继续保留给旧项目使用，但后续不会再添加新功能。
+
+新代码应使用当前 API 名称。旧类型别名及移除计划统一维护在
+[compatibility_2_x.h](src/compatibility_2_x.h) 中。
 
 从 v1 迁移到 v2 时，建议重点检查下面这些变化：
 
