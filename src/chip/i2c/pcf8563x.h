@@ -1,8 +1,8 @@
 /*
  * @Description: PCF8563 系列实时时钟芯片驱动接口
  * @Author: LILYGO_L
- * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-08-03 16:11:19
+ * @Date: 2026-09-10 14:37:20
+ * @LastEditTime: 2026-09-10 14:50:55
  * @License: GPL 3.0
  */
 #pragma once
@@ -13,221 +13,243 @@
 #include "chip/chip_base.h"
 
 namespace cpp_bus_driver {
+
+// 多事务配置由调用方串行化；初始化和释放总线均不改变日历及中断配置。
 class Pcf8563x final : public I2cChipBase {
  public:
-  enum class Week {
-    kSunday = 0x00,
-    kMonday,
-    kTuesday,
-    kWednesday,
-    kThursday,
-    kFriday,
-    kSaturday,
+  enum class Week : uint8_t {
+    kSunday = 0,
+    kMonday = 1,
+    kTuesday = 2,
+    kWednesday = 3,
+    kThursday = 4,
+    kFriday = 5,
+    kSaturday = 6,
   };
 
-  enum class OutFreq {
-    kClockOff,
-    kClock1Hz,
-    kClock32Hz,
-    kClock1024Hz,
-    kClock32768Hz,
+  enum class ClockOutFrequency : uint8_t {
+    k32768Hz = 0,
+    k1024Hz = 1,
+    k32Hz = 2,
+    k1Hz = 3,
   };
 
-  enum class TimerFreq {
-    kClock4096Hz = 0,
-    kClock64Hz,
-    kClock1Hz,
-    kClock1DividedBy60Hz,
+  enum class TimerFrequency : uint8_t {
+    k4096Hz = 0,
+    k64Hz = 1,
+    k1Hz = 2,
+    k1PerMinute = 3,
   };
 
-  struct TimeAlarm {
-    struct {
-      uint8_t value = 0;        // 分钟报警值（0~59）
-      bool alarm_flag = false;  // 报警启用标志
-    } minute;
-
-    struct {
-      uint8_t value = 0;        // 小时报警值（0~23）
-      bool alarm_flag = false;  // 报警启用标志
-    } hour;
-    struct {
-      uint8_t value = 0;        // 天报警值（1~31）
-      bool alarm_flag = false;  // 报警启用标志
-    } day;
-
-    struct {
-      Week value = Week::kSunday;  // 周报警值，使用Week::配置
-      bool alarm_flag = false;     // 报警启用标志
-    } week;
+  enum class TimerInterruptMode : uint8_t {
+    kLevel = 0,
+    kPulse = 1,
   };
 
   struct Time {
-    uint8_t second = -1;
-    uint8_t minute = -1;
-    uint8_t hour = -1;
-    uint8_t day = -1;
-    Week week = Week::kSunday;
-    uint8_t month = -1;
-    uint8_t year = -1;
+    uint8_t second = 0;
+    uint8_t minute = 0;
+    uint8_t hour = 0;
+    uint8_t day = 1;
+    Week week = Week::kSaturday;
+    uint8_t month = 1;
+    uint8_t year = 0;
+    // 原始 C 位，年份 99 -> 00 时翻转；世纪含义由应用约定。
+    bool century = false;
   };
 
-  explicit Pcf8563x(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault,
-      int32_t rst = kPinNotConnected)
-      : I2cChipBase(bus, address), rst_(rst) {}
+  struct Alarm {
+    uint8_t minute = 0;
+    uint8_t hour = 0;
+    uint8_t day = 1;
+    Week week = Week::kSunday;
+    bool minute_enabled = false;
+    bool hour_enabled = false;
+    bool day_enabled = false;
+    bool week_enabled = false;
+  };
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  struct Status {
+    bool clock_stopped = false;
+    bool voltage_low = false;
+    bool alarm_flag = false;
+    bool timer_flag = false;
+    bool alarm_interrupt_enabled = false;
+    bool timer_interrupt_enabled = false;
+    TimerInterruptMode timer_interrupt_mode = TimerInterruptMode::kLevel;
+  };
+
+  struct ClockOutConfig {
+    bool enabled = false;
+    ClockOutFrequency frequency = ClockOutFrequency::k32768Hz;
+  };
+
+  struct TimerConfig {
+    bool enabled = false;
+    TimerFrequency frequency = TimerFrequency::k1Hz;
+    // 读取时为当前倒计数值；配置启动时应为 1~255。
+    uint8_t value = 0;
+  };
+
+  explicit Pcf8563x(std::shared_ptr<I2cBusBase> bus, int16_t address = 0x51)
+      : I2cChipBase(bus, address) {}
+
+  bool Init(int32_t freq_hz = 100000) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
-   * @brief 读取 PCF8563x 芯片标识。
-   * @return 芯片标识；读取失败返回 0xFF。
+   * @brief 读取控制状态及低电压标志
+   * @param status 接收状态，仅通信成功时更新
+   * @return 通信成功返回 true，否则返回 false
    */
-  uint8_t GetChipId();
+  bool GetStatus(Status& status);
 
   /**
-   * @brief 设置CLKOUT引脚输出频率
-   * @param freq_hz 时钟输出频率
-   * @return 设置成功返回 true，失败返回 false
+   * @brief 设置 STOP 位，控制日历计时
+   * @param enabled true 运行，false 停止
+   * @return 操作成功返回 true，否则返回 false
    */
-  bool SetClockFrequencyOutput(OutFreq freq_hz);
+  bool SetClockEnabled(bool enabled);
 
   /**
-   * @brief 设置时钟启动
-   * @param enalbe true 表示启动，false 表示停止
-   * @return 设置成功返回 true，失败返回 false
+   * @brief 连续读取日历寄存器，避免跨秒拼接
+   * @param time 接收日期时间，仅有效 BCD 和日期读取成功时更新
+   * @param voltage_low 接收 VL 位；true 时即使日期合法也不能保证时间可靠
+   * @return 通信和格式检查成功返回 true，否则返回 false
+   * @note 总线事务必须在一秒内完成。年份按芯片规则每四年闰年。
    */
-  bool SetClock(bool enalbe);
+  bool GetTime(Time& time, bool& voltage_low);
 
   /**
-   * @brief 检查时钟数据完整性
-   * @return [0]：不保证时钟信息的完整 [1]：保证时钟完整
+   * @brief 连续写入完整日期时间，同时清除 VL 位
+   * @param time 日期时间，year 为 0~99，century 为原始 C 位
+   * @return 写入成功返回 true；参数无效时不访问总线
+   * @note 不改变 STOP 状态；通信失败可能已有部分寄存器写入。
+   * 芯片不处理公历整百年例外，应用需处理 2100 年等年份。
    */
-  bool CheckClockIntegrityFlag();
+  bool SetTime(const Time& time);
 
   /**
-   * @brief 清除时钟数据完整性标志，设置0为时钟完整
-   * @return 操作成功返回 true，失败返回 false
+   * @brief 读取 CLKOUT 配置
+   * @param config 接收配置，仅操作成功时更新
+   * @return 操作成功返回 true，否则返回 false
    */
-  bool ClearClockIntegrityFlag();
-  uint8_t GetSecond();
-  uint8_t GetMinute();
-  uint8_t GetHour();
-  uint8_t GetDay();
-  uint8_t GetWeek();
-  uint8_t GetMonth();
-  uint8_t GetYear();
-  bool GetTime(Time& time);
-  bool SetSecond(uint8_t second);
-  bool SetMinute(uint8_t minute);
-  bool SetHour(uint8_t hour);
-  bool SetDay(uint8_t day);
-  bool SetWeek(Week week);
-  bool SetMonth(uint8_t month);
-  bool SetYear(uint8_t year);
-  bool SetTime(Time time);
-
+  bool GetClockOut(ClockOutConfig& config);
   /**
-   * @brief 停止定时器
-   * @return 操作成功返回 true，失败返回 false
+   * @brief 配置 CLKOUT 使能及频率
+   * @param config 时钟输出配置，非法频率不访问总线
+   * @return 操作成功返回 true，否则返回 false
+   */
+  bool SetClockOut(const ClockOutConfig& config);
+  /**
+   * @brief 读取倒计时配置及当前计数
+   * @param config 接收配置，仅操作成功时更新
+   * @return 操作成功返回 true，否则返回 false
+   */
+  bool GetTimer(TimerConfig& config);
+  /**
+   * @brief 停止旧倒计时、写入计数与频率，并按配置启动
+   * @param config 倒计时配置，启动时 value 不得为零
+   * @return 配置成功返回 true，否则返回 false
+   * @note 不改变 TIE、TI_TP 或 TF，失败时倒计时可能已停止。
+   */
+  bool SetTimer(const TimerConfig& config);
+  /**
+   * @brief 停止倒计时，保留频率、TF 及中断配置
+   * @return 操作成功返回 true，否则返回 false
    */
   bool StopTimer();
-
   /**
-   * @brief 开启定时器
-   * @param n_value 定时器值，与freq搭配使用（定时的值 （单位：秒） = n_value /
-   * freq（单位：赫兹））
-   * @param freq_hz 定时器时钟频率；频率越高，定时精度越高
-   * @return 操作成功返回 true，失败返回 false
+   * @brief 配置定时器中断
+   * @param enabled 是否启用 TIE
+   * @param mode TI_TP 对应的电平或脉冲模式
+   * @return 操作成功返回 true，否则返回 false
    */
-  bool RunTimer(uint8_t n_value, TimerFreq freq_hz);
-
+  bool SetTimerInterrupt(bool enabled, TimerInterruptMode mode);
   /**
-   * @brief 检查定时器标志和中断
-   * @return 操作成功返回 true，失败返回 false
-   */
-  bool CheckTimerFlag();
-
-  /**
-   * @brief 清除定时器标志和中断
-   * @return 操作成功返回 true，失败返回 false
+   * @brief 清除 TF，保留其他控制位和 AF
+   * @return 操作成功返回 true，否则返回 false
    */
   bool ClearTimerFlag();
-
   /**
-   * @brief 停止预定时间报警
-   * @return 操作成功返回 true，失败返回 false
+   * @brief 读取闹钟比较字段及字段使能
+   * @param alarm 接收配置，仅操作成功时更新；禁用字段返回默认值
+   * @return 操作成功返回 true，否则返回 false
    */
-  bool StopScheduledAlarm();
-
+  bool GetAlarm(Alarm& alarm);
   /**
-   * @brief 开启预定时间报警
-   * @param alarm 定时闹钟配置
-   * @return 操作成功返回 true，失败返回 false
+   * @brief 配置闹钟比较字段，全部禁用表示关闭比较
+   * @param alarm 仅对使能字段验证数值
+   * @return 配置成功返回 true，否则返回 false
+   * @note 配置期间暂时关闭 AIE，随后恢复；保留 AF、TF。
+   * 失败时可能已部分写入，调用方应重新配置。
    */
-  bool RunScheduledAlarm(TimeAlarm alarm);
-
+  bool SetAlarm(const Alarm& alarm);
   /**
-   * @brief 检查预定时间报警标志和中断
-   * @return 操作成功返回 true，失败返回 false
+   * @brief 设置 AIE，保留中断标志和定时器控制
+   * @param enabled 是否启用闹钟中断
+   * @return 操作成功返回 true，否则返回 false
    */
-  bool CheckScheduledAlarmFlag();
-
+  bool SetAlarmInterrupt(bool enabled);
   /**
-   * @brief 清除预定时间报警标志和中断
-   * @return 操作成功返回 true，失败返回 false
+   * @brief 清除 AF，保留其他控制位和 TF
+   * @return 操作成功返回 true，否则返回 false
    */
-  bool ClearScheduledAlarmFlag();
+  bool ClearAlarmFlag();
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
-  // 芯片标识读取失败时返回的无效值。
-  static constexpr uint8_t kInvalidChipId = 0xFF;
-
-  enum class Register {
-    kRoChipId = 0x00,
-    kRwControlStatus1 = 0x00,
-    kRwControlStatus2 = 0x01,
-    kRwVlSeconds = 0x02,
-    kRwMinutes = 0x03,
-    kRwHours = 0x04,
-    kRwDays = 0x05,
-    kRwWeekdays = 0x06,
-    kRwCenturyMonths = 0x07,
-    kRwYears = 0x08,
-    kRwMinuteAlarm = 0x09,
-    kRwHourAlarm = 0x0A,
-    kRwDayAlarm = 0x0B,
-    kRwWeekdayAlarm = 0x0C,
-    kRwClkoutControl = 0x0D,
-    kRwTimerControl = 0x0E,
-    kRwTimer = 0x0F,
+  // PCF8563 寄存器地址。
+  enum class Register : uint8_t {
+    kControlStatus1 = 0x00,
+    kControlStatus2 = 0x01,
+    kVlSeconds = 0x02,
+    kMinutes = 0x03,
+    kHours = 0x04,
+    kDays = 0x05,
+    kWeekdays = 0x06,
+    kCenturyMonths = 0x07,
+    kYears = 0x08,
+    kMinuteAlarm = 0x09,
+    kHourAlarm = 0x0A,
+    kDayAlarm = 0x0B,
+    kWeekdayAlarm = 0x0C,
+    kClkoutControl = 0x0D,
+    kTimerControl = 0x0E,
+    kTimer = 0x0F,
   };
 
-  static constexpr uint8_t kDeviceI2cAddressDefault = 0x51;
-  static constexpr uint8_t kInitSequence[] = {
-      static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Register::kRwClkoutControl), 0B00000000};
-
   /**
-   * @brief 读取寄存器，并记录访问失败信息
-   * @param reg 寄存器地址
-   * @param data 接收缓冲区
-   * @param length 读取字节数
-   * @return 读取成功返回true，否则返回false
+   * @brief 更新状态控制位，并仅清除指定事件标志
+   * @param mask 待更新的 TIE、AIE、TI_TP 位掩码
+   * @param value 控制位的新值
+   * @param clear_flags 待清除的 AF、TF 位掩码，零表示全部保留
+   * @return 操作成功返回 true，否则返回 false
    */
-  bool ReadRegister(uint8_t reg, uint8_t* data, size_t length = 1);
-
+  bool UpdateControlStatus2(uint8_t mask, uint8_t value,
+      uint8_t clear_flags = 0);
   /**
-   * @brief 写入寄存器，并记录访问失败信息
-   * @param reg 寄存器地址
-   * @param value 待写入数据
-   * @return 写入成功返回true，否则返回false
+   * @brief 连续读取寄存器并集中记录访问错误
+   * @param reg 起始寄存器地址
+   * @param data 接收缓冲区，通信失败时可能已部分更新
+   * @param length 读取长度
+   * @return 读取成功返回 true，否则返回 false
    */
-  bool WriteRegister(uint8_t reg, uint8_t value);
-
-  int32_t rst_;
+  bool ReadRegister(Register reg, uint8_t* data, size_t length = 1);
+  /**
+   * @brief 写入单个寄存器
+   * @param reg 寄存器地址
+   * @param value 写入值
+   * @return 写入成功返回 true，否则返回 false
+   */
+  bool WriteRegister(Register reg, uint8_t value);
+  /**
+   * @brief 连续写入寄存器并集中记录访问错误
+   * @param reg 起始寄存器地址
+   * @param data 待写入数据
+   * @param length 写入长度
+   * @return 写入成功返回 true，否则返回 false
+   */
+  bool WriteRegister(Register reg, const uint8_t* data, size_t length);
 };
+
 }  // namespace cpp_bus_driver
