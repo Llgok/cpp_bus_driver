@@ -50,6 +50,18 @@ bool Axp517::Init(int32_t freq_hz) {
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
              "AXP517 chip ID: 0x%02X, extended ID: 0x%02X\n",
              chip_id.chip_id, chip_id.extended_id);
+  if (!SetWatchdog(false)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+               "AXP517 watchdog disable failed\n");
+    I2cChipBase::Deinit(false);
+    return false;
+  }
+  if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+               "AXP517 initialization sequence failed\n");
+    I2cChipBase::Deinit(false);
+    return false;
+  }
   return true;
 }
 
@@ -1040,7 +1052,7 @@ bool Axp517::GetTcpcIdentity(TcpcIdentity& identity) {
   if (!ReadLittleEndian16(Register::kTcpcVendorId, result.vendor_id) ||
       !ReadLittleEndian16(Register::kTcpcProductId, result.product_id) ||
       !ReadLittleEndian16(Register::kTcpcBcdDev, result.device_revision) ||
-      !ReadLittleEndian16(Register::kTcpcTcRev, result.typec_revision) ||
+      !ReadLittleEndian16(Register::kTcpcTcRev, result.type_c_revision) ||
       !ReadLittleEndian16(Register::kTcpcPdRev, result.pd_revision) ||
       !ReadLittleEndian16(Register::kTcpcPdIntRev, result.interface_revision)) {
     return false;
@@ -1049,13 +1061,13 @@ bool Axp517::GetTcpcIdentity(TcpcIdentity& identity) {
   return true;
 }
 
-bool Axp517::InitTypec(bool enable_pd_irqs, bool self_powered) {
+bool Axp517::InitTypeC(bool enable_pd_irqs, bool self_powered) {
   uint16_t vendor;
   Status status;
   if (!ReadLittleEndian16(Register::kTcpcVendorId, vendor) ||
       vendor != kVendorId ||
-      !GetStatus(status) || !status.system_on || !SetTypecEnable(true) ||
-      !ResetTypec()) return false;
+      !GetStatus(status) || !status.system_on || !SetTypeCEnable(true) ||
+      !ResetTypeC()) return false;
   self_powered_ = self_powered;
   bool ready = false;
   for (int i = 0; i <= 200; ++i) {
@@ -1078,7 +1090,7 @@ bool Axp517::InitTypec(bool enable_pd_irqs, bool self_powered) {
   return SetPdAlertMask(enable_pd_irqs ? 0x267F : 0);
 }
 
-bool Axp517::SetTypecEnable(bool enable) {
+bool Axp517::SetTypeCEnable(bool enable) {
   if (!UpdateRegisterBits(Register::kClkEn, 0x08, enable ? 0x08 : 0)) {
     return false;
   }
@@ -1086,7 +1098,7 @@ bool Axp517::SetTypecEnable(bool enable) {
   return true;
 }
 
-bool Axp517::ResetTypec() {
+bool Axp517::ResetTypeC() {
   if (!UpdateRegisterBits(Register::kCcGeneralControl, 0x20, 0x20)) {
     return false;
   }
@@ -1120,13 +1132,13 @@ bool Axp517::SetCc(CcTermination termination, RpCurrent current) {
              : SetCcTerminations(termination, CcTermination::kOpen, current);
 }
 
-bool Axp517::SetTypecRole(TypecRole role, RpCurrent current) {
+bool Axp517::SetTypeCRole(TypeCRole role, RpCurrent current) {
   if (static_cast<uint8_t>(role) > 2) return false;
-  const bool source = role == TypecRole::kSource;
+  const bool source = role == TypeCRole::kSource;
   const CcTermination termination =
       source ? CcTermination::kRp : CcTermination::kRd;
   if (!SetCcTerminations(termination, termination, current,
-                         role == TypecRole::kDualRole) ||
+                         role == TypeCRole::kDualRole) ||
       !SetPdMessageHeader(source, source)) return false;
   return SendTcpcCommand(TcpcCommand::kLookForConnection);
 }
@@ -1412,7 +1424,7 @@ bool Axp517::GetTcpcVbusVoltage(uint16_t& voltage_mv) {
   return true;
 }
 
-bool Axp517::EnterTypecLowPower() {
+bool Axp517::EnterTypeCLowPower() {
   CcStatus status;
   if (!GetCcStatus(status) || status.cc1 != CcState::kOpen ||
       status.cc2 != CcState::kOpen) {
@@ -1423,20 +1435,20 @@ bool Axp517::EnterTypecLowPower() {
          UpdateRegisterBits(Register::kAwakeEn, 0x01, 0x01);
 }
 
-bool Axp517::WakeTypec() {
+bool Axp517::WakeTypeC() {
   return SendTcpcCommand(TcpcCommand::kWakeI2c) &&
          UpdateRegisterBits(Register::kAwakeEn, 0x01, 0) &&
-         SetTypecEnable(true);
+         SetTypeCEnable(true);
 }
 
-bool Axp517::NotifyTypecCharging(bool enable) {
-  if (enable && !SetTypecEnable(true)) return false;
+bool Axp517::NotifyTypeCCharging(bool enable) {
+  if (enable && !SetTypeCEnable(true)) return false;
   if (!TransmitPdMessage(PdTransmitType::kHardReset, nullptr,
                          PdRevision::kRev30)) {
     return false;
   }
-  if (!enable) return SetTypecEnable(false);
-  return ResetTypec();
+  if (!enable) return SetTypeCEnable(false);
+  return ResetTypeC();
 }
 
 bool Axp517::ReadRegister(uint8_t reg, uint8_t* data, size_t length) {

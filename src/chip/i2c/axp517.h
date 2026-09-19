@@ -147,7 +147,7 @@ class Axp517 final : public I2cChipBase {
     kRp3000Ma,
   };
 
-  enum class TypecRole : uint8_t {
+  enum class TypeCRole : uint8_t {
     kSink,
     kSource,
     kDualRole,
@@ -282,7 +282,7 @@ class Axp517 final : public I2cChipBase {
     uint16_t vendor_id = 0;
     uint16_t product_id = 0;
     uint16_t device_revision = 0;
-    uint16_t typec_revision = 0;
+    uint16_t type_c_revision = 0;
     uint16_t pd_revision = 0;
     uint16_t interface_revision = 0;
   };
@@ -1103,20 +1103,20 @@ class Axp517 final : public I2cChipBase {
    * @param self_powered 是否由本芯片供电。
    * @return 执行成功返回 true，失败返回 false。
    */
-  bool InitTypec(bool enable_pd_irqs = false, bool self_powered = true);
+  bool InitTypeC(bool enable_pd_irqs = false, bool self_powered = true);
 
   /**
    * @brief 设置 CC 检测时钟，开启后等待 20 ms。
    * @param enable 是否使能功能。
    * @return 执行成功返回 true，失败返回 false。
    */
-  bool SetTypecEnable(bool enable);
+  bool SetTypeCEnable(bool enable);
 
   /**
    * @brief 软件复位 TCPC，调用后需重新初始化角色和事件掩码。
    * @return 执行成功返回 true，失败返回 false。
    */
-  bool ResetTypec();
+  bool ResetTypeC();
 
   /**
    * @brief 配置 CC1/CC2 端接、Rp 电流及 DRP 开关。
@@ -1145,7 +1145,7 @@ class Axp517 final : public I2cChipBase {
    * @param current Rp 电流。
    * @return 执行成功返回 true，失败返回 false。
    */
-  bool SetTypecRole(TypecRole role, RpCurrent current = RpCurrent::kDefault);
+  bool SetTypeCRole(TypeCRole role, RpCurrent current = RpCurrent::kDefault);
 
   /**
    * @brief 分别解码 CC1/CC2 的 Rp/Rd/Ra 状态和附件连接类型。
@@ -1322,20 +1322,20 @@ class Axp517 final : public I2cChipBase {
    * @brief 设置软件低功耗；仅在 CC 断开时进入。
    * @return 执行成功返回 true，失败返回 false。
    */
-  bool EnterTypecLowPower();
+  bool EnterTypeCLowPower();
 
   /**
    * @brief 唤醒 I2C/CC 模块。
    * @return 执行成功返回 true，失败返回 false。
    */
-  bool WakeTypec();
+  bool WakeTypeC();
 
   /**
    * @brief 按官方充电通知流程发送硬复位并关闭/恢复 CC 时钟。
    * @param enable 是否使能功能。
    * @return 执行成功返回 true，失败返回 false。
    */
-  bool NotifyTypecCharging(bool enable);
+  bool NotifyTypeCCharging(bool enable);
 
  private:
   // 保留官方寄存器语义；TCPC 多字节寄存器为小端，ADC 和 Gauge 为大端。
@@ -1479,6 +1479,18 @@ class Axp517 final : public I2cChipBase {
 
   static constexpr int32_t kDefaultFrequencyHz = 100000;
   static constexpr uint8_t kDefaultAddress = 0x34;
+
+  // 芯片上电后的默认充电参数初始化序列。
+  static constexpr uint8_t kInitSequence[] = {
+      // 输入电流限制设置为最大值。
+      static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
+      static_cast<uint8_t>(Register::kIinLim), 0xFC,
+      // 输入电压限制设置为 4.7 V。
+      static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
+      static_cast<uint8_t>(Register::kVindpmCfg), 0x0C,
+      // 充电电流设置为 512 mA。
+      static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
+      static_cast<uint8_t>(Register::kIccCfg), 0x08};
   /**
    * @brief 写入 COMM_CFG 的可写配置位。
    * @param value 用于接收寄存器值。
