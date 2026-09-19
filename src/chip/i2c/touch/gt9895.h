@@ -2,7 +2,7 @@
  * @Description: GT9895 电容触摸控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2025-07-09 09:15:31
- * @LastEditTime: 2026-09-02 16:18:22
+ * @LastEditTime: 2026-09-19 10:45:46
  * @License: GPL 3.0
  */
 #pragma once
@@ -202,9 +202,6 @@ class Gt9895 final : public I2cChipBase {
   bool WakeUp();
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
   // GT9895 固件实时命令字。
   enum class Command : uint8_t {
     kEnterLandscapeEdgeRejection = 0x17,
@@ -224,49 +221,8 @@ class Gt9895 final : public I2cChipBase {
     kGameMode = 0xC2,
   };
 
-  static constexpr uint32_t kFirmwareVersionAddress = 0x00010014;
-  static constexpr uint32_t kRuntimeInfoAddress = 0x00010070;
-  static constexpr uint16_t kExpectedProductId = 0x9895;
-  static constexpr size_t kFirmwareInfoSize = 28;
-  static constexpr size_t kMaximumRuntimeInfoSize = 1024;
-  static constexpr size_t kRuntimeInfoVersionSize = 16;
-  static constexpr size_t kRuntimeInfoFeatureSize = 10;
-  static constexpr size_t kRuntimeInfoFixedParameterSize = 4;
-  static constexpr size_t kRuntimeInfoVariableArrayCount = 5;
-  static constexpr size_t kRuntimeInfoMiscMinimumSize = 48;
-  static constexpr size_t kEventHeaderSize = 8;
-  static constexpr size_t kBytesPerContact = 8;
-  static constexpr size_t kChecksumSize = 2;
-  static constexpr size_t kPrefetchedContactCount = 2;
-  static constexpr size_t kPrimaryReportSize =
-      kEventHeaderSize + kBytesPerContact + kChecksumSize;
-  static constexpr size_t kInitialReportSize =
-      kEventHeaderSize + kPrefetchedContactCount * kBytesPerContact +
-      kChecksumSize;
-  static constexpr size_t kMaximumReportSize =
-      kEventHeaderSize + kMaxTouchContactCount * kBytesPerContact +
-      kChecksumSize;
-  static constexpr size_t kReadAttemptCount = 2;
-  static constexpr uint32_t kReadRetryDelayMs = 1;
-  static constexpr size_t kChipInfoReadAttemptCount = 2;
-  static constexpr uint32_t kChipInfoReadRetryDelayMs = 5;
-  static constexpr int64_t kDebugReportIntervalMs = 1000;
-  static constexpr int64_t kFailureReportIntervalMs = 1000;
-  static constexpr uint8_t kTouchEventMask = 0x80;
-  static constexpr uint8_t kGestureEventMask = 0x20;
-  static constexpr uint8_t kStylusHoverType = 0x01;
-  static constexpr uint8_t kStylusType = 0x03;
-  static constexpr size_t kMaximumCommandDataSize = 16;
-  static constexpr size_t kMaximumCommandPacketSize =
-      4 + kMaximumCommandDataSize + kChecksumSize;
-  static constexpr size_t kCommandRetryCount = 6;
-  static constexpr uint32_t kCommandBusyDelayMs = 1;
-  static constexpr uint32_t kCommandOverflowDelayMs = 10;
-  static constexpr uint32_t kCommandAcceptedDelayMs = 40;
-  static constexpr uint8_t kCommandAckBusy = 0x02;
-  static constexpr uint8_t kCommandAckBufferOverflow = 0x03;
-  static constexpr uint8_t kCommandAckChecksumError = 0x04;
-  static constexpr uint8_t kCommandAckAccepted = 0x80;
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
+
   /**
    * @brief 执行驱动可控的硬件复位时序
    * @return 无需控制复位引脚或复位成功返回 true，操作失败返回 false

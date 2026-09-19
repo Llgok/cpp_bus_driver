@@ -35,6 +35,10 @@ constexpr uint8_t kSgm41562BSystemVoltageReset = 0x37;
 constexpr uint8_t kSgm41562SaChargeVoltageReset = 0x8D;
 constexpr uint8_t kSgm41562SaSystemVoltageReset = 0x73;
 constexpr uint8_t kSafetyTimerHours[] = {3, 5, 8, 12};
+constexpr uint8_t kChipIdSgm41562BAndSa = 0x00;
+constexpr uint8_t kChipIdSgm41562A = 0x02;
+constexpr uint8_t kChipIdSgm41562 = 0x04;
+constexpr uint8_t kChipIdSgm41562S = 0x09;
 
 /**
  * @brief 检查数值是否位于寄存器范围内并符合步进

@@ -2,7 +2,7 @@
  * @Description: GT9895 电容触摸控制器驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-07-09 09:15:31
- * @LastEditTime: 2026-09-02 16:18:20
+ * @LastEditTime: 2026-09-19 13:59:35
  * @License: GPL 3.0
  */
 #include "chip/i2c/touch/gt9895.h"
@@ -15,6 +15,48 @@
 namespace cpp_bus_driver {
 
 namespace {
+constexpr uint32_t kFirmwareVersionAddress = 0x00010014;
+constexpr uint32_t kRuntimeInfoAddress = 0x00010070;
+constexpr uint16_t kExpectedProductId = 0x9895;
+constexpr size_t kFirmwareInfoSize = 28;
+constexpr size_t kMaximumRuntimeInfoSize = 1024;
+constexpr size_t kRuntimeInfoVersionSize = 16;
+constexpr size_t kRuntimeInfoFeatureSize = 10;
+constexpr size_t kRuntimeInfoFixedParameterSize = 4;
+constexpr size_t kRuntimeInfoVariableArrayCount = 5;
+constexpr size_t kRuntimeInfoMiscMinimumSize = 48;
+constexpr size_t kEventHeaderSize = 8;
+constexpr size_t kBytesPerContact = 8;
+constexpr size_t kChecksumSize = 2;
+constexpr size_t kPrefetchedContactCount = 2;
+constexpr size_t kPrimaryReportSize =
+    kEventHeaderSize + kBytesPerContact + kChecksumSize;
+constexpr size_t kInitialReportSize =
+    kEventHeaderSize + kPrefetchedContactCount * kBytesPerContact +
+    kChecksumSize;
+constexpr size_t kMaximumReportSize =
+    kEventHeaderSize + kMaxTouchContactCount * kBytesPerContact + kChecksumSize;
+constexpr size_t kReadAttemptCount = 2;
+constexpr uint32_t kReadRetryDelayMs = 1;
+constexpr size_t kChipInfoReadAttemptCount = 2;
+constexpr uint32_t kChipInfoReadRetryDelayMs = 5;
+constexpr int64_t kDebugReportIntervalMs = 1000;
+constexpr int64_t kFailureReportIntervalMs = 1000;
+constexpr uint8_t kTouchEventMask = 0x80;
+constexpr uint8_t kGestureEventMask = 0x20;
+constexpr uint8_t kStylusHoverType = 0x01;
+constexpr uint8_t kStylusType = 0x03;
+constexpr size_t kMaximumCommandDataSize = 16;
+constexpr size_t kMaximumCommandPacketSize =
+    4 + kMaximumCommandDataSize + kChecksumSize;
+constexpr size_t kCommandRetryCount = 6;
+constexpr uint32_t kCommandBusyDelayMs = 1;
+constexpr uint32_t kCommandOverflowDelayMs = 10;
+constexpr uint32_t kCommandAcceptedDelayMs = 40;
+constexpr uint8_t kCommandAckBusy = 0x02;
+constexpr uint8_t kCommandAckBufferOverflow = 0x03;
+constexpr uint8_t kCommandAckChecksumError = 0x04;
+constexpr uint8_t kCommandAckAccepted = 0x80;
 
 uint16_t ReadLittleEndian16(const uint8_t* data) {
   return static_cast<uint16_t>(data[0]) | (static_cast<uint16_t>(data[1]) << 8);
@@ -62,8 +104,7 @@ bool Gt9895::Init(int32_t freq_hz) {
     return false;
   }
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     I2cChipBase::Deinit(false);
     return false;
   }

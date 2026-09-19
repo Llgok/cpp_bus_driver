@@ -15,6 +15,14 @@
 
 namespace cpp_bus_driver {
 namespace {
+constexpr uint16_t kMaxTransmitBlockBufferSize = 512;
+constexpr uint8_t kTxBufferOffset = 16;  // 发送缓冲区偏移量
+constexpr uint16_t kTxBufferMask = 0xFFF;
+constexpr uint32_t kRxBufferMask = 0xFFFFF;
+constexpr uint32_t kRxBufferMax = 0x100000;
+constexpr uint32_t kInvalidInterruptFlags = static_cast<uint32_t>(-1);
+constexpr uint8_t kTransmitTimeoutCount = 100;
+constexpr uint8_t kConnectErrorCount = 5;
 
 /**
  * @brief 将字节长度向上对齐到4字节边界

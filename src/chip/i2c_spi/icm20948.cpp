@@ -2,7 +2,7 @@
  * @Description: ICM20948 九轴惯性传感器 I2C/SPI 共用驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-31 15:20:00
- * @LastEditTime: 2026-09-02 16:15:53
+ * @LastEditTime: 2026-09-19 13:54:41
  * @License: GPL 3.0
  */
 #include "chip/i2c_spi/icm20948.h"
@@ -14,6 +14,25 @@
 #include <new>
 
 namespace cpp_bus_driver {
+
+namespace {
+constexpr uint8_t kChipId = 0xEA;                    // WHO_AM_I 期望值。
+constexpr uint8_t kAk09916Address = 0x0C;            // 内部磁力计地址。
+constexpr uint8_t kAk09916ChipId = 0x09;             // WIA2 期望值。
+constexpr int32_t kDefaultIcmI2cFreqHz = 400000;     // I2C 上限。
+constexpr int32_t kDefaultIcmSpiFreqHz = 7000000;    // SPI 上限。
+constexpr uint32_t kResetDelayMs = 100;              // 主芯片复位等待。
+constexpr uint32_t kGyroscopeStartDelayMs = 50;      // 陀螺仪启动等待。
+constexpr uint32_t kMagnetometerResetDelayMs = 100;  // 磁力计复位等待。
+constexpr uint32_t kMagnetometerModeDelayMs = 10;    // 模式切换等待。
+constexpr uint32_t kMinimumAuxiliaryTransactionTimeoutMs =
+    100;  // 辅助 I2C 单次传输最短超时。
+constexpr uint32_t kAuxiliaryTransactionTimeoutMarginMs =
+    50;  // 辅助 I2C 单次传输调度余量。
+constexpr float kTemperatureSensitivity = 333.87f;   // 温度灵敏度，LSB/°C。
+constexpr float kTemperatureOffsetCelsius = 21.0f;   // 温度换算偏移，°C。
+constexpr float kMagnetometerSensitivityUt = 0.15f;  // AK09916 灵敏度，uT/LSB。
+}  // namespace
 
 bool Icm20948::Init(int32_t freq_hz) { return Init(Config{}, freq_hz); }
 

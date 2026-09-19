@@ -65,9 +65,6 @@ class Ft3x68 final : public I2cChipBase {
   bool GetMultipleTouchPoint(TouchPoint& tp);
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
   enum class Register {
     // 芯片标识映射：0x00 为 kFt6456，0x04 为 kFt3268，
     // 0x01 为 kFt3067，0x05 为 kFt3368，0x02 为 kFt3068，0x03 为 kFt3168。
@@ -76,10 +73,8 @@ class Ft3x68 final : public I2cChipBase {
     kRoP1Xh = 0x03,             // 第1点的X坐标高4位
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x38;
-  static constexpr uint8_t kChipId = 0x03;
-  static constexpr uint8_t kMaxTouchFingerCount = 2;
-  static constexpr uint8_t kSingleTouchPointDataSize = 6;
 
   /**
    * @brief 读取寄存器，并记录访问失败信息

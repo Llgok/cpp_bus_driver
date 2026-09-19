@@ -14,6 +14,13 @@
 #include <new>
 
 namespace cpp_bus_driver {
+namespace {
+constexpr uint16_t kChipId = 0x0220;
+constexpr uint16_t kUnsealKey1 = 0x0414;
+constexpr uint16_t kUnsealKey2 = 0x3672;
+constexpr uint16_t kFullAccessKey = 0xFFFF;
+}  // namespace
+
 bool Bq27220::Init(int32_t freq_hz) {
   if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,

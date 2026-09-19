@@ -392,26 +392,6 @@ class Icm20948 final : public DriverBase {
   };
 
   static constexpr int16_t kDeviceI2cAddressDefault = 0x68;  // AD0=0。
-  static constexpr uint8_t kChipId = 0xEA;                  // WHO_AM_I 期望值。
-  static constexpr uint8_t kAk09916Address = 0x0C;          // 内部磁力计地址。
-  static constexpr uint8_t kAk09916ChipId = 0x09;           // WIA2 期望值。
-  static constexpr int32_t kDefaultIcmI2cFreqHz = 400000;   // I2C 上限。
-  static constexpr int32_t kDefaultIcmSpiFreqHz = 7000000;  // SPI 上限。
-  static constexpr uint32_t kResetDelayMs = 100;            // 主芯片复位等待。
-  static constexpr uint32_t kGyroscopeStartDelayMs = 50;    // 陀螺仪启动等待。
-  static constexpr uint32_t kMagnetometerResetDelayMs =
-      100;                                                  // 磁力计复位等待。
-  static constexpr uint32_t kMagnetometerModeDelayMs = 10;  // 模式切换等待。
-  static constexpr uint32_t kMinimumAuxiliaryTransactionTimeoutMs =
-      100;  // 辅助 I2C 单次传输最短超时。
-  static constexpr uint32_t kAuxiliaryTransactionTimeoutMarginMs =
-      50;  // 辅助 I2C 单次传输调度余量。
-  static constexpr float kTemperatureSensitivity =
-      333.87f;  // 温度灵敏度，LSB/°C。
-  static constexpr float kTemperatureOffsetCelsius =
-      21.0f;  // 温度换算偏移，°C。
-  static constexpr float kMagnetometerSensitivityUt =
-      0.15f;  // AK09916 灵敏度，uT/LSB。
 
   /**
    * @brief 初始化构造函数传入的 I2C 或 SPI 总线

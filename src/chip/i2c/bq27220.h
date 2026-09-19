@@ -2,7 +2,7 @@
  * @Description: BQ27220 单节电池 CEDV 电量计驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-08-03 16:11:05
+ * @LastEditTime: 2026-09-19 10:56:37
  * @License: GPL 3.0
  */
 #pragma once
@@ -610,9 +610,6 @@ class Bq27220 final : public I2cChipBase {
       const CedvProfile& profile, const GaugingConfig& config);
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
   enum class StandardCommand : uint8_t {
     kControl = 0x00,
     kAtRate = 0x02,
@@ -652,11 +649,8 @@ class Bq27220 final : public I2cChipBase {
     kRawInternalTemperature = 0x7E,
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x55;
-  static constexpr uint16_t kChipId = 0x0220;
-  static constexpr uint16_t kUnsealKey1 = 0x0414;
-  static constexpr uint16_t kUnsealKey2 = 0x3672;
-  static constexpr uint16_t kFullAccessKey = 0xFFFF;
 
   /**
    * @brief 读取寄存器，并记录访问失败信息

@@ -2,7 +2,7 @@
  * @Description: HI8561 电容触摸控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-09-02 16:18:26
+ * @LastEditTime: 2026-09-19 10:53:38
  * @License: GPL 3.0
  */
 #pragma once
@@ -148,9 +148,6 @@ class Hi8561Touch final : public I2cChipBase {
   bool GetFrequencyBand(uint8_t* frequency_band);
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
   // 动态内存区的地址和长度。
   struct SectionInfo {
     uint32_t address = 0;
@@ -164,43 +161,8 @@ class Hi8561Touch final : public I2cChipBase {
     SectionInfo coordinate_report;
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x68;
-  static constexpr uint32_t kEramAddress = 0x20011000;
-  static constexpr uint32_t kEramSize = 4 * 1024;
-  static constexpr uint16_t kSectionReadyValue = 0xA55A;
-  static constexpr size_t kMaxDsramSectionCount = 25;
-  static constexpr size_t kMaxEsramSectionCount = 10;
-  static constexpr uint32_t kDsramSectionTableAddress = kEramAddress + 4;
-  static constexpr uint32_t kEsramCountAddress =
-      kDsramSectionTableAddress + kMaxDsramSectionCount * 8;
-  static constexpr uint32_t kEsramSectionTableAddress = kEsramCountAddress + 4;
-  static constexpr size_t kDsramHostSectionIndex = 3;
-  static constexpr size_t kDsramDebugSectionIndex = 4;
-  static constexpr size_t kDsramFirmwareConfigSectionIndex = 1;
-  static constexpr size_t kEsramCoordinateSectionIndex = 1;
-  static constexpr size_t kFirmwareConfigSize = 6;
-  static constexpr size_t kFirmwareVersionOffset = 12;
-  static constexpr size_t kFirmwareVersionSize = 8;
-  static constexpr size_t kUsbStateOffset = 32;
-  static constexpr size_t kGestureWakeOffset = 34;
-  static constexpr size_t kHighSensitivityOffset = 36;
-  static constexpr size_t kRotationBorderOffset = 38;
-  static constexpr size_t kFrequencyBandOffset = 40;
-  static constexpr size_t kVirtualProximityOffset = 44;
-  static constexpr size_t kPanelInfoOffset = 56;
-  static constexpr size_t kEarphoneStateOffset = 58;
-  static constexpr size_t kRuntimeFieldSize = 2;
-  static constexpr size_t kTouchCoordinateOffset = 3;
-  static constexpr size_t kTouchBytesPerContact = 5;
-  static constexpr size_t kPrimaryReportSize =
-      kTouchCoordinateOffset + kTouchBytesPerContact;
-  static constexpr size_t kTouchStateOffset =
-      kTouchCoordinateOffset + kMaxTouchContactCount * kTouchBytesPerContact;
-  // 仅读取公开的触点和状态字段，不假设不同固件私有尾部的校验布局。
-  static constexpr size_t kTouchReportReadSize =
-      kTouchStateOffset + kTouchStateSize;
-  // 触摸调试报告的最小输出间隔。
-  static constexpr int64_t kDebugReportIntervalMs = 1000;
 
   /**
    * @brief 按限频策略输出完整触摸报告调试信息

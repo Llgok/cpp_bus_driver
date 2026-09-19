@@ -2,7 +2,7 @@
  * @Description: PCF8563 系列实时时钟芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-09-10 14:37:20
- * @LastEditTime: 2026-09-10 14:50:55
+ * @LastEditTime: 2026-09-19 10:57:42
  * @License: GPL 3.0
  */
 #pragma once
@@ -94,7 +94,7 @@ class Pcf8563x final : public I2cChipBase {
   explicit Pcf8563x(std::shared_ptr<I2cBusBase> bus, int16_t address = 0x51)
       : I2cChipBase(bus, address) {}
 
-  bool Init(int32_t freq_hz = 100000) override;
+  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -217,6 +217,8 @@ class Pcf8563x final : public I2cChipBase {
     kTimerControl = 0x0E,
     kTimer = 0x0F,
   };
+
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
 
   /**
    * @brief 更新状态控制位，并仅清除指定事件标志

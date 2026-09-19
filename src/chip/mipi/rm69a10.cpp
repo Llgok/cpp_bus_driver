@@ -8,6 +8,10 @@
 #include "chip/mipi/rm69a10.h"
 
 namespace cpp_bus_driver {
+namespace {
+constexpr uint8_t kChipId = 0x01;
+}  // namespace
+
 bool Rm69a10::Init(float freq_mhz, float lane_bit_rate_mbps) {
   if (rst_ != kPinNotConnected) {
     bool result = true;

@@ -10,6 +10,10 @@
 #include <cmath>
 
 namespace cpp_bus_driver {
+namespace {
+constexpr uint16_t kChipId = 0x6211;
+}  // namespace
+
 bool Icn6211::Init(int32_t freq_hz) {
   if (rst_ != kPinNotConnected) {
     bool result = true;

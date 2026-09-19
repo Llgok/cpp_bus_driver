@@ -121,9 +121,6 @@ class Sh8601 final : public QspiChipBase {
   bool SetColorFormat(ColorFormat format);
 
  private:
-  // 默认 QSPI 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 10000000;
-
   // QSPI 命令事务操作码。
   enum class CommandOpcode {
     kWrite = 0x02,
@@ -157,6 +154,7 @@ class Sh8601 final : public QspiChipBase {
     kWoSetColorEnhance = 0x005800,
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 10000000;
   static constexpr uint32_t kInitSequence[] = {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24),
       static_cast<uint8_t>(CommandOpcode::kWrite),

@@ -2,7 +2,7 @@
  * @Description: AW21009 九通道 LED 驱动芯片接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-09-02 16:15:13
+ * @LastEditTime: 2026-09-19 10:55:43
  * @License: GPL 3.0
  */
 #pragma once
@@ -563,20 +563,7 @@ class Aw21009 final : public I2cChipBase {
    */
   bool GetPatternStatus(PatternStatus* status);
 
-  static constexpr uint8_t kDeviceI2cAddress1 = 0x20;
-  static constexpr uint8_t kDeviceI2cAddress2 = 0x21;
-  static constexpr uint8_t kDeviceI2cAddress3 = 0x24;
-  static constexpr uint8_t kDeviceI2cAddress4 = 0x25;
-  static constexpr uint8_t kDeviceI2cBroadcastAddress = 0x1C;
-  static constexpr uint8_t kDeviceI2cAddressDefault = kDeviceI2cAddress1;
-  static constexpr uint8_t kLedCount = 9;
-  static constexpr uint16_t kBrightnessMax = 0x0FFF;
-
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
-  // 寄存器地址表和仅供内部实现使用的辅助函数放在private区。
   enum class Register : uint8_t {
     kGlobalControl = 0x20,
     kBrightnessStart = 0x21,
@@ -607,7 +594,13 @@ class Aw21009 final : public I2cChipBase {
     kGroupConfig = 0x8B,
   };
 
-  static constexpr uint8_t kChipId = 0x12;
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
+  static constexpr uint8_t kDeviceI2cAddress1 = 0x20;
+  static constexpr uint8_t kDeviceI2cAddress2 = 0x21;
+  static constexpr uint8_t kDeviceI2cAddress3 = 0x24;
+  static constexpr uint8_t kDeviceI2cAddress4 = 0x25;
+  static constexpr uint8_t kDeviceI2cBroadcastAddress = 0x1C;
+  static constexpr uint8_t kDeviceI2cAddressDefault = kDeviceI2cAddress1;
 
   /**
    * @brief 将寄存器枚举转换为寄存器地址。

@@ -57,9 +57,6 @@ class Sgm38121 final : public I2cChipBase {
   bool SetChannelStatus(Channel channel, Status status);
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
   enum class Register {
     kRoChipId = 0x00,
     kRwDischargeResistorSelection = 0X02,
@@ -74,8 +71,8 @@ class Sgm38121 final : public I2cChipBase {
     kRwSequenceControl = 0x0F,
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x28;
-  static constexpr uint8_t kChipId = 0x80;
 
   /**
    * @brief 读取寄存器，并记录访问失败信息

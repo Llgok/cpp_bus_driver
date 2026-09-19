@@ -81,9 +81,6 @@ class Gz030pcc0x final : public I2cChipBase {
   bool SetBrightness(uint8_t value);
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
   enum class Register {
     kRwInternalTestModeInputDataFormat = 0x0001,
     kRwHorizontalVerticalMirror = 0x02,
@@ -91,6 +88,7 @@ class Gz030pcc0x final : public I2cChipBase {
     kRoTemperatureReading = 0x3001,
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x28;
   static constexpr uint16_t kInitSequence[] = {
       static_cast<uint16_t>(InitSequenceFormat::kWriteC16D8), 0x6C00, 0x00,

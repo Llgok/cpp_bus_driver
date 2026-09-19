@@ -2,7 +2,7 @@
  * @Description: TCA8418 键盘扫描与 GPIO 扩展芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-08-03 16:11:33
+ * @LastEditTime: 2026-09-19 14:01:45
  * @License: GPL 3.0
  */
 #pragma once
@@ -524,10 +524,6 @@ class Tca8418 final : public I2cChipBase {
   bool GetGpioPullupEnabledMask(uint32_t* enable_mask);
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
-  // TCA8418 寄存器地址。
   enum class Register : uint8_t {
     kConfiguration = 0x01,
     kInterruptStatus = 0x02,
@@ -548,18 +544,8 @@ class Tca8418 final : public I2cChipBase {
     kGpioPullupDisable1 = 0x2C,
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x34;
-  static constexpr uint8_t kRowCount = 8;
-  static constexpr uint8_t kColumnCount = 10;
-  static constexpr uint8_t kGpioCount = 18;
-  static constexpr uint8_t kFifoDepth = 10;
-  static constexpr uint8_t kInvalidU8 = 0xFF;
-  static constexpr uint8_t kValidIrqMask = 0x1F;
-  static constexpr uint8_t kValidInterruptEnableMask = 0x0F;
-  static constexpr uint8_t kKeypadFirstEvent = 1;
-  static constexpr uint8_t kKeypadLastEvent = 80;
-  static constexpr uint8_t kGpioFirstEvent = 97;
-  static constexpr uint8_t kGpioLastEvent = 114;
   static constexpr uint32_t kAllGpioMask = 0x0003FFFF;
 
   /**

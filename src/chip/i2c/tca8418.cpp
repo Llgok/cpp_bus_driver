@@ -2,12 +2,25 @@
  * @Description: TCA8418 键盘扫描与 GPIO 扩展芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-09-05 14:56:56
+ * @LastEditTime: 2026-09-19 11:54:32
  * @License: GPL 3.0
  */
 #include "chip/i2c/tca8418.h"
 
 namespace cpp_bus_driver {
+namespace {
+constexpr uint8_t kRowCount = 8;
+constexpr uint8_t kColumnCount = 10;
+constexpr uint8_t kGpioCount = 18;
+constexpr uint8_t kFifoDepth = 10;
+constexpr uint8_t kInvalidU8 = 0xFF;
+constexpr uint8_t kValidIrqMask = 0x1F;
+constexpr uint8_t kValidInterruptEnableMask = 0x0F;
+constexpr uint8_t kKeypadFirstEvent = 1;
+constexpr uint8_t kKeypadLastEvent = 80;
+constexpr uint8_t kGpioFirstEvent = 97;
+constexpr uint8_t kGpioLastEvent = 114;
+}  // namespace
 
 bool Tca8418::Init(int32_t freq_hz) {
   if (rst_ != kPinNotConnected) {
@@ -25,8 +38,7 @@ bool Tca8418::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
@@ -34,8 +46,8 @@ bool Tca8418::Init(int32_t freq_hz) {
   config.auto_increment = true;
   config.overflow_mode = true;
   if (!SetConfiguration(config)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SetConfiguration failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "SetConfiguration failed\n");
     return false;
   }
 
@@ -56,8 +68,7 @@ bool Tca8418::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     result = false;
   }
 

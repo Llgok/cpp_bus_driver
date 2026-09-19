@@ -48,6 +48,14 @@ constexpr uint32_t kCcaRssiSettlingUs = 1000;
 constexpr uint8_t kPartNumberCc1101 = 0x00;
 constexpr uint8_t kOfficialChipIds[] = {0x04, 0x14};
 constexpr uint8_t kCompatibleCloneChipId = 0x17;
+constexpr size_t kFifoSize = 64;
+constexpr size_t kMaximumPacketLength = 255;
+constexpr uint8_t kChipReadyMask = 0x80;
+constexpr uint8_t kStateMask = 0x70;
+constexpr uint8_t kFifoCountMask = 0x0F;
+constexpr uint8_t kStatusFifoCountMask = 0x7F;
+constexpr uint8_t kStatusFifoErrorMask = 0x80;
+constexpr uint8_t kCrcValidMask = 0x80;
 
 /**
  * @brief 检查芯片标识是否属于 TI 公开型号。

@@ -161,7 +161,6 @@ class SoftwareI2c final : public I2cBusBase {
    */
   bool ResetPins();
 
-  // 默认总线时钟，单位 Hz。
   static constexpr uint32_t kDefaultFrequencyHz = 100000;
   // 最小半周期延时为 1 us，仅按延时计算的频率上限，单位 Hz。
   static constexpr uint32_t kMaximumFrequencyHz = 500000;

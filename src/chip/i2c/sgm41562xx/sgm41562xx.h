@@ -3,7 +3,7 @@
  * @Author:
  * LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-09-03 18:00:00
+ * @LastEditTime: 2026-09-19 11:40:53
  * @License: GPL 3.0
  */
 #pragma once
@@ -441,9 +441,6 @@ class Sgm41562xx final : public I2cChipBase {
   bool SetShippingModeDelay(ShippingModeDelay delay);
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
   enum class Register {
     kInputSourceControl = 0x00,
     kPowerOnConfiguration = 0x01,
@@ -461,11 +458,8 @@ class Sgm41562xx final : public I2cChipBase {
     kExtendedCurrentControl = 0x0D,
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x03;
-  static constexpr uint8_t kChipIdSgm41562BAndSa = 0x00;
-  static constexpr uint8_t kChipIdSgm41562A = 0x02;
-  static constexpr uint8_t kChipIdSgm41562 = 0x04;
-  static constexpr uint8_t kChipIdSgm41562S = 0x09;
 
   // 线性编码寄存器字段及对应物理量范围。
   struct RegisterField {

@@ -257,7 +257,6 @@ class Bq2589x final : public I2cChipBase {
 
   // BQ25896 默认 7 位 I2C 地址，不包含读写方向位。
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x6B;
-  // 默认 I2C 频率，单位 Hz。
   static constexpr int32_t kDefaultFrequencyHz = 100000;
   // BQ25896 的 REG14 PN 字段，需同时检查修订号。
   static constexpr uint8_t kBq25896PartNumber = 0x00;

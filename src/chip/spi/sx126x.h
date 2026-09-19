@@ -2,7 +2,7 @@
  * @Description: Semtech SX1261/SX1262 无线收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-09-05 14:57:18
+ * @LastEditTime: 2026-09-19 14:04:57
  * @License: GPL 3.0
  */
 #pragma once
@@ -1305,9 +1305,6 @@ class Sx126x final : public SpiChipBase {
   bool Wakeup();
 
  private:
-  // 默认 SPI 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 10000000;
-
   enum class Command {
     kWoResetStats = 0x00,
     kWoClearIrqStatus = 0x02,
@@ -1429,12 +1426,9 @@ class Sx126x final : public SpiChipBase {
     bool rx_boosted = false;
   };
 
-  // SX1262的ID为SX1261
-  static constexpr std::array<uint8_t, 6> kChipId = {
-      'S', 'X', '1', '2', '6', '1'};
+  static constexpr int32_t kDefaultFrequencyHz = 10000000;
   static constexpr uint16_t kBusyPinTimeoutCount = 10000;
   static constexpr uint16_t kBusyFunctionTimeoutCount = kBusyPinTimeoutCount;
-  static constexpr uint8_t kCalibrateAll = 0x7F;
   static constexpr uint8_t kMaxPayloadSize = 255;
   static constexpr size_t kMaxSpiFrameSize = 4 + kMaxPayloadSize;
 

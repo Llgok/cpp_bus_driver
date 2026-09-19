@@ -8,6 +8,10 @@
 #include "chip/i2c/sgm38121.h"
 
 namespace cpp_bus_driver {
+namespace {
+constexpr uint8_t kChipId = 0x80;
+}  // namespace
+
 bool Sgm38121::Init(int32_t freq_hz) {
   if (!I2cChipBase::Init(freq_hz)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,

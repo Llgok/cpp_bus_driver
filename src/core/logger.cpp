@@ -17,6 +17,7 @@
 
 namespace cpp_bus_driver {
 namespace {
+constexpr uint16_t kMaxLogBufferSize = 1024;
 
 #if defined(CONFIG_CPP_BUS_DRIVER_LOG_LEVEL_DEBUG)
 constexpr Logger::LogLevel kDefaultMinimumLogLevel = Logger::LogLevel::kDebug;

@@ -76,9 +76,7 @@ class HardwareSpi final : public SpiBusBase {
 #endif
 
  private:
-  // 默认总线时钟，单位 Hz。
   static constexpr int32_t kDefaultFrequencyHz = 10000000;
-
   // 默认不启用额外的 SPI 设备标志。
   static constexpr uint32_t kDefaultDeviceFlags = 0;
 

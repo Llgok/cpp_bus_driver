@@ -2,7 +2,7 @@
  * @Description: 跨平台硬件 I2C 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-09-04 10:45:43
- * @LastEditTime: 2026-09-04 10:45:43
+ * @LastEditTime: 2026-09-19 10:42:28
  * @License: GPL 3.0
  */
 #pragma once
@@ -47,24 +47,21 @@ class HardwareI2c final : public I2cBusBase {
   i2c_master_bus_handle_t bus_handle();
 
  private:
-  // 默认总线时钟，单位 Hz。
+  enum class BusInitState : uint8_t {
+    kNotStarted,
+    kInitializing,
+    kReady,
+  };
+  
   static constexpr uint32_t kDefaultFrequencyHz = 100000;
-
   static constexpr int kDefaultWaitTimeoutMs = 1000;
+  static constexpr int64_t kBusInitWaitTimeoutMs = 1000;
 
   int32_t sda_, scl_;
   i2c_port_t port_;
   uint16_t address_ = kNoDeviceAddress;
   i2c_master_dev_handle_t device_handle_ = nullptr;
   i2c_master_bus_handle_t bus_handle_ = nullptr;
-
-  enum class BusInitState : uint8_t {
-    kNotStarted,
-    kInitializing,
-    kReady,
-  };
-
-  static constexpr int64_t kBusInitWaitTimeoutMs = 1000;
 
   std::atomic<BusInitState> bus_init_state_{BusInitState::kNotStarted};
   std::shared_ptr<HardwareI2c> shared_bus_provider_;
@@ -87,7 +84,6 @@ class HardwareI2c final : public I2cBusBase {
   bool Probe(const uint16_t address) override;
 
  private:
-  // 默认总线时钟，单位 Hz。
   static constexpr uint32_t kDefaultFrequencyHz = 100000;
 
   int32_t sda_, scl_;
@@ -132,7 +128,6 @@ class LegacyHardwareI2c final : public I2cBusBase {
 #endif
 
  private:
-  // 默认总线时钟，单位 Hz。
   static constexpr uint32_t kDefaultFrequencyHz = 100000;
 
 #if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \

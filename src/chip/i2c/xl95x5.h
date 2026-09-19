@@ -2,7 +2,7 @@
  * @Description: XL95x5 GPIO 扩展芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-08-03 16:11:35
+ * @LastEditTime: 2026-09-19 11:12:33
  * @License: GPL 3.0
  */
 #pragma once
@@ -90,11 +90,7 @@ class Xl95x5 final : public I2cChipBase {
   bool ClearIrqFlag();
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
   static constexpr int32_t kDefaultFrequencyHz = 100000;
-
-  // 芯片标识读取失败时返回的无效值。
-  static constexpr uint8_t kInvalidChipId = 0xFF;
 
   enum class Register {
     kRoChipId = 0x04,

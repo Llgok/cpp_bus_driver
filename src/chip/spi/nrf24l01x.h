@@ -701,13 +701,6 @@ class Nrf24l01x final : public SpiChipBase {
     kNoOperation = 0xFF,          // 只读取 STATUS
   };
 
-  static constexpr uint8_t kRegisterMask = 0x1F;  // SPI 指令中的地址范围
-  static constexpr uint8_t kWriteRegisterCommand = 0x20;   // W_REGISTER 前缀
-  static constexpr uint8_t kFeatureActivationData = 0x73;  // ACTIVATE 固定数据
-  static constexpr uint8_t kDynamicPayloadFeatureMask = 0x04;  // EN_DPL
-  static constexpr uint8_t kAckPayloadFeatureMask = 0x02;      // EN_ACK_PAY
-  static constexpr uint8_t kDynamicAckFeatureMask = 0x01;      // EN_DYN_ACK
-
   /**
    * @brief 将地址目标映射为 RX_ADDR_Px 或 TX_ADDR 寄存器。
    * @param address 已验证有效的 P0~P5 或 TX。

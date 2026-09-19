@@ -86,7 +86,6 @@ class Rm69a10 final : public MipiChipBase {
     kWoDispon = 0x29,
   };
 
-  static constexpr uint8_t kChipId = 0x01;
   static constexpr uint8_t kInitSequence[] = {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8), 0xFE, 0xFD,
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8), 0x80, 0xFC,

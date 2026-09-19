@@ -2,7 +2,7 @@
  * @Description: Semtech SX1261/SX1262 无线收发芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-09-05 14:57:16
+ * @LastEditTime: 2026-09-19 14:05:04
  * @License: GPL 3.0
  */
 #include "chip/spi/sx126x.h"
@@ -16,6 +16,9 @@
 namespace cpp_bus_driver {
 namespace {
 constexpr uint8_t kNop = 0x00;
+// SX1262的ID为SX1261
+constexpr std::array<uint8_t, 6> kChipId = {'S', 'X', '1', '2', '6', '1'};
+constexpr uint8_t kCalibrateAll = 0x7F;
 }  // namespace
 
 bool Sx126x::Init(int32_t freq_hz) {
@@ -56,8 +59,7 @@ bool Sx126x::Init(int32_t freq_hz) {
   }
 
   if (!SpiChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
@@ -85,8 +87,7 @@ bool Sx126x::Init(int32_t freq_hz) {
 
 bool Sx126x::Deinit(bool delete_bus) {
   if (!SpiChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     return false;
   }
 
@@ -535,8 +536,9 @@ bool Sx126x::SetDio2AsRfSwitchCtrl(Dio2Mode mode) {
 
 bool Sx126x::SetPaConfig(uint8_t pa_duty_cycle, uint8_t hp_max) {
   const uint8_t max_duty_cycle =
-      ((chip_model_ == ChipModel::kSx1261) && (param_.freq_mhz >= 400.0)) ? 0x07
-                                                                        : 0x04;
+      ((chip_model_ == ChipModel::kSx1261) && (param_.freq_mhz >= 400.0))
+          ? 0x07
+          : 0x04;
   if ((pa_duty_cycle > max_duty_cycle) || (hp_max > 0x07) ||
       ((chip_model_ == ChipModel::kSx1261) && (hp_max != 0))) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Value out of range\n");
@@ -2566,8 +2568,8 @@ bool Sx126x::ValidateHardwareConfig() const {
       ((busy_ == kPinNotConnected) || (busy_ >= 0)) &&
       ((rst_ == kPinNotConnected) || (rst_ >= 0)) &&
       ((cs_ == kPinNotConnected) || (cs_ >= 0));
-  const bool valid_chip =
-      (chip_model_ == ChipModel::kSx1261) || (chip_model_ == ChipModel::kSx1262);
+  const bool valid_chip = (chip_model_ == ChipModel::kSx1261) ||
+                          (chip_model_ == ChipModel::kSx1262);
 
   return valid_chip && has_busy_source && valid_optional_pins && (tcxo <= 7) &&
          (regulator <= 1) && (dio2 <= 1) &&

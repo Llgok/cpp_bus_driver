@@ -2,7 +2,7 @@
  * @Description: AW862xx 触觉反馈驱动芯片接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-09-02 16:15:17
+ * @LastEditTime: 2026-09-19 10:55:06
  * @License: GPL 3.0
  */
 #pragma once
@@ -453,9 +453,6 @@ class Aw862xx final : public I2cChipBase {
   bool StopRamPlaybackWaveform();
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
   enum class Register {
     kRoChipId = 0x00,
     kWoSrst = kRoChipId,
@@ -534,6 +531,7 @@ class Aw862xx final : public I2cChipBase {
     kRwAnacfg8 = 0X77,
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x58;
 
   /**

@@ -8,6 +8,10 @@
 #include "chip/i2c/sy6970.h"
 
 namespace cpp_bus_driver {
+namespace {
+constexpr uint8_t kChipId = 0x01;
+}  // namespace
+
 #if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_NRF52
 constexpr const uint8_t Sy6970::kInitSequence[];
 #endif

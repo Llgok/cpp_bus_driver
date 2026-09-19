@@ -2,7 +2,7 @@
  * @Description: CST2xxSE 电容触摸控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-08-03 16:11:07
+ * @LastEditTime: 2026-09-19 10:56:50
  * @License: GPL 3.0
  */
 #pragma once
@@ -72,19 +72,14 @@ class Cst2xxse final : public I2cChipBase {
   bool GetHomeTouch();
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
   enum class Register {
     kRoChipId = 0x06,  // 读取后返回0xAB
     kRoTouchPointInfoStart = 0x00,
     kRoGetFingerCount = 0x05,
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x5A;
-  static constexpr uint8_t kChipId = 0xAB;
-  static constexpr uint8_t kMaxTouchFingerCount = 6;
-  static constexpr uint8_t kSingleTouchPointDataSize = 5;
 
   /**
    * @brief 读取寄存器，并记录访问失败信息

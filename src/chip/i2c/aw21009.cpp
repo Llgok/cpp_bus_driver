@@ -15,6 +15,12 @@
 
 namespace cpp_bus_driver {
 
+namespace {
+constexpr uint8_t kChipId = 0x12;
+constexpr uint8_t kLedCount = 9;
+constexpr uint16_t kBrightnessMax = 0x0FFF;
+}  // namespace
+
 bool Aw21009::Init(int32_t freq_hz) {
   if (rst_ != kPinNotConnected) {
     bool result = true;

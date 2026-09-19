@@ -128,7 +128,6 @@ class Hi8561 final : public MipiChipBase {
     kWoDispon = 0x29,
   };
 
-  static constexpr uint16_t kChipId = 0x8561;
   static constexpr uint8_t kInitSequence[] = {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8ByteData), 0xDF, 3, 0x90,
       0x69, 0xF9,

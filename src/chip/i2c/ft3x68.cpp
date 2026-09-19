@@ -10,6 +10,12 @@
 #include <array>
 
 namespace cpp_bus_driver {
+namespace {
+constexpr uint8_t kChipId = 0x03;
+constexpr uint8_t kMaxTouchFingerCount = 2;
+constexpr uint8_t kSingleTouchPointDataSize = 6;
+}  // namespace
+
 bool Ft3x68::Init(int32_t freq_hz) {
   if (rst_ != kPinNotConnected) {
     bool result = true;

@@ -2,7 +2,7 @@
  * @Description: HI8561 电容触摸控制器驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-09-02 16:18:24
+ * @LastEditTime: 2026-09-19 10:53:11
  * @License: GPL 3.0
  */
 #include "chip/i2c/touch/hi8561_touch.h"
@@ -13,6 +13,45 @@
 #include <limits>
 
 namespace cpp_bus_driver {
+namespace {
+static constexpr uint32_t kEramAddress = 0x20011000;
+static constexpr uint32_t kEramSize = 4 * 1024;
+static constexpr uint16_t kSectionReadyValue = 0xA55A;
+static constexpr size_t kMaxDsramSectionCount = 25;
+static constexpr size_t kMaxEsramSectionCount = 10;
+static constexpr uint32_t kDsramSectionTableAddress = kEramAddress + 4;
+static constexpr uint32_t kEsramCountAddress =
+    kDsramSectionTableAddress + kMaxDsramSectionCount * 8;
+static constexpr uint32_t kEsramSectionTableAddress = kEsramCountAddress + 4;
+static constexpr size_t kDsramHostSectionIndex = 3;
+static constexpr size_t kDsramDebugSectionIndex = 4;
+static constexpr size_t kDsramFirmwareConfigSectionIndex = 1;
+static constexpr size_t kEsramCoordinateSectionIndex = 1;
+static constexpr size_t kFirmwareConfigSize = 6;
+static constexpr size_t kFirmwareVersionOffset = 12;
+static constexpr size_t kFirmwareVersionSize = 8;
+static constexpr size_t kUsbStateOffset = 32;
+static constexpr size_t kGestureWakeOffset = 34;
+static constexpr size_t kHighSensitivityOffset = 36;
+static constexpr size_t kRotationBorderOffset = 38;
+static constexpr size_t kFrequencyBandOffset = 40;
+static constexpr size_t kVirtualProximityOffset = 44;
+static constexpr size_t kPanelInfoOffset = 56;
+static constexpr size_t kEarphoneStateOffset = 58;
+static constexpr size_t kRuntimeFieldSize = 2;
+static constexpr size_t kTouchCoordinateOffset = 3;
+static constexpr size_t kTouchBytesPerContact = 5;
+static constexpr size_t kPrimaryReportSize =
+    kTouchCoordinateOffset + kTouchBytesPerContact;
+static constexpr size_t kTouchStateOffset =
+    kTouchCoordinateOffset + kMaxTouchContactCount * kTouchBytesPerContact;
+// 仅读取公开的触点和状态字段，不假设不同固件私有尾部的校验布局。
+static constexpr size_t kTouchReportReadSize =
+    kTouchStateOffset + kTouchStateSize;
+// 触摸调试报告的最小输出间隔。
+static constexpr int64_t kDebugReportIntervalMs = 1000;
+
+}  // namespace
 
 bool Hi8561Touch::Init(int32_t freq_hz) {
   std::lock_guard<std::mutex> lock(mutex_);
@@ -35,15 +74,14 @@ bool Hi8561Touch::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     I2cChipBase::Deinit(false);
     return false;
   }
 
   if (!DiscoverRuntimeLayout()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "DiscoverRuntimeLayout failed\n");
+    LogMessage(
+        LogLevel::kError, __FILE__, __LINE__, "DiscoverRuntimeLayout failed\n");
     I2cChipBase::Deinit(false);
     return false;
   }

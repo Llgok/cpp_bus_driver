@@ -40,6 +40,12 @@ constexpr uint32_t kStandbyToActiveUs = 130;  // 射频稳定阶段最大持续�
 constexpr uint32_t kMinimumCePulseUs = 10;    // 启动单次发射的 CE 高脉宽下限
 // 上电复位时间会随电源斜率和晶体而变化，探测窗口按规格书最大值设置。
 constexpr uint32_t kPowerOnResetTimeoutMs = 100;
+constexpr uint8_t kRegisterMask = 0x1F;  // SPI 指令中的地址范围
+constexpr uint8_t kWriteRegisterCommand = 0x20;   // W_REGISTER 前缀
+constexpr uint8_t kFeatureActivationData = 0x73;  // ACTIVATE 固定数据
+constexpr uint8_t kDynamicPayloadFeatureMask = 0x04;  // EN_DPL
+constexpr uint8_t kAckPayloadFeatureMask = 0x02;      // EN_ACK_PAY
+constexpr uint8_t kDynamicAckFeatureMask = 0x01;      // EN_DYN_ACK
 
 /**
  * @brief 检查中断枚举是否能安全转换为 CONFIG/STATUS 位号。

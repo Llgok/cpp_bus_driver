@@ -160,9 +160,6 @@ class S023msafjf10111e1 final : public I2cChipBase {
   bool GetBrightnessGain(uint16_t* gain);
 
  private:
-  // 默认 I2C 控制接口频率，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
   // 使用手册原始地址；低字节优先的转换仅在总线读写函数中执行。
   enum class Register : uint16_t {
     kConfigurationControl = 0x2401,  // 视频、BIST 和亮度路径公共控制。
@@ -174,6 +171,8 @@ class S023msafjf10111e1 final : public I2cChipBase {
     kHorizontalMirrorPixelShift = 0x2C03,  // 水平镜像与水平 orbit 偏移。
     kVerticalMirrorPixelShift = 0x2C04,  // 垂直镜像与垂直 orbit 偏移。
   };
+
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
 
   /**
    * @brief 按手册低字节优先的 16 位地址格式读取连续寄存器，使用重复 START。

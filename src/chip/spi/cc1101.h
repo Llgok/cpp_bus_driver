@@ -609,17 +609,9 @@ class Cc1101 final : public SpiChipBase {
     kFifo = 0x3F,
   };
 
-  static constexpr size_t kFifoSize = 64;
-  static constexpr size_t kMaximumPacketLength = 255;
   static constexpr uint8_t kReadSingle = 0x80;
   static constexpr uint8_t kBurst = 0x40;
   static constexpr uint8_t kReadBurst = kReadSingle | kBurst;
-  static constexpr uint8_t kChipReadyMask = 0x80;
-  static constexpr uint8_t kStateMask = 0x70;
-  static constexpr uint8_t kFifoCountMask = 0x0F;
-  static constexpr uint8_t kStatusFifoCountMask = 0x7F;
-  static constexpr uint8_t kStatusFifoErrorMask = 0x80;
-  static constexpr uint8_t kCrcValidMask = 0x80;
   static constexpr uint32_t kReadyTimeoutUs = 5000;
 
   /**

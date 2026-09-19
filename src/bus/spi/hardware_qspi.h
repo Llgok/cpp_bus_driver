@@ -2,7 +2,7 @@
  * @Description: ESP-IDF 硬件 QSPI 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-09-05 14:56:42
+ * @LastEditTime: 2026-09-19 10:43:16
  * @License: GPL 3.0
  */
 #pragma once
@@ -44,12 +44,9 @@ class HardwareQspi final : public QspiBusBase {
   bool SetCs(bool value);
 
  private:
-  // 默认总线时钟，单位 Hz。
   static constexpr int32_t kDefaultFrequencyHz = 10000000;
-
   // QSPI 默认使用半双工传输。
   static constexpr uint32_t kDefaultDeviceFlags = SPI_DEVICE_HALFDUPLEX;
-
   // ESP32-S3 的 DMA 单次最大传输长度为 32 KiB。
   static constexpr int32_t kQspiMaxTransferSize = 32 * 1024;
 

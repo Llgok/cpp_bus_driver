@@ -30,13 +30,11 @@ class Ecx336cn final : public SpiChipBase {
   bool SetPowerSaveMode(bool enable);
 
  private:
-  // 默认 SPI 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 10000000;
-
   enum class Register {
     kWoPowerSaveMode = 0x00,
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 10000000;
   static constexpr uint8_t kInitSequence640x400_50Hz_[] = {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8), 0x00, 0x0E,
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8), 0x01, 0x00,

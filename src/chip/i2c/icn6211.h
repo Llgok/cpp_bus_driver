@@ -139,9 +139,6 @@ class Icn6211 final : public I2cChipBase {
   bool SetChipEnable(bool enable);
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
   enum class Register {
     kRoChipIdStart = 0x01,
     kConfigFinishSoftReset = 0x09,
@@ -169,8 +166,8 @@ class Icn6211 final : public I2cChipBase {
     kMipiPnSwap = 0x87,
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x2C;
-  static constexpr uint16_t kChipId = 0x6211;
 
   /**
    * @brief 读取寄存器，并记录访问失败信息

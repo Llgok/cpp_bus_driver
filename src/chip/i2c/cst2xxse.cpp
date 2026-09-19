@@ -10,6 +10,12 @@
 #include <array>
 
 namespace cpp_bus_driver {
+namespace {
+constexpr uint8_t kChipId = 0xAB;
+constexpr uint8_t kMaxTouchFingerCount = 6;
+constexpr uint8_t kSingleTouchPointDataSize = 5;
+}  // namespace
+
 bool Cst2xxse::Init(int32_t freq_hz) {
   if (rst_ != kPinNotConnected) {
     bool result = true;

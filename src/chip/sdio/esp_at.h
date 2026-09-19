@@ -193,17 +193,9 @@ class EspAt final : public SdioChipBase {
   // 更新底层传输错误计数和连接状态。
   void UpdateConnectionErrorCount(int8_t delta);
 
-  static constexpr uint16_t kMaxTransmitBlockBufferSize = 512;
   // 地址由结束地址减去长度得到，单次操作禁止超出此范围。
   static constexpr size_t kMaxPacketSize =
       static_cast<size_t>(RegisterAddress::kSlaveCmd53EndAddr);
-  static constexpr uint8_t kTxBufferOffset = 16;  // 发送缓冲区偏移量
-  static constexpr uint16_t kTxBufferMask = 0xFFF;
-  static constexpr uint32_t kRxBufferMask = 0xFFFFF;
-  static constexpr uint32_t kRxBufferMax = 0x100000;
-  static constexpr uint32_t kInvalidInterruptFlags = static_cast<uint32_t>(-1);
-  static constexpr uint8_t kTransmitTimeoutCount = 100;
-  static constexpr uint8_t kConnectErrorCount = 5;
   EspAtConnect connect_;
   int32_t rst_ = kPinNotConnected;
   void (*rst_callback_)(bool value) = nullptr;

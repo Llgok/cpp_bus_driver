@@ -554,9 +554,6 @@ class Sy6970 final : public I2cChipBase {
   uint8_t ReadDeviceRevision();
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
   enum class Register : uint8_t {
     kRwInputSourceControl = 0x00,      // 输入源控制寄存器
     kRwTemperatureMonitorControl = 0x01,      // 温度监控控制寄存器
@@ -581,8 +578,8 @@ class Sy6970 final : public I2cChipBase {
     kRwDeviceControl = 0x14,                  // 设备控制寄存器
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
   static constexpr uint8_t kDeviceI2cAddressDefault = 0x6A;
-  static constexpr uint8_t kChipId = 0x01;
   static constexpr uint8_t kInitSequence[] = {
 
       // 输入电流限制设为 2000 mA，ILIM 引脚保持上电默认启用。

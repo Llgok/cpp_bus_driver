@@ -2,7 +2,7 @@
  * @Description: nRF9151 蜂窝通信与 GNSS 模块驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-11 11:58:39
- * @LastEditTime: 2026-09-05 14:57:05
+ * @LastEditTime: 2026-09-19 13:58:11
  * @License: GPL 3.0
  */
 #include "chip/uart/nrf9151.h"
@@ -14,6 +14,10 @@
 
 namespace cpp_bus_driver {
 namespace {
+// 模块初始化默认总超时时间，单位为毫秒
+constexpr uint32_t kDefaultInitializationTimeoutMs = 3000;
+// 允许接收的 AT 响应最大长度，单位为字节
+constexpr size_t kMaxResponseLength = 4096;
 
 /**
  * @brief 去除字符串首尾的空格、制表符和换行符
@@ -123,8 +127,7 @@ bool Nrf9151::Init(int32_t baud_rate, uint32_t initialization_timeout_ms) {
 
   chip_id_.clear();
   if (!UartChipBase::Init(baud_rate)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 

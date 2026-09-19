@@ -8,6 +8,10 @@
 #include "chip/mipi/hi8561.h"
 
 namespace cpp_bus_driver {
+namespace {
+constexpr uint16_t kChipId = 0x8561;
+}  // namespace
+
 bool Hi8561::Init(float freq_mhz, float lane_bit_rate_mbps) {
   if (rst_ != kPinNotConnected) {
     bool result = true;

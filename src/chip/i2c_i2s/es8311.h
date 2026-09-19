@@ -398,9 +398,6 @@ class Es8311 final : public I2cChipBase, public I2sChipBase {
   bool SetAdcDataFormat(AdcDataFormat format);
 
  private:
-  // 默认 I2C 总线时钟，单位 Hz。
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-
   enum class Register {
     kRoChipIdStart = 0xFD,  // 连续读取两次返回芯片ID 0x8311
     kRwResetSerialPortModeControl = 0x00,
@@ -445,10 +442,10 @@ class Es8311 final : public I2cChipBase, public I2sChipBase {
     uint8_t dac_osr;         // dac过采样率
   };
 
+  static constexpr int32_t kDefaultFrequencyHz = 100000;
   static constexpr uint8_t kDeviceI2cAddress1 = 0x18;
   static constexpr uint8_t kDeviceI2cAddress2 = 0x19;
   static constexpr uint8_t kDeviceI2cAddressDefault = kDeviceI2cAddress1;
-  static constexpr uint16_t kChipId = 0x8311;
   // 时钟分配系数列表
   static constexpr ClockCoeff kClockCoeffTable_[] = {
       // 每项字段的排列顺序与 ClockCoeff 声明一致。

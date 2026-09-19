@@ -2,7 +2,7 @@
  * @Description: ESP-IDF 硬件 UART 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-09-05 14:56:45
+ * @LastEditTime: 2026-09-19 10:44:04
  * @License: GPL 3.0
  */
 #pragma once
@@ -40,7 +40,6 @@ class HardwareUart final : public UartBusBase {
  private:
   // 默认 UART 波特率。
   static constexpr int32_t kDefaultBaudRate = 115200;
-
   static constexpr int kDefaultWaitTimeoutMs = 1000;
   static constexpr uint16_t kUartRxMaxSize = 1024 * 2;
 
