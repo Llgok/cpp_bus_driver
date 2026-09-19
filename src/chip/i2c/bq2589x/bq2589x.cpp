@@ -58,18 +58,26 @@ Bq2589x::ModelDriver::ModelDriver(ChipModel model, uint8_t address,
           MakeFeatureMask(features), jeita_profile_valid} {}
 
 bool Bq2589x::ModelDriver::SetBoostCurrentLimit(Bq2589x&, uint16_t) const {
+  Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+      "%s: operation is not supported by this chip model\n", __func__);
   return false;
 }
 
 bool Bq2589x::ModelDriver::GetBoostCurrentLimit(Bq2589x&, uint16_t&) const {
+  Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+      "%s: operation is not supported by this chip model\n", __func__);
   return false;
 }
 
 bool Bq2589x::ModelDriver::SetDpDmDac(Bq2589x&, bool, DpDmVoltage) const {
+  Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+      "%s: operation is not supported by this chip model\n", __func__);
   return false;
 }
 
 bool Bq2589x::ModelDriver::GetDpDmDac(Bq2589x&, bool, DpDmVoltage&) const {
+  Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+      "%s: operation is not supported by this chip model\n", __func__);
   return false;
 }
 
@@ -115,6 +123,8 @@ Bq2589x::NtcFault Bq2589x::ModelDriver::DecodeNtcFault(uint8_t code) const {
 bool Bq2589x::Init(int32_t freq_hz) {
   if (bus_ == nullptr || freq_hz <= 0 || freq_hz > 400000 ||
       (device_address_ != 0x6A && device_address_ != 0x6B)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::Init: invalid bus, I2C frequency, or device address\n");
     return false;
   }
   if (initialized_) {
@@ -127,8 +137,6 @@ bool Bq2589x::Init(int32_t freq_hz) {
   model_driver_ = nullptr;
   bus_cleanup_required_ = true;
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     I2cChipBase::Deinit(false);
     bus_initialized_ = false;
     return false;
@@ -335,6 +343,9 @@ bool Bq2589x::ReadFlag(Register reg, uint8_t mask, bool& value, bool inverted) {
 
 bool Bq2589x::UpdateRegisterBits(Register reg, uint8_t mask, uint8_t value) {
   if (!IsSupported() || mask == 0 || (value & ~mask) != 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::UpdateRegisterBits: chip model is not initialized or "
+        "supported\n");
     return false;
   }
   uint8_t command_mask = 0;
@@ -378,6 +389,8 @@ bool Bq2589x::UpdateRegisterBits(Register reg, uint8_t mask, uint8_t value) {
 bool Bq2589x::SetLinearField(Register reg, uint8_t mask, uint8_t shift,
     uint16_t value, uint16_t minimum, uint16_t maximum, uint16_t step) {
   if (value < minimum || value > maximum) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::SetLinearField: invalid value\n");
     return false;
   }
   return UpdateRegisterBits(
@@ -392,6 +405,8 @@ bool Bq2589x::GetLinearField(Register reg, uint8_t mask, uint8_t shift,
   }
   const uint16_t result = minimum + code * step;
   if (result > maximum) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetLinearField: invalid result\n");
     return false;
   }
   value = result;
@@ -405,13 +420,21 @@ bool Bq2589x::SetTableField(Register reg, uint8_t mask, uint8_t shift,
       return UpdateRegisterBits(reg, mask, static_cast<uint8_t>(i << shift));
     }
   }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "SetTableField: value is not in the supported table (value: %u)\n",
+      value);
   return false;
 }
 
 bool Bq2589x::GetTableField(Register reg, uint8_t mask, uint8_t shift,
     const uint16_t* table, size_t count, uint16_t& value) {
   uint8_t code = 0;
-  if (!ReadField(reg, mask, shift, code) || code >= count) {
+  if (!ReadField(reg, mask, shift, code)) {
+    return false;
+  }
+  if (code >= count) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetTableField: register encoding exceeds lookup table\n");
     return false;
   }
   value = table[code];
@@ -435,6 +458,9 @@ bool Bq2589x::WaitForClear(Register reg, uint8_t mask, uint32_t timeout_ms) {
     elapsed_us += static_cast<uint32_t>(now_us - previous_us);
     previous_us = now_us;
     if (elapsed_us >= timeout_us) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Bq2589x::WaitForClear: register bits did not clear before "
+          "timeout\n");
       return false;
     }
     const uint64_t remaining_ms = (timeout_us - elapsed_us + 999) / 1000;
@@ -460,23 +486,39 @@ bool Bq2589x::GetHighImpedanceEnabled(bool& enabled) {
 }
 
 bool Bq2589x::SetIlimPinEnabled(bool enabled) {
-  return HasFeature(Feature::kIlimPin) &&
-         UpdateRegisterBits(Register::kReg00, 0x40, enabled ? 0x40 : 0x00);
+  if (!HasFeature(Feature::kIlimPin)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kReg00, 0x40, enabled ? 0x40 : 0x00);
 }
 
 bool Bq2589x::GetIlimPinEnabled(bool& enabled) {
-  return HasFeature(Feature::kIlimPin) &&
-         ReadFlag(Register::kReg00, 0x40, enabled);
+  if (!HasFeature(Feature::kIlimPin)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return ReadFlag(Register::kReg00, 0x40, enabled);
 }
 
 bool Bq2589x::SetInputCurrentOptimizerEnabled(bool enabled) {
-  return HasFeature(Feature::kInputCurrentOptimizer) &&
-         UpdateRegisterBits(Register::kReg02, 0x10, enabled ? 0x10 : 0x00);
+  if (!HasFeature(Feature::kInputCurrentOptimizer)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kReg02, 0x10, enabled ? 0x10 : 0x00);
 }
 
 bool Bq2589x::GetInputCurrentOptimizerEnabled(bool& enabled) {
-  return HasFeature(Feature::kInputCurrentOptimizer) &&
-         ReadFlag(Register::kReg02, 0x10, enabled);
+  if (!HasFeature(Feature::kInputCurrentOptimizer)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return ReadFlag(Register::kReg02, 0x10, enabled);
 }
 
 bool Bq2589x::SetAutomaticInputDetectionEnabled(bool enabled) {
@@ -488,22 +530,39 @@ bool Bq2589x::GetAutomaticInputDetectionEnabled(bool& enabled) {
 }
 
 bool Bq2589x::SetBatteryLoadEnabled(bool enabled) {
-  return HasFeature(Feature::kBatteryLoad) &&
-         UpdateRegisterBits(Register::kReg03, 0x80, enabled ? 0x80 : 0x00);
+  if (!HasFeature(Feature::kBatteryLoad)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kReg03, 0x80, enabled ? 0x80 : 0x00);
 }
 
 bool Bq2589x::GetBatteryLoadEnabled(bool& enabled) {
-  return HasFeature(Feature::kBatteryLoad) &&
-         ReadFlag(Register::kReg03, 0x80, enabled);
+  if (!HasFeature(Feature::kBatteryLoad)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return ReadFlag(Register::kReg03, 0x80, enabled);
 }
 
 bool Bq2589x::SetOtgEnabled(bool enabled) {
-  return HasFeature(Feature::kOtg) &&
-         UpdateRegisterBits(Register::kReg03, 0x20, enabled ? 0x20 : 0x00);
+  if (!HasFeature(Feature::kOtg)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kReg03, 0x20, enabled ? 0x20 : 0x00);
 }
 
 bool Bq2589x::GetOtgEnabled(bool& enabled) {
-  return HasFeature(Feature::kOtg) && ReadFlag(Register::kReg03, 0x20, enabled);
+  if (!HasFeature(Feature::kOtg)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return ReadFlag(Register::kReg03, 0x20, enabled);
 }
 
 bool Bq2589x::SetChargeEnabled(bool enabled) {
@@ -515,13 +574,21 @@ bool Bq2589x::GetChargeEnabled(bool& enabled) {
 }
 
 bool Bq2589x::SetCurrentPulseControlEnabled(bool enabled) {
-  return HasFeature(Feature::kCurrentPulseControl) &&
-         UpdateRegisterBits(Register::kReg04, 0x80, enabled ? 0x80 : 0x00);
+  if (!HasFeature(Feature::kCurrentPulseControl)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kReg04, 0x80, enabled ? 0x80 : 0x00);
 }
 
 bool Bq2589x::GetCurrentPulseControlEnabled(bool& enabled) {
-  return HasFeature(Feature::kCurrentPulseControl) &&
-         ReadFlag(Register::kReg04, 0x80, enabled);
+  if (!HasFeature(Feature::kCurrentPulseControl)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return ReadFlag(Register::kReg04, 0x80, enabled);
 }
 
 bool Bq2589x::SetChargeTerminationEnabled(bool enabled) {
@@ -557,8 +624,12 @@ bool Bq2589x::GetSafetyTimerSlowdownEnabled(bool& enabled) {
 }
 
 bool Bq2589x::SetBatfetEnabled(bool enabled) {
-  return HasFeature(Feature::kBatfetControl) &&
-         UpdateRegisterBits(Register::kReg09, 0x20, !enabled ? 0x20 : 0x00);
+  if (!HasFeature(Feature::kBatfetControl)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kReg09, 0x20, !enabled ? 0x20 : 0x00);
 }
 
 bool Bq2589x::GetBatfetEnabled(bool& enabled) {
@@ -566,28 +637,46 @@ bool Bq2589x::GetBatfetEnabled(bool& enabled) {
 }
 
 bool Bq2589x::SetBatfetResetEnabled(bool enabled) {
-  return HasFeature(Feature::kBatfetReset) &&
-         UpdateRegisterBits(Register::kReg09, 0x04, enabled ? 0x04 : 0x00);
+  if (!HasFeature(Feature::kBatfetReset)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kReg09, 0x04, enabled ? 0x04 : 0x00);
 }
 
 bool Bq2589x::GetBatfetResetEnabled(bool& enabled) {
-  return HasFeature(Feature::kBatfetReset) &&
-         ReadFlag(Register::kReg09, 0x04, enabled);
+  if (!HasFeature(Feature::kBatfetReset)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return ReadFlag(Register::kReg09, 0x04, enabled);
 }
 
 bool Bq2589x::SetBoostPfmEnabled(bool enabled) {
-  return HasFeature(Feature::kBoostPfm) &&
-         UpdateRegisterBits(Register::kReg0a, 0x08, !enabled ? 0x08 : 0x00);
+  if (!HasFeature(Feature::kBoostPfm)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kReg0a, 0x08, !enabled ? 0x08 : 0x00);
 }
 
 bool Bq2589x::GetBoostPfmEnabled(bool& enabled) {
-  return HasFeature(Feature::kBoostPfm) &&
-         ReadFlag(Register::kReg0a, 0x08, enabled, true);
+  if (!HasFeature(Feature::kBoostPfm)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return ReadFlag(Register::kReg0a, 0x08, enabled, true);
 }
 
 bool Bq2589x::SetBoostHotThreshold(BoostHotThreshold threshold) {
   const auto code = static_cast<uint8_t>(threshold);
   if (!HasFeature(Feature::kBoostTemperatureThresholds) || code > 3) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::SetBoostHotThreshold: unsupported feature or setting\n");
     return false;
   }
   return UpdateRegisterBits(
@@ -596,8 +685,13 @@ bool Bq2589x::SetBoostHotThreshold(BoostHotThreshold threshold) {
 
 bool Bq2589x::GetBoostHotThreshold(BoostHotThreshold& threshold) {
   uint8_t code = 0;
-  if (!HasFeature(Feature::kBoostTemperatureThresholds) ||
-      !ReadField(Register::kReg01, 0xC0, 6, code)) {
+  if (!HasFeature(Feature::kBoostTemperatureThresholds)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetBoostHotThreshold: requested feature is not supported "
+        "by this chip\n");
+    return false;
+  }
+  if (!ReadField(Register::kReg01, 0xC0, 6, code)) {
     return false;
   }
   threshold = static_cast<BoostHotThreshold>(code);
@@ -607,6 +701,8 @@ bool Bq2589x::GetBoostHotThreshold(BoostHotThreshold& threshold) {
 bool Bq2589x::SetBoostColdThreshold(BoostColdThreshold threshold) {
   const auto code = static_cast<uint8_t>(threshold);
   if (!HasFeature(Feature::kBoostTemperatureThresholds) || code > 1) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::SetBoostColdThreshold: unsupported feature or setting\n");
     return false;
   }
   return UpdateRegisterBits(
@@ -615,8 +711,13 @@ bool Bq2589x::SetBoostColdThreshold(BoostColdThreshold threshold) {
 
 bool Bq2589x::GetBoostColdThreshold(BoostColdThreshold& threshold) {
   uint8_t code = 0;
-  if (!HasFeature(Feature::kBoostTemperatureThresholds) ||
-      !ReadField(Register::kReg01, 0x20, 5, code)) {
+  if (!HasFeature(Feature::kBoostTemperatureThresholds)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetBoostColdThreshold: requested feature is not supported "
+        "by this chip\n");
+    return false;
+  }
+  if (!ReadField(Register::kReg01, 0x20, 5, code)) {
     return false;
   }
   threshold = static_cast<BoostColdThreshold>(code);
@@ -624,17 +725,35 @@ bool Bq2589x::GetBoostColdThreshold(BoostColdThreshold& threshold) {
 }
 
 bool Bq2589x::SetDpDmDac(bool dplus, DpDmVoltage voltage) {
-  return HasFeature(Feature::kDpDmDac) &&
-         model_driver_->SetDpDmDac(*this, dplus, voltage);
+  if (!HasFeature(Feature::kDpDmDac)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return model_driver_->SetDpDmDac(*this, dplus, voltage);
 }
 
 bool Bq2589x::IsDpDmDacReady() {
   bool detection_active = false;
   ChipStatus status;
-  return IsInputDetectionActive(detection_active) && !detection_active &&
-         GetChipStatus(status) && status.power_good &&
-         status.vbus_status != VbusStatus::kNoInput &&
-         status.vbus_status != VbusStatus::kOtg;
+  if (!IsInputDetectionActive(detection_active)) {
+    return false;
+  }
+  if (detection_active) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "BQ2589x DP/DM DAC is unavailable during input detection\n");
+    return false;
+  }
+  if (!GetChipStatus(status)) {
+    return false;
+  }
+  if (!status.power_good || status.vbus_status == VbusStatus::kNoInput ||
+      status.vbus_status == VbusStatus::kOtg) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "BQ2589x DP/DM DAC requires a valid input power source\n");
+    return false;
+  }
+  return true;
 }
 
 bool Bq2589x::SetDpDac(DpDmVoltage voltage) {
@@ -642,8 +761,12 @@ bool Bq2589x::SetDpDac(DpDmVoltage voltage) {
 }
 
 bool Bq2589x::GetDpDac(DpDmVoltage& voltage) {
-  return HasFeature(Feature::kDpDmDac) &&
-         model_driver_->GetDpDmDac(*this, true, voltage);
+  if (!HasFeature(Feature::kDpDmDac)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return model_driver_->GetDpDmDac(*this, true, voltage);
 }
 
 bool Bq2589x::SetDmDac(DpDmVoltage voltage) {
@@ -651,63 +774,109 @@ bool Bq2589x::SetDmDac(DpDmVoltage voltage) {
 }
 
 bool Bq2589x::GetDmDac(DpDmVoltage& voltage) {
-  return HasFeature(Feature::kDpDmDac) &&
-         model_driver_->GetDpDmDac(*this, false, voltage);
+  if (!HasFeature(Feature::kDpDmDac)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return model_driver_->GetDpDmDac(*this, false, voltage);
 }
 
 bool Bq2589x::Set12VoltDetectionEnabled(bool enabled) {
-  return HasFeature(Feature::k12VoltDetection) &&
-         UpdateRegisterBits(Register::kReg01, 0x02, enabled ? 0x02 : 0x00);
+  if (!HasFeature(Feature::k12VoltDetection)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kReg01, 0x02, enabled ? 0x02 : 0x00);
 }
 
 bool Bq2589x::Get12VoltDetectionEnabled(bool& enabled) {
-  return HasFeature(Feature::k12VoltDetection) &&
-         ReadFlag(Register::kReg01, 0x02, enabled);
+  if (!HasFeature(Feature::k12VoltDetection)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return ReadFlag(Register::kReg01, 0x02, enabled);
 }
 
 bool Bq2589x::SetHvdcpEnabled(bool enabled) {
-  return HasFeature(Feature::kHvdcp) &&
-         UpdateRegisterBits(Register::kReg02, 0x08, enabled ? 0x08 : 0x00);
+  if (!HasFeature(Feature::kHvdcp)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kReg02, 0x08, enabled ? 0x08 : 0x00);
 }
 
 bool Bq2589x::GetHvdcpEnabled(bool& enabled) {
-  return HasFeature(Feature::kHvdcp) &&
-         ReadFlag(Register::kReg02, 0x08, enabled);
+  if (!HasFeature(Feature::kHvdcp)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return ReadFlag(Register::kReg02, 0x08, enabled);
 }
 
 bool Bq2589x::SetMaxChargeEnabled(bool enabled) {
-  return HasFeature(Feature::kMaxCharge) &&
-         UpdateRegisterBits(Register::kReg02, 0x04, enabled ? 0x04 : 0x00);
+  if (!HasFeature(Feature::kMaxCharge)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kReg02, 0x04, enabled ? 0x04 : 0x00);
 }
 
 bool Bq2589x::GetMaxChargeEnabled(bool& enabled) {
-  return HasFeature(Feature::kMaxCharge) &&
-         ReadFlag(Register::kReg02, 0x04, enabled);
+  if (!HasFeature(Feature::kMaxCharge)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return ReadFlag(Register::kReg02, 0x04, enabled);
 }
 
 bool Bq2589x::SetDselForcedHigh(bool forced_high) {
-  return HasFeature(Feature::kForceDsel) &&
-         UpdateRegisterBits(Register::kReg03, 0x80, forced_high ? 0x80 : 0x00);
+  if (!HasFeature(Feature::kForceDsel)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kReg03, 0x80, forced_high ? 0x80 : 0x00);
 }
 
 bool Bq2589x::GetDselForcedHigh(bool& forced_high) {
-  return HasFeature(Feature::kForceDsel) &&
-         ReadFlag(Register::kReg03, 0x80, forced_high);
+  if (!HasFeature(Feature::kForceDsel)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return ReadFlag(Register::kReg03, 0x80, forced_high);
 }
 
 bool Bq2589x::SetVokOtgEnabled(bool enabled) {
-  return HasFeature(Feature::kVokOtg) &&
-         UpdateRegisterBits(Register::kReg03, 0x80, enabled ? 0x80 : 0x00);
+  if (!HasFeature(Feature::kVokOtg)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kReg03, 0x80, enabled ? 0x80 : 0x00);
 }
 
 bool Bq2589x::GetVokOtgEnabled(bool& enabled) {
-  return HasFeature(Feature::kVokOtg) &&
-         ReadFlag(Register::kReg03, 0x80, enabled);
+  if (!HasFeature(Feature::kVokOtg)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return ReadFlag(Register::kReg03, 0x80, enabled);
 }
 
 bool Bq2589x::SetAdcConversionMode(AdcConversionMode mode) {
   const auto code = static_cast<uint8_t>(mode);
   if (code > 1) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::SetAdcConversionMode: unsupported ADC mode\n");
     return false;
   }
   return UpdateRegisterBits(
@@ -727,6 +896,9 @@ bool Bq2589x::SetJeitaLowTemperatureCurrent(
     JeitaLowTemperatureCurrent setting) {
   const auto code = static_cast<uint8_t>(setting);
   if (!HasFeature(Feature::kJeita) || code > 1) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::SetJeitaLowTemperatureCurrent: unsupported feature or "
+        "setting\n");
     return false;
   }
   return UpdateRegisterBits(
@@ -736,8 +908,13 @@ bool Bq2589x::SetJeitaLowTemperatureCurrent(
 bool Bq2589x::GetJeitaLowTemperatureCurrent(
     JeitaLowTemperatureCurrent& setting) {
   uint8_t code = 0;
-  if (!HasFeature(Feature::kJeita) ||
-      !ReadField(Register::kReg07, 0x01, 0, code)) {
+  if (!HasFeature(Feature::kJeita)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetJeitaLowTemperatureCurrent: requested feature is not "
+        "supported by this chip\n");
+    return false;
+  }
+  if (!ReadField(Register::kReg07, 0x01, 0, code)) {
     return false;
   }
   setting = static_cast<JeitaLowTemperatureCurrent>(code);
@@ -748,6 +925,9 @@ bool Bq2589x::SetJeitaHighTemperatureVoltage(
     JeitaHighTemperatureVoltage setting) {
   const auto code = static_cast<uint8_t>(setting);
   if (!HasFeature(Feature::kJeita) || code > 1) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::SetJeitaHighTemperatureVoltage: unsupported feature or "
+        "setting\n");
     return false;
   }
   return UpdateRegisterBits(
@@ -757,8 +937,13 @@ bool Bq2589x::SetJeitaHighTemperatureVoltage(
 bool Bq2589x::GetJeitaHighTemperatureVoltage(
     JeitaHighTemperatureVoltage& setting) {
   uint8_t code = 0;
-  if (!HasFeature(Feature::kJeita) ||
-      !ReadField(Register::kReg09, 0x10, 4, code)) {
+  if (!HasFeature(Feature::kJeita)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetJeitaHighTemperatureVoltage: requested feature is not "
+        "supported by this chip\n");
+    return false;
+  }
+  if (!ReadField(Register::kReg09, 0x10, 4, code)) {
     return false;
   }
   setting = static_cast<JeitaHighTemperatureVoltage>(code);
@@ -768,6 +953,8 @@ bool Bq2589x::GetJeitaHighTemperatureVoltage(
 bool Bq2589x::SetBatfetTurnOffDelay(BatfetTurnOffDelay delay) {
   const auto code = static_cast<uint8_t>(delay);
   if (!HasFeature(Feature::kBatfetDelay) || code > 1) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::SetBatfetTurnOffDelay: unsupported feature or setting\n");
     return false;
   }
   return UpdateRegisterBits(
@@ -776,8 +963,13 @@ bool Bq2589x::SetBatfetTurnOffDelay(BatfetTurnOffDelay delay) {
 
 bool Bq2589x::GetBatfetTurnOffDelay(BatfetTurnOffDelay& delay) {
   uint8_t code = 0;
-  if (!HasFeature(Feature::kBatfetDelay) ||
-      !ReadField(Register::kReg09, 0x08, 3, code)) {
+  if (!HasFeature(Feature::kBatfetDelay)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetBatfetTurnOffDelay: requested feature is not supported "
+        "by this chip\n");
+    return false;
+  }
+  if (!ReadField(Register::kReg09, 0x08, 3, code)) {
     return false;
   }
   delay = static_cast<BatfetTurnOffDelay>(code);
@@ -787,6 +979,8 @@ bool Bq2589x::GetBatfetTurnOffDelay(BatfetTurnOffDelay& delay) {
 bool Bq2589x::SetVindpmMode(VindpmMode mode) {
   const auto code = static_cast<uint8_t>(mode);
   if (code > 1) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::SetVindpmMode: unsupported VINDPM mode\n");
     return false;
   }
   return UpdateRegisterBits(
@@ -811,13 +1005,21 @@ bool Bq2589x::GetInputCurrentLimit(uint16_t& current_ma) {
 }
 
 bool Bq2589x::SetInputVoltageLimitOffset(uint16_t offset_mv) {
-  return IsSupported() &&
-         model_driver_->SetInputVoltageLimitOffset(*this, offset_mv);
+  if (!IsSupported()) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return model_driver_->SetInputVoltageLimitOffset(*this, offset_mv);
 }
 
 bool Bq2589x::GetInputVoltageLimitOffset(uint16_t& offset_mv) {
-  return IsSupported() &&
-         model_driver_->GetInputVoltageLimitOffset(*this, offset_mv);
+  if (!IsSupported()) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return model_driver_->GetInputVoltageLimitOffset(*this, offset_mv);
 }
 
 bool Bq2589x::SetSystemMinimumVoltage(uint16_t voltage_mv) {
@@ -829,13 +1031,21 @@ bool Bq2589x::GetSystemMinimumVoltage(uint16_t& voltage_mv) {
 }
 
 bool Bq2589x::SetFastChargeCurrentLimit(uint16_t current_ma) {
-  return IsSupported() &&
-         model_driver_->SetFastChargeCurrentLimit(*this, current_ma);
+  if (!IsSupported()) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return model_driver_->SetFastChargeCurrentLimit(*this, current_ma);
 }
 
 bool Bq2589x::GetFastChargeCurrentLimit(uint16_t& current_ma) {
-  return IsSupported() &&
-         model_driver_->GetFastChargeCurrentLimit(*this, current_ma);
+  if (!IsSupported()) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return model_driver_->GetFastChargeCurrentLimit(*this, current_ma);
 }
 
 bool Bq2589x::SetPrechargeCurrentLimit(uint16_t current_ma) {
@@ -863,50 +1073,82 @@ bool Bq2589x::GetChargeVoltageLimit(uint16_t& voltage_mv) {
 }
 
 bool Bq2589x::SetIrCompensationResistance(uint16_t resistance_mohm) {
-  return HasFeature(Feature::kIrCompensation) &&
-         SetLinearField(Register::kReg08, 0xE0, 5, resistance_mohm, 0, 140, 20);
+  if (!HasFeature(Feature::kIrCompensation)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return SetLinearField(Register::kReg08, 0xE0, 5, resistance_mohm, 0, 140, 20);
 }
 
 bool Bq2589x::GetIrCompensationResistance(uint16_t& resistance_mohm) {
-  return HasFeature(Feature::kIrCompensation) &&
-         GetLinearField(Register::kReg08, 0xE0, 5, 0, 140, 20, resistance_mohm);
+  if (!HasFeature(Feature::kIrCompensation)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return GetLinearField(Register::kReg08, 0xE0, 5, 0, 140, 20, resistance_mohm);
 }
 
 bool Bq2589x::SetIrCompensationVoltageClamp(uint16_t voltage_mv) {
-  return HasFeature(Feature::kIrCompensation) &&
-         SetLinearField(Register::kReg08, 0x1C, 2, voltage_mv, 0, 224, 32);
+  if (!HasFeature(Feature::kIrCompensation)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return SetLinearField(Register::kReg08, 0x1C, 2, voltage_mv, 0, 224, 32);
 }
 
 bool Bq2589x::GetIrCompensationVoltageClamp(uint16_t& voltage_mv) {
-  return HasFeature(Feature::kIrCompensation) &&
-         GetLinearField(Register::kReg08, 0x1C, 2, 0, 224, 32, voltage_mv);
+  if (!HasFeature(Feature::kIrCompensation)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return GetLinearField(Register::kReg08, 0x1C, 2, 0, 224, 32, voltage_mv);
 }
 
 bool Bq2589x::SetBoostVoltage(uint16_t voltage_mv) {
-  return HasFeature(Feature::kOtg) &&
-         SetLinearField(Register::kReg0a, 0xF0, 4, voltage_mv, 4550, 5510, 64);
+  if (!HasFeature(Feature::kOtg)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return SetLinearField(Register::kReg0a, 0xF0, 4, voltage_mv, 4550, 5510, 64);
 }
 
 bool Bq2589x::GetBoostVoltage(uint16_t& voltage_mv) {
-  return HasFeature(Feature::kOtg) &&
-         GetLinearField(Register::kReg0a, 0xF0, 4, 4550, 5510, 64, voltage_mv);
+  if (!HasFeature(Feature::kOtg)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return GetLinearField(Register::kReg0a, 0xF0, 4, 4550, 5510, 64, voltage_mv);
 }
 
 bool Bq2589x::SetBoostMinimumBatteryVoltage(uint16_t voltage_mv) {
-  return HasFeature(Feature::kBoostMinimumBatteryVoltage) &&
-         SetTableField(Register::kReg03, 0x01, 0, voltage_mv,
-             kBoostMinimumBatteryVoltagesMv,
-             sizeof(kBoostMinimumBatteryVoltagesMv) /
-                 sizeof(kBoostMinimumBatteryVoltagesMv[0]));
+  if (!HasFeature(Feature::kBoostMinimumBatteryVoltage)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return SetTableField(Register::kReg03, 0x01, 0, voltage_mv,
+      kBoostMinimumBatteryVoltagesMv,
+      sizeof(kBoostMinimumBatteryVoltagesMv) /
+          sizeof(kBoostMinimumBatteryVoltagesMv[0]));
 }
 
 bool Bq2589x::GetBoostMinimumBatteryVoltage(uint16_t& voltage_mv) {
-  return HasFeature(Feature::kBoostMinimumBatteryVoltage) &&
-         GetTableField(Register::kReg03, 0x01, 0,
-             kBoostMinimumBatteryVoltagesMv,
-             sizeof(kBoostMinimumBatteryVoltagesMv) /
-                 sizeof(kBoostMinimumBatteryVoltagesMv[0]),
-             voltage_mv);
+  if (!HasFeature(Feature::kBoostMinimumBatteryVoltage)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return GetTableField(Register::kReg03, 0x01, 0,
+      kBoostMinimumBatteryVoltagesMv,
+      sizeof(kBoostMinimumBatteryVoltagesMv) /
+          sizeof(kBoostMinimumBatteryVoltagesMv[0]),
+      voltage_mv);
 }
 
 bool Bq2589x::SetPrechargeToFastChargeThreshold(uint16_t voltage_mv) {
@@ -966,13 +1208,21 @@ bool Bq2589x::GetThermalRegulationThreshold(uint16_t& temperature_c) {
 }
 
 bool Bq2589x::SetBoostCurrentLimit(uint16_t current_ma) {
-  return HasFeature(Feature::kBoostCurrentLimit) &&
-         model_driver_->SetBoostCurrentLimit(*this, current_ma);
+  if (!HasFeature(Feature::kBoostCurrentLimit)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return model_driver_->SetBoostCurrentLimit(*this, current_ma);
 }
 
 bool Bq2589x::GetBoostCurrentLimit(uint16_t& current_ma) {
-  return HasFeature(Feature::kBoostCurrentLimit) &&
-         model_driver_->GetBoostCurrentLimit(*this, current_ma);
+  if (!HasFeature(Feature::kBoostCurrentLimit)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return model_driver_->GetBoostCurrentLimit(*this, current_ma);
 }
 
 bool Bq2589x::IsAdcConversionActive(bool& active) {
@@ -984,8 +1234,12 @@ bool Bq2589x::IsInputDetectionActive(bool& active) {
 }
 
 bool Bq2589x::IsInputCurrentOptimizationComplete(bool& complete) {
-  return HasFeature(Feature::kInputCurrentOptimizer) &&
-         ReadFlag(Register::kReg14, 0x40, complete);
+  if (!HasFeature(Feature::kInputCurrentOptimizer)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: requested feature or chip model is not supported\n", __func__);
+    return false;
+  }
+  return ReadFlag(Register::kReg14, 0x40, complete);
 }
 
 bool Bq2589x::IsThermalRegulationActive(bool& active) {
@@ -1015,7 +1269,13 @@ bool Bq2589x::GetChargeCurrent(uint16_t& current_ma) {
 
 bool Bq2589x::StartAdcConversion() {
   uint8_t value = 0;
-  if (!ReadRegister(Register::kReg02, value) || (value & 0xC2) != 0) {
+  if (!ReadRegister(Register::kReg02, value)) {
+    return false;
+  }
+  if ((value & 0xC2) != 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::StartAdcConversion: ADC conversion cannot start in the "
+        "current register state\n");
     return false;
   }
   return UpdateRegisterBits(Register::kReg02, 0x80, 0x80);
@@ -1023,7 +1283,12 @@ bool Bq2589x::StartAdcConversion() {
 
 bool Bq2589x::WaitForAdcConversion(uint32_t timeout_ms) {
   AdcConversionMode mode;
-  if (!GetAdcConversionMode(mode) || mode != AdcConversionMode::kOneShot) {
+  if (!GetAdcConversionMode(mode)) {
+    return false;
+  }
+  if (mode != AdcConversionMode::kOneShot) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::WaitForAdcConversion: ADC is not in one-shot mode\n");
     return false;
   }
   return WaitForClear(Register::kReg02, 0x80, timeout_ms);
@@ -1032,10 +1297,18 @@ bool Bq2589x::WaitForAdcConversion(uint32_t timeout_ms) {
 bool Bq2589x::SetBoostFrequency(BoostFrequency frequency) {
   const auto code = static_cast<uint8_t>(frequency);
   if (code > 1) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::SetBoostFrequency: unsupported boost frequency\n");
     return false;
   }
   bool otg_enabled = false;
-  if (!GetOtgEnabled(otg_enabled) || otg_enabled) {
+  if (!GetOtgEnabled(otg_enabled)) {
+    return false;
+  }
+  if (otg_enabled) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::SetBoostFrequency: boost frequency cannot change while OTG "
+        "is enabled\n");
     return false;
   }
   return UpdateRegisterBits(
@@ -1044,8 +1317,13 @@ bool Bq2589x::SetBoostFrequency(BoostFrequency frequency) {
 
 bool Bq2589x::GetBoostFrequency(BoostFrequency& frequency) {
   uint8_t code = 0;
-  if (!HasFeature(Feature::kOtg) ||
-      !ReadField(Register::kReg02, 0x20, 5, code)) {
+  if (!HasFeature(Feature::kOtg)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetBoostFrequency: requested feature is not supported by "
+        "this chip\n");
+    return false;
+  }
+  if (!ReadField(Register::kReg02, 0x20, 5, code)) {
     return false;
   }
   frequency = static_cast<BoostFrequency>(code);
@@ -1054,7 +1332,12 @@ bool Bq2589x::GetBoostFrequency(BoostFrequency& frequency) {
 
 bool Bq2589x::ForceInputDetection() {
   bool active = false;
-  if (!IsInputDetectionActive(active) || active) {
+  if (!IsInputDetectionActive(active)) {
+    return false;
+  }
+  if (active) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::ForceInputDetection: input detection is already active\n");
     return false;
   }
   return UpdateRegisterBits(Register::kReg02, 0x02, 0x02);
@@ -1066,7 +1349,13 @@ bool Bq2589x::ResetWatchdogTimer() {
 
 bool Bq2589x::ForceInputCurrentOptimization() {
   bool enabled = false;
-  if (!GetInputCurrentOptimizerEnabled(enabled) || !enabled) {
+  if (!GetInputCurrentOptimizerEnabled(enabled)) {
+    return false;
+  }
+  if (!enabled) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::ForceInputCurrentOptimization: input current optimizer is "
+        "disabled\n");
     return false;
   }
   return UpdateRegisterBits(Register::kReg09, 0x80, 0x80);
@@ -1076,6 +1365,8 @@ bool Bq2589x::EnterShipMode(BatfetTurnOffDelay delay) {
   const auto code = static_cast<uint8_t>(delay);
   if (!HasFeature(Feature::kBatfetControl) ||
       !HasFeature(Feature::kBatfetDelay) || code > 1) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::EnterShipMode: unsupported feature or setting\n");
     return false;
   }
   return UpdateRegisterBits(
@@ -1085,9 +1376,20 @@ bool Bq2589x::EnterShipMode(BatfetTurnOffDelay delay) {
 bool Bq2589x::StartPumpx(bool increase) {
   bool enabled = false;
   PumpxStatus status;
-  if (!GetCurrentPulseControlEnabled(enabled) || !enabled ||
-      !GetPumpxStatus(status) || status.voltage_increase_active ||
-      status.voltage_decrease_active) {
+  if (!GetCurrentPulseControlEnabled(enabled)) {
+    return false;
+  }
+  if (!enabled) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::StartPumpx: current pulse control is disabled\n");
+    return false;
+  }
+  if (!GetPumpxStatus(status)) {
+    return false;
+  }
+  if (status.voltage_increase_active || status.voltage_decrease_active) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::StartPumpx: a voltage change pulse is already active\n");
     return false;
   }
   return UpdateRegisterBits(Register::kReg09, 0x03, increase ? 0x02 : 0x01);
@@ -1099,8 +1401,13 @@ bool Bq2589x::StartPumpxVoltageDecrease() { return StartPumpx(false); }
 
 bool Bq2589x::GetPumpxStatus(PumpxStatus& status) {
   uint8_t value = 0;
-  if (!HasFeature(Feature::kCurrentPulseControl) ||
-      !ReadRegister(Register::kReg09, value)) {
+  if (!HasFeature(Feature::kCurrentPulseControl)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetPumpxStatus: requested feature is not supported by this "
+        "chip\n");
+    return false;
+  }
+  if (!ReadRegister(Register::kReg09, value)) {
     return false;
   }
   PumpxStatus result;
@@ -1121,8 +1428,17 @@ bool Bq2589x::GetChipStatus(ChipStatus& status) {
 
 bool Bq2589x::GetUsbSdpCurrentLimit(uint16_t& current_ma) {
   ChipStatus status;
-  if (!HasFeature(Feature::kSdpStatus) || !GetChipStatus(status) ||
-      !status.sdp_status_valid) {
+  if (!HasFeature(Feature::kSdpStatus)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetUsbSdpCurrentLimit: USB SDP status is unavailable\n");
+    return false;
+  }
+  if (!GetChipStatus(status)) {
+    return false;
+  }
+  if (!status.sdp_status_valid) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetUsbSdpCurrentLimit: USB SDP status is unavailable\n");
     return false;
   }
   current_ma = status.usb_sdp_current_limit_ma;
@@ -1154,6 +1470,9 @@ bool Bq2589x::GetFaultStatus(FaultStatus& status) {
 
 bool Bq2589x::GetFaultStatus(FaultStatus& latched, FaultStatus& current) {
   if (&latched == &current) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetFaultStatus: latched and current fault outputs must be "
+        "different\n");
     return false;
   }
   uint8_t latched_value = 0;
@@ -1170,6 +1489,8 @@ bool Bq2589x::GetFaultStatus(FaultStatus& latched, FaultStatus& current) {
 
 bool Bq2589x::SetAbsoluteVindpmThreshold(uint16_t voltage_mv) {
   if (voltage_mv < 3900 || voltage_mv > 15300) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::SetAbsoluteVindpmThreshold: voltage out of range (mV)\n");
     return false;
   }
   // VINDPM 的最小有效阈值为 3900 mV，但编码偏移仍是 2600 mV。
@@ -1179,8 +1500,13 @@ bool Bq2589x::SetAbsoluteVindpmThreshold(uint16_t voltage_mv) {
 
 bool Bq2589x::GetVindpmThreshold(uint16_t& voltage_mv) {
   uint16_t result = 0;
-  if (!GetLinearField(Register::kReg0d, 0x7F, 0, 2600, 15300, 100, result) ||
-      result < 3900) {
+  if (!GetLinearField(Register::kReg0d, 0x7F, 0, 2600, 15300, 100, result)) {
+    return false;
+  }
+  if (result < 3900) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetVindpmThreshold: VINDPM readback is below its valid "
+        "range\n");
     return false;
   }
   voltage_mv = result;
@@ -1189,8 +1515,13 @@ bool Bq2589x::GetVindpmThreshold(uint16_t& voltage_mv) {
 
 bool Bq2589x::GetTsVoltagePercentage(float& percentage) {
   uint8_t value = 0;
-  if (!HasFeature(Feature::kTsAdc) ||
-      !ReadField(Register::kReg10, 0x7F, 0, value)) {
+  if (!HasFeature(Feature::kTsAdc)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetTsVoltagePercentage: requested feature is not supported "
+        "by this chip\n");
+    return false;
+  }
+  if (!ReadField(Register::kReg10, 0x7F, 0, value)) {
     return false;
   }
   percentage = 21.0f + static_cast<float>(value) * 0.465f;
@@ -1199,6 +1530,9 @@ bool Bq2589x::GetTsVoltagePercentage(float& percentage) {
 
 bool Bq2589x::GetAdcMeasurements(AdcMeasurements& measurements) {
   if (!IsSupported()) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq2589x::GetAdcMeasurements: chip model is not initialized or "
+        "supported\n");
     return false;
   }
   uint8_t data[5] = {};

@@ -2,7 +2,7 @@
  * @Description: AXP517 电源管理、Fuel Gauge 与 Type-C/PD 控制器驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-09-18 16:30:00
- * @LastEditTime: 2026-09-19 09:58:00
+ * @LastEditTime: 2026-09-19 17:42:39
  * @License: GPL 3.0
  */
 #include "chip/i2c/axp517.h"
@@ -22,8 +22,6 @@ constexpr uint16_t kRxOverflowAlert = 0x0400;
 constexpr uint64_t kValidIrqs = 0x03FFFFFFF7ULL;
 // PD Alert 有效位掩码。
 constexpr uint16_t kValidPdAlerts = 0xEFFF;
-// Type-C 控制器厂商 ID。
-constexpr uint16_t kVendorId = 0x1F3A;
 // BUCK 功能使能位。
 constexpr uint8_t kBuckEnable = 0x08;
 // BOOST 功能使能位。
@@ -48,17 +46,13 @@ bool Axp517::Init(int32_t freq_hz) {
   }
   ntc_configured_ = false;
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-             "AXP517 chip ID: 0x%02X, extended ID: 0x%02X\n",
-             chip_id.chip_id, chip_id.extended_id);
+      "Get axp517 chip id success (id: %#X, extended id: %#X)\n",
+      chip_id.chip_id, chip_id.extended_id);
   if (!SetWatchdog(false)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-               "AXP517 watchdog disable failed\n");
     I2cChipBase::Deinit(false);
     return false;
   }
   if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-               "AXP517 initialization sequence failed\n");
     I2cChipBase::Deinit(false);
     return false;
   }
@@ -114,7 +108,12 @@ bool Axp517::GetFaultStatus(FaultStatus& status) {
 }
 
 bool Axp517::ClearFaults(uint8_t mask) {
-  return (mask & ~0x0C) == 0 && WriteRegister(static_cast<uint8_t>(Register::kBmuFault1), mask);
+  if ((mask & ~0x0C) != 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Fault clear mask contains unsupported bits: 0x%02X\n", mask);
+    return false;
+  }
+  return WriteRegister(static_cast<uint8_t>(Register::kBmuFault1), mask);
 }
 
 bool Axp517::GetBc12Result(Bc12Result& result) {
@@ -175,7 +174,11 @@ bool Axp517::SetPrechargeCurrent(uint16_t current_ma) {
 }
 
 bool Axp517::SetTrickleCurrent(uint16_t current_ma) {
-  if (current_ma < 32 || current_ma > 224) return false;
+  if (current_ma < 32 || current_ma > 224) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Set trickle current out of range: %u mA\n", current_ma);
+    return false;
+  }
   return UpdateRegisterBits(Register::kIprechgCfg, 0x70,
                             (current_ma / 32) << 4);
 }
@@ -225,7 +228,11 @@ bool Axp517::GetInputVoltageLimit(uint16_t& voltage_mv) {
 
 bool Axp517::ApplyNegotiatedInputVoltage(uint16_t voltage_mv,
                                         uint16_t default_vindpm_mv) {
-  if (voltage_mv == 0) return false;
+  if (voltage_mv == 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Negotiated input voltage is zero\n");
+    return false;
+  }
   return WriteRegister(static_cast<uint8_t>(Register::kSwChgCfg1),
                        voltage_mv >= 9000 ? 0x00 : 0x04) &&
          SetInputVoltageLimit(voltage_mv >= 9000 ? 5500 : default_vindpm_mv);
@@ -239,7 +246,11 @@ bool Axp517::ConfigureCharging(const ChargeProfile& profile) {
       profile.termination_current_ma < 64 ||
       profile.termination_current_ma > 960 || profile.warning_percent < 5 ||
       profile.warning_percent > 20 || profile.shutdown_percent > 15 ||
-      profile.shutdown_percent > profile.warning_percent) return false;
+      profile.shutdown_percent > profile.warning_percent) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Charging profile parameters are invalid\n");
+    return false;
+  }
   if (!SetChargeVoltage(profile.voltage_mv) ||
       !SetPrechargeCurrent(profile.precharge_current_ma) ||
       !SetTerminationCurrent(profile.termination_current_ma) ||
@@ -274,6 +285,8 @@ bool Axp517::SetChargeMode(ChargeMode mode) {
     case ChargeMode::kPaused:
       return SetChargeCurrent(0);
   }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "Invalid charge mode: %u\n", static_cast<unsigned>(mode));
   return false;
 }
 
@@ -294,7 +307,11 @@ bool Axp517::SetBoostVoltage(uint16_t voltage_mv) {
 }
 
 bool Axp517::SetMinimumSystemVoltage(uint16_t voltage_mv) {
-  if (voltage_mv < 1000 || voltage_mv > 3700) return false;
+  if (voltage_mv < 1000 || voltage_mv > 3700) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Minimum system voltage out of range: %u mV\n", voltage_mv);
+    return false;
+  }
   return UpdateRegisterBits(Register::kVsysMin, 0x1F,
                             (voltage_mv - 1000) / 100);
 }
@@ -307,8 +324,12 @@ bool Axp517::SetBoostDisableThreshold(uint16_t voltage_mv) {
                                  : voltage_mv <= 3000
                                        ? 1
                                        : voltage_mv <= 3200 ? 0 : 0xFF;
-  return code != 0xFF &&
-         UpdateRegisterBits(Register::kBstCfg0, 0x0C, code << 2);
+  if (code == 0xFF) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Boost disable threshold out of range: %u mV\n", voltage_mv);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kBstCfg0, 0x0C, code << 2);
 }
 
 bool Axp517::SetBoostRbfetCurrentLimit(uint16_t current_ma) {
@@ -319,28 +340,53 @@ bool Axp517::SetBoostRbfetCurrentLimit(uint16_t current_ma) {
                                  : current_ma <= 1500
                                        ? 2
                                        : current_ma <= 2000 ? 3 : 0xFF;
-  return code != 0xFF && UpdateRegisterBits(Register::kBstCfg0, 0x03, code);
+  if (code == 0xFF) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Boost RBFET current limit out of range: %u mA\n", current_ma);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kBstCfg0, 0x03, code);
 }
 
 bool Axp517::SetRechargeThreshold(uint8_t code) {
-  return code < 8 && UpdateRegisterBits(Register::kRechgCfg, 0x07, code);
+  if (code >= 8) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Recharge threshold code out of range: %u\n", code);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kRechgCfg, 0x07, code);
 }
 
 bool Axp517::SetChargeFrequency(uint8_t code) {
-  return code <= 0x0F && WriteRegister(static_cast<uint8_t>(Register::kChgFreq), code);
+  if (code > 0x0F) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Charge frequency code out of range: %u\n", code);
+    return false;
+  }
+  return WriteRegister(static_cast<uint8_t>(Register::kChgFreq), code);
 }
 
 bool Axp517::SetChargeTimer(bool enable, uint8_t code) {
-  return code <= 3 &&
-         UpdateRegisterBits(Register::kChgTmrCfg, 0x83,
-                            (enable ? 0x80 : 0) | code);
+  if (code > 3) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Charge timer code out of range: %u\n", code);
+    return false;
+  }
+  return UpdateRegisterBits(Register::kChgTmrCfg, 0x83,
+                             (enable ? 0x80 : 0) | code);
 }
 
 bool Axp517::SetBatteryIrCompensation(uint8_t resistance_code,
                                        uint8_t voltage_code) {
-  return resistance_code <= 3 && voltage_code <= 7 &&
-      WriteRegister(static_cast<uint8_t>(Register::kIrComp),
-                    (resistance_code << 6) | (voltage_code & 0x07));
+  if (resistance_code > 3 || voltage_code > 7) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Battery IR compensation parameters are invalid "
+        "(resistance: %u, voltage: %u)\n",
+        resistance_code, voltage_code);
+    return false;
+  }
+  return WriteRegister(static_cast<uint8_t>(Register::kIrComp),
+                       (resistance_code << 6) | (voltage_code & 0x07));
 }
 
 bool Axp517::SetSwitchChargeConfiguration(uint8_t value) {
@@ -371,6 +417,8 @@ bool Axp517::SetRbfetForceEnable(bool enable) {
 bool Axp517::SetBatfetMode(BatfetMode mode) {
   if (mode != BatfetMode::kAuto && mode != BatfetMode::kOn &&
       mode != BatfetMode::kOff) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "BATFET mode is invalid: %u\n", static_cast<uint8_t>(mode));
     return false;
   }
   return UpdateRegisterBits(Register::kBatfetCtrl, 0x05,
@@ -414,7 +462,11 @@ bool Axp517::SetThermalShutdown(bool enable, uint8_t celsius) {
 }
 
 bool Axp517::ConfigureChargeLed(bool enable, uint8_t function) {
-  if (function > 7) return false;
+  if (function > 7) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Charge LED function out of range: %u\n", function);
+    return false;
+  }
   return UpdateRegisterBits(Register::kChgledCfg, 0x07, function) &&
          UpdateRegisterBits(Register::kModuleEn, 0x04, enable ? 0x04 : 0);
 }
@@ -426,7 +478,13 @@ bool Axp517::SetBatteryDetectionEnable(bool enable) {
 bool Axp517::ConfigureGpio(GpioSource source, GpioMode mode,
                             GpioOutput output) {
   if (static_cast<uint8_t>(source) > 1 || static_cast<uint8_t>(mode) > 1 ||
-      static_cast<uint8_t>(output) > 2) return false;
+      static_cast<uint8_t>(output) > 2) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "GPIO configuration is invalid (source: %u, mode: %u, output: %u)\n",
+        static_cast<unsigned>(source), static_cast<unsigned>(mode),
+        static_cast<unsigned>(output));
+    return false;
+  }
   return UpdateRegisterBits(
       Register::kGpioCfg, 0x1F,
       (static_cast<uint8_t>(source) << 2) |
@@ -447,13 +505,21 @@ bool Axp517::SetAdcChannels(uint8_t mask) {
 
 bool Axp517::SetAdcChannelEnable(AdcChannel channel, bool enable) {
   const uint8_t mask = static_cast<uint8_t>(channel);
-  if (mask == 0 || (mask & (mask - 1)) != 0) return false;
+  if (mask == 0 || (mask & (mask - 1)) != 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "ADC channel mask is invalid: 0x%02X\n", mask);
+    return false;
+  }
   return UpdateRegisterBits(Register::kAdcChEn0, mask, enable ? mask : 0);
 }
 
 bool Axp517::ReadAdc(AdcInput input, uint16_t& raw) {
   const uint8_t channel = static_cast<uint8_t>(input);
-  if (channel > 7) return false;
+  if (channel > 7) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "ADC input is invalid: %u\n", channel);
+    return false;
+  }
   uint8_t selection;
   if (!ReadRegister(static_cast<uint8_t>(Register::kAdcControl), &selection)) return false;
   if ((selection & 0x0F) != channel) {
@@ -547,6 +613,9 @@ bool Axp517::GetDieTemperature(float& celsius, DieTemperatureModel model) {
       celsius = (3552.0f - (raw & 0x3FFF)) / 1.79f + 25.0f;
       return true;
   }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "Die temperature model is invalid: %u\n",
+      static_cast<uint8_t>(model));
   return false;
 }
 
@@ -555,6 +624,8 @@ bool Axp517::ConfigurePowerKey(const PowerKeyConfig& config) {
       config.long_press_ms > 2500 || config.off_time_ms < 4000 ||
       config.off_time_ms > 10000 ||
       (config.off_enabled && config.irq_wakeup)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Power key configuration contains an invalid value\n");
     return false;
   }
   const uint8_t on = config.on_time_ms <= 128
@@ -574,7 +645,11 @@ bool Axp517::ConfigureNtc(const NtcConfig& config) {
   for (size_t i = 0; i < config.voltage_mv.size(); ++i) {
     if (config.voltage_mv[i] == 0 || config.voltage_mv[i] > 8191 ||
         (i != 0 &&
-         config.voltage_mv[i - 1] <= config.voltage_mv[i])) return false;
+         config.voltage_mv[i - 1] <= config.voltage_mv[i])) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "NTC voltage table is invalid at index %zu\n", i);
+      return false;
+    }
   }
   if (config.charge_cold_mv > 8160 || config.work_cold_mv > 8160 ||
       config.charge_hot_mv > 510 || config.work_hot_mv > 510 ||
@@ -583,7 +658,11 @@ bool Axp517::ConfigureNtc(const NtcConfig& config) {
       config.work_hot_mv > config.charge_hot_mv ||
       config.cold_hysteresis_mv > 4080 || config.hot_hysteresis_mv > 1020 ||
       (config.current_ua != 20 && config.current_ua != 40 &&
-       config.current_ua != 50 && config.current_ua != 60)) return false;
+       config.current_ua != 50 && config.current_ua != 60)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "NTC threshold or bias configuration is invalid\n");
+    return false;
+  }
   const uint8_t current = config.current_ua == 20
                               ? 0
                               : config.current_ua == 40
@@ -606,13 +685,21 @@ bool Axp517::ConfigureNtc(const NtcConfig& config) {
 }
 
 bool Axp517::SetNtcEnable(bool enable) {
-  if (enable && !ntc_configured_) return false;
+  if (enable && !ntc_configured_) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cannot enable NTC before it is configured\n");
+    return false;
+  }
   if (!enable && !SetJeitaEnable(false)) return false;
   return UpdateRegisterBits(Register::kTsCfg, 0x10, enable ? 0 : 0x10);
 }
 
 bool Axp517::SetTsCalibration(bool use_fixed_data, uint16_t raw) {
-  if (raw > 0x3FFF) return false;
+  if (raw > 0x3FFF) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "TS calibration value out of range: 0x%04X\n", raw);
+    return false;
+  }
   return UpdateRegisterBits(Register::kTsCfgDataH, 0x3F, raw >> 8) &&
          WriteRegister(static_cast<uint8_t>(Register::kTsCfgDataL), raw & 0xFF) &&
          UpdateRegisterBits(Register::kTsSource, 0x08,
@@ -623,7 +710,11 @@ bool Axp517::ConfigureJeita(const JeitaConfig& config) {
   if (config.cool_mv > 4080 || config.warm_mv > 2040 ||
       config.cool_mv <= config.warm_mv || config.cool_current_reduction > 3 ||
       config.warm_current_reduction > 3 || config.cool_voltage_reduction > 3 ||
-      config.warm_voltage_reduction > 3) return false;
+      config.warm_voltage_reduction > 3) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "JEITA configuration contains an invalid value\n");
+    return false;
+  }
   const uint8_t value =
       (config.warm_current_reduction << 6) |
       (config.cool_current_reduction << 4) |
@@ -636,8 +727,17 @@ bool Axp517::ConfigureJeita(const JeitaConfig& config) {
 bool Axp517::SetJeitaEnable(bool enable) {
   if (enable) {
     uint8_t ts;
-    if (!ntc_configured_ || !ReadRegister(static_cast<uint8_t>(Register::kTsCfg), &ts) ||
-        (ts & 0x10)) {
+    if (!ntc_configured_) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Cannot enable JEITA before NTC is configured\n");
+      return false;
+    }
+    if (!ReadRegister(static_cast<uint8_t>(Register::kTsCfg), &ts)) {
+      return false;
+    }
+    if (ts & 0x10) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Cannot enable JEITA while NTC input is disabled\n");
       return false;
     }
   }
@@ -678,11 +778,23 @@ float Axp517::ConvertNtc(const NtcConfig& config, float voltage_mv) {
 }
 
 bool Axp517::GetBatteryTemperature(float& celsius) {
-  if (!ntc_configured_) return false;
+  if (!ntc_configured_) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cannot read battery temperature before NTC is configured\n");
+    return false;
+  }
   uint8_t ts;
   Status status;
-  if (!GetStatus(status) || !status.battery_present ||
-      !ReadRegister(static_cast<uint8_t>(Register::kTsCfg), &ts) || (ts & 0x10)) {
+  if (!GetStatus(status)) return false;
+  if (!status.battery_present) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cannot read battery temperature without a battery\n");
+    return false;
+  }
+  if (!ReadRegister(static_cast<uint8_t>(Register::kTsCfg), &ts)) return false;
+  if (ts & 0x10) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Battery temperature input is disabled\n");
     return false;
   }
   float voltage;
@@ -698,6 +810,8 @@ bool Axp517::GetBatteryTemperature(float& celsius) {
     }
     previous = current;
   }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "Battery temperature samples did not stabilize\n");
   return false;
 }
 
@@ -711,7 +825,11 @@ bool Axp517::GetGaugeSoc(uint8_t& percent) {
   }
   if (!ReadRegister(static_cast<uint8_t>(Register::kGaugeSoc), &value)) return false;
   value &= 0x7F;
-  if (value > 100) return false;
+  if (value > 100) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Gauge state of charge is invalid: %u%%\n", value);
+    return false;
+  }
   percent = value;
   return true;
 }
@@ -726,7 +844,11 @@ bool Axp517::GetBatteryLevel(uint8_t& percent) {
   }
   if (!ReadRegister(static_cast<uint8_t>(Register::kDataBuff), &buffered)) return false;
   if (buffered & 0x80) {
-    if ((buffered & 0x7F) > 100) return false;
+    if ((buffered & 0x7F) > 100) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Buffered battery level is invalid: %u%%\n", buffered & 0x7F);
+      return false;
+    }
     percent = buffered & 0x7F;
     return true;
   }
@@ -764,7 +886,12 @@ bool Axp517::GetBatteryHealth(BatteryHealth& health) {
 
 bool Axp517::GetBatterySoh(uint8_t& percent) {
   uint8_t value;
-  if (!ReadRegister(static_cast<uint8_t>(Register::kGaugeSoh), &value) || value > 100) return false;
+  if (!ReadRegister(static_cast<uint8_t>(Register::kGaugeSoh), &value)) return false;
+  if (value > 100) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Gauge state of health is invalid: %u%%\n", value);
+    return false;
+  }
   percent = value;
   return true;
 }
@@ -788,7 +915,12 @@ bool Axp517::GetCapacityLevel(CapacityLevel& level) {
 bool Axp517::SetGaugeThresholds(uint8_t warning_percent,
                                 uint8_t shutdown_percent) {
   if (warning_percent < 5 || warning_percent > 20 || shutdown_percent > 15 ||
-      shutdown_percent > warning_percent) return false;
+      shutdown_percent > warning_percent) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Gauge thresholds are invalid (warning: %u%%, shutdown: %u%%)\n",
+        warning_percent, shutdown_percent);
+    return false;
+  }
   return WriteRegister(static_cast<uint8_t>(Register::kGaugeThld),
                        ((warning_percent - 5) << 4) | shutdown_percent);
 }
@@ -834,10 +966,18 @@ bool Axp517::RestartBrom() {
 bool Axp517::UpdateBatteryModel(const uint8_t* data, size_t length) {
   if (data == nullptr || length == 0 ||
       length > kMaxBatteryModelSize) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Battery model data is invalid (length: %u)\n",
+        static_cast<unsigned>(length));
     return false;
   }
   Status status;
-  if (!GetStatus(status) || !status.battery_present) return false;
+  if (!GetStatus(status)) return false;
+  if (!status.battery_present) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cannot update battery model without a battery\n");
+    return false;
+  }
   // 先撤销有效标记，任何写入或校验失败都不能留下“模型已更新”。
   bool success =
       UpdateRegisterBits(Register::kGaugeConfig, kModelUpdated, 0) &&
@@ -848,7 +988,14 @@ bool Axp517::UpdateBatteryModel(const uint8_t* data, size_t length) {
   if (success) success = RestartBrom();
   for (size_t i = 0; success && i < length; ++i) {
     uint8_t actual;
-    success = ReadRegister(static_cast<uint8_t>(Register::kGaugeBrom), &actual) && actual == data[i];
+    success = ReadRegister(static_cast<uint8_t>(Register::kGaugeBrom), &actual);
+    if (success && actual != data[i]) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Battery model verification failed "
+          "(offset: %zu, actual: 0x%02X, expected: 0x%02X)\n",
+          i, actual, data[i]);
+      success = false;
+    }
   }
   const bool closed =
       UpdateRegisterBits(Register::kGaugeConfig, kBromEnable, 0);
@@ -871,6 +1018,9 @@ bool Axp517::ApplyBatteryModelIfNeeded(const uint8_t* data, size_t length,
                                        bool& updated) {
   if (data == nullptr || length == 0 ||
       length > kMaxBatteryModelSize) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Battery model data is invalid (length: %u)\n",
+        static_cast<unsigned>(length));
     return false;
   }
   bool valid;
@@ -926,7 +1076,12 @@ bool Axp517::CheckGauge(GaugeDiagnostics& diagnostics, bool recover) {
 }
 
 bool Axp517::StartSocSmoothing(uint8_t percent) {
-  return percent <= 100 && WriteRegister(static_cast<uint8_t>(Register::kDataBuff), 0x80 | percent);
+  if (percent > 100) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "SOC smoothing level is invalid: %u%%\n", percent);
+    return false;
+  }
+  return WriteRegister(static_cast<uint8_t>(Register::kDataBuff), 0x80 | percent);
 }
 
 bool Axp517::StepSocSmoothing(bool& active) {
@@ -936,6 +1091,11 @@ bool Axp517::StepSocSmoothing(bool& active) {
     return false;
   }
   if ((value & 0x80) == 0 || !status.battery_present || (value & 0x7F) > 100) {
+    if ((value & 0x80) != 0 && status.battery_present &&
+        (value & 0x7F) > 100) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "SOC smoothing level is invalid: %u%%\n", value & 0x7F);
+    }
     if (!StopSocSmoothing()) return false;
     active = false;
     return true;
@@ -961,6 +1121,8 @@ bool Axp517::EstimateCapacity(uint16_t design_capacity_mah, uint16_t cycle_life,
                              uint32_t& remaining_uah, uint32_t& full_uah) {
   if (design_capacity_mah == 0 || cycle_life == 0 ||
       lifetime_loss_percent > 100) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Capacity estimation parameters are invalid\n");
     return false;
   }
   uint16_t cycles;
@@ -993,7 +1155,12 @@ bool Axp517::GetInterruptStatus(InterruptStatus& status) {
 }
 
 bool Axp517::SetIrqEnable(uint64_t mask, bool enable) {
-  if ((mask & ~kValidIrqs) != 0) return false;
+  if ((mask & ~kValidIrqs) != 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "IRQ mask contains unsupported bits: 0x%llX\n",
+        static_cast<unsigned long long>(mask));
+    return false;
+  }
   for (size_t i = 0; i < 5; ++i) {
     const uint8_t byte = (mask >> (8 * i)) & 0xFF;
     const Register reg =
@@ -1017,7 +1184,12 @@ bool Axp517::GetIrqEnable(uint64_t& mask) {
 }
 
 bool Axp517::ClearIrqs(uint64_t mask) {
-  if ((mask & ~kValidIrqs) != 0) return false;
+  if ((mask & ~kValidIrqs) != 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "IRQ clear mask contains unsupported bits: 0x%llX\n",
+        static_cast<unsigned long long>(mask));
+    return false;
+  }
   for (size_t i = 0; i < 5; ++i) {
     const uint8_t byte = (mask >> (8 * i)) & 0xFF;
     const Register reg =
@@ -1038,17 +1210,25 @@ bool Axp517::GetPdAlerts(uint16_t& alerts) {
 }
 
 bool Axp517::SetPdAlertMask(uint16_t mask) {
-  return (mask & ~kValidPdAlerts) == 0 &&
-         WriteLittleEndian16(Register::kTcpcAlertMask, mask);
+  if ((mask & ~kValidPdAlerts) != 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "PD alert mask contains unsupported bits: 0x%04X\n", mask);
+    return false;
+  }
+  return WriteLittleEndian16(Register::kTcpcAlertMask, mask);
 }
 
 bool Axp517::ClearPdAlerts(uint16_t mask) {
-  return (mask & ~kValidPdAlerts) == 0 &&
-         WriteLittleEndian16(Register::kIrqPdAlertlStatus, mask);
+  if ((mask & ~kValidPdAlerts) != 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "PD alert clear mask contains unsupported bits: 0x%04X\n", mask);
+    return false;
+  }
+  return WriteLittleEndian16(Register::kIrqPdAlertlStatus, mask);
 }
 
-bool Axp517::GetTcpcIdentity(TcpcIdentity& identity) {
-  TcpcIdentity result;
+bool Axp517::GetTcpcId(TcpcId& id) {
+  TcpcId result;
   if (!ReadLittleEndian16(Register::kTcpcVendorId, result.vendor_id) ||
       !ReadLittleEndian16(Register::kTcpcProductId, result.product_id) ||
       !ReadLittleEndian16(Register::kTcpcBcdDev, result.device_revision) ||
@@ -1057,26 +1237,44 @@ bool Axp517::GetTcpcIdentity(TcpcIdentity& identity) {
       !ReadLittleEndian16(Register::kTcpcPdIntRev, result.interface_revision)) {
     return false;
   }
-  identity = result;
+  id = result;
   return true;
 }
 
 bool Axp517::InitTypeC(bool enable_pd_irqs, bool self_powered) {
-  uint16_t vendor;
+  uint16_t vendor = 0;
   Status status;
-  if (!ReadLittleEndian16(Register::kTcpcVendorId, vendor) ||
-      vendor != kVendorId ||
-      !GetStatus(status) || !status.system_on || !SetTypeCEnable(true) ||
-      !ResetTypeC()) return false;
+  if (!ReadLittleEndian16(Register::kTcpcVendorId, vendor)) return false;
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "InitTypeC vendor ID read success (id: %#X)\n", vendor);
+  if (!GetStatus(status)) {
+    return false;
+  }
+  if (!status.system_on) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "InitTypeC power is not ready\n");
+    return false;
+  }
+  if (!SetTypeCEnable(true)) {
+    return false;
+  }
+  if (!ResetTypeC()) {
+    return false;
+  }
   self_powered_ = self_powered;
   bool ready = false;
   for (int i = 0; i <= 200; ++i) {
     uint8_t power;
-    if (!ReadRegister(static_cast<uint8_t>(Register::kTcpcPowerStatus), &power)) return false;
+    if (!ReadRegister(static_cast<uint8_t>(Register::kTcpcPowerStatus),
+                      &power)) return false;
     if ((power & 0x40) == 0) { ready = true; break; }
     if (i < 200) DelayMs(10);
   }
-  if (!ready) return false;
+  if (!ready) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "InitTypeC controller is not ready\n");
+    return false;
+  }
   // FAULT_STATUS 仅一个字节，不能照抄官方 write16 误写扩展状态寄存器。
   if (!ClearTcpcFaults(0x80) || !SetPdAlertMask(0) ||
       !SetCcTerminations(CcTermination::kRd, CcTermination::kRd) ||
@@ -1085,9 +1283,14 @@ bool Axp517::InitTypeC(bool enable_pd_irqs, bool self_powered) {
       !ClearPdAlerts(kValidPdAlerts) ||
       !SetTcpcStatusMasks(0x04, 0, 0x01, 0) ||
       !SetPdReceiveMask(0) || !SetPdMessageHeader(false, false) ||
-      !SetVbusDetectEnable(true)) return false;
+      !SetVbusDetectEnable(true)) {
+    return false;
+  }
   // CC/电源、TX 结果、RX/硬复位、故障、溢出及 vSafe0V。
-  return SetPdAlertMask(enable_pd_irqs ? 0x267F : 0);
+  if (!SetPdAlertMask(enable_pd_irqs ? 0x267F : 0)) {
+    return false;
+  }
+  return true;
 }
 
 bool Axp517::SetTypeCEnable(bool enable) {
@@ -1108,10 +1311,19 @@ bool Axp517::ResetTypeC() {
 bool Axp517::SetCcTerminations(CcTermination cc1, CcTermination cc2,
                                RpCurrent current, bool dual_role) {
   if (static_cast<uint8_t>(cc1) > 3 || static_cast<uint8_t>(cc2) > 3 ||
-      static_cast<uint8_t>(current) > 2) return false;
+      static_cast<uint8_t>(current) > 2) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Type-C termination configuration is invalid "
+        "(CC1: %u, CC2: %u, Rp current: %u)\n",
+        static_cast<unsigned>(cc1), static_cast<unsigned>(cc2),
+        static_cast<unsigned>(current));
+    return false;
+  }
   if (!self_powered_ &&
       (dual_role || cc1 != CcTermination::kRd ||
        cc2 != CcTermination::kRd)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bus-powered Type-C controller cannot use the requested role\n");
     return false;
   }
   const uint8_t value =
@@ -1133,7 +1345,11 @@ bool Axp517::SetCc(CcTermination termination, RpCurrent current) {
 }
 
 bool Axp517::SetTypeCRole(TypeCRole role, RpCurrent current) {
-  if (static_cast<uint8_t>(role) > 2) return false;
+  if (static_cast<uint8_t>(role) > 2) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Type-C role is invalid: %u\n", static_cast<uint8_t>(role));
+    return false;
+  }
   const bool source = role == TypeCRole::kSource;
   const CcTermination termination =
       source ? CcTermination::kRp : CcTermination::kRd;
@@ -1184,11 +1400,21 @@ bool Axp517::GetCcStatus(CcStatus& status) {
 }
 
 bool Axp517::SetPolarity(Polarity polarity) {
-  if (polarity != Polarity::kCc1 && polarity != Polarity::kCc2) return false;
+  if (polarity != Polarity::kCc1 && polarity != Polarity::kCc2) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Type-C polarity is invalid: %u\n",
+        static_cast<uint8_t>(polarity));
+    return false;
+  }
   uint8_t role;
   CcStatus cc;
-  if (!ReadRegister(static_cast<uint8_t>(Register::kTcpcRoleCtrl), &role) || !GetCcStatus(cc) ||
-      cc.looking_for_connection) {
+  if (!ReadRegister(static_cast<uint8_t>(Register::kTcpcRoleCtrl), &role) ||
+      !GetCcStatus(cc)) {
+    return false;
+  }
+  if (cc.looking_for_connection) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cannot set Type-C polarity while looking for a connection\n");
     return false;
   }
   const bool cc2 = polarity == Polarity::kCc2;
@@ -1204,7 +1430,12 @@ bool Axp517::SetPolarity(Polarity polarity) {
 }
 
 bool Axp517::ApplyCcResistance(Polarity polarity) {
-  if (polarity != Polarity::kCc1 && polarity != Polarity::kCc2) return false;
+  if (polarity != Polarity::kCc1 && polarity != Polarity::kCc2) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Type-C polarity is invalid: %u\n",
+        static_cast<uint8_t>(polarity));
+    return false;
+  }
   if (!self_powered_) return true;
   uint8_t role;
   if (!ReadRegister(static_cast<uint8_t>(Register::kTcpcRoleCtrl), &role)) return false;
@@ -1223,7 +1454,16 @@ bool Axp517::SetVbusDetectEnable(bool enable) {
 }
 
 bool Axp517::SetVbusPath(bool source, bool sink) {
-  if ((source && sink) || (source && !self_powered_)) return false;
+  if (source && sink) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Type-C VBUS source and sink paths cannot both be enabled\n");
+    return false;
+  }
+  if (source && !self_powered_) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "A bus-powered Type-C controller cannot source VBUS\n");
+    return false;
+  }
   if (!source &&
       !SendTcpcCommand(TcpcCommand::kDisableSourceVbus)) {
     return false;
@@ -1284,11 +1524,18 @@ bool Axp517::SendTcpcCommand(TcpcCommand command) {
       return WriteRegister(static_cast<uint8_t>(Register::kTcpcCommand),
                            static_cast<uint8_t>(command));
   }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "Unsupported Type-C controller command: 0x%02X\n",
+      static_cast<uint8_t>(command));
   return false;
 }
 
 bool Axp517::SetPdMessageHeader(bool source, bool host, PdRevision revision) {
-  if (static_cast<uint8_t>(revision) > 2) return false;
+  if (static_cast<uint8_t>(revision) > 2) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "PD revision is invalid: %u\n", static_cast<uint8_t>(revision));
+    return false;
+  }
   return UpdateRegisterBits(Register::kTcpcMsgHdrInfo, 0x0F,
                             (source ? 0x01 : 0) | (host ? 0x08 : 0) |
                             (static_cast<uint8_t>(revision) << 1));
@@ -1296,29 +1543,54 @@ bool Axp517::SetPdMessageHeader(bool source, bool host, PdRevision revision) {
 
 bool Axp517::SetPdReceiveMask(uint8_t mask) {
   // 官方默认不接收 Hard Reset，调用方可在接入策略层后显式打开 bit5。
-  return (mask & 0xC0) == 0 && WriteRegister(static_cast<uint8_t>(Register::kTcpcRxDetect), mask);
+  if ((mask & 0xC0) != 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "PD receive mask contains unsupported bits: 0x%02X\n", mask);
+    return false;
+  }
+  return WriteRegister(static_cast<uint8_t>(Register::kTcpcRxDetect), mask);
 }
 
 bool Axp517::ReceivePdMessage(PdMessage& message) {
   uint16_t alerts;
-  if (!GetPdAlerts(alerts) || (alerts & kRxMessageAlert) == 0) return false;
+  if (!GetPdAlerts(alerts)) return false;
+  if ((alerts & kRxMessageAlert) == 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "No PD message is waiting in the receive FIFO\n");
+    return false;
+  }
   uint8_t prefix[2];
   if (!ReadNoIncrement(Register::kTcpcRxByteCnt, prefix, sizeof(prefix))) {
     return false;
   }
   // count 包含帧类型、2 字节消息头和数据，不含 count 字节自身。
   if (prefix[0] < 3 || prefix[0] > 31 || prefix[1] > 4 ||
-      ((prefix[0] - 3) % 4) != 0) return false;
+      ((prefix[0] - 3) % 4) != 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "PD receive frame header is invalid (count: %u, frame: %u)\n",
+        prefix[0], prefix[1]);
+    return false;
+  }
   std::array<uint8_t, 32> data{};
   // 固定地址 FIFO：重新发起读取从 count 开始，绝不能读取 DA+1 等地址。
-  if (!ReadNoIncrement(Register::kTcpcRxByteCnt, data.data(), prefix[0] + 1) ||
-      data[0] != prefix[0] || data[1] != prefix[1]) return false;
+  if (!ReadNoIncrement(Register::kTcpcRxByteCnt, data.data(), prefix[0] + 1)) {
+    return false;
+  }
+  if (data[0] != prefix[0] || data[1] != prefix[1]) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "PD receive FIFO data does not match its header\n");
+    return false;
+  }
   PdMessage result;
   result.frame_type = static_cast<PdTransmitType>(data[1]);
   result.header = static_cast<uint16_t>(data[2]) |
                   (static_cast<uint16_t>(data[3]) << 8);
   result.data_object_count = (result.header >> 12) & 0x07;
-  if (data[0] != 3 + 4 * result.data_object_count) return false;
+  if (data[0] != 3 + 4 * result.data_object_count) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "PD receive data object count does not match frame length\n");
+    return false;
+  }
   for (size_t i = 0; i < result.data_object_count; ++i) {
     const size_t offset = 4 + 4 * i;
     result.data_objects[i] = static_cast<uint32_t>(data[offset]) |
@@ -1338,11 +1610,28 @@ bool Axp517::DiscardPdMessage() {
 bool Axp517::TransmitPdMessage(PdTransmitType type, const PdMessage* message,
                                PdRevision revision) {
   const uint8_t frame = static_cast<uint8_t>(type);
-  if (frame > 7 || static_cast<uint8_t>(revision) > 2) return false;
+  if (frame > 7) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "PD transmit frame type is invalid: %u\n", frame);
+    return false;
+  }
+  if (static_cast<uint8_t>(revision) > 2) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "PD revision is invalid: %u\n", static_cast<uint8_t>(revision));
+    return false;
+  }
   if (frame < 5) {
-    if (message == nullptr ||
-        message->data_object_count > kMaxPdDataObjects ||
+    if (message == nullptr) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "PD transmit message is null (frame: %u)\n", frame);
+      return false;
+    }
+    if (message->data_object_count > kMaxPdDataObjects ||
         message->data_object_count != ((message->header >> 12) & 0x07)) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "PD transmit data object count is invalid "
+          "(count: %u, header: 0x%04X)\n",
+          message->data_object_count, message->header);
       return false;
     }
     std::array<uint8_t, 31> data{};
@@ -1361,6 +1650,8 @@ bool Axp517::TransmitPdMessage(PdTransmitType type, const PdMessage* message,
       if (!WriteRegister(static_cast<uint8_t>(Register::kTcpcTxByteCnt), data[i])) return false;
     }
   } else if (message != nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "PD reset or BIST transmission requires a null message\n");
     return false;
   }
   const uint8_t retries = revision == PdRevision::kRev30 ? 2 : 3;
@@ -1389,7 +1680,12 @@ bool Axp517::SetAutoDischargeThreshold(bool pd_contract, bool pps,
                  90 / 100);
     }
   }
-  if (threshold / 25 > 0x3FF) return false;
+  if (threshold / 25 > 0x3FF) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Automatic discharge threshold is out of range: %d mV\n",
+        threshold);
+    return false;
+  }
   return WriteLittleEndian16(Register::kTcpcVbusSinkDisconnectThresh,
                              threshold / 25);
 }
@@ -1405,6 +1701,10 @@ bool Axp517::SetVbusThresholds(uint16_t stop_discharge_mv,
                                uint16_t alarm_high_mv) {
   if (stop_discharge_mv > 25575 || alarm_low_mv > 25575 ||
       alarm_high_mv > 25575 || alarm_low_mv > alarm_high_mv) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Type-C VBUS thresholds are invalid "
+        "(stop: %u, low: %u, high: %u mV)\n",
+        stop_discharge_mv, alarm_low_mv, alarm_high_mv);
     return false;
   }
   return WriteLittleEndian16(Register::kTcpcVbusStopDischargeThresh,
@@ -1419,15 +1719,21 @@ bool Axp517::GetTcpcVbusVoltage(uint16_t& voltage_mv) {
   uint16_t raw;
   if (!ReadLittleEndian16(Register::kTcpcVbusVoltage, raw)) return false;
   const uint32_t value = static_cast<uint32_t>(raw & 0x03FF) * 25;
-  if (value > 65535) return false;
+  if (value > 65535) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Type-C VBUS voltage is out of range: %u mV\n", value);
+    return false;
+  }
   voltage_mv = value;
   return true;
 }
 
 bool Axp517::EnterTypeCLowPower() {
   CcStatus status;
-  if (!GetCcStatus(status) || status.cc1 != CcState::kOpen ||
-      status.cc2 != CcState::kOpen) {
+  if (!GetCcStatus(status)) return false;
+  if (status.cc1 != CcState::kOpen || status.cc2 != CcState::kOpen) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cannot enter Type-C low power while CC is connected\n");
     return false;
   }
   // AXP517 官方以 SOFT_AWAKE_EN=1 请求低功耗，命名虽为 awake，语义相反。
@@ -1453,27 +1759,50 @@ bool Axp517::NotifyTypeCCharging(bool enable) {
 
 bool Axp517::ReadRegister(uint8_t reg, uint8_t* data, size_t length) {
   if (bus_ == nullptr || data == nullptr || length == 0 || length > 256) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "ReadRegister invalid access "
+        "(register: 0x%02X, bus ready: %d, buffer valid: %d, "
+        "length: %zu)\n",
+        static_cast<unsigned>(reg), bus_ != nullptr,
+        data != nullptr, length);
     return false;
   }
   if (bus_->WriteRead(&reg, 1, data, length)) return true;
   LogMessage(LogLevel::kError, __FILE__, __LINE__,
-             "AXP517 register read failed (register: 0x%02X)\n", reg);
+      "AXP517 register read failed (register: 0x%02X)\n", reg);
   return false;
 }
 
 bool Axp517::ReadNoIncrement(Register reg, uint8_t* data, size_t length) {
   if (bus_ == nullptr || data == nullptr || length == 0 || length > 32) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "ReadNoIncrement invalid access "
+        "(register: 0x%02X, bus ready: %d, buffer valid: %d, "
+        "length: %zu)\n",
+        static_cast<unsigned>(reg), bus_ != nullptr,
+        data != nullptr, length);
     return false;
   }
   const uint8_t address = static_cast<uint8_t>(reg);
   for (size_t i = 0; i < length; ++i) {
-    if (!bus_->WriteRead(&address, 1, &data[i], 1)) return false;
+    if (!bus_->WriteRead(&address, 1, &data[i], 1)) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "AXP517 FIFO read failed (register: 0x%02X, offset: %zu)\n",
+          address, i);
+      return false;
+    }
   }
   return true;
 }
 
 bool Axp517::WriteBytes(Register reg, const uint8_t* data, size_t length) {
   if (bus_ == nullptr || data == nullptr || length == 0 || length > 32) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "WriteBytes invalid access "
+        "(register: 0x%02X, bus ready: %d, buffer valid: %d, "
+        "length: %zu)\n",
+        static_cast<unsigned>(reg), bus_ != nullptr,
+        data != nullptr, length);
     return false;
   }
   std::array<uint8_t, 33> packet{};
@@ -1481,7 +1810,7 @@ bool Axp517::WriteBytes(Register reg, const uint8_t* data, size_t length) {
   std::copy_n(data, length, packet.begin() + 1);
   if (bus_->Write(packet.data(), length + 1)) return true;
   LogMessage(LogLevel::kError, __FILE__, __LINE__,
-             "AXP517 register write failed (register: 0x%02X)\n", packet[0]);
+      "AXP517 register write failed (register: 0x%02X)\n", packet[0]);
   return false;
 }
 

@@ -29,8 +29,6 @@ bool Icn6211::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
@@ -51,8 +49,6 @@ bool Icn6211::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 

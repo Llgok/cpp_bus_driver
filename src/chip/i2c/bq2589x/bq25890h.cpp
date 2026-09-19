@@ -106,7 +106,12 @@ bool Bq2589x::Bq25890hDriver::SetDpDmDac(
     Bq2589x& chip, bool dplus, DpDmVoltage voltage) const {
   const auto code = static_cast<uint8_t>(voltage);
   constexpr uint8_t kMaximum = 6;
-  if (code > kMaximum || !chip.IsDpDmDacReady()) {
+  if (code > kMaximum) {
+    chip.LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "BQ25890H SetDpDmDac: unsupported DP/DM voltage\n");
+    return false;
+  }
+  if (!chip.IsDpDmDacReady()) {
     return false;
   }
   return chip.UpdateRegisterBits(Register::kReg01, dplus ? 0xE0 : 0x1C,
@@ -117,8 +122,12 @@ bool Bq2589x::Bq25890hDriver::GetDpDmDac(
     Bq2589x& chip, bool dplus, DpDmVoltage& voltage) const {
   uint8_t code = 0;
   if (!chip.ReadField(
-          Register::kReg01, dplus ? 0xE0 : 0x1C, dplus ? 5 : 2, code) ||
-      code == 7) {
+          Register::kReg01, dplus ? 0xE0 : 0x1C, dplus ? 5 : 2, code)) {
+    return false;
+  }
+  if (code == 7) {
+    chip.LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "BQ25890H GetDpDmDac: reserved DP/DM voltage encoding\n");
     return false;
   }
   voltage = static_cast<DpDmVoltage>(code);

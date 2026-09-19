@@ -91,6 +91,8 @@ bool HardwareSpi::Deinit(bool delete_bus) {
 
 bool HardwareSpi::Write(const void* data, size_t byte) {
   if (spi_handle_ == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "HardwareSpi::Write: required pointer is null\n");
     return false;
   }
   bool result = true;
@@ -111,6 +113,8 @@ bool HardwareSpi::Write(const void* data, size_t byte) {
 
 bool HardwareSpi::Read(void* data, size_t byte) {
   if (spi_handle_ == nullptr || (data == nullptr && byte != 0)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "HardwareSpi::Read: invalid buffer, length, or device state\n");
     return false;
   }
   if (byte == 0) {
@@ -145,6 +149,8 @@ bool HardwareSpi::Read(void* data, size_t byte) {
 bool HardwareSpi::WriteRead(
     const void* write_data, void* read_data, size_t data_byte) {
   if (spi_handle_ == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "HardwareSpi::WriteRead: required pointer is null\n");
     return false;
   }
   bool result = true;

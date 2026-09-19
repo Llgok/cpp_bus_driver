@@ -59,12 +59,15 @@ bool Sx126x::Init(int32_t freq_hz) {
   }
 
   if (!SpiChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
   ChipId chip_id;
-  if (!GetChipId(chip_id) || (chip_id.bytes != kChipId)) {
+  if (!GetChipId(chip_id)) {
+    Deinit(false);
+    return false;
+  }
+  if (chip_id.bytes != kChipId) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Get sx126x chip id failed (error id: %.6s)\n",
         reinterpret_cast<const char*>(chip_id.bytes.data()));
@@ -87,7 +90,6 @@ bool Sx126x::Init(int32_t freq_hz) {
 
 bool Sx126x::Deinit(bool delete_bus) {
   if (!SpiChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Deinit failed\n");
     return false;
   }
 
@@ -120,6 +122,9 @@ bool Sx126x::GetChipId(ChipId& chip_id) {
 bool Sx126x::GetConfig(LoraConfig& config) const {
   config = LoraConfig{};
   if (!configured_ || (param_.packet_type != PacketType::kLora)) {
+    Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+        "Sx126x::GetConfig: LoRa configuration is not available in the "
+        "current state\n");
     return false;
   }
   config = lora_config_;
@@ -129,6 +134,9 @@ bool Sx126x::GetConfig(LoraConfig& config) const {
 bool Sx126x::GetConfig(GfskConfig& config) const {
   config = GfskConfig{};
   if (!configured_ || (param_.packet_type != PacketType::kGfsk)) {
+    Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+        "Sx126x::GetConfig: GFSK configuration is not available in the "
+        "current state\n");
     return false;
   }
   config = gfsk_config_;
@@ -583,7 +591,7 @@ bool Sx126x::SetLoraSyncWord(uint16_t sync_word) {
 
   if (sync_word <= 0xFF) {
     if (!ReadRegister(
-            static_cast<uint16_t>(Register::kRwLoraSyncWordStart), buffer, 2)) {
+          static_cast<uint16_t>(Register::kRwLoraSyncWordStart), buffer, 2)) {
       return false;
     }
 

@@ -120,8 +120,6 @@ bool L76k::Init(int32_t baud_rate) {
   }
 
   if (!UartChipBase::Init(baud_rate)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
@@ -140,8 +138,6 @@ bool L76k::Init(int32_t baud_rate) {
 
 bool L76k::Deinit() {
   if (!UartChipBase::Deinit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     return false;
   }
 
@@ -167,6 +163,8 @@ bool L76k::GetChipId(size_t* search_index) {
   const size_t result =
       byte_search::FindText(buffer.get(), buffer_length, "$G");
   if (result == byte_search::kNotFound) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "L76k::GetChipId: chip identity was not found in the response\n");
     return false;
   }
 

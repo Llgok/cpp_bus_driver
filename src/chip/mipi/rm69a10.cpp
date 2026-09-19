@@ -27,8 +27,6 @@ bool Rm69a10::Init(float freq_mhz, float lane_bit_rate_mbps) {
   }
 
   if (!MipiChipBase::Init(freq_mhz, lane_bit_rate_mbps)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
@@ -43,8 +41,6 @@ bool Rm69a10::Init(float freq_mhz, float lane_bit_rate_mbps) {
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "InitSequence failed\n");
     return false;
   }
 
@@ -60,8 +56,6 @@ bool Rm69a10::Deinit() {
   bool result = true;
 
   if (!MipiChipBase::Deinit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 

@@ -2,7 +2,7 @@
  * @Description: AXP517 电源管理、Fuel Gauge 与 Type-C/PD 控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-09-18 16:30:00
- * @LastEditTime: 2026-09-19 09:58:00
+ * @LastEditTime: 2026-09-20 01:24:19
  * @License: GPL 3.0
  */
 #pragma once
@@ -278,7 +278,7 @@ class Axp517 final : public I2cChipBase {
     bool debug_accessory = false;
   };
 
-  struct TcpcIdentity {
+  struct TcpcId {
     uint16_t vendor_id = 0;
     uint16_t product_id = 0;
     uint16_t device_revision = 0;
@@ -1092,10 +1092,10 @@ class Axp517 final : public I2cChipBase {
 
   /**
    * @brief 读取 TCPC 厂商、产品及协议版本。
-   * @param identity 用于接收芯片标识。
+   * @param id 用于接收芯片标识。
    * @return 执行成功返回 true，失败返回 false。
    */
-  bool GetTcpcIdentity(TcpcIdentity& identity);
+  bool GetTcpcId(TcpcId& id);
 
   /**
    * @brief 按官方流程初始化 TCPC；enable_pd_irqs 仅在接入协议栈时开启。
@@ -1482,15 +1482,16 @@ class Axp517 final : public I2cChipBase {
 
   // 芯片上电后的默认充电参数初始化序列。
   static constexpr uint8_t kInitSequence[] = {
-      // 输入电流限制设置为最大值。
+      // 输入电流限制设置为 2000 mA。
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Register::kIinLim), 0xFC,
+      static_cast<uint8_t>(Register::kIinLim), 0x98,
       // 输入电压限制设置为 4.7 V。
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Register::kVindpmCfg), 0x0C,
       // 充电电流设置为 512 mA。
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Register::kIccCfg), 0x08};
+
   /**
    * @brief 写入 COMM_CFG 的可写配置位。
    * @param value 用于接收寄存器值。

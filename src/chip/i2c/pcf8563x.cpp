@@ -71,7 +71,6 @@ bool Pcf8563x::Init(int32_t freq_hz) {
     return false;
   }
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
   uint8_t control = 0;
@@ -163,6 +162,8 @@ bool Pcf8563x::GetClockOut(ClockOutConfig& config) {
 
 bool Pcf8563x::SetClockOut(const ClockOutConfig& config) {
   if (static_cast<uint8_t>(config.frequency) > 3) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Pcf8563x::SetClockOut: unsupported clock output frequency\n");
     return false;
   }
   return WriteRegister(Register::kClkoutControl,
@@ -184,6 +185,8 @@ bool Pcf8563x::GetTimer(TimerConfig& config) {
 bool Pcf8563x::SetTimer(const TimerConfig& config) {
   const uint8_t frequency = static_cast<uint8_t>(config.frequency);
   if (frequency > 3 || (config.enabled && config.value == 0)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Pcf8563x::SetTimer: invalid frequency\n");
     return false;
   }
   if (!WriteRegister(Register::kTimerControl, frequency) ||
@@ -216,6 +219,8 @@ bool Pcf8563x::UpdateControlStatus2(
 
 bool Pcf8563x::SetTimerInterrupt(bool enabled, TimerInterruptMode mode) {
   if (mode != TimerInterruptMode::kLevel && mode != TimerInterruptMode::kPulse) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Pcf8563x::SetTimerInterrupt: unsupported timer interrupt mode\n");
     return false;
   }
   return UpdateControlStatus2(0x11,
@@ -242,6 +247,8 @@ bool Pcf8563x::GetAlarm(Alarm& alarm) {
           !DecodeBcd(data[1] & 0x3F, 0, 23, result.hour)) ||
       (result.day_enabled && !DecodeBcd(data[2] & 0x3F, 1, 31, result.day)) ||
       (result.week_enabled && (data[3] & 0x07) > 6)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Pcf8563x::GetAlarm: invalid alarm register data\n");
     return false;
   }
   if (result.week_enabled) {
@@ -256,6 +263,8 @@ bool Pcf8563x::SetAlarm(const Alarm& alarm) {
       (alarm.hour_enabled && alarm.hour > 23) ||
       (alarm.day_enabled && (alarm.day < 1 || alarm.day > 31)) ||
       (alarm.week_enabled && static_cast<uint8_t>(alarm.week) > 6)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Pcf8563x::SetAlarm: invalid alarm time or weekday\n");
     return false;
   }
   uint8_t control = 0;

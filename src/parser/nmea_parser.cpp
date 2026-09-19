@@ -14,6 +14,7 @@
 #include <new>
 #include <utility>
 
+#include "core/logger.h"
 #include "utility/numeric_conversion.h"
 
 namespace cpp_bus_driver {
@@ -808,6 +809,8 @@ NmeaParser::FeedResult NmeaParser::Feed(const uint8_t* data, size_t length) {
   FeedResult result;
   result.input_bytes = length;
   if (state_ == nullptr) {
+    Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+        "NMEA parser state allocation failed\n");
     result.capacity_errors = 1;
     return result;
   }
@@ -815,6 +818,8 @@ NmeaParser::FeedResult NmeaParser::Feed(const uint8_t* data, size_t length) {
   update->Clear();
   state_->capacity_error_pending = false;
   if (data == nullptr && length != 0) {
+    Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+        "NMEA input buffer is null\n");
     result.format_errors = 1;
     state_->statistics.input_bytes += length;
     ++state_->statistics.format_errors;
@@ -868,6 +873,16 @@ NmeaParser::FeedResult NmeaParser::Feed(const uint8_t* data, size_t length) {
   state_->statistics.unsupported_sentences += result.unsupported_sentences;
   state_->statistics.overflow_errors += result.overflow_errors;
   state_->statistics.capacity_errors += result.capacity_errors;
+  if (result.checksum_errors != 0 || result.format_errors != 0 ||
+      result.overflow_errors != 0 || result.capacity_errors != 0) {
+    Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+        "NMEA input rejected (checksum: %zu, format: %zu, overflow: %zu, "
+        "capacity: %zu)\n",
+        static_cast<size_t>(result.checksum_errors),
+        static_cast<size_t>(result.format_errors),
+        static_cast<size_t>(result.overflow_errors),
+        static_cast<size_t>(result.capacity_errors));
+  }
   return result;
 }
 

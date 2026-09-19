@@ -36,8 +36,6 @@ bool Aw21009::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
@@ -83,8 +81,6 @@ bool Aw21009::Deinit(bool delete_bus) {
   result &= SetChipEnable(false);
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 

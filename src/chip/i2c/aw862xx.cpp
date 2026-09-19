@@ -217,8 +217,6 @@ bool Aw862xx::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
@@ -238,8 +236,6 @@ bool Aw862xx::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 
@@ -1025,17 +1021,8 @@ Aw862xx::RamVerificationResult Aw862xx::VerifyRamData(
 
     // 每次分块读取前都显式设置地址，避免依赖不同 I2C 后端在事务之间
     // 保持 AW86224 SRAM 数据指针。
-    if (!SetRamAddress(chunk_address)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "Verify ram data failed (reason: set address error, address: "
-          "%#X, offset: %u, size: %u, length: %u)\n",
-          static_cast<unsigned int>(chunk_address),
-          static_cast<unsigned int>(offset),
-          static_cast<unsigned int>(chunk_length),
-          static_cast<unsigned int>(length));
-      return RamVerificationResult::kError;
-    }
-    if (!ReadRegister(static_cast<uint8_t>(Register::kRwRamadata),
+    if (!SetRamAddress(chunk_address) ||
+        !ReadRegister(static_cast<uint8_t>(Register::kRwRamadata),
             read_buffer, chunk_length)) {
       return RamVerificationResult::kError;
     }
@@ -1081,14 +1068,10 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
   // RAM 波形初始化流程：停止播放、进入 RAM 初始化模式、配置地址和 FIFO、
   // 校验 RAM，仅在数据不一致时重新写入，最后退出 RAM 初始化模式。
   if (!StopRamPlaybackWaveform()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "StopRamPlaybackWaveform failed\n");
     return false;
   }
 
   if (!SetRamInit(true)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SetRamInit failed\n");
     return false;
   }
 
@@ -1097,14 +1080,10 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
   bool operation_result = true;
 
   if (!SetRamBaseAddress(base_addr)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SetRamBaseAddress failed\n");
     operation_result = false;
   }
 
   if (operation_result && !SetRamFifoThreshold(base_addr)) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "SetRamFifoThreshold failed\n");
     operation_result = false;
   }
 
@@ -1112,10 +1091,6 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
   if (operation_result) {
     verification_result = VerifyRamData(base_addr, waveform_data, length);
     if (verification_result == RamVerificationResult::kError) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "Verify retained ram data failed (base address: %#X, length: %u)\n",
-          static_cast<unsigned int>(base_addr),
-          static_cast<unsigned int>(length));
       operation_result = false;
     }
   }
@@ -1128,8 +1103,6 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
         static_cast<unsigned int>(base_addr),
         static_cast<unsigned int>(length));
     if (!SetRamAddress(base_addr)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "SetRamAddress failed\n");
       operation_result = false;
     }
 
@@ -1161,11 +1134,6 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
     if (operation_result) {
       verification_result = VerifyRamData(base_addr, waveform_data, length);
       if (verification_result == RamVerificationResult::kError) {
-        LogMessage(LogLevel::kError, __FILE__, __LINE__,
-            "Verify written ram data failed (base address: %#X, length: "
-            "%u)\n",
-            static_cast<unsigned int>(base_addr),
-            static_cast<unsigned int>(length));
         operation_result = false;
       } else if (verification_result == RamVerificationResult::kMismatch) {
         LogMessage(LogLevel::kError, __FILE__, __LINE__,
@@ -1179,9 +1147,6 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
   }
 
   const bool ram_init_disabled = SetRamInit(false);
-  if (!ram_init_disabled) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "SetRamInit failed\n");
-  }
   if (!operation_result || !ram_init_disabled) {
     return false;
   }

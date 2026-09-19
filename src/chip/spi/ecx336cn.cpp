@@ -23,15 +23,11 @@ bool Ecx336cn::Init(int32_t freq_hz) {
   }
 
   if (!SpiChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
   if (!InitSequence(
           kInitSequence640x400_60Hz_, sizeof(kInitSequence640x400_60Hz_))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "InitSequence failed\n");
     return false;
   }
 
@@ -48,8 +44,6 @@ bool Ecx336cn::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!SpiChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 

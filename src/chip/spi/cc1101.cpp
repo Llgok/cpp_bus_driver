@@ -169,6 +169,8 @@ bool Cc1101::DeinitLocalResources(bool delete_bus) {
 
 bool Cc1101::Reset() {
   if (bus_ == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::Reset: bus is not initialized\n");
     return false;
   }
 
@@ -269,8 +271,6 @@ bool Cc1101::ApplyRegisterSettings(
   for (size_t index = 0; index < count; ++index) {
     if (!WriteRegister(static_cast<Register>(settings[index].address),
             settings[index].value)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "Register setting failed (index: %zu)\n", index);
       return false;
     }
   }
@@ -280,6 +280,9 @@ bool Cc1101::ApplyRegisterSettings(
 
 bool Cc1101::WriteRegister(Register register_id, uint8_t value) {
   if (GetMaximumBurstLength(register_id) == 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::WriteRegister: register does not support single-byte "
+        "writes\n");
     return false;
   }
   const uint8_t buffer[] = {
@@ -307,6 +310,9 @@ bool Cc1101::WriteRegister(Register register_id, uint8_t value) {
 
 bool Cc1101::ReadRegister(Register register_id, uint8_t* value) {
   if (value == nullptr || GetMaximumBurstLength(register_id) == 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::ReadRegister: invalid register address or null output "
+        "pointer\n");
     return false;
   }
   const uint8_t buffer[] = {
@@ -326,6 +332,8 @@ bool Cc1101::WriteBurst(
   const size_t maximum_length = GetMaximumBurstLength(register_id);
   if (data == nullptr || length == 0 || length > maximum_length ||
       length > kFifoSize) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::WriteBurst: null buffer or unsupported burst length\n");
     return false;
   }
   std::array<uint8_t, kFifoSize + 1> buffer{};
@@ -346,6 +354,8 @@ bool Cc1101::ReadBurst(Register register_id, uint8_t* data, size_t length) {
   const size_t maximum_length = GetMaximumBurstLength(register_id);
   if (data == nullptr || length == 0 || length > maximum_length ||
       length > kFifoSize) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::ReadBurst: null buffer or unsupported burst length\n");
     return false;
   }
   std::array<uint8_t, kFifoSize + 1> buffer{};
@@ -361,6 +371,8 @@ bool Cc1101::ReadBurst(Register register_id, uint8_t* data, size_t length) {
 bool Cc1101::ReadStatusRegister(Register register_id, uint8_t* value) {
   const uint8_t raw_address = static_cast<uint8_t>(register_id);
   if (value == nullptr || raw_address < 0x30 || raw_address > 0x3D) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::ReadStatusRegister: invalid address or null output pointer\n");
     return false;
   }
   const uint8_t buffer[] = {
@@ -498,6 +510,8 @@ bool Cc1101::SetFrequencyDeviation(double deviation_khz) {
 
 bool Cc1101::SetMskPhaseChangePeriod(uint8_t period) {
   if (period > 7) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SetMskPhaseChangePeriod: invalid period\n");
     return false;
   }
   if (!EnsureIdle()) {
@@ -578,6 +592,9 @@ bool Cc1101::SetChannelSpacing(double spacing_khz) {
   const double target_hz = spacing_khz * 1000.0;
   if (!std::isfinite(spacing_khz) || target_hz < minimum_hz ||
       target_hz > maximum_hz) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SetChannelSpacing: channel spacing is non-finite or outside "
+        "the supported range\n");
     return false;
   }
   if (!EnsureIdle()) {
@@ -612,6 +629,8 @@ bool Cc1101::SetChannelSpacing(double spacing_khz) {
 
 bool Cc1101::SetBitRateTolerance(uint8_t tolerance) {
   if (tolerance > kBitRateToleranceMask) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SetBitRateTolerance: invalid tolerance\n");
     return false;
   }
   if (!EnsureIdle()) {
@@ -668,6 +687,8 @@ bool Cc1101::SetModulation(Modulation modulation) {
       modulation == Modulation::kAskOok || modulation == Modulation::k4Fsk ||
       modulation == Modulation::kMsk;
   if (!supported) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SetModulation: unsupported modulation\n");
     return false;
   }
   if (!ValidateDataRate(config_.data_rate_kbaud, modulation)) {
@@ -702,6 +723,9 @@ bool Cc1101::SetEncoding(Encoding encoding) {
   if (encoding == Encoding::kManchester &&
       (config_.fec_enabled || config_.modulation == Modulation::k4Fsk ||
           config_.modulation == Modulation::kMsk)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SetEncoding: Manchester encoding conflicts with FEC or "
+        "modulation\n");
     return false;
   }
   if (!EnsureIdle()) {
@@ -724,6 +748,8 @@ bool Cc1101::SetEncoding(Encoding encoding) {
           Register::kPktctrl0, kWhiteningMask, kWhiteningMask);
       break;
     default:
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Cc1101::SetEncoding: unsupported encoding\n");
       return false;
   }
   if (result) {
@@ -733,7 +759,12 @@ bool Cc1101::SetEncoding(Encoding encoding) {
 }
 
 bool Cc1101::SetSyncWord(uint8_t high, uint8_t low, SyncMode mode) {
-  if (static_cast<uint8_t>(mode) > 7 || !EnsureIdle()) {
+  if (static_cast<uint8_t>(mode) > 7) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SetSyncWord: unsupported sync mode\n");
+    return false;
+  }
+  if (!EnsureIdle()) {
     return false;
   }
   const uint8_t values[] = {high, low};
@@ -794,6 +825,8 @@ bool Cc1101::SetPreambleLength(uint16_t length_bits) {
 
 bool Cc1101::SetPreambleQualityThreshold(uint8_t threshold) {
   if (threshold > 7) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SetPreambleQualityThreshold: invalid threshold\n");
     return false;
   }
   if (!EnsureIdle()) {
@@ -816,9 +849,15 @@ bool Cc1101::SetPacketLengthMode(
       (config_.append_status ? 2 : 0);
   if (!supported || maximum_length == 0 ||
       (config_.fec_enabled && mode != PacketLengthMode::kFixed)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SetPacketLengthMode: invalid mode, length, or FEC "
+        "combination\n");
     return false;
   }
   if (config_.crc_autoflush && maximum_length > autoflush_limit) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SetPacketLengthMode: packet length exceeds the CRC "
+        "autoflush limit\n");
     return false;
   }
   if (!EnsureIdle()) {
@@ -835,7 +874,12 @@ bool Cc1101::SetPacketLengthMode(
 }
 
 bool Cc1101::SetAddressCheck(AddressCheck check, uint8_t device_address) {
-  if (static_cast<uint8_t>(check) > 3 || !EnsureIdle()) {
+  if (static_cast<uint8_t>(check) > 3) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SetAddressCheck: unsupported address check mode\n");
+    return false;
+  }
+  if (!EnsureIdle()) {
     return false;
   }
   bool result = UpdateRegisterBits(
@@ -917,6 +961,9 @@ bool Cc1101::SetCarrierSenseThreshold(
     int8_t absolute_threshold, uint8_t relative_threshold) {
   if (absolute_threshold < -8 || absolute_threshold > 7 ||
       relative_threshold > 3) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SetCarrierSenseThreshold: absolute or relative threshold "
+        "out of range\n");
     return false;
   }
   if (!EnsureIdle()) {
@@ -938,6 +985,8 @@ bool Cc1101::SetCarrierSenseThreshold(
 
 bool Cc1101::SetCcaMode(CcaMode mode) {
   if (static_cast<uint8_t>(mode) > 3) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SetCcaMode: unsupported CCA mode\n");
     return false;
   }
   if (!EnsureIdle()) {
@@ -953,6 +1002,8 @@ bool Cc1101::SetCcaMode(CcaMode mode) {
 
 bool Cc1101::SetGdoMapping(GdoPin pin, uint8_t signal, bool inverted) {
   if (signal > 0x3F) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SetGdoMapping: invalid signal\n");
     return false;
   }
   Register register_id = Register::kIocfg0;
@@ -963,6 +1014,8 @@ bool Cc1101::SetGdoMapping(GdoPin pin, uint8_t signal, bool inverted) {
       register_id = Register::kIocfg2;
       break;
     default:
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Cc1101::SetGdoMapping: unsupported GDO pin\n");
       return false;
   }
   if (!EnsureIdle()) {
@@ -1025,6 +1078,9 @@ bool Cc1101::Calibrate(uint32_t timeout_ms) {
 
 bool Cc1101::StartReceive() {
   if (config_.packet_length_mode == PacketLengthMode::kInfinite) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::StartReceive: infinite packet mode does not support this "
+        "operation\n");
     return false;
   }
   const size_t fifo_usage =
@@ -1134,7 +1190,7 @@ bool Cc1101::Transmit(const uint8_t* data, size_t length, uint32_t timeout_ms,
     while (!started_or_completed) {
       uint8_t tx_bytes = 0;
       if (!ReadStableStatus(Register::kTxbytes, &tx_bytes) ||
-          (tx_bytes & kStatusFifoErrorMask) != 0) {
+        (tx_bytes & kStatusFifoErrorMask) != 0) {
         result = false;
         break;
       }
@@ -1208,9 +1264,14 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity, size_t* received,
     PacketMetrics* metrics, uint32_t timeout_ms) {
   if (data == nullptr || received == nullptr || capacity == 0 ||
       gdo0_ == kPinNotConnected) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::Receive: invalid output buffer, capacity, or GDO0 pin\n");
     return false;
   }
   if (config_.packet_length_mode == PacketLengthMode::kInfinite) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::Receive: infinite packet mode does not support this "
+        "operation\n");
     return false;
   }
   const size_t maximum_fifo_use =
@@ -1252,7 +1313,7 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity, size_t* received,
     // 保留至少一个 FIFO 字节，避免包仍在接收时误判 FIFO 为空。
     uint8_t rx_bytes = 0;
     if (!ReadStableStatus(Register::kRxbytes, &rx_bytes) ||
-        (rx_bytes & kStatusFifoErrorMask) != 0) {
+      (rx_bytes & kStatusFifoErrorMask) != 0) {
       result = false;
       break;
     }
@@ -1347,13 +1408,19 @@ bool Cc1101::Receive(uint8_t* data, size_t capacity, size_t* received,
 bool Cc1101::ReadReceivedPacket(
     uint8_t* data, size_t capacity, size_t* received, PacketMetrics* metrics) {
   if (data == nullptr || received == nullptr || capacity == 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::ReadReceivedPacket: null output pointer or zero capacity\n");
     return false;
   }
   *received = 0;
 
   uint8_t rx_bytes = 0;
-  if (!ReadStableStatus(Register::kRxbytes, &rx_bytes) ||
-      (rx_bytes & kStatusFifoErrorMask) != 0) {
+  const bool status_read = ReadStableStatus(Register::kRxbytes, &rx_bytes);
+  if (!status_read || (rx_bytes & kStatusFifoErrorMask) != 0) {
+    if (status_read) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "CC1101 RX FIFO overflow (RXBYTES: %#X)\n", rx_bytes);
+    }
     Standby();
     FlushRx();
     return false;
@@ -1370,6 +1437,8 @@ bool Cc1101::ReadReceivedPacket(
 
 bool Cc1101::GetState(State* state) {
   if (state == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::GetState: required pointer is null\n");
     return false;
   }
   uint8_t value = 0;
@@ -1398,6 +1467,8 @@ bool Cc1101::GetVersion(uint8_t* version) {
 
 bool Cc1101::GetRssi(float* rssi_dbm) {
   if (rssi_dbm == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::GetRssi: required pointer is null\n");
     return false;
   }
   uint8_t raw = 0;
@@ -1410,6 +1481,8 @@ bool Cc1101::GetRssi(float* rssi_dbm) {
 
 bool Cc1101::GetLqi(uint8_t* lqi) {
   if (lqi == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::GetLqi: required pointer is null\n");
     return false;
   }
   uint8_t raw = 0;
@@ -1422,6 +1495,8 @@ bool Cc1101::GetLqi(uint8_t* lqi) {
 
 bool Cc1101::GetChipStatus(ChipStatus* status) {
   if (status == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::GetChipStatus: required pointer is null\n");
     return false;
   }
   const uint8_t command = static_cast<uint8_t>(StrobeCommand::kNoOperation);
@@ -1440,6 +1515,8 @@ bool Cc1101::GetChipStatus(ChipStatus* status) {
     }
     previous = current;
   }
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "CC1101 chip status did not stabilize\n");
   return false;
 }
 
@@ -1516,6 +1593,8 @@ bool Cc1101::WaitForReady(uint32_t timeout_us) {
 
 bool Cc1101::WaitForGdo0(bool level, uint32_t timeout_ms) {
   if (gdo0_ == kPinNotConnected) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::WaitForGdo0: GDO0 pin is not connected\n");
     return false;
   }
   const int64_t deadline = CurrentTimeMs() + timeout_ms;
@@ -1542,6 +1621,8 @@ bool Cc1101::WaitForState(State state, uint32_t timeout_ms) {
     }
     if (current == State::kRxFifoOverflow ||
         current == State::kTxFifoUnderflow) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Cc1101::WaitForState: RX FIFO overflow or TX FIFO underflow\n");
       return false;
     }
     DelayUs(10);
@@ -1554,6 +1635,8 @@ bool Cc1101::WaitForState(State state, uint32_t timeout_ms) {
 
 bool Cc1101::ReadStableStatus(Register register_id, uint8_t* value) {
   if (value == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::ReadStableStatus: required pointer is null\n");
     return false;
   }
   // TI 勘误 SWRZ020：连续变化的状态寄存器应读取至两次结果一致。
@@ -1596,7 +1679,12 @@ bool Cc1101::ReadPacketFromFifo(uint8_t* data, size_t capacity,
   size_t required = config_.append_status ? 2 : 0;
   if (config_.packet_length_mode == PacketLengthMode::kVariable) {
     uint8_t length_byte = 0;
-    if (!ReadRegister(Register::kFifo, &length_byte) || length_byte == 0) {
+    if (!ReadRegister(Register::kFifo, &length_byte)) {
+      return false;
+    }
+    if (length_byte == 0) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Cc1101::ReadPacketFromFifo: received packet length is zero\n");
       return false;
     }
     packet_length = length_byte;
@@ -1615,6 +1703,8 @@ bool Cc1101::ReadPacketFromFifo(uint8_t* data, size_t capacity,
       return false;
     }
     if (packet_length == 0) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Cc1101::ReadPacketFromFifo: packet length is zero\n");
       return false;
     }
     --packet_length;
@@ -1641,6 +1731,10 @@ bool Cc1101::ReadPacketFromFifo(uint8_t* data, size_t capacity,
     if (metrics != nullptr) {
       *metrics = last_metrics_;
     }
+    if (!last_metrics_.crc_valid) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "CC1101 received packet CRC mismatch\n");
+    }
     return last_metrics_.crc_valid;
   }
   return ReadPacketMetrics(metrics);
@@ -1649,6 +1743,9 @@ bool Cc1101::ReadPacketFromFifo(uint8_t* data, size_t capacity,
 bool Cc1101::DrainReceiveFifo(
     uint8_t* data, size_t capacity, size_t* copied, size_t bytes_to_read) {
   if (copied == nullptr || *copied + bytes_to_read > capacity) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::DrainReceiveFifo: null count pointer or insufficient "
+        "capacity\n");
     return false;
   }
   if (bytes_to_read == 0) {
@@ -1674,6 +1771,10 @@ bool Cc1101::ReadPacketMetrics(PacketMetrics* metrics) {
   if (metrics != nullptr) {
     *metrics = last_metrics_;
   }
+  if (!last_metrics_.crc_valid) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "CC1101 received packet CRC mismatch\n");
+  }
   return last_metrics_.crc_valid;
 }
 
@@ -1694,6 +1795,8 @@ size_t Cc1101::GetMaximumBurstLength(Register register_id) const {
 
 bool Cc1101::SelectPaValue(int8_t power_dbm, uint8_t* value) const {
   if (value == nullptr) {
+    Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+        "Cc1101::SelectPaValue: PA output pointer is null\n");
     return false;
   }
   constexpr int8_t kPowerLevels[] = {
@@ -1733,6 +1836,8 @@ bool Cc1101::SelectPaValue(int8_t power_dbm, uint8_t* value) const {
       return true;
     }
   }
+  Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+      "CC1101 PA table has no entry for the requested power and band\n");
   return false;
 }
 

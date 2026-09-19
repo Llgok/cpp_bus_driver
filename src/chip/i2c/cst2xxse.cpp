@@ -31,8 +31,6 @@ bool Cst2xxse::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
@@ -53,8 +51,6 @@ bool Cst2xxse::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 
@@ -92,6 +88,11 @@ bool Cst2xxse::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
   tp.home_touch_flag = false;
   tp.info.clear();
   if ((finger_num == 0) || (finger_num > kMaxTouchFingerCount)) {
+    if (finger_num > kMaxTouchFingerCount) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Touch contact count exceeds the supported maximum: %u\n",
+          finger_num);
+    }
     return false;
   }
 
@@ -153,6 +154,11 @@ bool Cst2xxse::GetMultipleTouchPoint(TouchPoint& tp) {
   // 如果手指数为0
   const uint8_t finger_count = buffer[5] & 0B00001111;
   if ((finger_count == 0) || (finger_count > kMaxTouchFingerCount)) {
+    if (finger_count > kMaxTouchFingerCount) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Touch contact count exceeds the supported maximum: %u\n",
+          finger_count);
+    }
     return false;
   }
   tp.finger_count = finger_count;

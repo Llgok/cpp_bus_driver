@@ -31,8 +31,6 @@ bool Ft3x68::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
@@ -53,8 +51,6 @@ bool Ft3x68::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 
@@ -90,6 +86,11 @@ bool Ft3x68::GetSingleTouchPoint(TouchPoint& tp, uint8_t finger_num) {
   tp.finger_count = 0;
   tp.info.clear();
   if ((finger_num == 0) || (finger_num > kMaxTouchFingerCount)) {
+    if (finger_num > kMaxTouchFingerCount) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Touch contact count exceeds the supported maximum: %u\n",
+          finger_num);
+    }
     return false;
   }
 
@@ -140,6 +141,10 @@ bool Ft3x68::GetMultipleTouchPoint(TouchPoint& tp) {
 
   // 如果手指数为0或者大于最大触摸手指数
   if ((buffer[0] == 0) || (buffer[0] > kMaxTouchFingerCount)) {
+    if (buffer[0] > kMaxTouchFingerCount) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Touch contact count exceeds the supported maximum: %u\n", buffer[0]);
+    }
     return false;
   }
   tp.finger_count = buffer[0];

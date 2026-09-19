@@ -74,7 +74,6 @@ bool Hi8561Touch::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     I2cChipBase::Deinit(false);
     return false;
   }
@@ -297,8 +296,10 @@ bool Hi8561Touch::ReadFirmwareInfo(FirmwareInfo* firmware_info) {
   SectionInfo firmware_config;
   if (!ReadSectionInfo(kDsramSectionTableAddress,
           runtime_layout_.dsram_section_count, kDsramFirmwareConfigSectionIndex,
-          &firmware_config) ||
-      !IsSectionValid(firmware_config, kFirmwareConfigSize)) {
+          &firmware_config)) {
+    return false;
+  }
+  if (!IsSectionValid(firmware_config, kFirmwareConfigSize)) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "HI8561 read firmware info failed (firmware section unavailable: "
         "address 0X%08lX, size %lu)\n",
@@ -490,8 +491,10 @@ bool Hi8561Touch::GetFrequencyBand(uint8_t* frequency_band) {
   SectionInfo debug;
   if (!ReadSectionInfo(kDsramSectionTableAddress,
           runtime_layout_.dsram_section_count, kDsramDebugSectionIndex,
-          &debug) ||
-      !IsSectionValid(debug, kFrequencyBandOffset + kRuntimeFieldSize)) {
+          &debug)) {
+    return false;
+  }
+  if (!IsSectionValid(debug, kFrequencyBandOffset + kRuntimeFieldSize)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "HI8561 get frequency band failed (feature is not supported)\n");
     return false;
@@ -583,6 +586,8 @@ bool Hi8561Touch::DiscoverRuntimeLayout() {
 bool Hi8561Touch::ReadFirmwareInfoFromSection(
     const SectionInfo& firmware_config_section, FirmwareInfo* firmware_info) {
   if (firmware_info == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Hi8561Touch::ReadFirmwareInfoFromSection: required pointer is null\n");
     return false;
   }
 

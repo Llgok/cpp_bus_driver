@@ -23,14 +23,10 @@ bool Co5300::Init(int32_t freq_hz) {
   }
 
   if (!QspiChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence) / sizeof(uint32_t))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "InitSequence failed\n");
     return false;
   }
 
@@ -49,8 +45,6 @@ bool Co5300::Deinit() {
   bool result = true;
 
   if (!QspiChipBase::Deinit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 
@@ -228,6 +222,8 @@ bool Co5300::SetColorFormat(ColorFormat format) {
       value = 0x77;
       break;
     default:
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Co5300::SetColorFormat: unsupported color format\n");
       return false;
   }
   return WriteCommand(

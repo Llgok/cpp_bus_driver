@@ -50,14 +50,14 @@ bool IsValidBistPattern(S023msafjf10111e1::BistPattern pattern) {
  */
 bool S023msafjf10111e1::Init(int32_t freq_hz) {
   if (bus_ == nullptr || freq_hz <= 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "S023msafjf10111e1::Init: invalid bus or I2C frequency\n");
     return false;
   }
   if (rst_ != kPinNotConnected && !Reset()) {
     return false;
   }
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     I2cChipBase::Deinit(false);
     if (rst_ != kPinNotConnected) {
       ResetGpio(rst_);
@@ -87,6 +87,8 @@ bool S023msafjf10111e1::Deinit(bool delete_bus) {
  */
 bool S023msafjf10111e1::Reset() {
   if (rst_ == kPinNotConnected) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "S023msafjf10111e1::Reset: reset pin is not connected\n");
     return false;
   }
   if (!SetGpioMode(rst_, GpioMode::kOutput, GpioStatus::kPullup) ||
@@ -115,6 +117,9 @@ bool S023msafjf10111e1::Reset() {
 bool S023msafjf10111e1::ReadRegisters(
     Register reg, uint8_t* data, size_t length) {
   if (bus_ == nullptr || data == nullptr || length == 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "S023msafjf10111e1::ReadRegisters: invalid buffer, length, or device "
+        "state\n");
     return false;
   }
   const auto address = static_cast<uint16_t>(reg);
@@ -140,6 +145,9 @@ bool S023msafjf10111e1::WriteRegisters(
     Register reg, const uint8_t* data, size_t length) {
   // 已公开的配置字段最多占两个连续字节。
   if (bus_ == nullptr || data == nullptr || length == 0 || length > 2) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "S023msafjf10111e1::WriteRegisters: invalid buffer, length, or "
+        "device state\n");
     return false;
   }
   const auto address = static_cast<uint16_t>(reg);
@@ -188,6 +196,8 @@ bool S023msafjf10111e1::SetMirror(MirrorMode mode) {
       vertical = kVerticalMirrorMask;
       break;
     default:
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "S023msafjf10111e1::SetMirror: unsupported mirror mode\n");
       return false;
   }
 
@@ -209,6 +219,8 @@ bool S023msafjf10111e1::SetMirror(MirrorMode mode) {
  */
 bool S023msafjf10111e1::GetMirror(MirrorMode* mode) {
   if (mode == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "S023msafjf10111e1::GetMirror: required pointer is null\n");
     return false;
   }
   uint8_t data[2];
@@ -233,6 +245,8 @@ bool S023msafjf10111e1::GetMirror(MirrorMode* mode) {
 bool S023msafjf10111e1::SetPixelShift(int8_t x, int8_t y) {
   if (x < -kPixelShiftXCenter || x > kPixelShiftXCenter ||
       y < -kPixelShiftYCenter || y > kPixelShiftYCenter) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "S023msafjf10111e1::SetPixelShift: X or Y offset out of range\n");
     return false;
   }
   uint8_t data[2];
@@ -256,6 +270,8 @@ bool S023msafjf10111e1::SetPixelShift(int8_t x, int8_t y) {
  */
 bool S023msafjf10111e1::GetPixelShift(int8_t* x, int8_t* y) {
   if (x == nullptr || y == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "S023msafjf10111e1::GetPixelShift: X or Y output pointer is null\n");
     return false;
   }
   uint8_t data[2];
@@ -266,6 +282,9 @@ bool S023msafjf10111e1::GetPixelShift(int8_t* x, int8_t* y) {
   const int shift_x = data[0] & kPixelShiftXMask;
   const int shift_y = data[1] & kPixelShiftYMask;
   if (shift_x > 2 * kPixelShiftXCenter || shift_y > 2 * kPixelShiftYCenter) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "S023msafjf10111e1::GetPixelShift: pixel shift register value is "
+        "invalid\n");
     return false;
   }
   *x = static_cast<int8_t>(shift_x - kPixelShiftXCenter);
@@ -315,6 +334,8 @@ bool S023msafjf10111e1::SetBistEnabled(bool enabled) {
  */
 bool S023msafjf10111e1::SetBistPattern(BistPattern pattern) {
   if (!IsValidBistPattern(pattern)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "S023msafjf10111e1::SetBistPattern: unsupported BIST pattern\n");
     return false;
   }
   return SetBistEnabled(true) &&
@@ -328,6 +349,8 @@ bool S023msafjf10111e1::SetBistPattern(BistPattern pattern) {
  */
 bool S023msafjf10111e1::GetBistPattern(BistPattern* pattern) {
   if (pattern == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "S023msafjf10111e1::GetBistPattern: required pointer is null\n");
     return false;
   }
   uint8_t value;
@@ -336,6 +359,8 @@ bool S023msafjf10111e1::GetBistPattern(BistPattern* pattern) {
   }
   const auto result = static_cast<BistPattern>(value);
   if (!IsValidBistPattern(result)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "S023msafjf10111e1::GetBistPattern: invalid BIST pattern readback\n");
     return false;
   }
   *pattern = result;
@@ -350,6 +375,8 @@ bool S023msafjf10111e1::GetBistPattern(BistPattern* pattern) {
  */
 bool S023msafjf10111e1::SetBrightnessGain(uint16_t gain) {
   if (gain > kMaxBrightnessGain) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "S023msafjf10111e1::SetBrightnessGain: invalid gain\n");
     return false;
   }
   // 手册要求完整写入亮度路径配置；公共控制位未定义，不能按位合并 BIST 配置。
@@ -373,6 +400,8 @@ bool S023msafjf10111e1::SetBrightnessGain(uint16_t gain) {
  */
 bool S023msafjf10111e1::GetBrightnessGain(uint16_t* gain) {
   if (gain == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "S023msafjf10111e1::GetBrightnessGain: required pointer is null\n");
     return false;
   }
   uint8_t data[2];

@@ -77,6 +77,9 @@ bool Sgm41562xx::Sgm41562sDriver::SetFastChargeCurrentLimit(
       Register::kChargeCurrentControl, 0x7F, 0, 8, 1024, 8};
   const uint16_t scale = (miscellaneous_configuration & 0x01) != 0 ? 4 : 1;
   if (current_ma > kField.maximum / scale) {
+    chip.LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::Sgm41562sDriver::SetFastChargeCurrentLimit: current out "
+        "of range (mA)\n");
     return false;
   }
   return chip.SetRegisterField(kField, current_ma * scale);
@@ -98,6 +101,9 @@ bool Sgm41562xx::Sgm41562sDriver::SetWatchdogTimer(
       setting = 3;
       break;
     default:
+      chip.LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Sgm41562xx::Sgm41562sDriver::SetWatchdogTimer: unsupported "
+          "watchdog timeout\n");
       return false;
   }
   return chip.UpdateRegisterBits(Register::kChargeTerminationTimerControl,
@@ -153,6 +159,9 @@ bool Sgm41562xx::Sgm41562sDriver::SetPrechargeCurrentLimit(
 bool Sgm41562xx::Sgm41562sDriver::SetInputOvervoltageThreshold(
     Sgm41562xx& chip, uint16_t voltage_mv) const {
   if (voltage_mv != 6000 && voltage_mv != 19000) {
+    chip.LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::Sgm41562sDriver::SetInputOvervoltageThreshold: "
+        "unsupported input overvoltage threshold\n");
     return false;
   }
   return chip.UpdateRegisterBits(Register::kSystemStatus,

@@ -23,8 +23,6 @@ constexpr uint16_t kFullAccessKey = 0xFFFF;
 
 bool Bq27220::Init(int32_t freq_hz) {
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
@@ -44,8 +42,6 @@ bool Bq27220::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 
@@ -54,71 +50,64 @@ bool Bq27220::Deinit(bool delete_bus) {
 
 uint16_t Bq27220::GetChipId() {
   uint16_t value = 0;
-  if (!ReadControlSubcommand(ControlSubcommand::kDeviceNumber, &value)) {
-  }
+  static_cast<void>(
+      ReadControlSubcommand(ControlSubcommand::kDeviceNumber, &value));
   return value;
 }
 
 uint16_t Bq27220::GetFirmwareVersion() {
   uint16_t value = 0;
-  if (!ReadControlSubcommand(ControlSubcommand::kFirmwareVersion, &value)) {
-  }
+  static_cast<void>(
+      ReadControlSubcommand(ControlSubcommand::kFirmwareVersion, &value));
   return value;
 }
 
 uint16_t Bq27220::GetHardwareVersion() {
   uint16_t value = 0;
-  if (!ReadControlSubcommand(ControlSubcommand::kHardwareVersion, &value)) {
-  }
+  static_cast<void>(
+      ReadControlSubcommand(ControlSubcommand::kHardwareVersion, &value));
   return value;
 }
 
 uint16_t Bq27220::GetDesignCapacity() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kDesignCapacity, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kDesignCapacity, &value));
   return value;
 }
 
 uint16_t Bq27220::GetVoltage() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kVoltage, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kVoltage, &value));
   return value;
 }
 
 int16_t Bq27220::GetCurrent() {
   int16_t value = 0;
-  if (!ReadS16(StandardCommand::kCurrent, &value)) {
-  }
+  static_cast<void>(ReadS16(StandardCommand::kCurrent, &value));
   return value;
 }
 
 int16_t Bq27220::GetAverageCurrent() {
   int16_t value = 0;
-  if (!ReadS16(StandardCommand::kAverageCurrent, &value)) {
-  }
+  static_cast<void>(ReadS16(StandardCommand::kAverageCurrent, &value));
   return value;
 }
 
 uint16_t Bq27220::GetRemainingCapacity() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kRemainingCapacity, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kRemainingCapacity, &value));
   return value;
 }
 
 uint16_t Bq27220::GetFullChargeCapacity() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kFullChargeCapacity, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kFullChargeCapacity, &value));
   return value;
 }
 
 int16_t Bq27220::GetAtRate() {
   int16_t value = 0;
-  if (!ReadS16(StandardCommand::kAtRate, &value)) {
-  }
+  static_cast<void>(ReadS16(StandardCommand::kAtRate, &value));
   return value;
 }
 
@@ -131,15 +120,13 @@ bool Bq27220::SetAtRate(int16_t rate) {
 
 uint16_t Bq27220::GetAtRateTimeToEmpty() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kAtRateTimeToEmpty, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kAtRateTimeToEmpty, &value));
   return value;
 }
 
 uint16_t Bq27220::GetTemperatureRaw() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kTemperature, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kTemperature, &value));
   return value;
 }
 
@@ -226,6 +213,8 @@ bool Bq27220::SetDesignCapacity(uint16_t capacity) {
 
 bool Bq27220::SetBatteryCapacity(uint16_t capacity) {
   if (capacity == 0 || capacity > INT16_MAX) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Bq27220::SetBatteryCapacity: capacity must be 1..32767 mAh\n");
     return false;
   }
 
@@ -252,74 +241,66 @@ bool Bq27220::SetBatteryCapacity(uint16_t capacity) {
         ReadDataMemory(DataMemoryAddress::kDesignCapacity, &design_capacity);
     result = read_back_succeeded && full_charge_capacity == capacity &&
              design_capacity == capacity;
-  }
-  if (!result) {
-    LogMessage(
-        LogLevel::kError, __FILE__, __LINE__, "SetBatteryCapacity failed\n");
+    if (read_back_succeeded && !result) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Battery capacity mismatch (design: %u, full: %u, expected: %u)\n",
+          design_capacity, full_charge_capacity, capacity);
+    }
   }
   return result;
 }
 
 uint16_t Bq27220::GetTimeToEmpty() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kTimeToEmpty, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kTimeToEmpty, &value));
   return value;
 }
 
 uint16_t Bq27220::GetTimeToFull() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kTimeToFull, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kTimeToFull, &value));
   return value;
 }
 
 int16_t Bq27220::GetStandbyCurrent() {
   int16_t value = 0;
-  if (!ReadS16(StandardCommand::kStandbyCurrent, &value)) {
-  }
+  static_cast<void>(ReadS16(StandardCommand::kStandbyCurrent, &value));
   return value;
 }
 
 uint16_t Bq27220::GetStandbyTimeToEmpty() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kStandbyTimeToEmpty, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kStandbyTimeToEmpty, &value));
   return value;
 }
 
 int16_t Bq27220::GetMaxLoadCurrent() {
   int16_t value = 0;
-  if (!ReadS16(StandardCommand::kMaxLoadCurrent, &value)) {
-  }
+  static_cast<void>(ReadS16(StandardCommand::kMaxLoadCurrent, &value));
   return value;
 }
 
 uint16_t Bq27220::GetMaxLoadTimeToEmpty() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kMaxLoadTimeToEmpty, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kMaxLoadTimeToEmpty, &value));
   return value;
 }
 
 int16_t Bq27220::GetRawCoulombCount() {
   int16_t value = 0;
-  if (!ReadS16(StandardCommand::kRawCoulombCount, &value)) {
-  }
+  static_cast<void>(ReadS16(StandardCommand::kRawCoulombCount, &value));
   return value;
 }
 
 int16_t Bq27220::GetAveragePower() {
   int16_t value = 0;
-  if (!ReadS16(StandardCommand::kAveragePower, &value)) {
-  }
+  static_cast<void>(ReadS16(StandardCommand::kAveragePower, &value));
   return value;
 }
 
 uint16_t Bq27220::GetChipTemperatureRaw() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kInternalTemperature, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kInternalTemperature, &value));
   return value;
 }
 
@@ -333,36 +314,31 @@ float Bq27220::GetChipTemperatureCelsius() {
 
 uint16_t Bq27220::GetCycleCount() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kCycleCount, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kCycleCount, &value));
   return value;
 }
 
 uint16_t Bq27220::GetStatusOfCharge() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kStatusOfCharge, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kStatusOfCharge, &value));
   return value;
 }
 
 uint16_t Bq27220::GetStatusOfHealth() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kStatusOfHealth, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kStatusOfHealth, &value));
   return value;
 }
 
 uint16_t Bq27220::GetChargingVoltage() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kChargingVoltage, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kChargingVoltage, &value));
   return value;
 }
 
 uint16_t Bq27220::GetChargingCurrent() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kChargingCurrent, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kChargingCurrent, &value));
   return value;
 }
 
@@ -382,29 +358,25 @@ bool Bq27220::SetBtpChargeThreshold(uint16_t threshold_mah) {
 
 uint16_t Bq27220::GetAnalogCount() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kAnalogCount, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kAnalogCount, &value));
   return value;
 }
 
 int16_t Bq27220::GetRawCurrent() {
   int16_t value = 0;
-  if (!ReadS16(StandardCommand::kRawCurrent, &value)) {
-  }
+  static_cast<void>(ReadS16(StandardCommand::kRawCurrent, &value));
   return value;
 }
 
 uint16_t Bq27220::GetRawVoltage() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kRawVoltage, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kRawVoltage, &value));
   return value;
 }
 
 uint16_t Bq27220::GetRawInternalTemperature() {
   uint16_t value = 0;
-  if (!ReadU16(StandardCommand::kRawInternalTemperature, &value)) {
-  }
+  static_cast<void>(ReadU16(StandardCommand::kRawInternalTemperature, &value));
   return value;
 }
 

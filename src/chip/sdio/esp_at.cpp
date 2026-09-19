@@ -58,8 +58,6 @@ bool EspAt::Init(int32_t freq_hz) {
   }
 
   if (!SdioChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
@@ -88,8 +86,6 @@ bool EspAt::Deinit() {
   bool result = true;
 
   if (!SdioChipBase::Deinit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 
@@ -161,12 +157,16 @@ bool EspAt::GetChipId() {
 
 bool EspAt::WaitForResponse(const char* text) {
   if (text == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "EspAt::WaitForResponse: response text is null\n");
     return false;
   }
   const size_t text_length = std::strlen(text);
   // 保留上一块的短尾部，支持 ready/OK 跨接收块出现。
   std::array<uint8_t, kMaxTransmitBlockBufferSize> buffer{};
   if (text_length == 0 || text_length > buffer.size()) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "EspAt::WaitForResponse: response text length is invalid\n");
     return false;
   }
   size_t retained = 0;
@@ -281,6 +281,8 @@ uint32_t EspAt::GetReceiveDataLength() {
 
 bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
   if (byte == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "EspAt::ReceivePacket: output length pointer is null\n");
     return false;
   }
   const size_t capacity = *byte;
@@ -292,6 +294,8 @@ bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
   }
   const size_t length = GetReceiveDataLength();
   if (length == 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "EspAt::ReceivePacket: receive packet is empty\n");
     return false;
   }
   if (length > kMaxPacketSize) {
@@ -315,6 +319,9 @@ bool EspAt::ReceivePacket(uint8_t* data, size_t* byte) {
 bool EspAt::ReadPacketData(uint8_t* data, size_t length) {
   if (data == nullptr || length == 0 || length > kMaxPacketSize ||
       !connect_.status) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "EspAt::ReadPacketData: invalid packet buffer, length, or connection "
+        "state\n");
     return false;
   }
   const size_t block_length =

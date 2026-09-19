@@ -104,15 +104,12 @@ bool Gt9895::Init(int32_t freq_hz) {
     return false;
   }
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     I2cChipBase::Deinit(false);
     return false;
   }
 
   ChipInfo chip_info;
   if (!ReadChipInfo(&chip_info)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "GT9895 init failed (firmware information is invalid)\n");
     I2cChipBase::Deinit(false);
     return false;
   }
@@ -120,8 +117,6 @@ bool Gt9895::Init(int32_t freq_hz) {
 
   RuntimeInfo runtime_info;
   if (!ReadRuntimeInfo(&runtime_info)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "GT9895 init failed (runtime information is invalid)\n");
     I2cChipBase::Deinit(false);
     chip_info_ = ChipInfo();
     return false;
@@ -628,24 +623,27 @@ bool Gt9895::ResetController() {
 
 bool Gt9895::ReadChipInfo(ChipInfo* chip_info) {
   if (chip_info == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Gt9895::ReadChipInfo: required pointer is null\n");
     return false;
   }
 
   std::array<uint8_t, kFirmwareInfoSize> data{};
   bool read_success = false;
   for (size_t attempt = 0; attempt < kChipInfoReadAttemptCount; ++attempt) {
-    if (ReadRegister(kFirmwareVersionAddress, data.data(), data.size()) &&
-        HasValidChecksum(data.data(), data.size())) {
-      read_success = true;
-      break;
+    if (ReadRegister(kFirmwareVersionAddress, data.data(), data.size())) {
+      if (HasValidChecksum(data.data(), data.size())) {
+        read_success = true;
+        break;
+      }
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "GT9895 firmware information checksum mismatch\n");
     }
     if (attempt + 1 < kChipInfoReadAttemptCount) {
       DelayMs(kChipInfoReadRetryDelayMs);
     }
   }
   if (!read_success) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "GT9895 firmware information read failed (checksum or I2C error)\n");
     return false;
   }
 
@@ -680,6 +678,8 @@ bool Gt9895::ReadChipInfo(ChipInfo* chip_info) {
 
 bool Gt9895::ReadRuntimeInfo(RuntimeInfo* runtime_info) {
   if (runtime_info == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Gt9895::ReadRuntimeInfo: required pointer is null\n");
     return false;
   }
 
@@ -705,10 +705,12 @@ bool Gt9895::ReadRuntimeInfo(RuntimeInfo* runtime_info) {
         length);
     return false;
   }
-  if (!ReadRegister(kRuntimeInfoAddress, data.get(), length) ||
-      !HasValidChecksum(data.get(), length)) {
+  if (!ReadRegister(kRuntimeInfoAddress, data.get(), length)) {
+    return false;
+  }
+  if (!HasValidChecksum(data.get(), length)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "GT9895 runtime information read failed (checksum or I2C error)\n");
+        "GT9895 runtime information checksum mismatch\n");
     return false;
   }
 
@@ -774,6 +776,8 @@ bool Gt9895::ReadRuntimeInfo(RuntimeInfo* runtime_info) {
 
 bool Gt9895::ReadRegister(uint32_t address, uint8_t* data, size_t length) {
   if (data == nullptr || length == 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Gt9895::ReadRegister: invalid buffer, length, or device state\n");
     return false;
   }
   const uint8_t command[] = {
@@ -794,6 +798,8 @@ bool Gt9895::ReadRegister(uint32_t address, uint8_t* data, size_t length) {
 bool Gt9895::WriteRegister(
     uint32_t address, const uint8_t* data, size_t length) {
   if (data == nullptr || length == 0 || length > kMaximumCommandPacketSize) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Gt9895::WriteRegister: invalid buffer, length, or device state\n");
     return false;
   }
 
@@ -854,18 +860,12 @@ bool Gt9895::SendCommand(
   for (size_t attempt = 0; attempt < kCommandRetryCount; ++attempt) {
     if (!WriteRegister(
             runtime_info_.command_address, packet.data(), packet_length)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "GT9895 command failed (command: 0X%02X, write attempt: %zu)\n",
-          static_cast<unsigned int>(command_value), attempt + 1);
       return false;
     }
 
     for (size_t poll = 0; poll < kCommandRetryCount; ++poll) {
       if (!ReadRegister(runtime_info_.command_address, acknowledgement.data(),
               acknowledgement.size())) {
-        LogMessage(LogLevel::kError, __FILE__, __LINE__,
-            "GT9895 command failed (command: 0X%02X, ACK read failed)\n",
-            static_cast<unsigned int>(command_value));
         return false;
       }
 

@@ -87,8 +87,6 @@ bool Sgm41562xx::Init(int32_t freq_hz) {
   model_driver_ = nullptr;
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
@@ -134,8 +132,6 @@ bool Sgm41562xx::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 
@@ -253,6 +249,8 @@ bool Sgm41562xx::UpdateRegisterBits(
 
 bool Sgm41562xx::SetRegisterField(const RegisterField& field, uint16_t value) {
   if (!IsRegisterValueValid(value, field.minimum, field.maximum, field.step)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::SetRegisterField: invalid parameter value\n");
     return false;
   }
   return UpdateRegisterBits(field.register_id, field.mask,
@@ -274,21 +272,29 @@ bool Sgm41562xx::ModelDriver::FinishTerminationCurrentLimit(Sgm41562xx&) const {
 
 bool Sgm41562xx::ModelDriver::SetPrechargeCurrentLimit(
     Sgm41562xx&, uint16_t) const {
+  Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+      "%s: operation is not supported by this chip model\n", __func__);
   return false;
 }
 
 bool Sgm41562xx::ModelDriver::SetInputCurrentLimitReleaseEnable(
     Sgm41562xx&, bool) const {
+  Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+      "%s: operation is not supported by this chip model\n", __func__);
   return false;
 }
 
 bool Sgm41562xx::ModelDriver::SetInputCurrentLimitOffsetEnable(
     Sgm41562xx&, bool) const {
+  Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+      "%s: operation is not supported by this chip model\n", __func__);
   return false;
 }
 
 bool Sgm41562xx::ModelDriver::SetInputOvervoltageThreshold(
     Sgm41562xx&, uint16_t) const {
+  Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+      "%s: operation is not supported by this chip model\n", __func__);
   return false;
 }
 
@@ -355,7 +361,12 @@ bool Sgm41562xx::SetHighImpedanceModeEnable(bool enable) {
 }
 
 bool Sgm41562xx::SetMinimumInputVoltageLimit(uint16_t voltage_mv) {
-  if (!IsInitialized() || !IsRegisterValueValid(voltage_mv, 3880, 5080, 80)) {
+  if (!IsInitialized()) {
+    return false;
+  }
+  if (!IsRegisterValueValid(voltage_mv, 3880, 5080, 80)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::SetMinimumInputVoltageLimit: invalid parameter value\n");
     return false;
   }
   const uint8_t value = static_cast<uint8_t>(((voltage_mv - 3880) / 80) << 4);
@@ -364,7 +375,13 @@ bool Sgm41562xx::SetMinimumInputVoltageLimit(uint16_t voltage_mv) {
 }
 
 bool Sgm41562xx::SetBatteryUndervoltageThreshold(uint16_t voltage_mv) {
-  if (!IsInitialized() || !IsRegisterValueValid(voltage_mv, 2400, 3030, 90)) {
+  if (!IsInitialized()) {
+    return false;
+  }
+  if (!IsRegisterValueValid(voltage_mv, 2400, 3030, 90)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::SetBatteryUndervoltageThreshold: invalid parameter "
+        "value\n");
     return false;
   }
   return UpdateRegisterBits(Register::kPowerOnConfiguration,
@@ -400,7 +417,12 @@ bool Sgm41562xx::SetFastChargeCurrentLimit(uint16_t current_ma) {
 }
 
 bool Sgm41562xx::SetTerminationCurrentLimit(uint16_t current_ma) {
-  if (!IsInitialized() || !IsRegisterValueValid(current_ma, 1, 31, 2)) {
+  if (!IsInitialized()) {
+    return false;
+  }
+  if (!IsRegisterValueValid(current_ma, 1, 31, 2)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::SetTerminationCurrentLimit: invalid parameter value\n");
     return false;
   }
   const bool current_set =
@@ -410,14 +432,25 @@ bool Sgm41562xx::SetTerminationCurrentLimit(uint16_t current_ma) {
 }
 
 bool Sgm41562xx::SetPrechargeCurrentLimit(uint16_t current_ma) {
-  if (!IsInitialized() || !HasFeature(Feature::kPrechargeCurrent)) {
+  if (!IsInitialized()) {
+    return false;
+  }
+  if (!HasFeature(Feature::kPrechargeCurrent)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::SetPrechargeCurrentLimit: requested feature is not "
+        "supported by this chip\n");
     return false;
   }
   return model_driver_->SetPrechargeCurrentLimit(*this, current_ma);
 }
 
 bool Sgm41562xx::SetDischargeCurrentLimit(uint16_t current_ma) {
-  if (!IsInitialized() || !IsRegisterValueValid(current_ma, 400, 3200, 200)) {
+  if (!IsInitialized()) {
+    return false;
+  }
+  if (!IsRegisterValueValid(current_ma, 400, 3200, 200)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::SetDischargeCurrentLimit: invalid parameter value\n");
     return false;
   }
   return UpdateRegisterBits(Register::kDischargeTerminationCurrent,
@@ -440,14 +473,25 @@ bool Sgm41562xx::SetWatchdogTimer(uint16_t timeout_s) {
 }
 
 bool Sgm41562xx::SetPrechargeToFastChargeThreshold(uint16_t voltage_mv) {
-  if (!IsInitialized() || (voltage_mv != 2800 && voltage_mv != 3000)) {
+  if (!IsInitialized()) {
+    return false;
+  }
+  if ((voltage_mv != 2800 && voltage_mv != 3000)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::SetPrechargeToFastChargeThreshold: voltage out of range "
+        "(mV)\n");
     return false;
   }
   return model_driver_->SetPrechargeToFastChargeThreshold(*this, voltage_mv);
 }
 
 bool Sgm41562xx::SetRechargeThreshold(uint16_t voltage_mv) {
-  if (!IsInitialized() || (voltage_mv != 100 && voltage_mv != 200)) {
+  if (!IsInitialized()) {
+    return false;
+  }
+  if ((voltage_mv != 100 && voltage_mv != 200)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::SetRechargeThreshold: voltage out of range (mV)\n");
     return false;
   }
   return UpdateRegisterBits(Register::kChargeVoltageControl,
@@ -498,6 +542,9 @@ bool Sgm41562xx::SetSafetyTimerDuration(uint8_t duration_hours) {
     ++setting;
   }
   if (setting == sizeof(kSafetyTimerHours)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::SetSafetyTimerDuration: unsupported safety timer "
+        "duration\n");
     return false;
   }
   return UpdateRegisterBits(Register::kChargeTerminationTimerControl,
@@ -538,6 +585,8 @@ bool Sgm41562xx::SetInterruptEnable(InterruptType interrupt_type, bool enable) {
       mask != static_cast<uint8_t>(InterruptType::kChargeStatus) &&
       mask != static_cast<uint8_t>(InterruptType::kNtc) &&
       mask != static_cast<uint8_t>(InterruptType::kBatteryOvervoltage)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::SetInterruptEnable: invalid mask\n");
     return false;
   }
   return UpdateRegisterBits(
@@ -559,21 +608,39 @@ bool Sgm41562xx::SetPcbOvertemperatureProtectionEnable(bool enable) {
 }
 
 bool Sgm41562xx::SetInputCurrentLimitReleaseEnable(bool enable) {
-  if (!IsInitialized() || !HasFeature(Feature::kInputCurrentLimitRelease)) {
+  if (!IsInitialized()) {
+    return false;
+  }
+  if (!HasFeature(Feature::kInputCurrentLimitRelease)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::SetInputCurrentLimitReleaseEnable: requested feature is "
+        "not supported by this chip\n");
     return false;
   }
   return model_driver_->SetInputCurrentLimitReleaseEnable(*this, enable);
 }
 
 bool Sgm41562xx::SetInputCurrentLimitOffsetEnable(bool enable) {
-  if (!IsInitialized() || !HasFeature(Feature::kInputCurrentLimitOffset)) {
+  if (!IsInitialized()) {
+    return false;
+  }
+  if (!HasFeature(Feature::kInputCurrentLimitOffset)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::SetInputCurrentLimitOffsetEnable: requested feature is "
+        "not supported by this chip\n");
     return false;
   }
   return model_driver_->SetInputCurrentLimitOffsetEnable(*this, enable);
 }
 
 bool Sgm41562xx::SetInputOvervoltageThreshold(uint16_t voltage_mv) {
-  if (!IsInitialized() || !HasFeature(Feature::kInputOvervoltageThreshold)) {
+  if (!IsInitialized()) {
+    return false;
+  }
+  if (!HasFeature(Feature::kInputOvervoltageThreshold)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::SetInputOvervoltageThreshold: requested feature is not "
+        "supported by this chip\n");
     return false;
   }
   return model_driver_->SetInputOvervoltageThreshold(*this, voltage_mv);

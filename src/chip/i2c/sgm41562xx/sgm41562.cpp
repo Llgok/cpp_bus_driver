@@ -81,6 +81,9 @@ bool Sgm41562xx::Sgm41562Driver::SetFastChargeCurrentLimit(
       Register::kChargeCurrentControl, 0x3F, 0, 8, 456, 8};
   const uint16_t scale = (miscellaneous_configuration & 0x01) != 0 ? 4 : 1;
   if (current_ma > kField.maximum / scale) {
+    chip.LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sgm41562xx::Sgm41562Driver::SetFastChargeCurrentLimit: current out "
+        "of range (mA)\n");
     return false;
   }
   return chip.SetRegisterField(kField, current_ma * scale);
@@ -102,6 +105,9 @@ bool Sgm41562xx::Sgm41562Driver::SetWatchdogTimer(
       setting = 3;
       break;
     default:
+      chip.LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Sgm41562xx::Sgm41562Driver::SetWatchdogTimer: unsupported "
+          "watchdog timeout\n");
       return false;
   }
   return chip.UpdateRegisterBits(Register::kChargeTerminationTimerControl,

@@ -119,7 +119,7 @@ bool Nrf24l01x::Init(int32_t frequency_hz) {
   }
 
   if (!bus_->Init(frequency_hz, kPinNotConnected)) {
-    return FailInitialization("SPI initialization failed");
+    return FailInitialization(nullptr);
   }
   bus_initialized_ = true;
   spi_frequency_hz_ = frequency_hz;
@@ -135,10 +135,10 @@ bool Nrf24l01x::Init(int32_t frequency_hz) {
   } while (!detected && GetSystemTimeMs() - probe_start_ms <
                             static_cast<int64_t>(kPowerOnResetTimeoutMs));
   if (!detected) {
-    return FailInitialization("nRF24L01x probe failed");
+    return FailInitialization("nRF24L01x probe timed out");
   }
   if (!Configure(Config{})) {
-    return FailInitialization("nRF24L01x default configuration failed");
+    return FailInitialization(nullptr);
   }
 
   initialized_ = true;
@@ -256,6 +256,11 @@ bool Nrf24l01x::Configure(const Config& config) {
     feature_result = ActivateFeatures();
     feature_result &= WriteRegister(Register::kFeature, feature);
     feature_result &= ReadRegister(Register::kFeature, &feature_readback);
+    if (feature_result && feature_readback != feature) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "NRF24L01x FEATURE readback mismatch (actual: %#X, expected: %#X)\n",
+          feature_readback, feature);
+    }
     feature_result &= feature_readback == feature;
   }
   result &= feature_result;
@@ -267,8 +272,6 @@ bool Nrf24l01x::Configure(const Config& config) {
   result &= FlushRx();
   result &= FlushTx();
   if (!result) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Apply nRF24L01x configuration failed\n");
     return false;
   }
 
@@ -283,13 +286,19 @@ bool Nrf24l01x::Configure(const Config& config) {
 
 bool Nrf24l01x::Probe() {
   if (!bus_initialized_) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::Probe: device is not initialized or is not ready\n");
     return false;
   }
 
   uint8_t original_channel = 0;
   uint8_t status = 0;
-  if (!ReadRegister(Register::kRfChannel, &original_channel, &status) ||
-      (status & 0x80U) != 0 || original_channel > 125U) {
+  if (!ReadRegister(Register::kRfChannel, &original_channel, &status)) {
+    return false;
+  }
+  if ((status & 0x80U) != 0 || original_channel > 125U) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::Probe: invalid status or RF channel readback\n");
     return false;
   }
 
@@ -301,6 +310,11 @@ bool Nrf24l01x::Probe() {
   // 即使回读失败也尝试还原 RF_CH，避免诊断流程改变后续工作信道。
   const bool channel_restored =
       WriteRegister(Register::kRfChannel, original_channel);
+  if (probe_read && readback != probe_channel) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "NRF24L01x probe mismatch (actual: %#X, expected: %#X)\n",
+        readback, probe_channel);
+  }
   return probe_written && probe_read && channel_restored &&
          readback == probe_channel;
 }
@@ -308,6 +322,8 @@ bool Nrf24l01x::Probe() {
 bool Nrf24l01x::SetOperationMode(OperationMode mode) {
   if (mode != OperationMode::kPrimaryTransmitter &&
       mode != OperationMode::kPrimaryReceiver) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetOperationMode: unsupported operation mode\n");
     return false;
   }
   const uint8_t value =
@@ -321,6 +337,8 @@ bool Nrf24l01x::SetOperationMode(OperationMode mode) {
 
 bool Nrf24l01x::SetPowerMode(PowerMode mode) {
   if (mode != PowerMode::kPowerDown && mode != PowerMode::kPowerUp) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetPowerMode: unsupported power mode\n");
     return false;
   }
   if (mode == PowerMode::kPowerDown) {
@@ -346,6 +364,8 @@ bool Nrf24l01x::SetPowerMode(PowerMode mode) {
 bool Nrf24l01x::SetCrcMode(CrcMode mode) {
   if (mode != CrcMode::kDisabled && mode != CrcMode::k8Bit &&
       mode != CrcMode::k16Bit) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetCrcMode: unsupported CRC mode\n");
     return false;
   }
   uint8_t value = 0;
@@ -365,6 +385,8 @@ bool Nrf24l01x::SetCrcMode(CrcMode mode) {
 
 bool Nrf24l01x::SetIrqMode(IrqSource source, bool enabled) {
   if (!IsValidIrqSource(source)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetIrqMode: unsupported IRQ source\n");
     return false;
   }
   const uint8_t mask = BitForIrq(source);
@@ -387,6 +409,8 @@ bool Nrf24l01x::SetIrqMode(IrqSource source, bool enabled) {
 
 bool Nrf24l01x::GetIrqMode(IrqSource source, bool* enabled) {
   if (!IsValidIrqSource(source) || enabled == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetIrqMode: invalid IRQ source or null output pointer\n");
     return false;
   }
   uint8_t config = 0;
@@ -399,6 +423,8 @@ bool Nrf24l01x::GetIrqMode(IrqSource source, bool* enabled) {
 
 bool Nrf24l01x::GetClearIrqFlags(uint8_t* flags) {
   if (flags == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetClearIrqFlags: required pointer is null\n");
     return false;
   }
   uint8_t status = 0;
@@ -411,6 +437,8 @@ bool Nrf24l01x::GetClearIrqFlags(uint8_t* flags) {
 
 bool Nrf24l01x::ClearIrqFlagsGetStatus(uint8_t* status) {
   if (status == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::ClearIrqFlagsGetStatus: required pointer is null\n");
     return false;
   }
   uint8_t previous = 0;
@@ -426,6 +454,8 @@ bool Nrf24l01x::ClearIrqFlagsGetStatus(uint8_t* status) {
 
 bool Nrf24l01x::ClearIrqFlag(IrqSource source) {
   if (!IsValidIrqSource(source)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::ClearIrqFlag: unsupported IRQ source\n");
     return false;
   }
   return WriteRegister(Register::kStatus, BitForIrq(source));
@@ -433,6 +463,8 @@ bool Nrf24l01x::ClearIrqFlag(IrqSource source) {
 
 bool Nrf24l01x::GetIrqFlags(uint8_t* flags) {
   if (flags == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetIrqFlags: required pointer is null\n");
     return false;
   }
   uint8_t status = 0;
@@ -463,6 +495,8 @@ bool Nrf24l01x::OpenPipe(Address pipe, bool auto_ack) {
       auto_ack_pipes &= static_cast<uint8_t>(~mask);
     }
   } else {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "NRF24L01x invalid pipe address: %u\n", static_cast<unsigned>(pipe));
     return false;
   }
 
@@ -492,6 +526,8 @@ bool Nrf24l01x::ClosePipe(Address pipe) {
     enabled_pipes &= static_cast<uint8_t>(~mask);
     auto_ack_pipes &= static_cast<uint8_t>(~mask);
   } else {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "NRF24L01x invalid pipe address: %u\n", static_cast<unsigned>(pipe));
     return false;
   }
 
@@ -509,6 +545,8 @@ bool Nrf24l01x::SetAddress(
     Address address, const uint8_t* data, std::size_t length) {
   if (data == nullptr ||
       (!IsPipeAddress(address) && address != Address::kTransmit)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetAddress: invalid address or null input buffer\n");
     return false;
   }
 
@@ -521,6 +559,9 @@ bool Nrf24l01x::SetAddress(
   }
   const std::size_t required_length = full_address ? address_width : 1;
   if (length != required_length) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetAddress: address length does not match the configured "
+        "width\n");
     return false;
   }
   return WriteBuffer(RegisterForAddress(address), data, required_length);
@@ -530,6 +571,8 @@ bool Nrf24l01x::GetAddress(
     Address address, uint8_t* data, std::size_t capacity, std::size_t* length) {
   if (data == nullptr || length == nullptr ||
       (!IsPipeAddress(address) && address != Address::kTransmit)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetAddress: invalid address or null output pointer\n");
     return false;
   }
 
@@ -542,6 +585,8 @@ bool Nrf24l01x::GetAddress(
   }
   const std::size_t required_length = full_address ? address_width : 1;
   if (capacity < required_length) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetAddress: address buffer capacity is too small\n");
     return false;
   }
   if (!ReadBuffer(RegisterForAddress(address), data, required_length)) {
@@ -554,6 +599,8 @@ bool Nrf24l01x::GetAddress(
 bool Nrf24l01x::SetAutoRetransmit(uint8_t count, uint16_t delay_us) {
   if (count > 15U || delay_us < 250U || delay_us > 4000U ||
       delay_us % 250U != 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetAutoRetransmit: invalid retransmit count or delay\n");
     return false;
   }
   const uint8_t delay = static_cast<uint8_t>((delay_us / 250U) - 1U);
@@ -568,8 +615,12 @@ bool Nrf24l01x::SetAutoRetransmit(uint8_t count, uint16_t delay_us) {
 
 bool Nrf24l01x::SetAddressWidth(AddressWidth width) {
   const uint8_t width_value = static_cast<uint8_t>(width);
-  if (width_value < 3U || width_value > 5U ||
-      !WriteRegister(Register::kSetupAddressWidth,
+  if (width_value < 3U || width_value > 5U) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetAddressWidth: invalid width value\n");
+    return false;
+  }
+  if (!WriteRegister(Register::kSetupAddressWidth,
           static_cast<uint8_t>(width_value - 2U))) {
     return false;
   }
@@ -579,11 +630,17 @@ bool Nrf24l01x::SetAddressWidth(AddressWidth width) {
 
 bool Nrf24l01x::GetAddressWidth(uint8_t* width) {
   if (width == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetAddressWidth: required pointer is null\n");
     return false;
   }
   uint8_t encoded_width = 0;
-  if (!ReadRegister(Register::kSetupAddressWidth, &encoded_width) ||
-      encoded_width < 1U || encoded_width > 3U) {
+  if (!ReadRegister(Register::kSetupAddressWidth, &encoded_width)) {
+    return false;
+  }
+  if (encoded_width < 1U || encoded_width > 3U) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetAddressWidth: invalid encoded width\n");
     return false;
   }
   *width = static_cast<uint8_t>(encoded_width + 2U);
@@ -591,8 +648,12 @@ bool Nrf24l01x::GetAddressWidth(uint8_t* width) {
 }
 
 bool Nrf24l01x::SetRxPayloadWidth(uint8_t pipe, uint8_t width) {
-  if (pipe > 5U || width > kMaximumPayloadLength ||
-      !WriteRegister(RegisterForPayloadWidth(pipe), width)) {
+  if (pipe > 5U || width > kMaximumPayloadLength) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetRxPayloadWidth: invalid pipe or payload width\n");
+    return false;
+  }
+  if (!WriteRegister(RegisterForPayloadWidth(pipe), width)) {
     return false;
   }
   config_.rx_payload_width[pipe] = width;
@@ -601,6 +662,8 @@ bool Nrf24l01x::SetRxPayloadWidth(uint8_t pipe, uint8_t width) {
 
 bool Nrf24l01x::GetRxPayloadWidth(uint8_t pipe, uint8_t* width) {
   if (pipe > 5U || width == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetRxPayloadWidth: invalid pipe or null output pointer\n");
     return false;
   }
   return ReadRegister(RegisterForPayloadWidth(pipe), width);
@@ -608,6 +671,8 @@ bool Nrf24l01x::GetRxPayloadWidth(uint8_t pipe, uint8_t* width) {
 
 bool Nrf24l01x::GetPipeStatus(uint8_t pipe, uint8_t* status) {
   if (pipe > 5U || status == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetPipeStatus: invalid pipe or null output pointer\n");
     return false;
   }
   uint8_t enabled_pipes = 0;
@@ -624,11 +689,18 @@ bool Nrf24l01x::GetPipeStatus(uint8_t pipe, uint8_t* status) {
 }
 
 bool Nrf24l01x::GetAutoRetransmitStatus(uint8_t* status) {
-  return status != nullptr && ReadRegister(Register::kObserveTx, status);
+  if (status == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: output status pointer is null\n", __func__);
+    return false;
+  }
+  return ReadRegister(Register::kObserveTx, status);
 }
 
 bool Nrf24l01x::GetPacketLostCount(uint8_t* count) {
   if (count == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetPacketLostCount: required pointer is null\n");
     return false;
   }
   uint8_t observe_tx = 0;
@@ -640,7 +712,12 @@ bool Nrf24l01x::GetPacketLostCount(uint8_t* count) {
 }
 
 bool Nrf24l01x::SetRfChannel(uint8_t channel) {
-  if (channel > 125U || !WriteRegister(Register::kRfChannel, channel)) {
+  if (channel > 125U) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetRfChannel: invalid channel\n");
+    return false;
+  }
+  if (!WriteRegister(Register::kRfChannel, channel)) {
     return false;
   }
   config_.rf_channel = channel;
@@ -650,6 +727,8 @@ bool Nrf24l01x::SetRfChannel(uint8_t channel) {
 bool Nrf24l01x::SetOutputPower(OutputPower power) {
   if (static_cast<uint8_t>(power) >
       static_cast<uint8_t>(OutputPower::kZeroDbm)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetOutputPower: unsupported output power\n");
     return false;
   }
   const uint8_t value = static_cast<uint8_t>(static_cast<uint8_t>(power) << 1);
@@ -663,6 +742,8 @@ bool Nrf24l01x::SetOutputPower(OutputPower power) {
 bool Nrf24l01x::SetDataRate(DataRate data_rate) {
   if (data_rate != DataRate::k1Mbps && data_rate != DataRate::k2Mbps &&
       data_rate != DataRate::k250Kbps) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetDataRate: unsupported data rate\n");
     return false;
   }
   uint8_t value = 0;
@@ -681,6 +762,8 @@ bool Nrf24l01x::SetDataRate(DataRate data_rate) {
 
 bool Nrf24l01x::GetTxFifoStatus(uint8_t* status) {
   if (status == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetTxFifoStatus: required pointer is null\n");
     return false;
   }
   uint8_t fifo = 0;
@@ -694,6 +777,8 @@ bool Nrf24l01x::GetTxFifoStatus(uint8_t* status) {
 
 bool Nrf24l01x::TxFifoEmpty(bool* empty) {
   if (empty == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::TxFifoEmpty: required pointer is null\n");
     return false;
   }
   uint8_t fifo = 0;
@@ -706,6 +791,8 @@ bool Nrf24l01x::TxFifoEmpty(bool* empty) {
 
 bool Nrf24l01x::TxFifoFull(bool* full) {
   if (full == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::TxFifoFull: required pointer is null\n");
     return false;
   }
   uint8_t fifo = 0;
@@ -718,6 +805,8 @@ bool Nrf24l01x::TxFifoFull(bool* full) {
 
 bool Nrf24l01x::GetRxFifoStatus(uint8_t* status) {
   if (status == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetRxFifoStatus: required pointer is null\n");
     return false;
   }
   uint8_t fifo = 0;
@@ -729,11 +818,18 @@ bool Nrf24l01x::GetRxFifoStatus(uint8_t* status) {
 }
 
 bool Nrf24l01x::GetFifoStatus(uint8_t* status) {
-  return status != nullptr && ReadRegister(Register::kFifoStatus, status);
+  if (status == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: output status pointer is null\n", __func__);
+    return false;
+  }
+  return ReadRegister(Register::kFifoStatus, status);
 }
 
 bool Nrf24l01x::RxFifoEmpty(bool* empty) {
   if (empty == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::RxFifoEmpty: required pointer is null\n");
     return false;
   }
   uint8_t fifo = 0;
@@ -746,6 +842,8 @@ bool Nrf24l01x::RxFifoEmpty(bool* empty) {
 
 bool Nrf24l01x::RxFifoFull(bool* full) {
   if (full == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::RxFifoFull: required pointer is null\n");
     return false;
   }
   uint8_t fifo = 0;
@@ -758,6 +856,8 @@ bool Nrf24l01x::RxFifoFull(bool* full) {
 
 bool Nrf24l01x::GetTransmitAttempts(uint8_t* count) {
   if (count == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetTransmitAttempts: required pointer is null\n");
     return false;
   }
   uint8_t observe_tx = 0;
@@ -770,6 +870,8 @@ bool Nrf24l01x::GetTransmitAttempts(uint8_t* count) {
 
 bool Nrf24l01x::GetCarrierDetect(bool* detected) {
   if (detected == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetCarrierDetect: required pointer is null\n");
     return false;
   }
   uint8_t received_power = 0;
@@ -786,8 +888,13 @@ bool Nrf24l01x::ActivateFeatures() {
 }
 
 bool Nrf24l01x::SetupDynamicPayload(uint8_t pipe_mask) {
-  if ((pipe_mask & ~kAllPipeMask) != 0 ||
-      !WriteRegister(Register::kDynamicPayload, pipe_mask)) {
+  if ((pipe_mask & ~kAllPipeMask) != 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetupDynamicPayload: pipe mask contains unsupported "
+        "bits\n");
+    return false;
+  }
+  if (!WriteRegister(Register::kDynamicPayload, pipe_mask)) {
     return false;
   }
   config_.dynamic_payload_pipe_mask = pipe_mask;
@@ -819,25 +926,40 @@ bool Nrf24l01x::EnableDynamicAck(bool enabled) {
 }
 
 bool Nrf24l01x::ReadRxPayloadWidth(uint8_t* width) {
-  return width != nullptr &&
-         ReadCommand(Command::kReadRxPayloadWidth, width, 1);
+  if (width == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: output width pointer is null\n", __func__);
+    return false;
+  }
+  return ReadCommand(Command::kReadRxPayloadWidth, width, 1);
 }
 
 bool Nrf24l01x::WriteTxPayload(const uint8_t* payload, std::size_t length) {
-  return payload != nullptr && length > 0 && length <= kMaximumPayloadLength &&
-         WriteCommand(Command::kWriteTxPayload, payload, length);
+  if (payload == nullptr || length == 0 || length > kMaximumPayloadLength) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: invalid payload buffer or length\n", __func__);
+    return false;
+  }
+  return WriteCommand(Command::kWriteTxPayload, payload, length);
 }
 
 bool Nrf24l01x::WriteTxPayloadNoAck(
     const uint8_t* payload, std::size_t length) {
-  return payload != nullptr && length > 0 && length <= kMaximumPayloadLength &&
-         WriteCommand(Command::kWriteTxPayloadNoAck, payload, length);
+  if (payload == nullptr || length == 0 || length > kMaximumPayloadLength) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: invalid payload buffer or length\n", __func__);
+    return false;
+  }
+  return WriteCommand(Command::kWriteTxPayloadNoAck, payload, length);
 }
 
 bool Nrf24l01x::WriteAckPayload(
     uint8_t pipe, const uint8_t* payload, std::size_t length) {
   if (pipe > 5U || payload == nullptr || length == 0 ||
       length > kMaximumPayloadLength) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::WriteAckPayload: invalid pipe, payload buffer, or "
+        "length\n");
     return false;
   }
   const uint8_t command =
@@ -848,6 +970,8 @@ bool Nrf24l01x::WriteAckPayload(
 bool Nrf24l01x::ReadRxPayload(uint8_t* payload, std::size_t capacity,
     std::size_t* length, uint8_t* pipe) {
   if (payload == nullptr || length == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::ReadRxPayload: null output pointer or zero capacity\n");
     return false;
   }
 
@@ -855,8 +979,13 @@ bool Nrf24l01x::ReadRxPayload(uint8_t* payload, std::size_t capacity,
   uint8_t payload_width = 0;
   uint8_t feature = 0;
   uint8_t dynamic_payload = 0;
-  if (!GetRxDataSource(&source) || source == kInvalidRxPipe ||
-      !ReadRegister(Register::kFeature, &feature) ||
+  if (!GetRxDataSource(&source)) {
+    return false;
+  }
+  if (source == kInvalidRxPipe) {
+    return false;
+  }
+  if (!ReadRegister(Register::kFeature, &feature) ||
       !ReadRegister(Register::kDynamicPayload, &dynamic_payload)) {
     return false;
   }
@@ -872,6 +1001,8 @@ bool Nrf24l01x::ReadRxPayload(uint8_t* payload, std::size_t capacity,
     return false;
   }
   if (payload_width > kMaximumPayloadLength) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "NRF24L01x RX payload width out of range: %u\n", payload_width);
     // 动态长度失步时规格书要求立即清空 RX FIFO；静态寄存器异常也采取同样保护。
     const bool flushed = FlushRx();
     const bool cleared = ClearIrqFlag(IrqSource::kRxDataReady);
@@ -879,8 +1010,12 @@ bool Nrf24l01x::ReadRxPayload(uint8_t* payload, std::size_t capacity,
     static_cast<void>(cleared);
     return false;
   }
-  if (capacity < payload_width ||
-      !ReadCommand(Command::kReadRxPayload, payload, payload_width)) {
+  if (capacity < payload_width) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::ReadRxPayload: output capacity is smaller than payload\n");
+    return false;
+  }
+  if (!ReadCommand(Command::kReadRxPayload, payload, payload_width)) {
     return false;
   }
   *length = payload_width;
@@ -892,6 +1027,8 @@ bool Nrf24l01x::ReadRxPayload(uint8_t* payload, std::size_t capacity,
 
 bool Nrf24l01x::GetRxDataSource(uint8_t* pipe) {
   if (pipe == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetRxDataSource: required pointer is null\n");
     return false;
   }
   uint8_t status = 0;
@@ -906,6 +1043,8 @@ bool Nrf24l01x::ReuseTx() { return ExecuteCommand(Command::kReuseTxPayload); }
 
 bool Nrf24l01x::GetReuseTxStatus(bool* reused) {
   if (reused == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::GetReuseTxStatus: required pointer is null\n");
     return false;
   }
   uint8_t fifo = 0;
@@ -921,7 +1060,12 @@ bool Nrf24l01x::FlushRx() { return ExecuteCommand(Command::kFlushRx); }
 bool Nrf24l01x::FlushTx() { return ExecuteCommand(Command::kFlushTx); }
 
 bool Nrf24l01x::NoOperation(uint8_t* status) {
-  return status != nullptr && ExecuteCommand(Command::kNoOperation, status);
+  if (status == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: output status pointer is null\n", __func__);
+    return false;
+  }
+  return ExecuteCommand(Command::kNoOperation, status);
 }
 
 bool Nrf24l01x::SetPllMode(bool locked) {
@@ -946,6 +1090,8 @@ bool Nrf24l01x::EnableContinuousWave(bool enabled) {
 bool Nrf24l01x::ReadRegister(
     Register register_id, uint8_t* value, uint8_t* status) {
   if (value == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::ReadRegister: required pointer is null\n");
     return false;
   }
   const uint8_t command = static_cast<uint8_t>(register_id) & kRegisterMask;
@@ -962,6 +1108,8 @@ bool Nrf24l01x::WriteRegister(
 bool Nrf24l01x::ReadBuffer(
     Register register_id, uint8_t* data, std::size_t length, uint8_t* status) {
   if (data == nullptr || length == 0 || length > kMaximumPayloadLength) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::ReadBuffer: null buffer or length outside 1..32 bytes\n");
     return false;
   }
   const uint8_t command = static_cast<uint8_t>(register_id) & kRegisterMask;
@@ -971,6 +1119,8 @@ bool Nrf24l01x::ReadBuffer(
 bool Nrf24l01x::WriteBuffer(Register register_id, const uint8_t* data,
     std::size_t length, uint8_t* status) {
   if (data == nullptr || length == 0 || length > kMaximumPayloadLength) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::WriteBuffer: null buffer or length outside 1..32 bytes\n");
     return false;
   }
   const uint8_t command = kWriteRegisterCommand |
@@ -979,7 +1129,12 @@ bool Nrf24l01x::WriteBuffer(Register register_id, const uint8_t* data,
 }
 
 bool Nrf24l01x::TransferByte(uint8_t value, uint8_t* response) {
-  return response != nullptr && Exchange(value, nullptr, nullptr, 0, response);
+  if (response == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: output response pointer is null\n", __func__);
+    return false;
+  }
+  return Exchange(value, nullptr, nullptr, 0, response);
 }
 
 bool Nrf24l01x::Standby() {
@@ -1018,6 +1173,8 @@ bool Nrf24l01x::StopReceive() {
 
 bool Nrf24l01x::PulseCe(uint32_t high_time_us) {
   if (high_time_us < kMinimumCePulseUs) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::PulseCe: CE pulse is shorter than the minimum duration\n");
     return false;
   }
   if (!SetCe(true)) {
@@ -1031,6 +1188,8 @@ bool Nrf24l01x::PulseCe(uint32_t high_time_us) {
 
 bool Nrf24l01x::IrqActive(bool* active) {
   if (active == nullptr || irq_ == kPinNotConnected) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::IrqActive: null output pointer or IRQ pin not connected\n");
     return false;
   }
   *active = !GpioRead(irq_);
@@ -1039,6 +1198,8 @@ bool Nrf24l01x::IrqActive(bool* active) {
 
 bool Nrf24l01x::ReadStatus(Status* status) {
   if (status == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::ReadStatus: required pointer is null\n");
     return false;
   }
   uint8_t raw = 0;
@@ -1054,6 +1215,9 @@ Nrf24l01x::TransmitResult Nrf24l01x::Transmit(const uint8_t* payload,
   if (!initialized_ || payload == nullptr || length == 0 ||
       length > kMaximumPayloadLength || timeout_ms == 0 ||
       (no_ack && !config_.dynamic_ack_enabled)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "NRF24L01x transmit: invalid payload, timeout, ACK mode, or device "
+        "state\n");
     return TransmitResult::kInvalidArgument;
   }
   if (!StopReceive() || !SetOperationMode(OperationMode::kPrimaryTransmitter) ||
@@ -1092,6 +1256,8 @@ Nrf24l01x::TransmitResult Nrf24l01x::Transmit(const uint8_t* payload,
       return TransmitResult::kSuccess;
     }
     if ((status & BitForIrq(IrqSource::kMaximumRetransmit)) != 0) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "NRF24L01x transmit: maximum retransmit count reached\n");
       // 两个清理动作互不短路，尽量避免一个失败导致另一个也没有执行。
       const bool irq_cleared = ClearIrqFlag(IrqSource::kMaximumRetransmit);
       const bool fifo_flushed = FlushTx();
@@ -1101,6 +1267,9 @@ Nrf24l01x::TransmitResult Nrf24l01x::Transmit(const uint8_t* payload,
     DelayUs(50);
   }
 
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "NRF24L01x transmit timeout (%lu ms)\n",
+      static_cast<unsigned long>(timeout_ms));
   return FlushTx() ? TransmitResult::kTimeout : TransmitResult::kBusError;
 }
 
@@ -1109,6 +1278,9 @@ bool Nrf24l01x::Receive(uint8_t* payload, std::size_t capacity,
     bool keep_listening) {
   if (!initialized_ || payload == nullptr || length == nullptr ||
       capacity == 0 || timeout_ms == 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::Receive: invalid output buffer, capacity, timeout, or "
+        "state\n");
     return false;
   }
   if (!receiving_ && !StartReceive()) {
@@ -1127,6 +1299,9 @@ bool Nrf24l01x::Receive(uint8_t* payload, std::size_t capacity,
     DelayUs(50);
   }
   if (empty) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "NRF24L01x receive timeout (%lu ms)\n",
+        static_cast<unsigned long>(timeout_ms));
     if (!keep_listening) {
       StopReceive();
     }
@@ -1201,8 +1376,12 @@ bool Nrf24l01x::ExecuteCommand(Command command, uint8_t* status) {
 
 bool Nrf24l01x::WriteCommand(
     Command command, const uint8_t* data, std::size_t length, uint8_t* status) {
-  return data != nullptr && length > 0 &&
-         Exchange(static_cast<uint8_t>(command), data, nullptr, length, status);
+  if (data == nullptr || length == 0) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: invalid command buffer or length\n", __func__);
+    return false;
+  }
+  return Exchange(static_cast<uint8_t>(command), data, nullptr, length, status);
 }
 
 bool Nrf24l01x::ReadCommand(
@@ -1210,8 +1389,12 @@ bool Nrf24l01x::ReadCommand(
   if (length == 0) {
     return ExecuteCommand(command, status);
   }
-  return data != nullptr &&
-         Exchange(static_cast<uint8_t>(command), nullptr, data, length, status);
+  if (data == nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "%s: command buffer is null\n", __func__);
+    return false;
+  }
+  return Exchange(static_cast<uint8_t>(command), nullptr, data, length, status);
 }
 
 bool Nrf24l01x::UpdateRegisterBits(
@@ -1249,6 +1432,11 @@ bool Nrf24l01x::UpdateFeatureBits(uint8_t mask, bool enabled) {
   result = ActivateFeatures();
   result &= WriteRegister(Register::kFeature, next);
   result &= ReadRegister(Register::kFeature, &readback);
+  if (result && readback != next) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "NRF24L01x FEATURE mismatch (actual: %#X, expected: %#X)\n",
+        readback, next);
+  }
   return result && readback == next;
 }
 
@@ -1306,13 +1494,17 @@ bool Nrf24l01x::ValidateConfig(const Config& config) const {
 
 bool Nrf24l01x::SetCe(bool enabled) {
   if (ce_ == kPinNotConnected) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Nrf24l01x::SetCe: required pin is not connected\n");
     return false;
   }
   return GpioWrite(ce_, enabled);
 }
 
 bool Nrf24l01x::FailInitialization(const char* reason) {
-  LogMessage(LogLevel::kError, __FILE__, __LINE__, "%s\n", reason);
+  if (reason != nullptr) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__, "%s\n", reason);
+  }
   if (ce_ != kPinNotConnected) {
     GpioWrite(ce_, false);
   }

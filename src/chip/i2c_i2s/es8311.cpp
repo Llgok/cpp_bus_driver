@@ -31,8 +31,6 @@ bool Es8311::Init(int32_t freq_hz) {
   }
 
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
@@ -86,14 +84,10 @@ bool Es8311::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 
   if (!I2sChipBase::Deinit()) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 
@@ -156,8 +150,6 @@ bool Es8311::Init(
   }
 
   if (!I2sChipBase::Init(mclk_multiple, sample_rate_hz, data_bit_width)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
@@ -208,12 +200,12 @@ bool Es8311::SetMasterClockSource(ClockSource clock) {
   uint8_t buffer = 0;
 
   if (!ReadRegister(
-          static_cast<uint8_t>(Register::kRwClockManager1), &buffer)) {
+              static_cast<uint8_t>(Register::kRwClockManager1), &buffer)) {
     return false;
   }
   buffer = (buffer & 0B01111111) | (static_cast<uint8_t>(clock) << 7);
   if (!WriteRegister(
-          static_cast<uint8_t>(Register::kRwClockManager1), buffer)) {
+              static_cast<uint8_t>(Register::kRwClockManager1), buffer)) {
     return false;
   }
 
@@ -265,12 +257,12 @@ bool Es8311::SetClock(ClockSource clock, bool enalbe, bool invert) {
       }
 
       if (!ReadRegister(
-              static_cast<uint8_t>(Register::kRwClockManager6), &buffer)) {
+          static_cast<uint8_t>(Register::kRwClockManager6), &buffer)) {
         return false;
       }
       buffer = (buffer & 0B11011111) | (static_cast<uint8_t>(invert) << 5);
       if (!WriteRegister(
-              static_cast<uint8_t>(Register::kRwClockManager6), buffer)) {
+          static_cast<uint8_t>(Register::kRwClockManager6), buffer)) {
         return false;
       }
       break;

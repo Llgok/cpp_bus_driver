@@ -106,7 +106,12 @@ bool Bq2589x::Bq25898dDriver::SetDpDmDac(
     Bq2589x& chip, bool dplus, DpDmVoltage voltage) const {
   const auto code = static_cast<uint8_t>(voltage);
   const uint8_t maximum = dplus ? 7 : 6;
-  if (code > maximum || !chip.IsDpDmDacReady()) {
+  if (code > maximum) {
+    chip.LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "BQ25898D SetDpDmDac: unsupported DP/DM voltage\n");
+    return false;
+  }
+  if (!chip.IsDpDmDacReady()) {
     return false;
   }
   return chip.UpdateRegisterBits(Register::kReg01, dplus ? 0xE0 : 0x1C,

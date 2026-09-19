@@ -18,8 +18,6 @@ constexpr const uint8_t Sy6970::kInitSequence[];
 
 bool Sy6970::Init(int32_t freq_hz) {
   if (!I2cChipBase::Init(freq_hz)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Init failed\n");
     return false;
   }
 
@@ -34,8 +32,6 @@ bool Sy6970::Init(int32_t freq_hz) {
   }
 
   if (!InitSequence(kInitSequence, sizeof(kInitSequence))) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "InitSequence failed\n");
     return false;
   }
 
@@ -46,8 +42,6 @@ bool Sy6970::Deinit(bool delete_bus) {
   bool result = true;
 
   if (!I2cChipBase::Deinit(delete_bus)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Deinit failed\n");
     result = false;
   }
 
@@ -108,6 +102,8 @@ bool Sy6970::SetIlimPinEnable(bool enable) {
 
 bool Sy6970::SetInputCurrentLimit(uint16_t current_ma) {
   if (current_ma < 100 || current_ma > 3250) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sy6970::SetInputCurrentLimit: current out of range (mA)\n");
     return false;
   }
 
@@ -129,6 +125,8 @@ bool Sy6970::SetInputCurrentLimit(uint16_t current_ma) {
 
 bool Sy6970::SetBoostHotThreshold(uint8_t threshold) {
   if (threshold > 3) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sy6970::SetBoostHotThreshold: invalid threshold\n");
     return false;
   }
 
@@ -175,6 +173,8 @@ bool Sy6970::SetBoostColdThreshold(bool threshold) {
 
 bool Sy6970::SetVindpmOffset(uint16_t offset_mv) {
   if (offset_mv > 3100) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sy6970::SetVindpmOffset: voltage offset out of range (mV)\n");
     return false;
   }
 
@@ -450,6 +450,8 @@ bool Sy6970::SetChargeEnable(bool enable) {
 
 bool Sy6970::SetMinSystemVoltageLimit(uint16_t voltage_mv) {
   if (voltage_mv < 3000 || voltage_mv > 3700) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sy6970::SetMinSystemVoltageLimit: voltage out of range (mV)\n");
     return false;
   }
 
@@ -493,6 +495,8 @@ bool Sy6970::SetPumpxEnable(bool enable) {
 
 bool Sy6970::SetFastChargeCurrentLimit(uint16_t current_ma) {
   if (current_ma > 5056) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sy6970::SetFastChargeCurrentLimit: current out of range (mA)\n");
     return false;
   }
 
@@ -514,6 +518,8 @@ bool Sy6970::SetFastChargeCurrentLimit(uint16_t current_ma) {
 
 bool Sy6970::SetPrechargeCurrentLimit(uint16_t current_ma) {
   if (current_ma < 64 || current_ma > 1024) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sy6970::SetPrechargeCurrentLimit: current out of range (mA)\n");
     return false;
   }
 
@@ -538,6 +544,8 @@ bool Sy6970::SetPrechargeCurrentLimit(uint16_t current_ma) {
 
 bool Sy6970::SetTerminationCurrentLimit(uint16_t current_ma) {
   if (current_ma < 64 || current_ma > 1024) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sy6970::SetTerminationCurrentLimit: current out of range (mA)\n");
     return false;
   }
 
@@ -561,6 +569,8 @@ bool Sy6970::SetTerminationCurrentLimit(uint16_t current_ma) {
 
 bool Sy6970::SetChargeVoltageLimit(uint16_t voltage_mv) {
   if (voltage_mv < 3840 || voltage_mv > 4608) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sy6970::SetChargeVoltageLimit: voltage out of range (mV)\n");
     return false;
   }
 
@@ -685,6 +695,8 @@ bool Sy6970::SetWatchdogTimer(uint16_t timer_s) {
       value = 3;
       break;
     default:
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Sy6970::SetWatchdogTimer: unsupported setting\n");
       return false;
   }
 
@@ -745,6 +757,8 @@ bool Sy6970::SetFastChargeTimer(uint8_t timer_hr) {
       value = 3;
       break;
     default:
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Sy6970::SetFastChargeTimer: unsupported setting\n");
       return false;
   }
 
@@ -791,6 +805,9 @@ bool Sy6970::SetJeitaLowTempCurrent(bool low_current) {
 
 bool Sy6970::SetBatteryCompensationResistance(uint8_t resistance_mohm) {
   if (resistance_mohm > 140) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sy6970::SetBatteryCompensationResistance: resistance out of range "
+        "(mOhm)\n");
     return false;
   }
 
@@ -812,6 +829,8 @@ bool Sy6970::SetBatteryCompensationResistance(uint8_t resistance_mohm) {
 
 bool Sy6970::SetIrCompensationVoltageClamp(uint8_t voltage_mv) {
   if (voltage_mv > 224) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sy6970::SetIrCompensationVoltageClamp: voltage out of range (mV)\n");
     return false;
   }
 
@@ -847,6 +866,8 @@ bool Sy6970::SetThermalRegulationThreshold(uint8_t temperature) {
       value = 3;
       break;
     default:
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Sy6970::SetThermalRegulationThreshold: unsupported setting\n");
       return false;
   }
 
@@ -1035,6 +1056,8 @@ bool Sy6970::SetPumpControl(bool up, bool down) {
 
 bool Sy6970::SetBoostVoltage(uint16_t voltage_mv) {
   if (voltage_mv < 4550 || voltage_mv > 5510) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sy6970::SetBoostVoltage: voltage out of range (mV)\n");
     return false;
   }
 
@@ -1083,6 +1106,8 @@ bool Sy6970::SetBoostCurrentLimit(uint16_t current_ma) {
       value = 7;
       break;
     default:
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "Sy6970::SetBoostCurrentLimit: unsupported setting\n");
       return false;
   }
 
@@ -1125,6 +1150,8 @@ bool Sy6970::SetVindpmMode(bool absolute) {
 
 bool Sy6970::SetAbsoluteVindpmThreshold(uint16_t voltage_mv) {
   if (voltage_mv < 3900 || voltage_mv > 15300) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "Sy6970::SetAbsoluteVindpmThreshold: voltage out of range (mV)\n");
     return false;
   }
 

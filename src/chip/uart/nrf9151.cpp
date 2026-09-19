@@ -127,7 +127,6 @@ bool Nrf9151::Init(int32_t baud_rate, uint32_t initialization_timeout_ms) {
 
   chip_id_.clear();
   if (!UartChipBase::Init(baud_rate)) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__, "Init failed\n");
     return false;
   }
 
