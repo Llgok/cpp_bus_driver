@@ -2,7 +2,7 @@
  * @Description: AXP517 电源管理、Fuel Gauge 与 Type-C/PD 控制器驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-09-18 16:30:00
- * @LastEditTime: 2026-09-19 17:42:39
+ * @LastEditTime: 2026-09-20 13:47:55
  * @License: GPL 3.0
  */
 #include "chip/i2c/axp517.h"
@@ -1247,12 +1247,22 @@ bool Axp517::InitTypeC(bool enable_pd_irqs, bool self_powered) {
   if (!ReadLittleEndian16(Register::kTcpcVendorId, vendor)) return false;
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "InitTypeC vendor ID read success (id: %#X)\n", vendor);
-  if (!GetStatus(status)) {
-    return false;
+  bool power_ready = false;
+  for (int attempt = 0; attempt <= 50; ++attempt) {
+    if (!GetStatus(status)) {
+      return false;
+    }
+    if (status.system_on) {
+      power_ready = true;
+      break;
+    }
+    if (attempt < 50) {
+      DelayMs(10);
+    }
   }
-  if (!status.system_on) {
-    LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "InitTypeC power is not ready\n");
+  if (!power_ready) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
+        "InitTypeC power is not ready after waiting 500 ms\n");
     return false;
   }
   if (!SetTypeCEnable(true)) {
@@ -1475,18 +1485,28 @@ bool Axp517::SetVbusPath(bool source, bool sink) {
 }
 
 bool Axp517::GetTcpcStatus(TcpcStatus& status) {
-  uint8_t data[4];
-  if (!ReadRegister(static_cast<uint8_t>(Register::kTcpcPowerStatus), data, sizeof(data))) return false;
+  uint8_t power;
+  uint8_t fault;
+  uint8_t extended_status;
+  uint8_t extended_alert;
+  if (!ReadRegister(static_cast<uint8_t>(Register::kTcpcPowerStatus), &power) ||
+      !ReadRegister(static_cast<uint8_t>(Register::kTcpcFaultStatus), &fault) ||
+      !ReadRegister(static_cast<uint8_t>(Register::kTcpcExtendedStatus),
+                    &extended_status) ||
+      !ReadRegister(static_cast<uint8_t>(Register::kTcpcAlertExtended),
+                    &extended_alert)) {
+    return false;
+  }
   TcpcStatus result;
-  result.power = data[0];
-  result.fault = data[1];
-  result.extended_status = data[2];
-  result.extended_alert = data[3];
-  result.vbus_present = (data[0] & 0x04) != 0;
-  result.sourcing_vbus = (data[0] & 0x10) != 0;
-  result.sinking_vbus = (data[0] & 0x01) != 0;
-  result.vconn_present = (data[0] & 0x02) != 0;
-  result.vbus_safe0v = (data[2] & 0x01) != 0;
+  result.power = power;
+  result.fault = fault;
+  result.extended_status = extended_status;
+  result.extended_alert = extended_alert;
+  result.vbus_present = (power & 0x04) != 0;
+  result.sourcing_vbus = (power & 0x10) != 0;
+  result.sinking_vbus = (power & 0x01) != 0;
+  result.vconn_present = (power & 0x02) != 0;
+  result.vbus_safe0v = (extended_status & 0x01) != 0;
   status = result;
   return true;
 }
