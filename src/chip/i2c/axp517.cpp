@@ -1562,7 +1562,8 @@ bool Axp517::SetPdMessageHeader(bool source, bool host, PdRevision revision) {
 }
 
 bool Axp517::SetPdReceiveMask(uint8_t mask) {
-  // 官方默认不接收 Hard Reset，调用方可在接入策略层后显式打开 bit5。
+  // 官方 Sink 策略只启用 SOP；通用接口保留 Hard Reset 接收位供其他
+  // 策略使用。bit6/7 为保留位。
   if ((mask & 0xC0) != 0) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "PD receive mask contains unsupported bits: 0x%02X\n", mask);
@@ -1778,19 +1779,28 @@ bool Axp517::NotifyTypeCCharging(bool enable) {
 }
 
 bool Axp517::ReadRegister(uint8_t reg, uint8_t* data, size_t length) {
-  if (bus_ == nullptr || data == nullptr || length == 0 || length > 256) {
+  if (bus_ == nullptr || data == nullptr || length == 0 ||
+      length > 256 - static_cast<size_t>(reg)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "ReadRegister invalid access "
         "(register: 0x%02X, bus ready: %d, buffer valid: %d, "
         "length: %zu)\n",
-        static_cast<unsigned>(reg), bus_ != nullptr,
-        data != nullptr, length);
+        static_cast<unsigned>(reg), bus_ != nullptr, data != nullptr, length);
     return false;
   }
-  if (bus_->WriteRead(&reg, 1, data, length)) return true;
-  LogMessage(LogLevel::kError, __FILE__, __LINE__,
-      "AXP517 register read failed (register: 0x%02X)\n", reg);
-  return false;
+  // AXP517 的普通寄存器连续读不会自动递增地址。例如从 TCPC
+  // Vendor ID 0xA0 连读两字节会得到 0x3A, 0x3A，而不是读取 0xA0,
+  // 0xA1。多字节字段必须逐地址发起事务；PD RX FIFO 由
+  // ReadNoIncrement() 单独处理。
+  for (size_t i = 0; i < length; ++i) {
+    const uint8_t address = static_cast<uint8_t>(reg + i);
+    if (!bus_->WriteRead(&address, 1, &data[i], 1)) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "AXP517 register read failed (register: 0x%02X)\n", address);
+      return false;
+    }
+  }
+  return true;
 }
 
 bool Axp517::ReadNoIncrement(Register reg, uint8_t* data, size_t length) {
@@ -1799,20 +1809,16 @@ bool Axp517::ReadNoIncrement(Register reg, uint8_t* data, size_t length) {
         "ReadNoIncrement invalid access "
         "(register: 0x%02X, bus ready: %d, buffer valid: %d, "
         "length: %zu)\n",
-        static_cast<unsigned>(reg), bus_ != nullptr,
-        data != nullptr, length);
+        static_cast<unsigned>(reg), bus_ != nullptr, data != nullptr, length);
     return false;
   }
+  // FIFO 在同一次事务中连续读取；重新发送地址会重新读取帧头。
   const uint8_t address = static_cast<uint8_t>(reg);
-  for (size_t i = 0; i < length; ++i) {
-    if (!bus_->WriteRead(&address, 1, &data[i], 1)) {
-      LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "AXP517 FIFO read failed (register: 0x%02X, offset: %zu)\n",
-          address, i);
-      return false;
-    }
-  }
-  return true;
+  if (bus_->WriteRead(&address, 1, data, length)) return true;
+  LogMessage(LogLevel::kError, __FILE__, __LINE__,
+      "AXP517 FIFO read failed (register: 0x%02X, length: %zu)\n", address,
+      length);
+  return false;
 }
 
 bool Axp517::WriteBytes(Register reg, const uint8_t* data, size_t length) {
@@ -1821,17 +1827,26 @@ bool Axp517::WriteBytes(Register reg, const uint8_t* data, size_t length) {
         "WriteBytes invalid access "
         "(register: 0x%02X, bus ready: %d, buffer valid: %d, "
         "length: %zu)\n",
-        static_cast<unsigned>(reg), bus_ != nullptr,
-        data != nullptr, length);
+        static_cast<unsigned>(reg), bus_ != nullptr, data != nullptr, length);
     return false;
   }
-  std::array<uint8_t, 33> packet{};
-  packet[0] = static_cast<uint8_t>(reg);
-  std::copy_n(data, length, packet.begin() + 1);
-  if (bus_->Write(packet.data(), length + 1)) return true;
-  LogMessage(LogLevel::kError, __FILE__, __LINE__,
-      "AXP517 register write failed (register: 0x%02X)\n", packet[0]);
-  return false;
+  if (length > 256 - static_cast<size_t>(reg)) {
+    LogMessage(LogLevel::kError, __FILE__, __LINE__,
+        "AXP517 register write exceeds address range\n");
+    return false;
+  }
+  // 与读取行为保持一致，普通多字节字段逐地址写入。TX FIFO 需要固定
+  // 地址逐字节写，已由 TransmitPdMessage() 单独处理。
+  for (size_t i = 0; i < length; ++i) {
+    const uint8_t packet[] = {
+        static_cast<uint8_t>(static_cast<uint8_t>(reg) + i), data[i]};
+    if (!bus_->Write(packet, sizeof(packet))) {
+      LogMessage(LogLevel::kError, __FILE__, __LINE__,
+          "AXP517 register write failed (register: 0x%02X)\n", packet[0]);
+      return false;
+    }
+  }
+  return true;
 }
 
 bool Axp517::SetCommonConfiguration(uint8_t value) {
@@ -1839,7 +1854,8 @@ bool Axp517::SetCommonConfiguration(uint8_t value) {
 }
 
 bool Axp517::SetTcpcStandardConfiguration(uint8_t value) {
-  return WriteRegister(static_cast<uint8_t>(Register::kTcpcConfigStdOutput), value);
+  return WriteRegister(
+      static_cast<uint8_t>(Register::kTcpcConfigStdOutput), value);
 }
 
 bool Axp517::WriteRegister(uint8_t reg, uint8_t value) {
@@ -1849,12 +1865,14 @@ bool Axp517::WriteRegister(uint8_t reg, uint8_t value) {
 bool Axp517::UpdateRegisterBits(Register reg, uint8_t mask, uint8_t value) {
   uint8_t original;
   if (!ReadRegister(static_cast<uint8_t>(reg), &original)) return false;
-  return WriteRegister(static_cast<uint8_t>(reg), (original & ~mask) | (value & mask));
+  return WriteRegister(
+      static_cast<uint8_t>(reg), (original & ~mask) | (value & mask));
 }
 
 bool Axp517::ReadBigEndian16(Register reg, uint16_t& value) {
   uint8_t data[2];
-  if (!ReadRegister(static_cast<uint8_t>(reg), data, sizeof(data))) return false;
+  if (!ReadRegister(static_cast<uint8_t>(reg), data, sizeof(data)))
+    return false;
   value = (static_cast<uint16_t>(data[0]) << 8) | data[1];
   return true;
 }

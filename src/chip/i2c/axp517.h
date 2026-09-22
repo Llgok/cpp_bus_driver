@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "chip/chip_base.h"
+#include "core/logger.h"
 
 namespace cpp_bus_driver {
 
@@ -1312,7 +1313,9 @@ class Axp517 final : public I2cChipBase {
                           uint16_t alarm_high_mv);
 
   /**
-   * @brief 读取 TCPC VBUS ADC，含量程倍率，单位 mV。
+   * @brief 读取 TCPC VBUS 寄存器的换算值，单位 mV。
+   * @warning 当前板实测与 PMIC VBUS ADC 不一致，仅用于诊断；
+   *          PD 合同放行应使用 PMIC VBUS 实测值。
    * @param voltage_mv 目标电压，单位 mV。
    * @return 执行成功返回 true，失败返回 false。
    */
@@ -1629,6 +1632,196 @@ class Axp517 final : public I2cChipBase {
   NtcConfig ntc_config_{};
   bool ntc_configured_ = false;
   bool self_powered_ = true;
+};
+
+class Axp517Sink {
+ public:
+  // 板级策略必须由调用方提供。默认值仅允许 5 V / 500 mA，且不改动
+  // 电池充电电流；不能把芯片的 15 V 额定值当作整板额定值。
+  struct Config {
+    // USB 输入路径的整板额定值；与电池的终止电压、充电电流无关。
+    uint16_t max_input_voltage_mv = 5000;
+    uint16_t max_input_current_ma = 500;
+    // PPS 请求目标电压；同等功率、同类型档位优先靠近此电压。
+    uint16_t preferred_voltage_mv = 5000;
+    uint16_t fallback_input_current_ma = 500;
+    uint16_t fallback_vindpm_mv = 4400;
+    // 仅 manage_charge_current=true 时使用，必须由电池规格决定。
+    uint16_t contract_charge_current_ma = 0;
+    uint16_t fallback_charge_current_ma = 0;
+    bool manage_charge_current = false;
+    bool require_battery_present = false;
+    bool enable_pps = false;
+    bool prefer_pps = false;
+    uint16_t enable_debounce_ms = 0;
+  };
+
+  enum class State {
+    kDisabled,
+    kWaitingCapabilities,
+    kWaitingAccept,
+    kWaitingPowerReady,
+    kWaitingVoltageStable,
+    kReady,
+    kError,
+  };
+
+  enum class PsReadyResult : uint8_t {
+    kNotSeen,
+    kUnexpectedState,
+    kTcpcReadFailed,
+    kVoltageMismatch,
+    kVoltageSettling,
+    kInputVoltageConfigFailed,
+    kInputCurrentConfigFailed,
+    kChargeCurrentConfigFailed,
+    kReady,
+  };
+
+  struct Status {
+    State state = State::kDisabled;
+    State failure_stage = State::kDisabled;
+    bool enabled = false;
+    bool battery_present = false;
+    bool attached = false;
+    bool pps = false;
+    uint16_t voltage_mv = 0;
+    uint16_t current_ma = 0;
+    uint16_t charge_current_ma = 0;
+    bool charge_current_managed = false;
+    uint16_t last_pd_alerts = 0;
+    uint16_t rx_count = 0;
+    uint16_t source_caps_count = 0;
+    uint16_t request_count = 0;
+    uint16_t accept_count = 0;
+    uint16_t ps_ready_count = 0;
+    uint16_t tx_failed_count = 0;
+    uint16_t fault_count = 0;
+    uint8_t last_fault_status = 0;
+    uint8_t requested_pdo = 0;
+    uint16_t requested_voltage_mv = 0;
+    uint16_t requested_current_ma = 0;
+    bool requested_pps = false;
+    bool first_ps_ready_seen = false;
+    uint8_t first_ps_ready_pdo = 0;
+    uint16_t first_ps_ready_target_mv = 0;
+    uint16_t first_ps_ready_tcpc_mv = 0;
+    uint16_t first_ps_ready_pmic_mv = 0;
+    bool first_ps_ready_pmic_valid = false;
+    PsReadyResult first_ps_ready_result = PsReadyResult::kNotSeen;
+    uint16_t settled_pmic_mv = 0;
+    bool settled_pmic_valid = false;
+    uint16_t settled_tcpc_mv = 0;
+    bool settled_tcpc_valid = false;
+  };
+
+  /**
+   * @brief 绑定已初始化且处于 Sink 角色的芯片
+   * @param chip AXP517 驱动，生命周期必须覆盖本对象
+   * @param config 板级输入额定值和充电策略，构造后不可修改
+   */
+  Axp517Sink(Axp517& chip, const Config& config);
+
+  /**
+   * @brief 推进协商，仅允许一个任务调用并独占 PD 收发与充电配置
+   * @param now_ms 单调递增时间，单位毫秒，建议每 2 ms 调用
+   * @param enabled 板级策略是否允许协商（可来自开关、电源策略等）
+   * @return 服务成功返回true，否则返回false并恢复保守输入限制
+   */
+  bool Poll(uint64_t now_ms, bool enabled);
+
+  /**
+   * @brief 推进协商并按当前电池选择更新合同下的充电电流，不重新协商 PD
+   * @param charge_current_ma 目标充电电流，最大 5120 mA；仅在管理充电电流时使用
+   */
+  bool Poll(uint64_t now_ms, bool enabled, uint16_t charge_current_ma);
+
+  /**
+   * @brief 失败后由应用层显式重新武装协商；下一次 Poll 才会发起协商
+   * @param now_ms 单调递增时间，单位毫秒
+   * @return 已恢复到禁用状态返回 true，非错误状态或清理失败返回 false
+   */
+  bool Restart(uint64_t now_ms);
+
+  /**
+   * @brief 获取最近一次服务状态，调用方应与 Poll 串行访问
+   * @return 当前协商与充电状态
+   */
+  const Status& status() const;
+
+ private:
+  /**
+   * @brief 执行单次协议服务，失败交由 Poll 统一退出高电流充电
+   * @param now_ms 当前时间，单位毫秒
+   * @param enabled 板级策略是否允许协商
+   * @return 处理成功返回true，否则返回false
+   */
+  bool Process(uint64_t now_ms, bool enabled);
+
+  /**
+   * @brief 恢复保守充电设置，并撤销当前合同
+   * @return 设置成功返回true，否则返回false
+   */
+  bool LimitCharging();
+
+  /**
+   * @brief 发送控制报文或单数据对象报文
+   * @param type PD 报文类型
+   * @param now_ms 当前时间，单位毫秒
+   * @param object 数据对象，为空时发送控制报文
+   * @param count 数据对象数量，控制报文忽略此参数
+   * @return 发送已提交返回true，否则返回false
+   */
+  bool Send(uint8_t type, uint64_t now_ms, const uint32_t* object = nullptr,
+      uint8_t count = 1);
+
+  /**
+   * @brief 按板级额定值和偏好选择合同
+   * @param now_ms 当前时间，单位毫秒
+   * @return 请求已提交返回true，否则返回false
+   */
+  bool RequestPower(uint64_t now_ms);
+
+  /**
+   * @brief 处理接收报文，拒绝电源和数据角色切换
+   * @param message 收到的 SOP 报文
+   * @param now_ms 当前时间，单位毫秒
+   * @return 处理成功返回true，否则返回false
+   */
+  bool Receive(const Axp517::PdMessage& message, uint64_t now_ms);
+
+  /**
+   * @brief 失败后限流、撤销合同并停止协商，不自动重试
+   * @param transmit 是否向电源发送硬复位
+   * @return 始终返回 false
+   */
+  bool Fail(bool transmit);
+
+  Logger logger_;
+  Axp517& chip_;
+  const Config config_;
+  const bool config_valid_;
+  uint16_t contract_charge_current_ma_ = 0;
+  bool charge_current_initialized_ = false;
+  Status status_;
+  Axp517::PdMessage capabilities_;
+  Axp517::PdRevision revision_ = Axp517::PdRevision::kRev30;
+  uint64_t selected_since_ms_ = 0;
+  uint64_t deadline_ms_ = 0;
+  uint64_t tx_deadline_ms_ = 0;
+  uint64_t refresh_ms_ = 0;
+  uint64_t attach_retry_ms_ = 0;
+  uint32_t request_ = 0;
+  uint16_t requested_voltage_mv_ = 0;
+  uint16_t requested_current_ma_ = 0;
+  uint8_t message_id_ = 0;
+  int received_id_ = -1;
+  bool selected_ = false;
+  bool active_ = false;
+  bool tx_pending_ = false;
+  bool requested_pps_ = false;
+  bool pps_rejected_ = false;
+  bool queried_capabilities_ = false;
 };
 
 }  // namespace cpp_bus_driver
