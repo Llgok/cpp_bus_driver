@@ -2,7 +2,7 @@
  * @Description: AXP517 PD Sink 与 PPS 协商状态机实现
  * @Author: LILYGO_L
  * @Date: 2026-09-22 14:14:36
- * @LastEditTime: 2026-09-22 14:14:36
+ * @LastEditTime: 2026-09-22 15:11:24
  * @License: GPL 3.0
  */
 #include "chip/i2c/axp517.h"
@@ -335,12 +335,14 @@ bool Axp517Sink::Poll(
   const bool changed = config_.manage_charge_current &&
       contract_charge_current_ma_ != charge_current_ma;
   const bool was_error = status_.state == State::kError;
-  // 切换到较小电池时先降低电流，再处理其他 PD 事件；升流则留到
-  // Process 确认电池和合同仍有效之后。
+  // 未建立合同（含错误状态）时，电池切换仍更新充电电流，但不超过
+  // 应用配置的回退上限；已有合同的升流留到 Process 确认状态后。
   if (config_.manage_charge_current &&
       (!charge_current_initialized_ ||
-       (changed && charge_current_ma < status_.charge_current_ma))) {
-    const uint16_t safe_ma = charge_current_initialized_
+       (changed && (status_.state != State::kReady ||
+                    charge_current_ma < status_.charge_current_ma)))) {
+    const uint16_t safe_ma =
+        charge_current_initialized_ && status_.state == State::kReady
         ? charge_current_ma
         : std::min(config_.fallback_charge_current_ma, charge_current_ma);
     if (!chip_.SetChargeCurrent(safe_ma)) goto fail;
