@@ -2,7 +2,7 @@
  * @Description: AXP517 电源管理、Fuel Gauge 与 Type-C/PD 控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-09-18 16:30:00
- * @LastEditTime: 2026-09-20 12:22:15
+ * @LastEditTime: 2026-09-23 16:03:11
  * @License: GPL 3.0
  */
 #pragma once
@@ -1341,7 +1341,7 @@ class Axp517 final : public I2cChipBase {
   bool NotifyTypeCCharging(bool enable);
 
  private:
-  // 保留官方寄存器语义；TCPC 多字节寄存器为小端，ADC 和 Gauge 为大端。
+  // TCPC 多字节寄存器为小端，ADC 和 Gauge 为大端。
   enum class Register : uint8_t {
     kStatus0 = 0x00,                           // 电源管理状态 0
     kStatus1 = 0x01,                           // 电源管理状态 1
@@ -1493,7 +1493,13 @@ class Axp517 final : public I2cChipBase {
       static_cast<uint8_t>(Register::kVindpmCfg), 0x09,
       // 充电电流设置为 512 mA。
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Register::kIccCfg), 0x08};
+      static_cast<uint8_t>(Register::kIccCfg), 0x08,
+      // 终止充电电流设置为 64 mA 并启用充电终止（reg63H[4] = 1）。
+      // POR 默认值为 320 mA，会在接近充满时出现
+      // 「终止充电 -> VBAT 回落到再充阈值(VRECHG, 100 mV) -> 重新充电」
+      // 的快速循环，表现为充电电压/电流跳变、充电指示灯反复亮灭。
+      static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
+      static_cast<uint8_t>(Register::kItermCfg), 0x11};
 
   /**
    * @brief 写入 COMM_CFG 的可写配置位。
