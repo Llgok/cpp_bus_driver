@@ -288,6 +288,10 @@ class Hi8561Touch final : public I2cChipBase {
   std::mutex mutex_;
   // 最近一次输出触摸调试报告的时间。
   int64_t last_debug_report_ms_ = 0;
+  // 最近采样的手势与序号，用于让新手势绕过重复报告限频。
+  bool last_debug_gesture_valid_ = false;
+  uint8_t last_debug_gesture_ = 0;
+  uint8_t last_debug_sequence_ = 0;
 };
 
 }  // namespace cpp_bus_driver

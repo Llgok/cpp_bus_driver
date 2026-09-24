@@ -48,7 +48,7 @@ static constexpr size_t kTouchStateOffset =
 // 仅读取公开的触点和状态字段，不假设不同固件私有尾部的校验布局。
 static constexpr size_t kTouchReportReadSize =
     kTouchStateOffset + kTouchStateSize;
-// 触摸调试报告的最小输出间隔。
+// 重复手势报告的输出间隔；新手势报告立即输出。
 static constexpr int64_t kDebugReportIntervalMs = 1000;
 
 }  // namespace
@@ -58,6 +58,7 @@ bool Hi8561Touch::Init(int32_t freq_hz) {
 
   runtime_layout_ = RuntimeLayout();
   last_debug_report_ms_ = 0;
+  last_debug_gesture_valid_ = false;
 
   if (rst_ != kPinNotConnected) {
     bool result = true;
@@ -107,6 +108,7 @@ bool Hi8561Touch::Deinit(bool delete_bus) {
 
   runtime_layout_ = RuntimeLayout();
   last_debug_report_ms_ = 0;
+  last_debug_gesture_valid_ = false;
   return result;
 }
 
@@ -319,8 +321,22 @@ void Hi8561Touch::LogTouchReport(const char* mode, const uint8_t* report,
     return;
   }
 
+  // 使用原始字段，异常报告也保留触发瞬间的数据。手势变化及新的
+  // 双击序号不受普通限频影响，相同保留报告仍按一秒间隔输出。
+  const uint8_t gesture = report_size > 2 ? report[2] : frame.gesture;
+  const uint8_t sequence = report_size > 1 ? report[1] : frame.sequence;
+  const bool gesture_changed =
+      !last_debug_gesture_valid_ || gesture != last_debug_gesture_;
+  const bool new_double_tap =
+      gesture == static_cast<uint8_t>(Gesture::kDoubleTap) &&
+      (gesture_changed || sequence != last_debug_sequence_);
+  last_debug_gesture_valid_ = true;
+  last_debug_gesture_ = gesture;
+  last_debug_sequence_ = sequence;
+
   const int64_t now_ms = GetSystemTimeMs();
-  if (now_ms - last_debug_report_ms_ < kDebugReportIntervalMs) {
+  if (!gesture_changed && !new_double_tap &&
+      now_ms - last_debug_report_ms_ < kDebugReportIntervalMs) {
     return;
   }
   last_debug_report_ms_ = now_ms;
