@@ -875,7 +875,7 @@ NmeaParser::FeedResult NmeaParser::Feed(const uint8_t* data, size_t length) {
   state_->statistics.capacity_errors += result.capacity_errors;
   if (result.checksum_errors != 0 || result.format_errors != 0 ||
       result.overflow_errors != 0 || result.capacity_errors != 0) {
-    Logger().LogMessage(Logger::LogLevel::kError, __FILE__, __LINE__,
+    Logger().LogMessage(Logger::LogLevel::kDebug, __FILE__, __LINE__,
         "NMEA input rejected (checksum: %zu, format: %zu, overflow: %zu, "
         "capacity: %zu)\n",
         static_cast<size_t>(result.checksum_errors),
