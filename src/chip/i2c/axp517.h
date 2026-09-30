@@ -1488,9 +1488,9 @@ class Axp517 final : public I2cChipBase {
       // 输入电流限制设置为 2000 mA。
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Register::kIinLim), 0x98,
-      // 输入电压限制设置为 4.4 V。
+      // 输入电压限制设置为 4.7 V。
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
-      static_cast<uint8_t>(Register::kVindpmCfg), 0x09,
+      static_cast<uint8_t>(Register::kVindpmCfg), 0x0C,
       // 充电电流设置为 512 mA。
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8),
       static_cast<uint8_t>(Register::kIccCfg), 0x08,
