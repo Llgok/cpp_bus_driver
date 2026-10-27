@@ -69,7 +69,7 @@ bool HardwareMipi::Init(float freq_mhz, float lane_bit_rate_mbps,
   esp_lcd_dsi_bus_config_t bus_config = {
       .bus_id = port_,
       .num_data_lanes = num_data_lane_,
-      .phy_clk_src = MIPI_DSI_PHY_CLK_SRC_DEFAULT,
+      .phy_clk_src = static_cast<mipi_dsi_phy_pllref_clock_source_t>(0),
       .lane_bit_rate_mbps = static_cast<float>(lane_bit_rate_mbps),
   };
 
