@@ -2,7 +2,7 @@
  * @Description: TI CC1101 亚 GHz 无线收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-07-12 00:00:00
- * @LastEditTime: 2026-08-21 17:00:59
+ * @LastEditTime: 2026-10-31 14:24:17
  * @License: GPL 3.0
  */
 #pragma once
@@ -132,7 +132,7 @@ class Cc1101 final : public SpiChipBase {
     AddressCheck address_check = AddressCheck::kDisabled;  // 地址过滤模式
     SyncMode sync_mode = SyncMode::kSixteenOfSixteen;      // 同步字检测条件
     uint8_t maximum_packet_length = 255;                   // PKTLEN 寄存器值
-    uint8_t device_address = 0;                            // 本机地址
+    uint8_t local_address = 0;                             // 本机地址
     uint8_t channel = 0;                                   // CHANNR 信道编号
     uint8_t bit_rate_tolerance = 0;                        // BSCFG.BS_LIMIT
     int8_t carrier_sense_threshold = 0;                    // 绝对载波侦听阈值
@@ -343,10 +343,10 @@ class Cc1101 final : public SpiChipBase {
   /**
    * @brief 设置接收地址过滤和本机地址。
    * @param check 地址检查及广播接收策略。
-   * @param device_address 本机地址。
+   * @param address 本机地址。
    * @return 地址过滤配置成功返回 true，否则返回 false。
    */
-  bool SetAddressCheck(AddressCheck check, uint8_t device_address = 0);
+  bool SetAddressCheck(AddressCheck check, uint8_t address = 0);
 
   /**
    * @brief 开启或关闭硬件 CRC 生成和校验。
@@ -538,10 +538,9 @@ class Cc1101 final : public SpiChipBase {
    * @return 当前配置的只读引用。
    */
   const Config& config() const { return config_; }
-
  private:
-  // 采用保守的默认时钟，保证连续 FIFO burst 传输稳定。
   static constexpr int32_t kDefaultSpiFrequencyHz = 2000000;
+
   // CC1101 配置、状态、PATABLE 和 FIFO 寄存器地址
   enum class Register : uint8_t {
     kIocfg2 = 0x00,

@@ -39,7 +39,7 @@ class Nrf9151 final : public UartChipBase {
    * @param baud_rate UART 波特率
    * @return UART 初始化且芯片型号验证成功时返回 true，否则返回 false
    */
-  bool Init(int32_t baud_rate = kDefaultBaudRate) override;
+  bool Init(int32_t baud_rate = kDefaultUartBaudRate) override;
 
   /**
    * @brief 初始化 UART，并在总超时内重复使用 AT+CGMM 验证芯片型号
@@ -102,10 +102,8 @@ class Nrf9151 final : public UartChipBase {
    * @return 芯片型号字符串的常量引用，尚未验证时为空字符串
    */
   const std::string& chip_id() const { return chip_id_; }
-
  private:
-  static constexpr int32_t kDefaultBaudRate = 115200;
-  // AT 指令默认超时时间，单位为毫秒
+  static constexpr int32_t kDefaultUartBaudRate = 115200;
   static constexpr uint32_t kDefaultCommandTimeoutMs = 500;
 
   /**

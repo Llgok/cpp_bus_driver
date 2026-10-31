@@ -104,7 +104,7 @@ class L76k final : public UartChipBase {
       const int32_t rst = kPinNotConnected)
       : UartChipBase(bus), wake_up_callback_(wake_up_callback), rst_(rst) {}
 
-  bool Init(int32_t baud_rate = 9600) override;
+  bool Init(int32_t baud_rate = kDefaultUartBaudRate) override;
   bool Deinit() override;
 
   /**
@@ -256,8 +256,8 @@ class L76k final : public UartChipBase {
    * @return 成功返回 true，失败返回 false
    */
   bool QueryCasicUpdateInterval();
-
  private:
+  static constexpr int32_t kDefaultUartBaudRate = 9600;
   static constexpr uint8_t kGetInformationTimeoutCount = 3;  // 获取信息超时计数
   static constexpr uint16_t kMaxReceiveSize = 1024 * 2;      // 最大接收尺寸
 

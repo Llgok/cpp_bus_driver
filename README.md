@@ -31,7 +31,7 @@ The supported bus drivers and chip drivers will continue to evolve with future v
 
 - Uses Google C++ style naming for more consistent APIs.
 - Supports configurable log levels, making bus and chip debugging easier.
-- Supports shared bus scenarios, such as mounting multiple I2C devices on the same master bus.
+- Supports shared bus scenarios, such as mounting multiple I2C chips on the same master bus.
 
 ## Supported Frameworks
 
@@ -139,7 +139,7 @@ bus->Deinit();
 ```
 
 > [!NOTE]
-> `Deinit()` support depends on the specific bus class. For display-oriented QSPI scenarios, release flow is usually managed by the upper-layer chip driver. If multiple chips share the same I2C bus, choose whether to delete the underlying bus according to resource ownership. For example, `Deinit(false)` releases only the current device, while `Deinit(true)` releases the bus as well.
+> `Deinit()` support depends on the specific bus class. For display-oriented QSPI scenarios, release flow is usually managed by the upper-layer chip driver. If multiple chips share the same I2C bus, choose whether to delete the underlying bus according to resource ownership. For example, `Deinit(false)` releases only the current chip connection, while `Deinit(true)` releases the bus as well.
 
 ### Chip Drivers
 
@@ -155,7 +155,7 @@ chip->Init();
 chip->Deinit();
 ```
 
-The chip-layer `Deinit()` releases the bus device used by the chip first, and switches related GPIO pins to the disabled state. This is suitable for low-power and reinitialization scenarios.
+The chip-layer `Deinit()` releases the chip's bus connection first, and switches related GPIO pins to the disabled state. This is suitable for low-power and reinitialization scenarios.
 
 ### Log Configuration
 

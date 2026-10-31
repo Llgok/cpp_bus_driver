@@ -38,7 +38,7 @@ bool HardwareSdio::Init(int32_t freq_hz) {
   if ((freq_hz != SDMMC_FREQ_DEFAULT) && (freq_hz != SDMMC_FREQ_HIGHSPEED) &&
       (freq_hz != SDMMC_FREQ_PROBING) && (freq_hz != SDMMC_FREQ_52M) &&
       (freq_hz != SDMMC_FREQ_26M)) {
-    freq_hz = kDefaultFrequencyKhz;
+    freq_hz = kDefaultSdioFrequencyKhz;
   }
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,

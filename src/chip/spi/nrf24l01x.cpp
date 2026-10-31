@@ -287,7 +287,7 @@ bool Nrf24l01x::Configure(const Config& config) {
 bool Nrf24l01x::Probe() {
   if (!bus_initialized_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Nrf24l01x::Probe: device is not initialized or is not ready\n");
+        "Nrf24l01x::Probe: chip is not initialized or is not ready\n");
     return false;
   }
 
@@ -1216,7 +1216,7 @@ Nrf24l01x::TransmitResult Nrf24l01x::Transmit(const uint8_t* payload,
       length > kMaximumPayloadLength || timeout_ms == 0 ||
       (no_ack && !config_.dynamic_ack_enabled)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "NRF24L01x transmit: invalid payload, timeout, ACK mode, or device "
+        "NRF24L01x transmit: invalid payload, timeout, ACK mode, or chip "
         "state\n");
     return TransmitResult::kInvalidArgument;
   }

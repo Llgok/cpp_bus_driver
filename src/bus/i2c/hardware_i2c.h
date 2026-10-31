@@ -33,9 +33,9 @@ class HardwareI2c final : public I2cBusBase {
         scl_(bus == nullptr ? kPinNotConnected : bus->scl_),
         port_(bus == nullptr ? I2C_NUM_0 : bus->port_),
         shared_bus_provider_(bus) {}
-  bool InitBus(uint32_t freq_hz = kDefaultFrequencyHz);
-  bool Init(uint32_t freq_hz = kDefaultFrequencyHz,
-      uint16_t address = kNoDeviceAddress) override;
+  bool InitBus(uint32_t freq_hz = kDefaultI2cFrequencyHz);
+  bool Init(uint32_t freq_hz = kDefaultI2cFrequencyHz,
+      uint16_t address = kNoI2cAddress) override;
   bool Deinit(bool delete_bus = true) override;
   bool Read(uint8_t* data, size_t length) override;
   bool Write(const uint8_t* data, size_t length) override;
@@ -47,19 +47,19 @@ class HardwareI2c final : public I2cBusBase {
   i2c_master_bus_handle_t bus_handle();
 
  private:
+  static constexpr uint32_t kDefaultI2cFrequencyHz = 100000;
   enum class BusInitState : uint8_t {
     kNotStarted,
     kInitializing,
     kReady,
   };
   
-  static constexpr uint32_t kDefaultFrequencyHz = 100000;
   static constexpr int kDefaultWaitTimeoutMs = 1000;
   static constexpr int64_t kBusInitWaitTimeoutMs = 1000;
 
   int32_t sda_, scl_;
   i2c_port_t port_;
-  uint16_t address_ = kNoDeviceAddress;
+  uint16_t address_ = kNoI2cAddress;
   i2c_master_dev_handle_t device_handle_ = nullptr;
   i2c_master_bus_handle_t bus_handle_ = nullptr;
 
@@ -73,8 +73,8 @@ class HardwareI2c final : public I2cBusBase {
   explicit HardwareI2c(int32_t sda, int32_t scl, TwoWire* i2c_handle = &Wire)
       : sda_(sda), scl_(scl), i2c_handle_(i2c_handle) {}
 
-  bool Init(uint32_t freq_hz = kDefaultFrequencyHz,
-      uint16_t address = kNoDeviceAddress) override;
+  bool Init(uint32_t freq_hz = kDefaultI2cFrequencyHz,
+      uint16_t address = kNoI2cAddress) override;
   bool Deinit(bool delete_bus = true) override;
   bool Read(uint8_t* data, size_t length) override;
   bool Write(const uint8_t* data, size_t length) override;
@@ -84,11 +84,10 @@ class HardwareI2c final : public I2cBusBase {
   bool Probe(const uint16_t address) override;
 
  private:
-  static constexpr uint32_t kDefaultFrequencyHz = 100000;
-
+  static constexpr uint32_t kDefaultI2cFrequencyHz = 100000;
   int32_t sda_, scl_;
   TwoWire* i2c_handle_;
-  uint16_t address_ = kNoDeviceAddress;
+  uint16_t address_ = kNoI2cAddress;
 };
 #endif
 
@@ -103,8 +102,8 @@ class LegacyHardwareI2c final : public I2cBusBase {
       : sda_(sda), scl_(scl), port_(port) {}
 #endif
 
-  bool Init(uint32_t freq_hz = kDefaultFrequencyHz,
-      uint16_t address = kNoDeviceAddress) override;
+  bool Init(uint32_t freq_hz = kDefaultI2cFrequencyHz,
+      uint16_t address = kNoI2cAddress) override;
   bool Deinit(bool delete_bus = true) override;
   bool Read(uint8_t* data, size_t length) override;
   bool Write(const uint8_t* data, size_t length) override;
@@ -128,8 +127,7 @@ class LegacyHardwareI2c final : public I2cBusBase {
 #endif
 
  private:
-  static constexpr uint32_t kDefaultFrequencyHz = 100000;
-
+  static constexpr uint32_t kDefaultI2cFrequencyHz = 100000;
 #if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
     CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
   static constexpr int kDefaultWaitTimeoutMs = 1000;
@@ -142,7 +140,7 @@ class LegacyHardwareI2c final : public I2cBusBase {
   i2c_port_t port_;
 #endif
 
-  uint16_t address_ = kNoDeviceAddress;
+  uint16_t address_ = kNoI2cAddress;
 };
 #endif
 }  // namespace cpp_bus_driver

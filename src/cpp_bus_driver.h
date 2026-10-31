@@ -27,6 +27,7 @@
 #include "chip/i2c/gz030pcc0x.h"
 #include "chip/i2c/icn6211.h"
 #include "chip/i2c/pcf8563x.h"
+#include "chip/i2c/rx8130ce.h"
 #include "chip/i2c/s023msafjf10111e1.h"
 #include "chip/i2c/sgm38121.h"
 #include "chip/i2c/sgm41562xx/sgm41562xx.h"

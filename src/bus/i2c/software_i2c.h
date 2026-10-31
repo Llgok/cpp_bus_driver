@@ -24,14 +24,14 @@ class SoftwareI2c final : public I2cBusBase {
    * @brief 初始化软件 I2C 总线
    * @param freq_hz 请求的时钟频率，范围 1-500000 Hz；实际频率受微秒级
    * 延时精度和 GPIO 操作开销影响，调用方应遵守从设备的时钟频率要求
-   * @param address 7 位设备地址；kNoDeviceAddress 表示仅初始化总线
+   * @param address 7 位 I2C 地址；kNoI2cAddress 表示仅初始化总线
    * @return 初始化成功返回 true，参数无效或 GPIO 配置失败返回 false
    * @note 仅支持单主机，需要外部上拉电阻。所有操作限任务上下文使用。
    * 同一实例的操作通过互斥锁串行执行；共用引脚的不同实例需由调用方
    * 统一管理访问和初始化、释放时机。初始化不探测设备，也不自动恢复总线。
    */
-  bool Init(uint32_t freq_hz = kDefaultFrequencyHz,
-      uint16_t address = kNoDeviceAddress) override;
+  bool Init(uint32_t freq_hz = kDefaultI2cFrequencyHz,
+      uint16_t address = kNoI2cAddress) override;
 
   /**
    * @brief 释放软件 I2C 总线
@@ -74,7 +74,7 @@ class SoftwareI2c final : public I2cBusBase {
 
   /**
    * @brief 探测设备地址应答
-   * @param address 待探测的 7 位设备地址，不改变初始化时绑定的地址
+   * @param address 待探测的 7 位 I2C 地址，不改变初始化时绑定的地址
    * @return 设备应答且事务结束成功返回 true，否则返回 false
    */
   bool Probe(uint16_t address) override;
@@ -87,6 +87,7 @@ class SoftwareI2c final : public I2cBusBase {
   bool RecoverBus();
 
  private:
+  static constexpr uint32_t kDefaultI2cFrequencyHz = 100000;
   /**
    * @brief 执行完整的数据事务
    * @return 事务成功返回 true，参数无效或通信失败返回 false
@@ -161,7 +162,6 @@ class SoftwareI2c final : public I2cBusBase {
    */
   bool ResetPins();
 
-  static constexpr uint32_t kDefaultFrequencyHz = 100000;
   // 最小半周期延时为 1 us，仅按延时计算的频率上限，单位 Hz。
   static constexpr uint32_t kMaximumFrequencyHz = 500000;
   // 单次等待 SCL 拉高的超时，单位 us。
@@ -169,7 +169,7 @@ class SoftwareI2c final : public I2cBusBase {
 
   const int32_t sda_;
   const int32_t scl_;
-  uint16_t address_ = kNoDeviceAddress;
+  uint16_t address_ = kNoI2cAddress;
   uint32_t half_period_us_ = 5;
   bool initialized_ = false;
   // 包含初始化失败后或 Deinit(false) 保留的 GPIO。

@@ -67,11 +67,11 @@ class Hi8561Touch final : public I2cChipBase {
   };
 
   explicit Hi8561Touch(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault,
+      int16_t address = kDefaultI2cAddress,
       int32_t rst = kPinNotConnected)
       : I2cChipBase(bus, address), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
 
   bool Deinit(bool delete_bus = true) override;
 
@@ -146,8 +146,10 @@ class Hi8561Touch final : public I2cChipBase {
    * @return 读取成功返回 true，失败返回 false
    */
   bool GetFrequencyBand(uint8_t* frequency_band);
-
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = 0x68;
+
   // 动态内存区的地址和长度。
   struct SectionInfo {
     uint32_t address = 0;
@@ -160,9 +162,6 @@ class Hi8561Touch final : public I2cChipBase {
     SectionInfo host;
     SectionInfo coordinate_report;
   };
-
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-  static constexpr uint8_t kDeviceI2cAddressDefault = 0x68;
 
   /**
    * @brief 按限频策略输出完整触摸报告调试信息

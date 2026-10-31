@@ -282,7 +282,7 @@ class Axp517 final : public I2cChipBase {
   struct TcpcId {
     uint16_t vendor_id = 0;
     uint16_t product_id = 0;
-    uint16_t device_revision = 0;
+    uint16_t chip_revision = 0;
     uint16_t type_c_revision = 0;
     uint16_t pd_revision = 0;
     uint16_t interface_revision = 0;
@@ -373,7 +373,7 @@ class Axp517 final : public I2cChipBase {
   };
 
   explicit Axp517(std::shared_ptr<I2cBusBase> bus,
-                  int16_t address = kDefaultAddress)
+                  int16_t address = kDefaultI2cAddress)
       : I2cChipBase(bus, address) {}
 
   /**
@@ -381,7 +381,7 @@ class Axp517 final : public I2cChipBase {
    * @param freq_hz I2C 工作频率。
    * @return 执行成功返回 true，失败返回 false。
    */
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
 
   /**
    * @brief 释放总线资源；不关闭供电。
@@ -1339,8 +1339,10 @@ class Axp517 final : public I2cChipBase {
    * @return 执行成功返回 true，失败返回 false。
    */
   bool NotifyTypeCCharging(bool enable);
-
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = 0x34;
+
   // TCPC 多字节寄存器为小端，ADC 和 Gauge 为大端。
   enum class Register : uint8_t {
     kStatus0 = 0x00,                           // 电源管理状态 0
@@ -1479,9 +1481,6 @@ class Axp517 final : public I2cChipBase {
     kTwiAddrStatic = 0xEB,                     // TWI 静态地址
     kTwiAddrExt = 0xFF,                        // TWI 扩展地址
   };
-
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-  static constexpr uint8_t kDefaultAddress = 0x34;
 
   // 芯片上电后的默认充电参数初始化序列。
   static constexpr uint8_t kInitSequence[] = {
@@ -1754,8 +1753,10 @@ class Axp517Sink {
    * @return 当前协商与充电状态
    */
   const Status& status() const;
-
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = 0x34;
+
   /**
    * @brief 执行单次协议服务，失败交由 Poll 统一退出高电流充电
    * @param now_ms 当前时间，单位毫秒

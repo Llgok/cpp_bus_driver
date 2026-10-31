@@ -30,11 +30,11 @@ class Cst2xxse final : public I2cChipBase {
   };
 
   explicit Cst2xxse(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault,
+      int16_t address = kDefaultI2cAddress,
       int32_t rst = kPinNotConnected)
       : I2cChipBase(bus, address), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -70,16 +70,15 @@ class Cst2xxse final : public I2cChipBase {
    * @return  [true]：屏幕home按键检测触发 [false]：屏幕home按键检测未触发
    */
   bool GetHomeTouch();
-
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = 0x5A;
+
   enum class Register {
     kRoChipId = 0x06,  // 读取后返回0xAB
     kRoTouchPointInfoStart = 0x00,
     kRoGetFingerCount = 0x05,
   };
-
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-  static constexpr uint8_t kDeviceI2cAddressDefault = 0x5A;
 
   /**
    * @brief 读取寄存器，并记录访问失败信息

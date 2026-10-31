@@ -91,10 +91,11 @@ class Pcf8563x final : public I2cChipBase {
     uint8_t value = 0;
   };
 
-  explicit Pcf8563x(std::shared_ptr<I2cBusBase> bus, int16_t address = 0x51)
+  explicit Pcf8563x(std::shared_ptr<I2cBusBase> bus,
+      int16_t address = kDefaultI2cAddress)
       : I2cChipBase(bus, address) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -196,8 +197,10 @@ class Pcf8563x final : public I2cChipBase {
    * @return 操作成功返回 true，否则返回 false
    */
   bool ClearAlarmFlag();
-
  private:
+  static constexpr uint8_t kDefaultI2cAddress = 0x51;
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+
   // PCF8563 寄存器地址。
   enum class Register : uint8_t {
     kControlStatus1 = 0x00,
@@ -217,8 +220,6 @@ class Pcf8563x final : public I2cChipBase {
     kTimerControl = 0x0E,
     kTimer = 0x0F,
   };
-
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
 
   /**
    * @brief 更新状态控制位，并仅清除指定事件标志

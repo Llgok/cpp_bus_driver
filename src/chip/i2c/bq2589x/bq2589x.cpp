@@ -52,9 +52,9 @@ const Bq2589x::ModelDriver* Bq2589x::GetModelDriver(ChipModel model) {
 }
 
 Bq2589x::ModelDriver::ModelDriver(ChipModel model, uint8_t address,
-    uint8_t part_number, uint8_t device_revision,
+    uint8_t part_number, uint8_t chip_revision,
     std::initializer_list<Feature> features, bool jeita_profile_valid)
-    : config_{model, address, part_number, device_revision,
+    : config_{model, address, part_number, chip_revision,
           MakeFeatureMask(features), jeita_profile_valid} {}
 
 bool Bq2589x::ModelDriver::SetBoostCurrentLimit(Bq2589x&, uint16_t) const {
@@ -122,9 +122,9 @@ Bq2589x::NtcFault Bq2589x::ModelDriver::DecodeNtcFault(uint8_t code) const {
 
 bool Bq2589x::Init(int32_t freq_hz) {
   if (bus_ == nullptr || freq_hz <= 0 || freq_hz > 400000 ||
-      (device_address_ != 0x6A && device_address_ != 0x6B)) {
+      (chip_address_ != 0x6A && chip_address_ != 0x6B)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Bq2589x::Init: invalid bus, I2C frequency, or device address\n");
+        "Bq2589x::Init: invalid bus, I2C frequency, or chip address\n");
     return false;
   }
   if (initialized_) {
@@ -142,17 +142,17 @@ bool Bq2589x::Init(int32_t freq_hz) {
     return false;
   }
   bus_initialized_ = true;
-  uint8_t device_id = 0;
-  if (!ReadRegister(Register::kReg14, device_id)) {
+  uint8_t chip_id = 0;
+  if (!ReadRegister(Register::kReg14, chip_id)) {
     I2cChipBase::Deinit(false);
     bus_initialized_ = false;
     return false;
   }
-  const ChipInfo info = DecodeChipInfo(device_id);
+  const ChipInfo info = DecodeChipInfo(chip_id);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "BQ2589x device ID (address: %#X, REG14: %#04X, PN: %#X, revision: "
+      "BQ2589x chip ID (address: %#X, REG14: %#04X, PN: %#X, revision: "
       "%#X)\n",
-      device_address_, device_id, info.part_number, info.device_revision);
+      chip_address_, chip_id, info.part_number, info.chip_revision);
   chip_info_ = info;
   if (info.model == ChipModel::kUnknown ||
       (requested_model_ != ChipModel::kUnknown &&
@@ -160,7 +160,7 @@ bool Bq2589x::Init(int32_t freq_hz) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
         "BQ2589x unknown, ambiguous or mismatched model (PN: %#X, revision: "
         "%#X)\n",
-        info.part_number, info.device_revision);
+        info.part_number, info.chip_revision);
     // 只读取配置和器件信息用于诊断，不读取会清除故障记录的 REG0C。
     for (uint8_t sample = 0; sample < 3; ++sample) {
       for (const Register reg : {Register::kReg00, Register::kReg03,
@@ -237,7 +237,7 @@ bool Bq2589x::HasFeature(Feature feature) const {
 Bq2589x::ChipInfo Bq2589x::DecodeChipInfo(uint8_t value) const {
   ChipInfo info;
   info.part_number = (value >> 3) & 0x07;
-  info.device_revision = value & 0x03;
+  info.chip_revision = value & 0x03;
   info.jeita_profile = (value & 0x04) != 0;
   const ModelDriver* detected_driver = nullptr;
   const ModelDriver* requested_driver = nullptr;
@@ -248,7 +248,7 @@ Bq2589x::ChipInfo Bq2589x::DecodeChipInfo(uint8_t value) const {
   for (size_t i = 0; i < count; ++i) {
     const ModelConfig& config = drivers[i]->config_;
     if (config.part_number == info.part_number &&
-        config.device_revision == info.device_revision) {
+        config.chip_revision == info.chip_revision) {
       detected_driver = drivers[i];
       ++matches;
       if (config.model == requested_model_) {
@@ -262,7 +262,7 @@ Bq2589x::ChipInfo Bq2589x::DecodeChipInfo(uint8_t value) const {
     detected_driver = requested_driver;
   }
   if (detected_driver != nullptr &&
-      device_address_ == detected_driver->config_.address) {
+      chip_address_ == detected_driver->config_.address) {
     info.model = detected_driver->config_.model;
   }
   info.jeita_profile_valid = info.model_is_ambiguous ||

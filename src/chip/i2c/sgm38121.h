@@ -28,10 +28,10 @@ class Sgm38121 final : public I2cChipBase {
   };
 
   explicit Sgm38121(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault)
+      int16_t address = kDefaultI2cAddress)
       : I2cChipBase(bus, address) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -55,8 +55,10 @@ class Sgm38121 final : public I2cChipBase {
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetChannelStatus(Channel channel, Status status);
-
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = 0x28;
+
   enum class Register {
     kRoChipId = 0x00,
     kRwDischargeResistorSelection = 0X02,
@@ -70,9 +72,6 @@ class Sgm38121 final : public I2cChipBase {
     kRwEnableControl = 0X0E,
     kRwSequenceControl = 0x0F,
   };
-
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-  static constexpr uint8_t kDeviceI2cAddressDefault = 0x28;
 
   /**
    * @brief 读取寄存器，并记录访问失败信息

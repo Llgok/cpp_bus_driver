@@ -19,8 +19,8 @@ class Rm69a10 final : public MipiChipBase {
       std::shared_ptr<MipiBusBase> bus, int32_t rst = kPinNotConnected)
       : MipiChipBase(bus, InitSequenceFormat::kWriteC8D8), rst_(rst) {}
 
-  bool Init(float freq_mhz = kDefaultFrequencyMhz,
-      float lane_bit_rate_mbps = kDefaultLaneBitRateMbps) override;
+  bool Init(float freq_mhz = kDefaultMipiFrequencyMhz,
+      float lane_bit_rate_mbps = kDefaultMipiLaneBitRateMbps) override;
   bool Deinit() override;
 
   /**
@@ -71,9 +71,10 @@ class Rm69a10 final : public MipiChipBase {
 
  private:
   // 默认像素时钟，单位 MHz。
-  static constexpr float kDefaultFrequencyMhz = 60.0F;
+  static constexpr float kDefaultMipiFrequencyMhz = 60.0F;
+
   // 默认 DSI 数据通道速率，单位 Mbps。
-  static constexpr float kDefaultLaneBitRateMbps = 1000.0F;
+  static constexpr float kDefaultMipiLaneBitRateMbps = 1000.0F;
 
   enum class DcsCommand {
     kRoChipId = 0xA1,

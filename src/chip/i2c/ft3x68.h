@@ -28,11 +28,11 @@ class Ft3x68 final : public I2cChipBase {
   };
 
   explicit Ft3x68(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault,
+      int16_t address = kDefaultI2cAddress,
       int32_t rst = kPinNotConnected)
       : I2cChipBase(bus, address), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -63,8 +63,10 @@ class Ft3x68 final : public I2cChipBase {
    * @return  [true]：获取的手指数大于0 [false]：获取错误或者获取的手指数为0
    */
   bool GetMultipleTouchPoint(TouchPoint& tp);
-
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = 0x38;
+
   enum class Register {
     // 芯片标识映射：0x00 为 kFt6456，0x04 为 kFt3268，
     // 0x01 为 kFt3067，0x05 为 kFt3368，0x02 为 kFt3068，0x03 为 kFt3168。
@@ -72,9 +74,6 @@ class Ft3x68 final : public I2cChipBase {
     kRoTdStatus = 0x02,  // 触摸手指数
     kRoP1Xh = 0x03,             // 第1点的X坐标高4位
   };
-
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-  static constexpr uint8_t kDeviceI2cAddressDefault = 0x38;
 
   /**
    * @brief 读取寄存器，并记录访问失败信息

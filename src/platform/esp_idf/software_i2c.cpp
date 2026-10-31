@@ -15,7 +15,7 @@ namespace cpp_bus_driver {
 bool SoftwareI2c::Init(uint32_t freq_hz, uint16_t address) {
   std::lock_guard<std::mutex> lock(mutex_);
   if (freq_hz == 0 || freq_hz > kMaximumFrequencyHz ||
-      (address != kNoDeviceAddress && address > 0x7F) || sda_ == scl_ ||
+      (address != kNoI2cAddress && address > 0x7F) || sda_ == scl_ ||
       !GPIO_IS_VALID_OUTPUT_GPIO(sda_) || !GPIO_IS_VALID_OUTPUT_GPIO(scl_)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Invalid SoftwareI2c configuration\n");
@@ -38,7 +38,7 @@ bool SoftwareI2c::Init(uint32_t freq_hz, uint16_t address) {
   half_period_us_ = 500000U / freq_hz + (500000U % freq_hz != 0);
   address_ = address;
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "SoftwareI2c config address: %#X\n", address);
+      "SoftwareI2c config I2C address: %#X\n", address);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "SoftwareI2c config sda_: %d\n", sda_);
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
@@ -62,7 +62,7 @@ bool SoftwareI2c::Deinit(bool delete_bus) {
     }
   }
   initialized_ = false;
-  address_ = kNoDeviceAddress;
+  address_ = kNoI2cAddress;
   return result;
 }
 
@@ -84,9 +84,9 @@ bool SoftwareI2c::WriteRead(const uint8_t* write_data, size_t write_length,
 
 bool SoftwareI2c::Transfer(const uint8_t* write_data, size_t write_length,
     uint8_t* read_data, size_t read_length) {
-  if (!initialized_ || address_ == kNoDeviceAddress) {
+  if (!initialized_ || address_ == kNoI2cAddress) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SoftwareI2c not initialized or no device address bound\n");
+        "SoftwareI2c not initialized or no I2C address bound\n");
     return false;
   }
   if ((write_length != 0 && write_data == nullptr) ||
@@ -124,7 +124,7 @@ bool SoftwareI2c::Transfer(const uint8_t* write_data, size_t write_length,
 
   if (!result) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SoftwareI2c transfer failed (address: %#X)\n", address_);
+        "SoftwareI2c transfer failed (I2C address: %#X)\n", address_);
   }
   return FinishTransaction(result);
 }
@@ -133,7 +133,7 @@ bool SoftwareI2c::Probe(uint16_t address) {
   std::lock_guard<std::mutex> lock(mutex_);
   if (!initialized_ || address > 0x7F) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "SoftwareI2c not initialized or invalid probe address\n");
+        "SoftwareI2c not initialized or invalid probe I2C address\n");
     return false;
   }
   const bool result =

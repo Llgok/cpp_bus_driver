@@ -46,8 +46,8 @@ class HardwareMipi final : public MipiBusBase {
         num_frame_buffer_(num_frame_buffer),
         port_(port) {}
 
-  bool Init(float freq_mhz = kDefaultFrequencyMhz,
-      float lane_bit_rate_mbps = kDefaultLaneBitRateMbps,
+  bool Init(float freq_mhz = kDefaultMipiFrequencyMhz,
+      float lane_bit_rate_mbps = kDefaultMipiLaneBitRateMbps,
       InitSequenceFormat init_sequence_format =
           InitSequenceFormat::kWriteC8D8) override;
 
@@ -62,9 +62,8 @@ class HardwareMipi final : public MipiBusBase {
   esp_lcd_panel_handle_t device_handle();
 
  private:
-  // 默认像素时钟和 DSI 数据通道速率，单位分别为 MHz 和 Mbps。
-  static constexpr float kDefaultFrequencyMhz = 60.0F;
-  static constexpr float kDefaultLaneBitRateMbps = 1000.0F;
+  static constexpr float kDefaultMipiFrequencyMhz = 60.0F;
+  static constexpr float kDefaultMipiLaneBitRateMbps = 1000.0F;
 
   uint32_t width_, height_, hsync_, hbp_, hfp_, vsync_, vbp_, vfp_;
   uint8_t num_data_lane_;

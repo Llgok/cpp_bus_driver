@@ -68,10 +68,10 @@ class Sy6970 final : public I2cChipBase {
   };
 
   explicit Sy6970(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault)
+      int16_t address = kDefaultI2cAddress)
       : I2cChipBase(bus, address) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -536,10 +536,10 @@ class Sy6970 final : public I2cChipBase {
   bool ReadAiclOptimizedStatus();
 
   /**
-   * @brief 读取设备配置
-   * @return 设备配置值
+   * @brief 读取芯片配置
+   * @return 芯片配置值
    */
-  uint8_t ReadDeviceConfiguration();
+  uint8_t ReadChipConfiguration();
 
   /**
    * @brief 读取温度配置文件
@@ -548,12 +548,14 @@ class Sy6970 final : public I2cChipBase {
   bool ReadTemperatureProfile();
 
   /**
-   * @brief 读取设备版本
-   * @return 设备版本号
+   * @brief 读取芯片版本
+   * @return 芯片版本号
    */
-  uint8_t ReadDeviceRevision();
-
+  uint8_t ReadChipRevision();
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = 0x6A;
+
   enum class Register : uint8_t {
     kRwInputSourceControl = 0x00,      // 输入源控制寄存器
     kRwTemperatureMonitorControl = 0x01,      // 温度监控控制寄存器
@@ -578,8 +580,6 @@ class Sy6970 final : public I2cChipBase {
     kRwDeviceControl = 0x14,                  // 设备控制寄存器
   };
 
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-  static constexpr uint8_t kDeviceI2cAddressDefault = 0x6A;
   static constexpr uint8_t kInitSequence[] = {
 
       // 输入电流限制设为 2000 mA，ILIM 引脚保持上电默认启用。

@@ -1003,7 +1003,7 @@ bool Sx126x::Configure(const LoraConfig& config) {
   }
   if (sleeping_) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Configure LoRa failed: device is sleeping\n");
+        "Configure LoRa failed: chip is sleeping\n");
     return false;
   }
   if (!ValidateConfig(config)) {
@@ -1394,7 +1394,7 @@ bool Sx126x::ResetStats() {
   return true;
 }
 
-bool Sx126x::GetDeviceErrors(uint16_t& errors) {
+bool Sx126x::GetChipErrors(uint16_t& errors) {
   errors = 0;
   uint8_t buffer[2] = {0};
 
@@ -1406,7 +1406,7 @@ bool Sx126x::GetDeviceErrors(uint16_t& errors) {
   return true;
 }
 
-bool Sx126x::ClearDeviceErrors() {
+bool Sx126x::ClearChipErrors() {
   const uint8_t buffer[2] = {0};
   if (!WriteCommand(Command::kWoClearDeviceErrors, buffer, sizeof(buffer))) {
     return false;
@@ -1808,7 +1808,7 @@ bool Sx126x::Configure(const GfskConfig& config) {
   }
   if (sleeping_) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__,
-        "Configure GFSK failed: device is sleeping\n");
+        "Configure GFSK failed: chip is sleeping\n");
     return false;
   }
   if (!ValidateConfig(config)) {

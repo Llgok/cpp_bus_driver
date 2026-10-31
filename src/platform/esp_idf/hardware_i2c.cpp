@@ -123,7 +123,7 @@ bool HardwareI2c::Init(uint32_t freq_hz, uint16_t address) {
   const bool had_bus = bus_handle_ != nullptr;
 
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-      "HardwareI2c config address: %#X\n", address);
+      "HardwareI2c config I2C address: %#X\n", address);
   const char* port_type = "HP I2C";
 #if SOC_LP_I2C_SUPPORTED
   if (port_ == LP_I2C_NUM_0) {
@@ -144,7 +144,7 @@ bool HardwareI2c::Init(uint32_t freq_hz, uint16_t address) {
   }
   const bool created_bus = !had_bus && delete_bus_on_deinit_;
 
-  if (address == kNoDeviceAddress) {
+  if (address == kNoI2cAddress) {
     LogMessage(LogLevel::kDebug, __FILE__, __LINE__,
         "HardwareI2c initialized in bus-only mode\n");
     address_ = address;

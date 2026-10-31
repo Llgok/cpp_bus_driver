@@ -28,8 +28,8 @@ bool HardwareI2c::Init(uint32_t freq_hz, uint16_t address) {
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "HardwareI2c config freq_hz: %d hz\n", freq_hz);
 
-  if (address == kNoDeviceAddress) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "address is null\n");
+  if (address == kNoI2cAddress) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "I2C address is not bound\n");
   }
 
   i2c_handle_->setPins(static_cast<uint8_t>(sda_), static_cast<uint8_t>(scl_));
@@ -81,7 +81,7 @@ bool HardwareI2c::Write(const uint8_t* data, size_t length) {
       return false;
     case 2:
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "nack on transmit of address\n");
+          "nack on transmit of I2C address\n");
       return false;
     case 3:
       LogMessage(
@@ -120,7 +120,7 @@ bool HardwareI2c::WriteRead(const uint8_t* write_data, size_t write_length,
       return false;
     case 2:
       LogMessage(LogLevel::kError, __FILE__, __LINE__,
-          "nack on transmit of address\n");
+          "nack on transmit of I2C address\n");
       return false;
     case 3:
     case 4:

@@ -53,7 +53,7 @@ class Sh8601 final : public QspiChipBase {
         y_offset_(y_offset),
         color_format_(color_format) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultQspiFrequencyHz) override;
   bool Deinit() override;
 
   /**
@@ -119,8 +119,9 @@ class Sh8601 final : public QspiChipBase {
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetColorFormat(ColorFormat format);
-
  private:
+  static constexpr int32_t kDefaultQspiFrequencyHz = 10000000;
+
   // QSPI 命令事务操作码。
   enum class CommandOpcode {
     kWrite = 0x02,
@@ -154,7 +155,6 @@ class Sh8601 final : public QspiChipBase {
     kWoSetColorEnhance = 0x005800,
   };
 
-  static constexpr int32_t kDefaultFrequencyHz = 10000000;
   static constexpr uint32_t kInitSequence[] = {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8R24),
       static_cast<uint8_t>(CommandOpcode::kWrite),

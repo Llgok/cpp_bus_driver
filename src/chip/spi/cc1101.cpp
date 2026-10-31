@@ -241,7 +241,7 @@ bool Cc1101::Configure(const Config& config) {
   result &= SetPreambleQualityThreshold(config.preamble_quality_threshold);
   result &= SetPacketLengthMode(
       config.packet_length_mode, config.maximum_packet_length);
-  result &= SetAddressCheck(config.address_check, config.device_address);
+  result &= SetAddressCheck(config.address_check, config.local_address);
   result &= SetCrc(config.crc_enabled);
   result &= UpdateRegisterBits(Register::kPktctrl1, kAppendStatusMask,
       config.append_status ? kAppendStatusMask : 0);
@@ -873,7 +873,7 @@ bool Cc1101::SetPacketLengthMode(
   return result;
 }
 
-bool Cc1101::SetAddressCheck(AddressCheck check, uint8_t device_address) {
+bool Cc1101::SetAddressCheck(AddressCheck check, uint8_t address) {
   if (static_cast<uint8_t>(check) > 3) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "Cc1101::SetAddressCheck: unsupported address check mode\n");
@@ -884,10 +884,10 @@ bool Cc1101::SetAddressCheck(AddressCheck check, uint8_t device_address) {
   }
   bool result = UpdateRegisterBits(
       Register::kPktctrl1, kAddressCheckMask, static_cast<uint8_t>(check));
-  result &= WriteRegister(Register::kAddr, device_address);
+  result &= WriteRegister(Register::kAddr, address);
   if (result) {
     config_.address_check = check;
-    config_.device_address = device_address;
+    config_.local_address = address;
   }
   return result;
 }

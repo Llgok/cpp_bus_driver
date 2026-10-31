@@ -39,8 +39,8 @@ bool LegacyHardwareI2c::Init(uint32_t freq_hz, uint16_t address) {
   LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
       "LegacyHardwareI2c config freq_hz: %d hz\n", freq_hz);
 
-  if (address == kNoDeviceAddress) {
-    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "address is null\n");
+  if (address == kNoI2cAddress) {
+    LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "I2C address is not bound\n");
   }
 
   const i2c_config_t i2c_config = {

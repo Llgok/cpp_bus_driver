@@ -777,7 +777,7 @@ bool Gt9895::ReadRuntimeInfo(RuntimeInfo* runtime_info) {
 bool Gt9895::ReadRegister(uint32_t address, uint8_t* data, size_t length) {
   if (data == nullptr || length == 0) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Gt9895::ReadRegister: invalid buffer, length, or device state\n");
+        "Gt9895::ReadRegister: invalid buffer, length, or chip state\n");
     return false;
   }
   const uint8_t command[] = {
@@ -799,7 +799,7 @@ bool Gt9895::WriteRegister(
     uint32_t address, const uint8_t* data, size_t length) {
   if (data == nullptr || length == 0 || length > kMaximumCommandPacketSize) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Gt9895::WriteRegister: invalid buffer, length, or device state\n");
+        "Gt9895::WriteRegister: invalid buffer, length, or chip state\n");
     return false;
   }
 

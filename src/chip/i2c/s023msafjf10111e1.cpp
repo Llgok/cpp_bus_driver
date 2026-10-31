@@ -118,7 +118,7 @@ bool S023msafjf10111e1::ReadRegisters(
     Register reg, uint8_t* data, size_t length) {
   if (bus_ == nullptr || data == nullptr || length == 0) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "S023msafjf10111e1::ReadRegisters: invalid buffer, length, or device "
+        "S023msafjf10111e1::ReadRegisters: invalid buffer, length, or chip "
         "state\n");
     return false;
   }
@@ -147,7 +147,7 @@ bool S023msafjf10111e1::WriteRegisters(
   if (bus_ == nullptr || data == nullptr || length == 0 || length > 2) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
         "S023msafjf10111e1::WriteRegisters: invalid buffer, length, or "
-        "device state\n");
+        "chip state\n");
     return false;
   }
   const auto address = static_cast<uint16_t>(reg);

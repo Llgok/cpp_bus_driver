@@ -17,6 +17,11 @@ namespace cpp_bus_driver {
 
 class Aw21009 final : public I2cChipBase {
  public:
+  static constexpr uint8_t kI2cAddress1 = 0x20;
+  static constexpr uint8_t kI2cAddress2 = 0x21;
+  static constexpr uint8_t kI2cAddress3 = 0x24;
+  static constexpr uint8_t kI2cAddress4 = 0x25;
+  static constexpr uint8_t kI2cBroadcastAddress = 0x1C;
   enum class LedChannel : uint8_t {
     kLed1 = 0,
     kLed2,
@@ -198,11 +203,11 @@ class Aw21009 final : public I2cChipBase {
   };
 
   explicit Aw21009(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault,
+      int16_t address = kDefaultI2cAddress,
       int32_t rst = kPinNotConnected)
       : I2cChipBase(bus, address), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -562,8 +567,10 @@ class Aw21009 final : public I2cChipBase {
    * @return 读取成功返回true。
    */
   bool GetPatternStatus(PatternStatus* status);
-
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = kI2cAddress1;
+
   enum class Register : uint8_t {
     kGlobalControl = 0x20,
     kBrightnessStart = 0x21,
@@ -593,14 +600,6 @@ class Aw21009 final : public I2cChipBase {
     kGroupScalingBlue = 0x8A,
     kGroupConfig = 0x8B,
   };
-
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-  static constexpr uint8_t kDeviceI2cAddress1 = 0x20;
-  static constexpr uint8_t kDeviceI2cAddress2 = 0x21;
-  static constexpr uint8_t kDeviceI2cAddress3 = 0x24;
-  static constexpr uint8_t kDeviceI2cAddress4 = 0x25;
-  static constexpr uint8_t kDeviceI2cBroadcastAddress = 0x1C;
-  static constexpr uint8_t kDeviceI2cAddressDefault = kDeviceI2cAddress1;
 
   /**
    * @brief 将寄存器枚举转换为寄存器地址。

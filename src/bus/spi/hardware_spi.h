@@ -61,7 +61,7 @@ class HardwareSpi final : public SpiBusBase {
         bit_order_(bit_order) {}
 #endif
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz,
+  bool Init(int32_t freq_hz = kDefaultSpiFrequencyHz,
       int32_t cs = kPinNotConnected) override;
   bool Write(const void* data, size_t byte) override;
   bool Read(void* data, size_t byte) override;
@@ -76,10 +76,8 @@ class HardwareSpi final : public SpiBusBase {
 #endif
 
  private:
-  static constexpr int32_t kDefaultFrequencyHz = 10000000;
-  // 默认不启用额外的 SPI 设备标志。
+  static constexpr int32_t kDefaultSpiFrequencyHz = 10000000;
   static constexpr uint32_t kDefaultDeviceFlags = 0;
-
 #if CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ESP_IDF || \
     CPP_BUS_DRIVER_PLATFORM == CPP_BUS_DRIVER_PLATFORM_ARDUINO_ESP32
   enum class BusInitState : uint8_t {

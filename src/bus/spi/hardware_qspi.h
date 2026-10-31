@@ -36,7 +36,7 @@ class HardwareQspi final : public QspiBusBase {
         clock_source_(clock_source),
         flags_(flags) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz,
+  bool Init(int32_t freq_hz = kDefaultQspiFrequencyHz,
       int32_t cs = kPinNotConnected) override;
   bool Deinit(bool delete_bus = true) override;
   bool Write(const void* data, size_t byte, uint32_t flags = 0,
@@ -44,8 +44,7 @@ class HardwareQspi final : public QspiBusBase {
   bool SetCs(bool value);
 
  private:
-  static constexpr int32_t kDefaultFrequencyHz = 10000000;
-  // QSPI 默认使用半双工传输。
+  static constexpr int32_t kDefaultQspiFrequencyHz = 10000000;
   static constexpr uint32_t kDefaultDeviceFlags = SPI_DEVICE_HALFDUPLEX;
   // ESP32-S3 的 DMA 单次最大传输长度为 32 KiB。
   static constexpr int32_t kQspiMaxTransferSize = 32 * 1024;

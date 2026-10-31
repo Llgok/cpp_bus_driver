@@ -1231,7 +1231,7 @@ bool Axp517::GetTcpcId(TcpcId& id) {
   TcpcId result;
   if (!ReadLittleEndian16(Register::kTcpcVendorId, result.vendor_id) ||
       !ReadLittleEndian16(Register::kTcpcProductId, result.product_id) ||
-      !ReadLittleEndian16(Register::kTcpcBcdDev, result.device_revision) ||
+      !ReadLittleEndian16(Register::kTcpcBcdDev, result.chip_revision) ||
       !ReadLittleEndian16(Register::kTcpcTcRev, result.type_c_revision) ||
       !ReadLittleEndian16(Register::kTcpcPdRev, result.pd_revision) ||
       !ReadLittleEndian16(Register::kTcpcPdIntRev, result.interface_revision)) {

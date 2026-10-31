@@ -135,7 +135,7 @@ bus->Deinit();
 ```
 
 > [!NOTE]
-> `Deinit()` 能力以具体 bus 类为准。屏幕类 QSPI 场景通常由上层 chip 驱动负责管理释放流程。如果多个芯片共用同一个 I2C bus，反初始化时可以根据资源归属选择是否删除底层 bus，例如 `Deinit(false)` 只释放当前 device，`Deinit(true)` 会连同 bus 一起释放。
+> `Deinit()` 能力以具体 bus 类为准。屏幕类 QSPI 场景通常由上层 chip 驱动负责管理释放流程。如果多个芯片共用同一个 I2C bus，反初始化时可以根据资源归属选择是否删除底层 bus，例如 `Deinit(false)` 只释放当前芯片连接，`Deinit(true)` 会连同 bus 一起释放。
 
 ### 芯片驱动
 
@@ -151,7 +151,7 @@ chip->Init();
 chip->Deinit();
 ```
 
-芯片层 `Deinit()` 会优先释放自身使用的 bus device，并把相关 GPIO 引脚切换到禁用状态，适合低功耗和重新初始化场景。
+芯片层 `Deinit()` 会优先释放自身使用的 bus 连接，并把相关 GPIO 引脚切换到禁用状态，适合低功耗和重新初始化场景。
 
 ### 日志配置
 

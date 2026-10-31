@@ -79,7 +79,7 @@ bool Icm20948::Init(const Config& config, int32_t freq_hz) {
   resume_magnetometer_mode_ = config_.magnetometer_mode;
 
   uint8_t chip_id = 0;
-  if (!ResetDevice()) {
+  if (!ResetChip()) {
     EnterSafeStateAfterInitializationFailure();
     return false;
   }
@@ -99,7 +99,7 @@ bool Icm20948::Init(const Config& config, int32_t freq_hz) {
     return false;
   }
 
-  if (!ConfigureDevice(config_)) {
+  if (!ConfigureChip(config_)) {
     EnterSafeStateAfterInitializationFailure();
     return false;
   }
@@ -152,7 +152,7 @@ bool Icm20948::Reset() {
   }
 
   uint8_t chip_id = 0;
-  if (!ResetDevice()) {
+  if (!ResetChip()) {
     EnterSafeStateAfterInitializationFailure();
     return false;
   }
@@ -172,7 +172,7 @@ bool Icm20948::Reset() {
     EnterSafeStateAfterInitializationFailure();
     return false;
   }
-  if (!ConfigureDevice(config_)) {
+  if (!ConfigureChip(config_)) {
     EnterSafeStateAfterInitializationFailure();
     return false;
   }
@@ -250,7 +250,7 @@ bool Icm20948::SetSensorEnabled(bool accelerometer_enabled,
 
   if (!initialized_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::SetSensorEnabled: device is not initialized\n");
+        "Icm20948::SetSensorEnabled: chip is not initialized\n");
     return false;
   }
 
@@ -280,7 +280,7 @@ bool Icm20948::SetAccelRange(AccelRange range) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_ || !IsValidAccelRange(range)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::SetAccelRange: device is not initialized or accelerometer "
+        "Icm20948::SetAccelRange: chip is not initialized or accelerometer "
         "range is invalid\n");
     return false;
   }
@@ -297,7 +297,7 @@ bool Icm20948::SetGyroRange(GyroRange range) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_ || !IsValidGyroRange(range)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::SetGyroRange: device is not initialized or gyroscope "
+        "Icm20948::SetGyroRange: chip is not initialized or gyroscope "
         "range is invalid\n");
     return false;
   }
@@ -314,7 +314,7 @@ bool Icm20948::SetAccelDlpf(Dlpf dlpf, bool enable) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_ || !IsValidDlpf(dlpf)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::SetAccelDlpf: device is not initialized or filter setting "
+        "Icm20948::SetAccelDlpf: chip is not initialized or filter setting "
         "is invalid\n");
     return false;
   }
@@ -333,7 +333,7 @@ bool Icm20948::SetGyroDlpf(Dlpf dlpf, bool enable) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_ || !IsValidDlpf(dlpf)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::SetGyroDlpf: device is not initialized or filter setting "
+        "Icm20948::SetGyroDlpf: chip is not initialized or filter setting "
         "is invalid\n");
     return false;
   }
@@ -352,7 +352,7 @@ bool Icm20948::SetTemperatureDlpf(Dlpf dlpf) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_ || !IsValidDlpf(dlpf)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::SetTemperatureDlpf: device is not initialized or filter "
+        "Icm20948::SetTemperatureDlpf: chip is not initialized or filter "
         "setting is invalid\n");
     return false;
   }
@@ -369,7 +369,7 @@ bool Icm20948::SetAccelSampleRateDivider(uint16_t divider) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::SetAccelSampleRateDivider: device is not initialized\n");
+        "Icm20948::SetAccelSampleRateDivider: chip is not initialized\n");
     return false;
   }
 
@@ -402,7 +402,7 @@ bool Icm20948::SetGyroSampleRateDivider(uint8_t divider) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::SetGyroSampleRateDivider: device is not initialized\n");
+        "Icm20948::SetGyroSampleRateDivider: chip is not initialized\n");
     return false;
   }
 
@@ -419,7 +419,7 @@ bool Icm20948::SetMagnetometerMode(MagnetometerMode mode) {
 
   if (!initialized_ || !IsValidMagnetometerMode(mode)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::SetMagnetometerMode: device is not initialized or "
+        "Icm20948::SetMagnetometerMode: chip is not initialized or "
         "magnetometer mode is invalid\n");
     return false;
   }
@@ -441,7 +441,7 @@ bool Icm20948::SetDataReadyInterrupt(bool enable) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::SetDataReadyInterrupt: device is not initialized\n");
+        "Icm20948::SetDataReadyInterrupt: chip is not initialized\n");
     return false;
   }
 
@@ -457,7 +457,7 @@ bool Icm20948::GetDataReady(bool& ready) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_ || sleeping_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::GetDataReady: device is not initialized or is asleep\n");
+        "Icm20948::GetDataReady: chip is not initialized or is asleep\n");
     return false;
   }
 
@@ -473,7 +473,7 @@ bool Icm20948::ReadRawData(RawData& data) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_ || sleeping_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::ReadRawData: device is not initialized or is asleep\n");
+        "Icm20948::ReadRawData: chip is not initialized or is asleep\n");
     return false;
   }
 
@@ -554,7 +554,7 @@ bool Icm20948::ReadAcceleration(Vector3& acceleration_g) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_ || sleeping_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::ReadAcceleration: device is not initialized or is asleep\n");
+        "Icm20948::ReadAcceleration: chip is not initialized or is asleep\n");
     return false;
   }
 
@@ -574,7 +574,7 @@ bool Icm20948::ReadAngularVelocity(Vector3& angular_velocity_dps) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_ || sleeping_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::ReadAngularVelocity: device is not initialized or is "
+        "Icm20948::ReadAngularVelocity: chip is not initialized or is "
         "asleep\n");
     return false;
   }
@@ -595,7 +595,7 @@ bool Icm20948::ReadTemperature(float& temperature_celsius) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if (!initialized_ || sleeping_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::ReadTemperature: device is not initialized or is asleep\n");
+        "Icm20948::ReadTemperature: chip is not initialized or is asleep\n");
     return false;
   }
 
@@ -617,7 +617,7 @@ bool Icm20948::ReadMagnetometer(Vector3& magnetic_field_ut, bool& data_ready,
       active_magnetometer_mode_ == MagnetometerMode::kPowerDown ||
       !magnetometer_stream_ready_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::ReadMagnetometer: device is not initialized or is not "
+        "Icm20948::ReadMagnetometer: chip is not initialized or is not "
         "ready\n");
     return false;
   }
@@ -698,7 +698,7 @@ bool Icm20948::InitBus(int32_t freq_hz) {
   return result;
 }
 
-bool Icm20948::ResetDevice() {
+bool Icm20948::ResetChip() {
   selected_bank_ = Bank::kInvalid;
   if (!WriteRegister(Register::kRwPowerManagement1, 0x80)) {
     return false;
@@ -757,7 +757,7 @@ void Icm20948::EnterSafeStateAfterInitializationFailure() {
   }
 }
 
-bool Icm20948::ConfigureDevice(const Config& config) {
+bool Icm20948::ConfigureChip(const Config& config) {
   const uint8_t power_management_1 =
       static_cast<uint8_t>((config.temperature_enabled ? 0x00 : 0x08) | 0x01);
   uint8_t power_management_2 = 0;
@@ -1068,7 +1068,7 @@ bool Icm20948::ReadRegister(
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if ((data == nullptr && length != 0) || !bus_initialized_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::ReadRegister: invalid buffer, length, or device state\n");
+        "Icm20948::ReadRegister: invalid buffer, length, or chip state\n");
     return false;
   }
   return SelectBank(GetBank(register_id)) &&
@@ -1084,7 +1084,7 @@ bool Icm20948::WriteRegister(
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   if ((data == nullptr && length != 0) || !bus_initialized_) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "Icm20948::WriteRegister: invalid buffer, length, or device state\n");
+        "Icm20948::WriteRegister: invalid buffer, length, or chip state\n");
     return false;
   }
   return SelectBank(GetBank(register_id)) &&

@@ -19,7 +19,7 @@ class Ecx336cn final : public SpiChipBase {
       int32_t cs = kPinNotConnected, int32_t rst = kPinNotConnected)
       : SpiChipBase(bus, cs), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultSpiFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -28,13 +28,13 @@ class Ecx336cn final : public SpiChipBase {
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetPowerSaveMode(bool enable);
-
  private:
+  static constexpr int32_t kDefaultSpiFrequencyHz = 10000000;
+
   enum class Register {
     kWoPowerSaveMode = 0x00,
   };
 
-  static constexpr int32_t kDefaultFrequencyHz = 10000000;
   static constexpr uint8_t kInitSequence640x400_50Hz_[] = {
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8), 0x00, 0x0E,
       static_cast<uint8_t>(InitSequenceFormat::kWriteC8D8), 0x01, 0x00,

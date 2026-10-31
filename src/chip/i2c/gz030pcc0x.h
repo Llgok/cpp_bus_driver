@@ -39,11 +39,11 @@ class Gz030pcc0x final : public I2cChipBase {
   };
 
   explicit Gz030pcc0x(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault,
+      int16_t address = kDefaultI2cAddress,
       int32_t rst = kPinNotConnected)
       : I2cChipBase(bus, address), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -79,8 +79,10 @@ class Gz030pcc0x final : public I2cChipBase {
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetBrightness(uint8_t value);
-
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = 0x28;
+
   enum class Register {
     kRwInternalTestModeInputDataFormat = 0x0001,
     kRwHorizontalVerticalMirror = 0x02,
@@ -88,8 +90,6 @@ class Gz030pcc0x final : public I2cChipBase {
     kRoTemperatureReading = 0x3001,
   };
 
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-  static constexpr uint8_t kDeviceI2cAddressDefault = 0x28;
   static constexpr uint16_t kInitSequence[] = {
       static_cast<uint16_t>(InitSequenceFormat::kWriteC16D8), 0x6C00, 0x00,
       static_cast<uint16_t>(InitSequenceFormat::kWriteC16D8), 0x6900, 0x08,

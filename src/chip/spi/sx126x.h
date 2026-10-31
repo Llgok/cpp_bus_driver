@@ -558,7 +558,7 @@ class Sx126x final : public SpiChipBase {
         rst_(rst),
         busy_wait_callback_(busy_wait_callback) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultSpiFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
 
   /**
@@ -1030,17 +1030,17 @@ class Sx126x final : public SpiChipBase {
   bool ResetStats();
 
   /**
-   * @brief 获取芯片内部设备错误状态
-   * @param errors 输出设备错误状态位
+   * @brief 获取芯片错误状态
+   * @param errors 输出芯片错误状态位
    * @return 读取成功返回 true，失败返回 false
    */
-  bool GetDeviceErrors(uint16_t& errors);
+  bool GetChipErrors(uint16_t& errors);
 
   /**
-   * @brief 清除芯片内部设备错误状态
+   * @brief 清除芯片错误状态
    * @return 操作成功返回 true，失败返回 false
    */
-  bool ClearDeviceErrors();
+  bool ClearChipErrors();
 
   /**
    * @brief 设置接收增益增强模式
@@ -1303,8 +1303,9 @@ class Sx126x final : public SpiChipBase {
    * @return 成功返回 true，失败返回 false
    */
   bool Wakeup();
-
  private:
+  static constexpr int32_t kDefaultSpiFrequencyHz = 10000000;
+
   enum class Command {
     kWoResetStats = 0x00,
     kWoClearIrqStatus = 0x02,
@@ -1426,7 +1427,6 @@ class Sx126x final : public SpiChipBase {
     bool rx_boosted = false;
   };
 
-  static constexpr int32_t kDefaultFrequencyHz = 10000000;
   static constexpr uint16_t kBusyPinTimeoutCount = 10000;
   static constexpr uint16_t kBusyFunctionTimeoutCount = kBusyPinTimeoutCount;
   static constexpr uint8_t kMaxPayloadSize = 255;

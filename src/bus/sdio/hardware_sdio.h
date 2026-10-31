@@ -49,7 +49,7 @@ class HardwareSdio final : public SdioBusBase {
         d7_(d7),
         port_(port) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyKhz) override;
+  bool Init(int32_t freq_hz = kDefaultSdioFrequencyKhz) override;
   bool Deinit() override;
 
   bool WaitInterrupt(uint32_t timeout_ms) override;
@@ -119,8 +119,7 @@ class HardwareSdio final : public SdioBusBase {
       size_t byte) override;
 
  private:
-  // 默认 SDIO 时钟，单位 kHz，与 SDMMC 主机接口保持一致。
-  static constexpr int32_t kDefaultFrequencyKhz = 20000;
+  static constexpr int32_t kDefaultSdioFrequencyKhz = 20000;
   static constexpr uint8_t kSdioBusInitTimeoutCount = 30;
 
   uint8_t width_ = 1;

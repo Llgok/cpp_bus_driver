@@ -130,15 +130,15 @@ class Sgm41562xx final : public I2cChipBase {
    * @param address I2C设备地址
    */
   explicit Sgm41562xx(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault)
+      int16_t address = kDefaultI2cAddress)
       : I2cChipBase(bus, address) {}
 
   /**
    * @brief 初始化芯片并根据型号执行对应寄存器初始化序列
-   * @param freq_hz I2C总线频率，默认使用 kDefaultFrequencyHz
+   * @param freq_hz I2C总线频率，默认使用 kDefaultI2cFrequencyHz
    * @return 初始化成功返回true，失败返回false
    */
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
 
   /**
    * @brief 反初始化芯片
@@ -439,8 +439,10 @@ class Sgm41562xx final : public I2cChipBase {
    * @return 设置成功返回true，失败返回false
    */
   bool SetShippingModeDelay(ShippingModeDelay delay);
-
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = 0x03;
+
   enum class Register {
     kInputSourceControl = 0x00,
     kPowerOnConfiguration = 0x01,
@@ -457,9 +459,6 @@ class Sgm41562xx final : public I2cChipBase {
     kExtendedInputCurrentControl = 0x0C,
     kExtendedCurrentControl = 0x0D,
   };
-
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-  static constexpr uint8_t kDeviceI2cAddressDefault = 0x03;
 
   // 线性编码寄存器字段及对应物理量范围。
   struct RegisterField {

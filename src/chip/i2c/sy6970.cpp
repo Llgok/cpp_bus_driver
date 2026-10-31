@@ -1405,7 +1405,7 @@ bool Sy6970::ReadAiclOptimizedStatus() {
   return (buffer & 0x40) >> 6;
 }
 
-uint8_t Sy6970::ReadDeviceConfiguration() {
+uint8_t Sy6970::ReadChipConfiguration() {
   uint8_t buffer = 0;
   if (!ReadRegister(
           static_cast<uint8_t>(Register::kRwDeviceControl), &buffer)) {
@@ -1425,7 +1425,7 @@ bool Sy6970::ReadTemperatureProfile() {
   return (buffer & 0x04) >> 2;
 }
 
-uint8_t Sy6970::ReadDeviceRevision() {
+uint8_t Sy6970::ReadChipRevision() {
   uint8_t buffer = 0;
   if (!ReadRegister(
           static_cast<uint8_t>(Register::kRwDeviceControl), &buffer)) {

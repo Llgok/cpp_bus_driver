@@ -14,8 +14,8 @@ bool I2cBusBase::Deinit(bool delete_bus) {
   return false;
 }
 
-bool I2cBusBase::Scan7BitAddress(std::vector<uint8_t>* address) {
-  if (address == nullptr) {
+bool I2cBusBase::Scan7BitAddress(std::vector<uint8_t>* addresses) {
+  if (addresses == nullptr) {
     LogMessage(LogLevel::kWarning, __FILE__, __LINE__, "Invalid argument\n");
     return false;
   }
@@ -34,7 +34,7 @@ bool I2cBusBase::Scan7BitAddress(std::vector<uint8_t>* address) {
     return false;
   }
 
-  address->assign(address_buffer.begin(), address_buffer.end());
+  addresses->assign(address_buffer.begin(), address_buffer.end());
   return true;
 }
 

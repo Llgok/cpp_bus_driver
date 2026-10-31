@@ -26,8 +26,8 @@
 namespace cpp_bus_driver {
 class I2cBusBase : public virtual DriverBase {
  public:
-  // 仅初始化主机总线、不绑定从设备时使用的地址标记。
-  static constexpr uint16_t kNoDeviceAddress = 0xFFFF;
+  // 仅初始化主机总线、不绑定 I2C 地址时使用的标记。
+  static constexpr uint16_t kNoI2cAddress = 0xFFFF;
 
   I2cBusBase() = default;
   virtual bool Init(uint32_t freq_hz, uint16_t address) = 0;
@@ -52,7 +52,7 @@ class I2cBusBase : public virtual DriverBase {
   virtual bool StartTransmit();
   virtual bool StopTransmit();
 #endif
-  bool Scan7BitAddress(std::vector<uint8_t>* address);
+  bool Scan7BitAddress(std::vector<uint8_t>* addresses);
 };
 
 class I2sBusBase : public virtual DriverBase {

@@ -63,7 +63,7 @@ class Bq2589x final : public I2cChipBase {
     // PN[2:0] 字段，范围 0-7，不是完整 REG14 寄存器值。
     uint8_t part_number = 0;
     // DEV_REV[1:0] 修订号，范围 0-3。
-    uint8_t device_revision = 0;
+    uint8_t chip_revision = 0;
     // TS_PROFILE 实读位；仅 jeita_profile_valid 为 true
     // 时有效，不用于型号判定。
     bool jeita_profile = false;
@@ -256,12 +256,10 @@ class Bq2589x final : public I2cChipBase {
   };
 
   // BQ25896 默认 7 位 I2C 地址，不包含读写方向位。
-  static constexpr uint8_t kDeviceI2cAddressDefault = 0x6B;
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
   // BQ25896 的 REG14 PN 字段，需同时检查修订号。
   static constexpr uint8_t kBq25896PartNumber = 0x00;
   // 当前适配的 BQ25896 REG14 DEV_REV 字段。
-  static constexpr uint8_t kBq25896DeviceRevision = 0x02;
+  static constexpr uint8_t kBq25896ChipRevision = 0x02;
 
   /**
    * @brief 构造充电芯片对象；不访问总线、不改变芯片供电配置。
@@ -274,11 +272,11 @@ class Bq2589x final : public I2cChipBase {
    * 多次总线操作，不能仅依赖单次 I2C 事务锁保护读改写过程。
    */
   explicit Bq2589x(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault,
+      int16_t address = kDefaultI2cAddress,
       ChipModel model = ChipModel::kUnknown)
       : I2cChipBase(bus, address),
         requested_model_(model),
-        device_address_(address) {}
+        chip_address_(address) {}
 
   /**
    * @brief 按型号选用手册的固定 I2C 地址构造对象，不访问硬件。
@@ -316,7 +314,7 @@ class Bq2589x final : public I2cChipBase {
    * 驱动不创建后台喂狗任务；开启看门狗后，须周期调用 ResetWatchdogTimer()。
    * 看门狗到期会恢复部分寄存器默认值，读取接口仍读取硬件当前配置。
    */
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
 
   /**
    * @brief 解除总线设备初始化并清除驱动状态，不复位充电芯片或关闭电源。
@@ -1347,8 +1345,10 @@ class Bq2589x final : public I2cChipBase {
    *     IDPM_LIM 编码偏移，因此仅保留原码，input_current_limit_valid 为 false。
    */
   bool GetDpmStatus(DpmStatus& status);
-
  private:
+  static constexpr uint8_t kDefaultI2cAddress = 0x6B;
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+
   // 隐藏会绕过型号检查和自清零命令位处理的原始写序列入口。
   using I2cChipBase::InitSequence;
 
@@ -1383,7 +1383,7 @@ class Bq2589x final : public I2cChipBase {
     ChipModel model;           // 具体芯片型号。
     uint8_t address;           // 固定的 7 位 I2C 地址。
     uint8_t part_number;       // REG14 PN 编码。
-    uint8_t device_revision;   // REG14 DEV_REV 编码。
+    uint8_t chip_revision;   // REG14 DEV_REV 编码。
     uint32_t feature_mask;     // Feature 枚举对应的能力位。
     bool jeita_profile_valid;  // REG14 TS_PROFILE 是否有定义。
   };
@@ -1396,13 +1396,13 @@ class Bq2589x final : public I2cChipBase {
      * @param model 具体芯片型号。
      * @param address 固定的 7 位 I2C 地址。
      * @param part_number REG14 PN 编码。
-     * @param device_revision REG14 DEV_REV 编码。
+     * @param chip_revision REG14 DEV_REV 编码。
      * @param features 型号支持的功能列表，构造时转换为位掩码，不保存列表引用。
      * @param jeita_profile_valid TS_PROFILE 是否有效，默认 true；98C 传入
      * false。
      */
     ModelDriver(ChipModel model, uint8_t address, uint8_t part_number,
-        uint8_t device_revision, std::initializer_list<Feature> features,
+        uint8_t chip_revision, std::initializer_list<Feature> features,
         bool jeita_profile_valid = true);
 
     /**
@@ -2395,7 +2395,7 @@ class Bq2589x final : public I2cChipBase {
   // 板级指定型号；kUnknown 表示使用自动识别结果。
   ChipModel requested_model_;
   // 此对象探测的固定地址，不在初始化时扫描其他器件地址。
-  int16_t device_address_;
+  int16_t chip_address_;
   // Init() 缓存的识别结果，不代替后续硬件状态读取。
   ChipInfo chip_info_;
   // 型号确认后选择的静态实现；初始化前及解除初始化后为 nullptr。

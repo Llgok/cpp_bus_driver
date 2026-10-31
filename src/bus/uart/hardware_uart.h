@@ -27,7 +27,7 @@ class HardwareUart final : public UartBusBase {
       int32_t rts = kPinNotConnected, int32_t cts = kPinNotConnected)
       : tx_(tx), rx_(rx), port_(port), rts_(rts), cts_(cts) {}
 
-  bool Init(int32_t baud_rate = kDefaultBaudRate) override;
+  bool Init(int32_t baud_rate = kDefaultUartBaudRate) override;
   int32_t Read(void* data, uint32_t length) override;
   int32_t Write(const void* data, size_t length) override;
 
@@ -38,8 +38,7 @@ class HardwareUart final : public UartBusBase {
   bool Deinit() override;
 
  private:
-  // 默认 UART 波特率。
-  static constexpr int32_t kDefaultBaudRate = 115200;
+  static constexpr int32_t kDefaultUartBaudRate = 115200;
   static constexpr int kDefaultWaitTimeoutMs = 1000;
   static constexpr uint16_t kUartRxMaxSize = 1024 * 2;
 

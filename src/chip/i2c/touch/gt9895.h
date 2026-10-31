@@ -20,7 +20,6 @@ namespace cpp_bus_driver {
 
 class Gt9895 final : public I2cChipBase {
  public:
-  static constexpr uint8_t kDefaultI2cAddress = 0x5D;
   static constexpr uint8_t kAlternateI2cAddress = 0x14;
 
   // 固件版本和芯片标识信息。
@@ -78,7 +77,7 @@ class Gt9895 final : public I2cChipBase {
         irq_(irq),
         coordinate_transform_(coordinate_transform) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
 
   bool Deinit(bool delete_bus = true) override;
 
@@ -200,8 +199,10 @@ class Gt9895 final : public I2cChipBase {
    * @return 唤醒成功返回 true，缺少复位引脚或操作失败返回 false
    */
   bool WakeUp();
-
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = 0x5D;
+
   // GT9895 固件实时命令字。
   enum class Command : uint8_t {
     kEnterLandscapeEdgeRejection = 0x17,
@@ -220,8 +221,6 @@ class Gt9895 final : public I2cChipBase {
     kPeriodicReporting = 0xC1,
     kGameMode = 0xC2,
   };
-
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
 
   /**
    * @brief 执行驱动可控的硬件复位时序

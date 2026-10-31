@@ -172,7 +172,7 @@ class Bq27220 final : public I2cChipBase {
   };
 
   explicit Bq27220(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault)
+      int16_t address = kDefaultI2cAddress)
       : I2cChipBase(bus, address) {}
 
   /**
@@ -180,7 +180,7 @@ class Bq27220 final : public I2cChipBase {
    * @param freq_hz I2C 工作频率，默认使用总线默认配置
    * @return 初始化成功返回 true，失败返回 false
    */
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
 
   /**
    * @brief 反初始化 BQ27220 驱动
@@ -608,8 +608,10 @@ class Bq27220 final : public I2cChipBase {
    */
   bool ApplyBatteryProfileIfNeeded(
       const CedvProfile& profile, const GaugingConfig& config);
-
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = 0x55;
+
   enum class StandardCommand : uint8_t {
     kControl = 0x00,
     kAtRate = 0x02,
@@ -648,9 +650,6 @@ class Bq27220 final : public I2cChipBase {
     kRawVoltage = 0x7C,
     kRawInternalTemperature = 0x7E,
   };
-
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-  static constexpr uint8_t kDeviceI2cAddressDefault = 0x55;
 
   /**
    * @brief 读取寄存器，并记录访问失败信息

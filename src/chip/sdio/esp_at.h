@@ -28,7 +28,7 @@ class EspAt final : public SdioChipBase {
       std::shared_ptr<SdioBusBase> bus, void (*rst_callback)(bool value))
       : SdioChipBase(bus), rst_callback_(rst_callback) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyKhz) override;
+  bool Init(int32_t freq_hz = kDefaultSdioFrequencyKhz) override;
   bool Deinit() override;
 
   /**
@@ -106,10 +106,8 @@ class EspAt final : public SdioChipBase {
    * @return 等待成功返回 true，失败返回 false
    */
   bool WaitForInterrupt(uint32_t timeout_ms);
-
  private:
-  // 默认 SDIO 总线时钟，单位 kHz。
-  static constexpr int32_t kDefaultFrequencyKhz = 20000;
+  static constexpr int32_t kDefaultSdioFrequencyKhz = 20000;
 
   enum class RegisterAddress {
     kSdIoCccrFnEnable = 0x00000002,

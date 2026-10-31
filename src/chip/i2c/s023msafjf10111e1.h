@@ -21,7 +21,6 @@ class S023msafjf10111e1 final : public I2cChipBase {
   // ADDR0 为高电平时的 7 位 I2C 地址。
   static constexpr uint8_t kI2cAddressAddr0High = 0x54;
   // 默认 RGB 亮度增益，Q1.8 格式，0x100 对应 1 倍。
-  static constexpr uint16_t kDefaultBrightnessGain = 0x100;
   // 9 位 RGB 增益最大编码，0x1FF 对应 511/256 倍。
   static constexpr uint16_t kMaxBrightnessGain = 0x1FF;
 
@@ -53,7 +52,7 @@ class S023msafjf10111e1 final : public I2cChipBase {
    * 同一面板的配置调用须串行；多次寄存器写入失败时不保证自动回滚已写部分。
    */
   explicit S023msafjf10111e1(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kI2cAddressAddr0High, int32_t rst = kPinNotConnected)
+      int16_t address = kDefaultI2cAddress, int32_t rst = kPinNotConnected)
       : I2cChipBase(bus, address), rst_(rst) {}
 
   /**
@@ -63,7 +62,7 @@ class S023msafjf10111e1 final : public I2cChipBase {
    * false。
    * @note 不负责面板供电和 MIPI 初始化；应由设备层先满足面板电源时序。
    */
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
 
   /**
    * @brief 尝试退出本对象开启的 BIST，解除总线设备并释放复位 GPIO 配置。
@@ -158,8 +157,11 @@ class S023msafjf10111e1 final : public I2cChipBase {
    * @return 读取成功返回 true；空指针或总线访问失败返回 false。
    */
   bool GetBrightnessGain(uint16_t* gain);
-
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = kI2cAddressAddr0High;
+  static constexpr uint16_t kDefaultBrightnessGain = 0x100;
+
   // 使用手册原始地址；低字节优先的转换仅在总线读写函数中执行。
   enum class Register : uint16_t {
     kConfigurationControl = 0x2401,  // 视频、BIST 和亮度路径公共控制。
@@ -171,8 +173,6 @@ class S023msafjf10111e1 final : public I2cChipBase {
     kHorizontalMirrorPixelShift = 0x2C03,  // 水平镜像与水平 orbit 偏移。
     kVerticalMirrorPixelShift = 0x2C04,  // 垂直镜像与垂直 orbit 偏移。
   };
-
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
 
   /**
    * @brief 按手册低字节优先的 16 位地址格式读取连续寄存器，使用重复 START。

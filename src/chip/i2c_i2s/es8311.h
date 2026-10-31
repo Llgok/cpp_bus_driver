@@ -17,6 +17,8 @@ namespace cpp_bus_driver {
 
 class Es8311 final : public I2cChipBase, public I2sChipBase {
  public:
+  static constexpr uint8_t kI2cAddress1 = 0x18;
+  static constexpr uint8_t kI2cAddress2 = 0x19;
   enum class ClockSource {
     kAdcDacMclk = 0,
     kAdcDacBclk,
@@ -142,7 +144,7 @@ class Es8311 final : public I2cChipBase, public I2sChipBase {
       int32_t rst = kPinNotConnected)
       : I2cChipBase(i2c_bus, i2c_address), I2sChipBase(i2s_bus), rst_(rst) {}
 
-  bool Init(int32_t freq_hz = kDefaultFrequencyHz) override;
+  bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
   bool Deinit(bool delete_bus = true) override;
   bool Init(uint16_t mclk_multiple, uint32_t sample_rate_hz,
       uint8_t data_bit_width) override;
@@ -396,8 +398,10 @@ class Es8311 final : public I2cChipBase, public I2sChipBase {
    * @return 设置成功返回 true，失败返回 false
    */
   bool SetAdcDataFormat(AdcDataFormat format);
-
  private:
+  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr uint8_t kDefaultI2cAddress = kI2cAddress1;
+
   enum class Register {
     kRoChipIdStart = 0xFD,  // 连续读取两次返回芯片ID 0x8311
     kRwResetSerialPortModeControl = 0x00,
@@ -442,10 +446,6 @@ class Es8311 final : public I2cChipBase, public I2sChipBase {
     uint8_t dac_osr;         // dac过采样率
   };
 
-  static constexpr int32_t kDefaultFrequencyHz = 100000;
-  static constexpr uint8_t kDeviceI2cAddress1 = 0x18;
-  static constexpr uint8_t kDeviceI2cAddress2 = 0x19;
-  static constexpr uint8_t kDeviceI2cAddressDefault = kDeviceI2cAddress1;
   // 时钟分配系数列表
   static constexpr ClockCoeff kClockCoeffTable_[] = {
       // 每项字段的排列顺序与 ClockCoeff 声明一致。

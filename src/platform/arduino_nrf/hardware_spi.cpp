@@ -114,7 +114,7 @@ bool HardwareSpi::Write(const void* data, size_t byte) {
 bool HardwareSpi::Read(void* data, size_t byte) {
   if (spi_handle_ == nullptr || (data == nullptr && byte != 0)) {
     LogMessage(LogLevel::kError, __FILE__, __LINE__,
-        "HardwareSpi::Read: invalid buffer, length, or device state\n");
+        "HardwareSpi::Read: invalid buffer, length, or chip state\n");
     return false;
   }
   if (byte == 0) {

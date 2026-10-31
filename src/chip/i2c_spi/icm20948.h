@@ -120,7 +120,7 @@ class Icm20948 final : public DriverBase {
    * @param address ICM20948 七位 I2C 地址
    */
   explicit Icm20948(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDeviceI2cAddressDefault)
+      int16_t address = kDefaultI2cAddress)
       : i2c_bus_(bus), i2c_address_(address) {}
 
   /**
@@ -335,6 +335,8 @@ class Icm20948 final : public DriverBase {
   Config config() const;
 
  private:
+  static constexpr int16_t kDefaultI2cAddress = 0x68;  // AD0=0。
+
   // ICM20948 用户寄存器 Bank。
   enum class Bank : uint8_t {
     k0 = 0,           // USER BANK 0。
@@ -391,8 +393,6 @@ class Icm20948 final : public DriverBase {
     kWoControl3 = 0x32,         // 软件复位控制 CNTL3。
   };
 
-  static constexpr int16_t kDeviceI2cAddressDefault = 0x68;  // AD0=0。
-
   /**
    * @brief 初始化构造函数传入的 I2C 或 SPI 总线
    * @param freq_hz 主机总线频率
@@ -404,7 +404,7 @@ class Icm20948 final : public DriverBase {
    * @brief 复位 ICM20948 并清除驱动运行状态
    * @return 复位命令写入成功返回 true，否则返回 false
    */
-  bool ResetDevice();
+  bool ResetChip();
 
   /**
    * @brief 直接设置 ICM20948 核心睡眠状态并同步内部状态
@@ -423,7 +423,7 @@ class Icm20948 final : public DriverBase {
    * @param config 需要应用的传感器配置
    * @return 所有配置写入成功返回 true，否则返回 false
    */
-  bool ConfigureDevice(const Config& config);
+  bool ConfigureChip(const Config& config);
 
   /**
    * @brief 根据传入的总线类型配置 I2C 或四线 SPI 主接口
@@ -633,7 +633,7 @@ class Icm20948 final : public DriverBase {
 
   std::shared_ptr<I2cBusBase> i2c_bus_;
   std::shared_ptr<SpiBusBase> spi_bus_;
-  int16_t i2c_address_ = kDeviceI2cAddressDefault;
+  int16_t i2c_address_ = kDefaultI2cAddress;
   int32_t spi_cs_ = kPinNotConnected;
   Config config_;  // 当前成功应用的传感器配置。
   MagnetometerMode active_magnetometer_mode_ =
