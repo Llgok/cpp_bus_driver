@@ -2,7 +2,7 @@
  * @Description: CST2xxSE 电容触摸控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-09-19 10:56:50
+ * @LastEditTime: 2026-11-02 10:28:37
  * @License: GPL 3.0
  */
 #pragma once
@@ -71,7 +71,7 @@ class Cst2xxse final : public I2cChipBase {
    */
   bool GetHomeTouch();
  private:
-  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr int32_t kDefaultI2cFrequencyHz = 400000;
   static constexpr uint8_t kDefaultI2cAddress = 0x5A;
 
   enum class Register {

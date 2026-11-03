@@ -2,7 +2,7 @@
  * @Description: AW862xx 触觉反馈驱动芯片实现
  * @Author: LILYGO_L
  * @Date: 2024-12-26 11:13:26
- * @LastEditTime: 2026-09-02 16:15:15
+ * @LastEditTime: 2026-10-31 18:01:07
  * @License: GPL 3.0
  */
 #include "chip/i2c/aw862xx.h"
@@ -1066,7 +1066,7 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
   }
 
   // RAM 波形初始化流程：停止播放、进入 RAM 初始化模式、配置地址和 FIFO、
-  // 校验 RAM，仅在数据不一致时重新写入，最后退出 RAM 初始化模式。
+  // 直接写入波形并回读校验，最后退出 RAM 初始化模式。
   if (!StopRamPlaybackWaveform()) {
     return false;
   }
@@ -1087,21 +1087,7 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
     operation_result = false;
   }
 
-  RamVerificationResult verification_result = RamVerificationResult::kError;
   if (operation_result) {
-    verification_result = VerifyRamData(base_addr, waveform_data, length);
-    if (verification_result == RamVerificationResult::kError) {
-      operation_result = false;
-    }
-  }
-
-  if (operation_result &&
-      verification_result == RamVerificationResult::kMismatch) {
-    LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
-        "Reload AW862xx RAM waveform (reason: retained data mismatch, "
-        "base address: %#X, length: %u)\n",
-        static_cast<unsigned int>(base_addr),
-        static_cast<unsigned int>(length));
     if (!SetRamAddress(base_addr)) {
       operation_result = false;
     }
@@ -1132,7 +1118,8 @@ bool Aw862xx::InitRamMode(const uint8_t* waveform_data, size_t length) {
 #endif
 
     if (operation_result) {
-      verification_result = VerifyRamData(base_addr, waveform_data, length);
+      const RamVerificationResult verification_result =
+          VerifyRamData(base_addr, waveform_data, length);
       if (verification_result == RamVerificationResult::kError) {
         operation_result = false;
       } else if (verification_result == RamVerificationResult::kMismatch) {

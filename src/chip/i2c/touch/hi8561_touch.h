@@ -2,7 +2,7 @@
  * @Description: HI8561 电容触摸控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-09-19 10:53:38
+ * @LastEditTime: 2026-11-02 10:28:37
  * @License: GPL 3.0
  */
 #pragma once
@@ -147,7 +147,7 @@ class Hi8561Touch final : public I2cChipBase {
    */
   bool GetFrequencyBand(uint8_t* frequency_band);
  private:
-  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr int32_t kDefaultI2cFrequencyHz = 400000;
   static constexpr uint8_t kDefaultI2cAddress = 0x68;
 
   // 动态内存区的地址和长度。

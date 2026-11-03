@@ -2,7 +2,7 @@
  * @Description: AW862xx 触觉反馈驱动芯片接口
  * @Author: LILYGO_L
  * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-09-19 10:55:06
+ * @LastEditTime: 2026-11-02 10:28:37
  * @License: GPL 3.0
  */
 #pragma once
@@ -130,8 +130,7 @@ class Aw862xx final : public I2cChipBase {
   };
 
   explicit Aw862xx(std::shared_ptr<I2cBusBase> bus,
-      int16_t address = kDefaultI2cAddress,
-      int32_t rst = kPinNotConnected)
+      int16_t address = kDefaultI2cAddress, int32_t rst = kPinNotConnected)
       : I2cChipBase(bus, address), rst_(rst) {}
 
   bool Init(int32_t freq_hz = kDefaultI2cFrequencyHz) override;
@@ -338,7 +337,7 @@ class Aw862xx final : public I2cChipBase {
   bool SetRrtModeGain(uint8_t gain);
 
   /**
-   * @brief 初始化 RAM 模式
+   * @brief 写完全部 RAM 波形后分包回读校验，成功后完成 RAM 模式初始化
    * @param waveform_data 波形数据指针
    * @param length 波形输出长度
    * @return 初始化成功返回 true，失败返回 false
@@ -451,8 +450,9 @@ class Aw862xx final : public I2cChipBase {
    * @return 操作成功返回 true，失败返回 false
    */
   bool StopRamPlaybackWaveform();
+
  private:
-  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr int32_t kDefaultI2cFrequencyHz = 400000;
   static constexpr uint8_t kDefaultI2cAddress = 0x58;
 
   enum class Register {

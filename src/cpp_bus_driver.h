@@ -19,6 +19,7 @@
 #include "chip/chip_base.h"
 #include "chip/i2c/aw21009.h"
 #include "chip/i2c/aw862xx.h"
+#include "chip/i2c/aw933xx.h"
 #include "chip/i2c/axp517.h"
 #include "chip/i2c/bq2589x/bq2589x.h"
 #include "chip/i2c/bq27220.h"

@@ -2,7 +2,7 @@
  * @Description: GT9895 电容触摸控制器驱动接口
  * @Author: LILYGO_L
  * @Date: 2025-07-09 09:15:31
- * @LastEditTime: 2026-09-19 10:45:46
+ * @LastEditTime: 2026-11-02 10:28:37
  * @License: GPL 3.0
  */
 #pragma once
@@ -200,7 +200,7 @@ class Gt9895 final : public I2cChipBase {
    */
   bool WakeUp();
  private:
-  static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
+  static constexpr int32_t kDefaultI2cFrequencyHz = 400000;
   static constexpr uint8_t kDefaultI2cAddress = 0x5D;
 
   // GT9895 固件实时命令字。
