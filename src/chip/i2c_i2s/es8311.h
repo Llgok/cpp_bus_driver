@@ -2,8 +2,7 @@
  * @Description: ES8311 音频编解码芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2025-03-11 16:42:57
- * @LastEditTime: 2026-04-30 13:44:48
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

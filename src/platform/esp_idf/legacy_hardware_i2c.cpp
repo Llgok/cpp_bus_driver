@@ -2,8 +2,7 @@
  * @Description: ESP-IDF 旧版硬件 I2C 总线兼容驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-09-05 11:10:00
- * @LastEditTime: 2026-09-05 14:57:40
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include <limits>
 

@@ -2,8 +2,7 @@
  * @Description: FT3x68 电容触摸控制器驱动实现
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-05-16 23:47:09
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/i2c/ft3x68.h"
 

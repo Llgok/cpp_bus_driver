@@ -2,8 +2,7 @@
  * @Description: Nordic nRF24L01 系列 2.4 GHz 射频收发芯片驱动接口
  * @Author: LILYGO_L
  * @Date: 2026-07-31 10:00:00
- * @LastEditTime: 2026-09-05 14:57:12
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

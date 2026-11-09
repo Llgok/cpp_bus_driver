@@ -2,8 +2,7 @@
  * @Description: cpp_bus_driver 公共驱动头文件汇总入口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:14:18
- * @LastEditTime: 2026-09-05 14:56:24
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

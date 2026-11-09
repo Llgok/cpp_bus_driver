@@ -2,8 +2,7 @@
  * @Description: ECX336CN SPI 显示控制器驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-04-22 17:36:48
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/spi/ecx336cn.h"
 

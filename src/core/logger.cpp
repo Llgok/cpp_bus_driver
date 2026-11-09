@@ -2,8 +2,7 @@
  * @Description: cpp_bus_driver 日志实现
  * @Author: LILYGO_L
  * @Date: 2026-09-04 13:51:51
- * @LastEditTime: 2026-09-05 14:56:30
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "logger.h"
 

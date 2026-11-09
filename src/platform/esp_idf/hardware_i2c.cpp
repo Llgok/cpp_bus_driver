@@ -2,8 +2,7 @@
  * @Description: ESP-IDF 后端硬件 I2C 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-09-04 10:14:25
- * @LastEditTime: 2026-09-05 14:57:28
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "bus/i2c/hardware_i2c.h"
 

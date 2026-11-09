@@ -2,8 +2,7 @@
  * @Description: GZ030PCC0X 显示面板辅助控制驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-09-02 16:15:31
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/i2c/gz030pcc0x.h"
 

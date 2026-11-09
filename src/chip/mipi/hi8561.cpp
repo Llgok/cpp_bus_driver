@@ -2,8 +2,7 @@
  * @Description: HI8561 MIPI-DSI 显示面板驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-09-02 16:15:50
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/mipi/hi8561.h"
 

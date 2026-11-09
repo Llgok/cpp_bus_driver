@@ -2,8 +2,7 @@
  * @Description: PCF8563 系列实时时钟芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:51
- * @LastEditTime: 2026-09-10 14:51:34
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/i2c/pcf8563x.h"
 

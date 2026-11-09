@@ -2,8 +2,7 @@
  * @Description: ICM20948 九轴惯性传感器 I2C/SPI 共用驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-31 15:20:00
- * @LastEditTime: 2026-09-19 13:54:41
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/i2c_spi/icm20948.h"
 

@@ -1,8 +1,10 @@
 /*
  * @Description: AW862xx 官方触觉反馈波形数据表
- * @Author: Awinic
- * @License: 原厂示例代码许可
+ * @Author: LILYGO_L
+ * @Date: 2026-10-30 00:00:00
+ * @LastEditTime: 2026-11-09 10:15:38
  */
+
 // 由 Awinic HapticNv_Driver_MCU_v1.0.0 的 haptic_nv_params.c 转换。
 // 本文件在 Aw862xx 类作用域内包含。
 

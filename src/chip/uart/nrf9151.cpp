@@ -2,8 +2,7 @@
  * @Description: nRF9151 蜂窝通信与 GNSS 模块驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-11 11:58:39
- * @LastEditTime: 2026-09-19 13:58:11
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/uart/nrf9151.h"
 

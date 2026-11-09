@@ -2,8 +2,7 @@
  * @Description: AW933xx 电容检测、佩戴及滑动识别驱动
  * @Author: LILYGO_L
  * @Date: 2026-10-30 00:00:00
- * @LastEditTime: 2026-11-03 10:04:15
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

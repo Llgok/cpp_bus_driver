@@ -2,7 +2,7 @@
  * @Description: S023MSAFJF10111E1 显示面板辅助控制驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:11:16
  */
 #include "chip/i2c/s023msafjf10111e1.h"
 

@@ -2,8 +2,7 @@
  * @Description: L76K GNSS 定位模块驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-09-04 15:08:17
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/uart/l76k.h"
 

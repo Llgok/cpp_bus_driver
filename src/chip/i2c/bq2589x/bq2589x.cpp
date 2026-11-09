@@ -1,6 +1,8 @@
 /*
  * @Description: BQ2589x 系列充电管理芯片驱动
- * @License: GPL 3.0
+ * @Author: LILYGO_L
+ * @Date: 2026-09-07 16:45:28
+ * @LastEditTime: 2026-11-09 10:11:16
  */
 #include "chip/i2c/bq2589x/bq2589x.h"
 

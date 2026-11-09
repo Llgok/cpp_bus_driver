@@ -2,8 +2,7 @@
  * @Description: cpp_bus_driver 有界数值转换实现
  * @Author: LILYGO_L
  * @Date: 2026-09-04 16:32:00
- * @LastEditTime: 2026-09-05 14:56:39
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "utility/numeric_conversion.h"
 

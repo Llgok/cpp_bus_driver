@@ -2,8 +2,7 @@
  * @Description: 软件模拟 I2C 总线驱动接口
  * @Author: LILYGO_L
  * @Date: 2024-12-16 17:47:28
- * @LastEditTime: 2026-09-07 13:52:41
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

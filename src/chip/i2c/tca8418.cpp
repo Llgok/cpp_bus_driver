@@ -2,8 +2,7 @@
  * @Description: TCA8418 键盘扫描与 GPIO 扩展芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-09-19 11:54:32
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/i2c/tca8418.h"
 

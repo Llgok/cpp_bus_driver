@@ -2,8 +2,7 @@
  * @Description: Nordic nRF24L01 系列 2.4 GHz 射频收发芯片驱动实现
  * @Author: LILYGO_L
  * @Date: 2026-07-31 10:00:00
- * @LastEditTime: 2026-09-02 16:18:03
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/spi/nrf24l01x.h"
 

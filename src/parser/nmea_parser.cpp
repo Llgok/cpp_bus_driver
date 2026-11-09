@@ -2,8 +2,7 @@
  * @Description: GNSS NMEA 流式解析工具实现
  * @Author: LILYGO_L
  * @Date: 2026-09-04 16:45:00
- * @LastEditTime: 2026-09-05 14:56:32
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "parser/nmea_parser.h"
 

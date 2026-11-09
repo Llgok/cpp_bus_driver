@@ -2,8 +2,7 @@
  * @Description: cpp_bus_driver 有界数值转换接口
  * @Author: LILYGO_L
  * @Date: 2026-09-04 16:32:00
- * @LastEditTime: 2026-09-04 16:32:00
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

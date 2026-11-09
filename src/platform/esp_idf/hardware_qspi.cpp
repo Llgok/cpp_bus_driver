@@ -2,8 +2,7 @@
  * @Description: ESP-IDF 硬件 QSPI 总线驱动实现
  * @Author: LILYGO_L
  * @Date: 2025-02-13 15:04:49
- * @LastEditTime: 2026-09-05 14:57:34
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "bus/spi/hardware_qspi.h"
 

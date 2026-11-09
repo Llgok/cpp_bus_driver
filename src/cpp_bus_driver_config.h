@@ -2,8 +2,7 @@
  * @Description: cpp_bus_driver 编译配置、平台选择与外设能力检测
  * @Author: LILYGO_L
  * @Date: 2024-12-18 14:54:01
- * @LastEditTime: 2026-09-05 14:56:26
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

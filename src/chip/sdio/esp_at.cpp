@@ -2,8 +2,7 @@
  * @Description: 基于 SDIO 的 ESP-AT 通信驱动实现
  * @Author: LILYGO_L
  * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-09-05 14:57:02
- * @License: GPL 3.0
+ * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/sdio/esp_at.h"
 
