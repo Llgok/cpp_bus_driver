@@ -1,8 +1,5 @@
 /*
  * @Description: AW862xx 触觉反馈驱动芯片实现
- * @Author: LILYGO_L
- * @Date: 2024-12-26 11:13:26
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/i2c/aw862xx.h"
 

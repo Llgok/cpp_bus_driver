@@ -1,8 +1,5 @@
 /*
  * @Description: AWINIC AW933xx V9.0.4 固件及 EVB 基础寄存器数据
- * @Author: LILYGO_L
- * @Date: 2026-10-30 00:00:00
- * @LastEditTime: 2026-11-09 10:05:08
  */
 
 // 来源：AWINIC AW933XX_Driver_MCU_V1.0.0，固件 V9.0.4。

@@ -1,8 +1,5 @@
 /*
  * @Description: cpp_bus_driver 2.x 旧接口兼容声明
- * @Author: LILYGO_L
- * @Date: 2026-09-04 12:06:07
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

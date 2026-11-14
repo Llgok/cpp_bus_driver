@@ -1,8 +1,5 @@
 /*
  * @Description: ICM20948 九轴惯性传感器 I2C/SPI 共用驱动接口
- * @Author: LILYGO_L
- * @Date: 2026-07-31 15:20:00
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

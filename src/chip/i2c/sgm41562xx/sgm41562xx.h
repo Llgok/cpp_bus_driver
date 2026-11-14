@@ -1,8 +1,5 @@
 /*
  * @Description: SGM41562 系列电池充电管理芯片统一驱动接口
- * @Author: LILYGO_L
- * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-11-09 10:13:43
  */
 #pragma once
 

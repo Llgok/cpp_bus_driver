@@ -1,8 +1,5 @@
 /*
  * @Description: RX8130CE 实时时钟芯片驱动实现
- * @Author: LILYGO_L
- * @Date: 2026-10-31 11:00:00
- * @LastEditTime: 2026-11-09 10:11:16
  */
 #include "chip/i2c/rx8130ce.h"
 

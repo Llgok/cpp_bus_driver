@@ -1,8 +1,5 @@
 /*
  * @Description: SY6970 电池充电与电源路径管理芯片驱动实现
- * @Author: LILYGO_L
- * @Date: 2025-01-14 14:12:32
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/i2c/sy6970.h"
 

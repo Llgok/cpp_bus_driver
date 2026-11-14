@@ -1,8 +1,5 @@
 /*
  * @Description: 各类总线公共基类的辅助实现
- * @Author: LILYGO_L
- * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "bus/bus_base.h"
 

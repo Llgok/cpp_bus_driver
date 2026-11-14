@@ -1,8 +1,5 @@
 /*
  * @Description: I2C、SPI、I2S、UART、SDIO 与 MIPI 总线公共基类
- * @Author: LILYGO_L
- * @Date: 2024-12-16 17:51:36
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

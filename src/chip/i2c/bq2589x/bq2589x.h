@@ -1,8 +1,5 @@
 /*
  * @Description: BQ2589x 系列电池充电与电源路径管理驱动接口
- * @Author: LILYGO_L
- * @Date: 2026-09-07 16:45:28
- * @LastEditTime: 2026-11-09 10:11:16
  */
 #pragma once
 

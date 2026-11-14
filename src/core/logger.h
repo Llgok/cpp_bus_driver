@@ -1,8 +1,5 @@
 /*
  * @Description: cpp_bus_driver 日志接口
- * @Author: LILYGO_L
- * @Date: 2026-09-04 12:28:47
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

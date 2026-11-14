@@ -1,8 +1,5 @@
 /*
  * @Description: RX8130CE 实时时钟芯片驱动接口
- * @Author: LILYGO_L
- * @Date: 2026-10-31 11:00:00
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

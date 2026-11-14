@@ -1,8 +1,5 @@
 /*
  * @Description: SGM41562S和SGM41562SA扩展寄存器布局实现
- * @Author: LILYGO_L
- * @Date: 2026-09-07 16:45:28
- * @LastEditTime: 2026-11-09 10:11:16
  */
 #include "chip/i2c/sgm41562xx/sgm41562xx.h"
 

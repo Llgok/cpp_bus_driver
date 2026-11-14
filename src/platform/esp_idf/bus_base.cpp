@@ -1,8 +1,5 @@
 /*
  * @Description: ESP-IDF I2C 命令链兼容接口实现
- * @Author: LILYGO_L
- * @Date: 2026-09-04 10:14:25
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "bus/bus_base.h"
 

@@ -1,8 +1,5 @@
 /*
  * @Description: cpp_bus_driver 驱动公共基类接口
- * @Author: LILYGO_L
- * @Date: 2026-09-04 13:51:51
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

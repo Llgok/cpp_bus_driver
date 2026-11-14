@@ -1,8 +1,5 @@
 /*
  * @Description: S023MSAFJF10111E1 显示面板辅助控制驱动接口
- * @Author: LILYGO_L
- * @Date: 2026-03-14 11:11:19
- * @LastEditTime: 2026-11-09 10:11:16
  */
 #pragma once
 

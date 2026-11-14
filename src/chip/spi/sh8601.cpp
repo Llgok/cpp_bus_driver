@@ -1,8 +1,5 @@
 /*
  * @Description: SH8601 QSPI 显示控制器驱动实现
- * @Author: LILYGO_L
- * @Date: 2025-01-14 14:13:42
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/spi/sh8601.h"
 

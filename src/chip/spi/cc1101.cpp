@@ -1,8 +1,5 @@
 /*
  * @Description: TI CC1101 亚 GHz 无线收发芯片驱动实现
- * @Author: LILYGO_L
- * @Date: 2026-07-12 00:00:00
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/spi/cc1101.h"
 

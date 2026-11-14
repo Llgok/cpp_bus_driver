@@ -1,8 +1,5 @@
 /*
  * @Description: AW933xx 固件加载、采样及硬件算法实现
- * @Author: LILYGO_L
- * @Date: 2026-10-30 00:00:00
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/i2c/aw933xx.h"
 

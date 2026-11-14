@@ -1,8 +1,5 @@
 /*
  * @Description: GT9895 电容触摸控制器驱动接口
- * @Author: LILYGO_L
- * @Date: 2025-07-09 09:15:31
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

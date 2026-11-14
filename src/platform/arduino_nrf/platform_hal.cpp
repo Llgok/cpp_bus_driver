@@ -1,8 +1,5 @@
 /*
  * @Description: Arduino nRF 平台硬件抽象实现
- * @Author: LILYGO_L
- * @Date: 2026-09-04 10:14:25
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "platform/platform_hal.h"
 

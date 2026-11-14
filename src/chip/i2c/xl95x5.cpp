@@ -1,8 +1,5 @@
 /*
  * @Description: XL95x5 GPIO 扩展芯片驱动实现
- * @Author: LILYGO_L
- * @Date: 2023-11-16 15:42:22
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/i2c/xl95x5.h"
 

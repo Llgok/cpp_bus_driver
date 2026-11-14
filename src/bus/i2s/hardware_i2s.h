@@ -1,8 +1,5 @@
 /*
  * @Description: 跨平台硬件 I2S 音频总线驱动接口
- * @Author: LILYGO_L
- * @Date: 2025-03-11 16:03:02
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

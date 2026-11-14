@@ -1,8 +1,5 @@
 /*
  * @Description: Semtech SX1261/SX1262 无线收发芯片驱动接口
- * @Author: LILYGO_L
- * @Date: 2024-12-18 17:17:22
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

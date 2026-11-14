@@ -1,8 +1,5 @@
 /*
  * @Description: 字节缓冲区搜索工具
- * @Author: LILYGO_L
- * @Date: 2026-09-04 15:08:17
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

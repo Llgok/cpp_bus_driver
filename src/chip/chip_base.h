@@ -1,8 +1,5 @@
 /*
  * @Description: 基于不同总线访问芯片的公共驱动基类
- * @Author: LILYGO_L
- * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #pragma once
 

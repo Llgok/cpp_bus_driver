@@ -1,8 +1,5 @@
 /*
  * @Description: 芯片公共驱动基类的初始化序列实现
- * @Author: LILYGO_L
- * @Date: 2024-12-17 16:23:02
- * @LastEditTime: 2026-11-09 10:05:08
  */
 #include "chip/chip_base.h"
 
