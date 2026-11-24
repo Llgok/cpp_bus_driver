@@ -17,7 +17,6 @@ class S023msafjf10111e1 final : public I2cChipBase {
   static constexpr uint8_t kI2cAddressAddr0Low = 0x50;
   // ADDR0 为高电平时的 7 位 I2C 地址。
   static constexpr uint8_t kI2cAddressAddr0High = 0x54;
-  // 默认 RGB 亮度增益，Q1.8 格式，0x100 对应 1 倍。
   // 9 位 RGB 增益最大编码，0x1FF 对应 511/256 倍。
   static constexpr uint16_t kMaxBrightnessGain = 0x1FF;
 
@@ -157,7 +156,6 @@ class S023msafjf10111e1 final : public I2cChipBase {
  private:
   static constexpr int32_t kDefaultI2cFrequencyHz = 100000;
   static constexpr uint8_t kDefaultI2cAddress = kI2cAddressAddr0High;
-  static constexpr uint16_t kDefaultBrightnessGain = 0x100;
 
   // 使用手册原始地址；低字节优先的转换仅在总线读写函数中执行。
   enum class Register : uint16_t {
