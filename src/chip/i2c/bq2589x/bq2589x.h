@@ -254,6 +254,13 @@ class Bq2589x final : public I2cChipBase {
     bool vbus_attached = false;
   };
 
+  struct NtcConfig {
+    float pull_up_ohm = 0.0f;
+    float pull_down_ohm = 0.0f;
+    float resistance_at_25c_ohm = 0.0f;
+    float beta_kelvin = 0.0f;
+  };
+
   // BQ25896 默认 7 位 I2C 地址，不包含读写方向位。
   // BQ25896 的 REG14 PN 字段，需同时检查修订号。
   static constexpr uint8_t kBq25896PartNumber = 0x00;
@@ -1291,6 +1298,18 @@ class Bq2589x final : public I2cChipBase {
    * @note BQ25898C 没有 TS ADC，不访问 REG10 并返回 false。
    */
   bool GetTsVoltagePercentage(float& percentage);
+
+  /**
+   * @brief 由 TS 电压比例和 NTC Beta 模型估算电池温度。
+   * @param config REGN 到 TS 的上拉、TS 到 GND 的下拉、与下拉并联的 NTC
+   *     在 25°C 的电阻（均为 Ω），以及 Beta（K）；各值须为有限正数。
+   * @param ts_voltage_percentage ADC 结果 VTS/VREGN × 100，单位 %。
+   * @param temperature_c 输出估算温度，单位 °C；失败时保持原值。
+   * @return 参数和估算结果有效时返回 true；ADC 饱和或分压无解时返回 false。
+   * @note 此接口仅执行软件换算，调用方应先确认 TS ADC 采样有效。
+   */
+  static bool ConvertTsToBatteryTemperature(const NtcConfig& config,
+      float ts_voltage_percentage, float& temperature_c);
 
   /**
    * @brief 读取 REG11 VBUSV 的最近输入电压 ADC 结果，不启动转换。

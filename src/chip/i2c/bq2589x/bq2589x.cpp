@@ -3,6 +3,8 @@
  */
 #include "chip/i2c/bq2589x/bq2589x.h"
 
+#include <cmath>
+
 namespace cpp_bus_driver {
 namespace {
 
@@ -12,6 +14,11 @@ constexpr uint16_t kRechargeOffsetsMv[] = {100, 200};
 constexpr uint16_t kWatchdogTimeoutsS[] = {0, 40, 80, 160};
 constexpr uint16_t kFastChargeTimersHours[] = {5, 8, 12, 20};
 constexpr uint16_t kThermalThresholdsC[] = {60, 80, 100, 120};
+constexpr uint8_t kTsAdcCodeMask = 0x7F;
+constexpr float kTsAdcMinPercentage = 21.0f;
+constexpr float kTsAdcStepPercentage = 0.465f;
+constexpr float kTsAdcMaxPercentage =
+    kTsAdcMinPercentage + kTsAdcCodeMask * kTsAdcStepPercentage;
 
 }  // namespace
 
@@ -1520,10 +1527,46 @@ bool Bq2589x::GetTsVoltagePercentage(float& percentage) {
         "by this chip\n");
     return false;
   }
-  if (!ReadField(Register::kReg10, 0x7F, 0, value)) {
+  if (!ReadField(Register::kReg10, kTsAdcCodeMask, 0, value)) {
     return false;
   }
-  percentage = 21.0f + static_cast<float>(value) * 0.465f;
+  percentage = kTsAdcMinPercentage + value * kTsAdcStepPercentage;
+  return true;
+}
+
+bool Bq2589x::ConvertTsToBatteryTemperature(const NtcConfig& config,
+    float ts_voltage_percentage, float& temperature_c) {
+  constexpr float kHalfAdcStepPercentage = kTsAdcStepPercentage / 2.0f;
+  if (!(ts_voltage_percentage > kTsAdcMinPercentage + kHalfAdcStepPercentage &&
+          ts_voltage_percentage < kTsAdcMaxPercentage - kHalfAdcStepPercentage) ||
+      !std::isfinite(config.pull_up_ohm) || config.pull_up_ohm <= 0.0f ||
+      !std::isfinite(config.pull_down_ohm) || config.pull_down_ohm <= 0.0f ||
+      !std::isfinite(config.resistance_at_25c_ohm) ||
+      config.resistance_at_25c_ohm <= 0.0f ||
+      !std::isfinite(config.beta_kelvin) || config.beta_kelvin <= 0.0f) {
+    return false;
+  }
+
+  const float ts_ratio = ts_voltage_percentage / 100.0f;
+  const float parallel_ohm = config.pull_up_ohm * ts_ratio / (1.0f - ts_ratio);
+  if (parallel_ohm >= config.pull_down_ohm) {
+    return false;
+  }
+  const float ntc_ohm =
+      parallel_ohm / (1.0f - parallel_ohm / config.pull_down_ohm);
+
+  constexpr float kCelsiusOffset = 273.15f;
+  constexpr float kNominalTemperatureKelvin = 25.0f + kCelsiusOffset;
+  const float inverse_temperature = 1.0f / kNominalTemperatureKelvin +
+      std::log(ntc_ohm / config.resistance_at_25c_ohm) / config.beta_kelvin;
+  if (!std::isfinite(inverse_temperature) || inverse_temperature <= 0.0f) {
+    return false;
+  }
+  const float estimate_c = 1.0f / inverse_temperature - kCelsiusOffset;
+  if (!std::isfinite(estimate_c)) {
+    return false;
+  }
+  temperature_c = estimate_c;
   return true;
 }
 
@@ -1543,7 +1586,8 @@ bool Bq2589x::GetAdcMeasurements(AdcMeasurements& measurements) {
   result.system_voltage_mv = 2304 + (data[1] & 0x7F) * 20;
   result.ts_voltage_valid = HasFeature(Feature::kTsAdc);
   if (result.ts_voltage_valid) {
-    result.ts_voltage_percentage = 21.0f + (data[2] & 0x7F) * 0.465f;
+    result.ts_voltage_percentage = kTsAdcMinPercentage +
+        (data[2] & kTsAdcCodeMask) * kTsAdcStepPercentage;
   }
   result.vbus_voltage_mv = 2600 + (data[3] & 0x7F) * 100;
   result.charge_current_ma = (data[4] & 0x7F) * 50;
