@@ -9,6 +9,7 @@ namespace cpp_bus_driver {
 namespace {
 constexpr uint8_t kDaysPerMonth[] = {
     31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+constexpr uint8_t kAlarmDayModeMask = 0x08;
 }
 
 uint8_t Rx8130ce::EncodeBcd(uint8_t value) {
@@ -250,18 +251,17 @@ bool Rx8130ce::SetAlarm(const Alarm& alarm) {
       AlarmValue(alarm.minute, alarm.minute_enabled),
       AlarmValue(alarm.hour, alarm.hour_enabled),
       alarm.day_or_weekday_enabled
-          ? static_cast<uint8_t>(alarm.weekday_mode
-                                     ? alarm.day_or_weekday
-                                     : EncodeBcd(alarm.day_or_weekday))
+          ? (alarm.weekday_mode
+                 ? static_cast<uint8_t>(1U << alarm.day_or_weekday)
+                 : EncodeBcd(alarm.day_or_weekday))
           : uint8_t{0x80}};
   uint8_t control = 0;
   if (!ReadRegister(Register::kControl0, control) ||
       !UpdateControl0(0x08, 0) ||
+      !UpdateExtension(kAlarmDayModeMask,
+          alarm.weekday_mode ? 0 : kAlarmDayModeMask) ||
       !WriteRegister(Register::kAlarmMinute, data, sizeof(data))) return false;
-  return UpdateExtension(0x08,
-             alarm.weekday_mode ? 0x08 : 0) &&
-      UpdateControl0(0x08,
-          control & 0x08);
+  return UpdateControl0(0x08, control & 0x08);
 }
 
 bool Rx8130ce::GetAlarm(Alarm& alarm) {
@@ -273,15 +273,26 @@ bool Rx8130ce::GetAlarm(Alarm& alarm) {
   result.minute_enabled = (data[0] & 0x80) == 0;
   result.hour_enabled = (data[1] & 0x80) == 0;
   result.day_or_weekday_enabled = (data[2] & 0x80) == 0;
-  result.weekday_mode = (extension & 0x08) != 0;
+  result.weekday_mode = (extension & kAlarmDayModeMask) == 0;
   if ((result.minute_enabled && !DecodeBcd(data[0], 59, result.minute)) ||
-      (result.hour_enabled && !DecodeBcd(data[1], 23, result.hour)) ||
-      (result.day_or_weekday_enabled &&
-          (result.weekday_mode ? data[2] > 6
-                               : !DecodeBcd(data[2], 31,
-                                     result.day_or_weekday)))) return false;
-  if (result.weekday_mode && result.day_or_weekday_enabled)
-    result.day_or_weekday = data[2];
+      (result.hour_enabled && !DecodeBcd(data[1], 23, result.hour))) {
+    return false;
+  }
+  if (result.day_or_weekday_enabled) {
+    if (result.weekday_mode) {
+      uint8_t weekday = 0;
+      while (weekday < 7 && data[2] != (1U << weekday)) {
+        ++weekday;
+      }
+      if (weekday == 7) {
+        return false;
+      }
+      result.day_or_weekday = weekday;
+    } else if (!DecodeBcd(data[2] & 0x3F, 31, result.day_or_weekday) ||
+               result.day_or_weekday == 0) {
+      return false;
+    }
+  }
   alarm = result;
   return true;
 }
