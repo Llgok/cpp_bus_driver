@@ -136,10 +136,9 @@ class Aw933xx final : public I2cChipBase {
 
   /**
    * @brief 读取芯片标识。
-   * @param value 读取结果输出指针，失败时保持原值。
-   * @return 操作成功返回 true，参数无效或通信失败返回 false。
+   * @return 成功时返回 32 位芯片标识，读取失败时返回 0xFFFFFFFF。
    */
-  bool GetChipId(uint32_t* value);
+  uint32_t GetChipId();
 
   /**
    * @brief 读取当前固件版本。
@@ -485,6 +484,7 @@ class Aw933xx final : public I2cChipBase {
   bool CheckChannel(uint8_t channel) const;
 
   OperatingMode operating_mode_ = OperatingMode::kActive;
+  uint32_t chip_id_ = 0;
   uint16_t electrode_mask_ = 0;
   InterruptPin interrupt_pin_ = InterruptPin::kDisabled;
 };

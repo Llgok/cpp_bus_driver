@@ -36,6 +36,7 @@ int32_t SignedValue(uint32_t value) {
 }  // namespace
 
 bool Aw933xx::Init(int32_t freq_hz) {
+  chip_id_ = 0;
   electrode_mask_ = 0;
   interrupt_pin_ = InterruptPin::kDisabled;
   if (freq_hz <= 0 || freq_hz > 400000) {
@@ -47,8 +48,8 @@ bool Aw933xx::Init(int32_t freq_hz) {
     return false;
   }
   DelayMs(50);
-  uint32_t chip_id;
-  if (!GetChipId(&chip_id)) {
+  const uint32_t chip_id = GetChipId();
+  if (chip_id == static_cast<uint32_t>(-1)) {
     return false;
   }
   switch (chip_id) {
@@ -86,6 +87,9 @@ bool Aw933xx::Init(int32_t freq_hz) {
           static_cast<unsigned long>(chip_id));
       return false;
   }
+  LogMessage(LogLevel::kInfo, __FILE__, __LINE__,
+      "Get aw933xx chip id success (id: %#lX)\n",
+      static_cast<unsigned long>(chip_id));
   if (!SoftwareReset() || !LoadFirmware() ||
       !SetOperatingMode(OperatingMode::kSleep) ||
       !ApplySettings(kDefaultSettings,
@@ -106,12 +110,14 @@ bool Aw933xx::Init(int32_t freq_hz) {
           static_cast<uint16_t>(Register::kWearMode) + kWearStride, 0xF, 0)) {
     return false;
   }
+  chip_id_ = chip_id;
   return true;
 }
 
 bool Aw933xx::Deinit(bool delete_bus) {
   const bool stopped = SetOperatingMode(OperatingMode::kSleep);
   const bool released = I2cChipBase::Deinit(delete_bus);
+  chip_id_ = 0;
   return stopped && released;
 }
 
@@ -124,8 +130,14 @@ bool Aw933xx::SoftwareReset() {
   return WaitForInitialization();
 }
 
-bool Aw933xx::GetChipId(uint32_t* value) {
-  return ReadRegister(static_cast<uint16_t>(Register::kChipId), value);
+uint32_t Aw933xx::GetChipId() {
+  uint32_t buffer = 0;
+
+  if (!ReadRegister(static_cast<uint16_t>(Register::kChipId), &buffer)) {
+    return static_cast<uint32_t>(-1);
+  }
+
+  return buffer;
 }
 
 bool Aw933xx::GetFirmwareVersion(uint32_t* value) {
@@ -285,9 +297,8 @@ bool Aw933xx::SetInterruptPin(InterruptPin pin) {
           pin != InterruptPin::kCs5)) {
     return false;
   }
-  uint32_t chip_id, scan_enable;
-  if (!GetChipId(&chip_id) ||
-      (chip_id != 0xA9330710 && chip_id != 0xA9630500) ||
+  uint32_t scan_enable;
+  if ((chip_id_ != 0xA9330710 && chip_id_ != 0xA9630500) ||
       !ReadRegister(
           static_cast<uint16_t>(Register::kScanEnable), &scan_enable) ||
       (scan_enable & 0xFFF) != 0) {
